@@ -108,6 +108,7 @@ def static_analyzer(request, checksum, api=False):
             if not handle_aab(app_dic):
                 raise Exception('Invalid AAB File')
             typ = APK_TYPE
+        # Route to respective analysis
         if typ == APK_TYPE:
             return apk_analysis(request, app_dic, rescan, api)
         elif typ == 'jar':

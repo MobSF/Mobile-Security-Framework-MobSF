@@ -22,6 +22,10 @@ import unicodedata
 import threading
 from urllib.parse import urlparse
 from pathlib import Path
+from concurrent.futures import (
+    ThreadPoolExecutor,
+    TimeoutError as ThreadPoolTimeoutError,
+)
 
 from packaging.version import Version
 
@@ -948,24 +952,13 @@ class TaskTimeoutError(Exception):
 
 
 def run_with_timeout(func, limit, *args, **kwargs):
-    def run_func(result, *args, **kwargs):
-        result.append(func(*args, **kwargs))
-
-    result = []
-    thread = threading.Thread(
-        target=run_func,
-        args=(result, *args),
-        kwargs=kwargs)
-    thread.start()
-    thread.join(limit)
-
-    if thread.is_alive():
-        msg = (f'function <{func.__name__}> '
-               f'timed out after {limit} seconds')
-        raise TaskTimeoutError(msg)
-    if result:
-        return result[0]
-    return None
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(func, *args, **kwargs)
+        try:
+            return future.result(timeout=limit)
+        except ThreadPoolTimeoutError:
+            msg = f'function <{func.__name__}> timed out after {limit} seconds'
+            raise TaskTimeoutError(msg)
 
 
 def set_permissions(path):

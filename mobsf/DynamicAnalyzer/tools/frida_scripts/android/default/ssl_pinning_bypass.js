@@ -241,15 +241,84 @@ Java.perform(function() {
     } catch (err) {
         send('[SSL Pinning Bypass] Cronet not found');
     }
-    /* Certificate Transparency Bypass
-       Ajin Abraham - opensecurity.in */
-    try{
+    /* Boye AbstractVerifier */
+    try {
+        Java.use("ch.boye.httpclientandroidlib.conn.ssl.AbstractVerifier").verify.implementation = function(host, ssl) {
+        send("[SSL Pinning Bypass] Bypassing Boye AbstractVerifier" + host);
+    };
+    } catch (err) {
+        send("[SSL Pinning Bypass] Boye AbstractVerifier not found");
+    }
+    /* Appmattus */
+    try {
+        /* Certificate Transparency Bypass Ajin Abraham - opensecurity.in */
         Java.use('com.babylon.certificatetransparency.CTInterceptorBuilder').includeHost.overload('java.lang.String').implementation = function(host) {
             send('[SSL Pinning Bypass] Bypassing Certificate Transparency check');
             return this.includeHost('nonexistent.domain');
         };
     } catch (err) {
+        send('[SSL Pinning Bypass] babylon certificatetransparency.CTInterceptorBuilder not found');
+    }
+    try {
+        Java.use("com.appmattus.certificatetransparency.internal.verifier.CertificateTransparencyInterceptor")["intercept"].implementation = function(a) {
+            send("[SSL Pinning Bypass] Appmattus Certificate Transparency");
+            return a.proceed(a.request());
+        };
+    } catch (err) {
+        send("[SSL Pinning Bypass] Appmattus CertificateTransparencyInterceptor not found");
+    }
+    try{
+        bypassOkHttp3CertificateTransparency();
+    } catch (err) {
         send('[SSL Pinning Bypass] certificatetransparency.CTInterceptorBuilder not found');
     }
-
 }, 0);
+
+
+function bypassOkHttp3CertificateTransparency() {
+  // https://gist.github.com/m-rey/f2a235123908ca42395b6d3c5fe1128e
+  Java.perform(function () {
+    var CertificateTransparencyInterceptor = Java.use('com.appmattus.certificatetransparency.internal.verifier.CertificateTransparencyInterceptor');
+    var OkHttpClientBuilder = Java.use('okhttp3.OkHttpClient$Builder');
+
+    CertificateTransparencyInterceptor.intercept.implementation = function (chain) {
+        var request = chain.request();
+        var url = request.url();
+        var host = url.host();
+
+        // Dynamically access the VerificationResult classes
+        var VerificationResult = Java.use('com.appmattus.certificatetransparency.VerificationResult');
+        var VerificationResultSuccessInsecureConnection = Java.use('com.appmattus.certificatetransparency.VerificationResult$Success$InsecureConnection');
+        var VerificationResultFailureNoCertificates = Java.use('com.appmattus.certificatetransparency.VerificationResult$Failure$NoCertificates');
+
+        // Create instances of the desired VerificationResult classes
+        var success = VerificationResultSuccessInsecureConnection.$new(host);
+        var failureNoCertificates = VerificationResultFailureNoCertificates.$new();
+
+        // Bypass certificate transparency verification
+        var certs = chain.connection().handshake().peerCertificates();
+        if (certs.length === 0) {
+        send('[SSL Pinning Bypass] Certificate transparency bypassed.');
+        return failureNoCertificates;
+        }
+
+        try {
+        // Proceed with the original request
+        return chain.proceed(request);
+        } catch (e) {
+        // Catch SSLPeerUnverifiedException and return intercepted response
+        if (e.toString().includes('SSLPeerUnverifiedException')) {
+            send('[SSL Pinning Bypass] Certificate transparency failed.');
+            return failureNoCertificates;
+        }
+        throw e;
+        }
+    };
+
+    OkHttpClientBuilder.build.implementation = function () {
+        // Intercept the OkHttpClient creation
+        var client = this.build();
+        return client;
+    };
+});
+}

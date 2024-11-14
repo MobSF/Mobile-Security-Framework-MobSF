@@ -134,132 +134,122 @@ def print_scan_subject(checksum, app_dic, man_data):
         append_scan_status(checksum, msg)
 
 
-def apk_analysis(request, app_dic, rescan, api):
-    """APK Analysis."""
-    checksum = app_dic['md5']
-    db_entry = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
-    if db_entry.exists() and not rescan:
-        context = get_context_from_db_entry(db_entry)
-    else:
-        if not has_permission(request, Permissions.SCAN, api):
-            return print_n_send_error_response(
-                request,
-                'Permission Denied',
-                False)
-        # ANALYSIS BEGINS
-        append_scan_status(checksum, 'init')
-        initialize_app_dic(checksum, app_dic, 'apk')
-        msg = 'Extracting APK'
-        logger.info(msg)
+def apk_analysis_task(checksum, app_dic, rescan):
+    append_scan_status(checksum, 'init')
+    initialize_app_dic(checksum, app_dic, 'apk')
+    msg = 'Extracting APK'
+    logger.info(msg)
+    append_scan_status(checksum, msg)
+    app_dic['files'] = unzip(
+        checksum,
+        app_dic['app_path'],
+        app_dic['app_dir'])
+    logger.info('APK Extracted')
+    if not app_dic['files']:
+        # Can't Analyze APK, bail out.
+        msg = 'APK file is invalid or corrupt'
+        logger.error(msg)
         append_scan_status(checksum, msg)
-        app_dic['files'] = unzip(
-            checksum,
-            app_dic['app_path'],
-            app_dic['app_dir'])
-        logger.info('APK Extracted')
-        if not app_dic['files']:
-            # Can't Analyze APK, bail out.
-            msg = 'APK file is invalid or corrupt'
-            logger.error(msg)
-            append_scan_status(checksum, msg)
-            return print_n_send_error_response(
-                request,
-                msg,
-                api)
-        app_dic['zipped'] = 'apk'
-        app_dic['certz'] = get_hardcoded_cert_keystore(
-            checksum,
-            app_dic['files'])
-        # Parse APK with Androguard
-        andro_apk = parse_apk(
-            checksum,
-            app_dic['app_path'])
-        # Manifest Data
-        man_data, man_analysis = get_manifest_data(
-            checksum,
-            app_dic,
-            andro_apk)
-        # Get App name
-        app_dic['real_name'] = get_app_name(
-            andro_apk,
-            app_dic['app_dir'],
-            True)
-        # Print scan subject
-        print_scan_subject(checksum, app_dic, man_data)
-        app_dic['playstore'] = get_app_details(
-            checksum,
-            man_data['packagename'])
-        # Malware Permission check
-        mal_perms = permissions.check_malware_permission(
-            checksum,
-            man_data['perm'])
-        man_analysis['malware_permissions'] = mal_perms
-        # Get icon
-        # apktool should run before this
-        get_icon_apk(andro_apk, app_dic)
-        elf_dict = library_analysis(
-            checksum,
-            app_dic['app_dir'],
-            'elf')
-        cert_dic = cert_info(
-            andro_apk,
-            app_dic,
-            man_data)
-        apkid_results = apkid.apkid_analysis(
-            checksum,
-            app_dic['app_path'])
-        trackers = Trackers.Trackers(
-            checksum,
-            app_dic['app_dir'],
-            app_dic['tools_dir']).get_trackers()
-        apk_2_java(
-            checksum,
-            app_dic['app_path'],
-            app_dic['app_dir'],
-            settings.DOWNLOADED_TOOLS_DIR)
-        dex_2_smali(
-            checksum,
-            app_dic['app_dir'],
-            app_dic['tools_dir'])
-        code_an_dic = code_analysis(
-            checksum,
-            app_dic['app_dir'],
-            app_dic['zipped'],
-            app_dic['manifest_file'],
-            man_data['perm'])
-        behaviour_an = behaviour_analysis.analyze(
-            checksum,
-            app_dic['app_dir'],
-            app_dic['zipped'])
-        # Get the strings and metadata
-        get_strings_metadata(
-            checksum,
-            andro_apk,
-            app_dic['app_dir'],
-            elf_dict['elf_strings'],
-            app_dic['zipped'],
-            ['.java'],
-            code_an_dic)
-        # Firebase DB Check
-        code_an_dic['firebase'] = firebase_analysis(
-            checksum,
-            code_an_dic)
-        # Domain Extraction and Malware Check
-        code_an_dic['domains'] = MalwareDomainCheck().scan(
-            checksum,
-            code_an_dic['urls_list'])
-        context = save_get_ctx(
-            app_dic,
-            man_data,
-            man_analysis,
-            code_an_dic,
-            cert_dic,
-            elf_dict['elf_analysis'],
-            apkid_results,
-            behaviour_an,
-            trackers,
-            rescan,
-        )
+        return None, msg
+    app_dic['zipped'] = 'apk'
+    app_dic['certz'] = get_hardcoded_cert_keystore(
+        checksum,
+        app_dic['files'])
+    # Parse APK with Androguard
+    andro_apk = parse_apk(
+        checksum,
+        app_dic['app_path'])
+    # Manifest Data
+    man_data, man_analysis = get_manifest_data(
+        checksum,
+        app_dic,
+        andro_apk)
+    # Get App name
+    app_dic['real_name'] = get_app_name(
+        andro_apk,
+        app_dic['app_dir'],
+        True)
+    # Print scan subject
+    print_scan_subject(checksum, app_dic, man_data)
+    app_dic['playstore'] = get_app_details(
+        checksum,
+        man_data['packagename'])
+    # Malware Permission check
+    mal_perms = permissions.check_malware_permission(
+        checksum,
+        man_data['perm'])
+    man_analysis['malware_permissions'] = mal_perms
+    # Get icon
+    # apktool should run before this
+    get_icon_apk(andro_apk, app_dic)
+    elf_dict = library_analysis(
+        checksum,
+        app_dic['app_dir'],
+        'elf')
+    cert_dic = cert_info(
+        andro_apk,
+        app_dic,
+        man_data)
+    apkid_results = apkid.apkid_analysis(
+        checksum,
+        app_dic['app_path'])
+    trackers = Trackers.Trackers(
+        checksum,
+        app_dic['app_dir'],
+        app_dic['tools_dir']).get_trackers()
+    apk_2_java(
+        checksum,
+        app_dic['app_path'],
+        app_dic['app_dir'],
+        settings.DOWNLOADED_TOOLS_DIR)
+    dex_2_smali(
+        checksum,
+        app_dic['app_dir'],
+        app_dic['tools_dir'])
+    code_an_dic = code_analysis(
+        checksum,
+        app_dic['app_dir'],
+        app_dic['zipped'],
+        app_dic['manifest_file'],
+        man_data['perm'])
+    behaviour_an = behaviour_analysis.analyze(
+        checksum,
+        app_dic['app_dir'],
+        app_dic['zipped'])
+    # Get the strings and metadata
+    get_strings_metadata(
+        checksum,
+        andro_apk,
+        app_dic['app_dir'],
+        elf_dict['elf_strings'],
+        app_dic['zipped'],
+        ['.java'],
+        code_an_dic)
+    # Firebase DB Check
+    code_an_dic['firebase'] = firebase_analysis(
+        checksum,
+        code_an_dic)
+    # Domain Extraction and Malware Check
+    code_an_dic['domains'] = MalwareDomainCheck().scan(
+        checksum,
+        code_an_dic['urls_list'])
+    context = save_get_ctx(
+        app_dic,
+        man_data,
+        man_analysis,
+        code_an_dic,
+        cert_dic,
+        elf_dict['elf_analysis'],
+        apkid_results,
+        behaviour_an,
+        trackers,
+        rescan,
+    )
+    return context, None
+
+
+def generate_dynamic_context(request, app_dic, checksum, context, api):
+    """Generate Response."""
     context['appsec'] = get_android_dashboard(context, True)
     context['average_cvss'] = get_avg_cvss(context['code_analysis'])
     logcat_file = Path(app_dic['app_dir']) / 'logcat.txt'
@@ -267,10 +257,25 @@ def apk_analysis(request, app_dic, rescan, api):
     context['virus_total'] = None
     if settings.VT_ENABLED:
         vt = VirusTotal.VirusTotal(checksum)
-        context['virus_total'] = vt.get_result(
-            app_dic['app_path'])
+        context['virus_total'] = vt.get_result(app_dic['app_path'])
     template = 'static_analysis/android_binary_analysis.html'
     return context if api else render(request, template, context)
+
+
+def apk_analysis(request, app_dic, rescan, api):
+    """APK Analysis."""
+    checksum = app_dic['md5']
+    db_entry = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
+    if db_entry.exists() and not rescan:
+        context = get_context_from_db_entry(db_entry)
+        return generate_dynamic_context(request, app_dic, checksum, context, api)
+    else:
+        if not has_permission(request, Permissions.SCAN, api):
+            return print_n_send_error_response(request, 'Permission Denied', False)
+        context, err = apk_analysis_task(checksum, app_dic, rescan)
+        if err:
+            return print_n_send_error_response(request, err, api)
+        return generate_dynamic_context(request, app_dic, checksum, context, api)
 
 
 def src_analysis(request, app_dic, rescan, api):
