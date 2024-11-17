@@ -24,7 +24,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 1G
         reservations:
           memory: 256M
     ports:
@@ -54,7 +54,8 @@ services:
       - POSTGRES_PORT=5432
       - MOBSF_MULTIPROCESSING=thread
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - mobsf_network
 
@@ -75,9 +76,14 @@ services:
       - MOBSF_ASYNC_ANALYSIS=1
     healthcheck:
       test: curl -f http://localhost:8000/login/ || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
     depends_on:
-      - postgres
-      - djangoq
+      postgres:
+        condition: service_healthy
+      djangoq:
+        condition: service_started
     networks:
       - mobsf_network
     extra_hosts:
