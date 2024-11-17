@@ -277,7 +277,6 @@ Java.perform(function() {
 
 function bypassOkHttp3CertificateTransparency() {
   // https://gist.github.com/m-rey/f2a235123908ca42395b6d3c5fe1128e
-  Java.perform(function () {
     var CertificateTransparencyInterceptor = Java.use('com.appmattus.certificatetransparency.internal.verifier.CertificateTransparencyInterceptor');
     var OkHttpClientBuilder = Java.use('okhttp3.OkHttpClient$Builder');
 
@@ -320,5 +319,4 @@ function bypassOkHttp3CertificateTransparency() {
         var client = this.build();
         return client;
     };
-});
 }

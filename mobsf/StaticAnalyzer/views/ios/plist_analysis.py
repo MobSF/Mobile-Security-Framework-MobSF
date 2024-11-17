@@ -108,7 +108,7 @@ def convert_bin_xml(bin_xml_file):
         logger.warning('Failed to convert plist')
 
 
-def plist_analysis(checksum, src, is_source):
+def plist_analysis(checksum, src, scan_type):
     """Plist Analysis."""
     try:
         msg = 'iOS Info.plist Analysis Started'
@@ -134,7 +134,7 @@ def plist_analysis(checksum, src, is_source):
         }
         plist_file = None
         plist_files = []
-        if is_source:
+        if scan_type == 'zip':
             msg = 'Finding Info.plist in iOS Source'
             logger.info(msg)
             append_scan_status(checksum, msg)
@@ -174,7 +174,7 @@ def plist_analysis(checksum, src, is_source):
             plist_obj).decode('utf-8', 'ignore')
         plist_info['bin_name'] = (plist_obj.get('CFBundleDisplayName', '')
                                   or plist_obj.get('CFBundleName', ''))
-        if not plist_info['bin_name'] and not is_source:
+        if not plist_info['bin_name'] and scan_type == 'ipa':
             # For iOS IPA
             plist_info['bin_name'] = dot_app_dir.replace('.app', '')
         plist_info['bin'] = plist_obj.get('CFBundleExecutable', '')

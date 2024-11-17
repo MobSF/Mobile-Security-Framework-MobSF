@@ -1,0 +1,202 @@
+
+{% extends "base/base_layout.html" %}
+{% load static %}
+{% block sidebar_option %}
+      sidebar-collapse
+{% endblock %}
+{% block extra_css %}
+<style>
+    /* Loader Spinner */
+    .loader {
+        border: 2px solid #f3f3f3; /* Light gray */
+        border-top: 2px solid #3498db; /* Blue */
+        border-radius: 50%;
+        width: 12px;
+        height: 12px;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+    </div>
+     <div class="container-fluid">
+          <div class="row">
+              <div class="col-lg-12">
+              <div class="card">
+                <div class="card-body">
+                   <div class="box">
+          <div class="box-header with-border">
+              <h3 class="box-title"><i class="fa fa-rocket"></i> Scan Queue</h3>
+              <p class="lead">The scan results will be available in <strong><a href="{% url 'recent' %}">Recent Scans</a></strong> upon completion.</p>
+          </div>
+          <div class="box-body">
+            <div class="table-responsive">
+                <table id="tasks-table" class="table table-bordered table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>Task ID</th>
+                            <th>Filename</th>
+                            <th>Checksum</th>
+                            <th>Queued At</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+<!-- /.box-body -->
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const tasksTableBody = document.querySelector("#tasks-table tbody");
+
+        // Fetch tasks using POST request
+        async function fetchTasks() {
+            const response = await fetch("{% url 'list_tasks' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}", // Correct CSRF token header
+                },
+            });
+
+            if (!response.ok) {
+                console.error("Failed to fetch tasks.");
+                return [];
+            }
+
+            return await response.json();
+        }
+
+        // Build table rows dynamically
+        function buildTableRow(task) {
+            const row = document.createElement("tr");
+            row.setAttribute("data-task-id", task.task_id);
+
+            // Task ID
+            const taskIdCell = document.createElement("td");
+            taskIdCell.textContent = task.task_id;
+
+            // File Name
+            const fileNameCell = document.createElement("td");
+            fileNameCell.textContent = task.file_name;
+
+            // Checksum
+            const checksumCell = document.createElement("td");
+            checksumCell.textContent = task.checksum;
+
+            // Queued At
+            const queuedAtCell = document.createElement("td");
+            const date = new Date(task.created_at);
+            // Format the date in the browser's local timezone
+            queuedAtCell.textContent = date.toLocaleString();
+
+            // Status
+            const statusCell = document.createElement("td");
+            statusCell.setAttribute("id", `status-${task.task_id}`);
+            statusCell.textContent = task.status;
+
+            // If status is "Enqueued", add a loader
+            if (task.status === "Enqueued") {
+                const loader = document.createElement("span");
+                loader.classList.add("loader"); // Apply a CSS class for the loader
+                loader.style.marginLeft = "10px"; // Optional: Add some spacing
+                statusCell.appendChild(loader);
+            }
+
+            if (task.app_name) {
+                const strongElement = document.createElement("strong");
+                strongElement.textContent = ` ${task.app_name}`;
+                statusCell.appendChild(document.createElement("br"));
+                statusCell.appendChild(strongElement);
+            }
+
+            // Append cells to row
+            row.appendChild(taskIdCell);
+            row.appendChild(fileNameCell);
+            row.appendChild(checksumCell);
+            row.appendChild(queuedAtCell);
+            row.appendChild(statusCell);
+
+            return row;
+        }
+
+        // Render the table
+        async function renderTable() {
+            const tasks = await fetchTasks();
+            tasksTableBody.innerHTML = ""; // Clear existing rows
+            if (tasks.length === 0) {
+                const noTasksRow = document.createElement("tr");
+                const noTasksCell = document.createElement("td");
+                noTasksCell.setAttribute("colspan", "5");
+                noTasksCell.textContent = "No tasks in queue.";
+                noTasksRow.appendChild(noTasksCell);
+                tasksTableBody.appendChild(noTasksRow);
+            } else {
+                tasks.forEach((task) => {
+                    const row = buildTableRow(task);
+                    tasksTableBody.appendChild(row);
+                });
+            }
+        }
+
+        // Update the status of tasks dynamically
+        async function updateTaskStatuses() {
+            const tasks = await fetchTasks();
+            tasks.forEach((task) => {
+                const statusCell = document.getElementById(`status-${task.task_id}`);
+                if (statusCell) {
+                    // Clear previous content
+                    statusCell.textContent = task.status;
+
+                     // If status is "Enqueued", add a loader
+                    if (task.status === "Enqueued") {
+                        const loader = document.createElement("span");
+                        loader.classList.add("loader"); // Apply a CSS class for the loader
+                        loader.style.marginLeft = "10px"; // Optional: Add some spacing
+                        statusCell.appendChild(loader);
+                    }
+
+                    // Add app name if available
+                    if (task.completed_at) {
+                        const strongElement = document.createElement("strong");
+                        strongElement.textContent = ` ${task.app_name}`;
+                        statusCell.appendChild(document.createElement("br"));
+                        statusCell.appendChild(strongElement);
+                    }
+                }
+            });
+        }
+        
+        // Initial render
+        renderTable();
+
+        // Periodically update statuses
+        setInterval(updateTaskStatuses, 5000); // Update every 5 seconds
+    });
+    </script>
+{% endblock %}

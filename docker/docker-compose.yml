@@ -3,6 +3,12 @@ services:
   postgres:
     image: "postgres:13"
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
     volumes:
       - $HOME/MobSF/postgresql_data:/var/lib/postgresql/data
     environment:
@@ -15,6 +21,12 @@ services:
   nginx:
     image: nginx:latest
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
     ports:
       - "80:4000"
       - "1337:4001"
@@ -25,8 +37,32 @@ services:
     networks:
       - mobsf_network
 
+  djangoq:
+    image: opensecurity/mobile-security-framework-mobsf:latest
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: /home/mobsf/Mobile-Security-Framework-MobSF/scripts/qcluster.sh
+    volumes:
+      - $HOME/MobSF/mobsf_data:/home/mobsf/.MobSF
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mobsf
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - MOBSF_MULTIPROCESSING=thread
+    depends_on:
+      - postgres
+    networks:
+      - mobsf_network
+
   mobsf:
     image: opensecurity/mobile-security-framework-mobsf:latest
+    build:
+      context: ..
+      dockerfile: Dockerfile
     restart: always
     volumes:
       - $HOME/MobSF/mobsf_data:/home/mobsf/.MobSF
@@ -36,10 +72,12 @@ services:
       - POSTGRES_DB=mobsf
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
+      - MOBSF_ASYNC_ANALYSIS=1
     healthcheck:
       test: curl -f http://localhost:8000/login/ || exit 1
     depends_on:
       - postgres
+      - djangoq
     networks:
       - mobsf_network
     extra_hosts:

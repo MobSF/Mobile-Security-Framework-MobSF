@@ -4,7 +4,6 @@ Shared Functions.
 
 Module providing the shared functions for iOS and Android
 """
-import io
 import hashlib
 import logging
 import os
@@ -63,7 +62,7 @@ def hash_gen(checksum, app_path) -> tuple:
         sha1 = hashlib.sha1()
         sha256 = hashlib.sha256()
         block_size = 65536
-        with io.open(app_path, mode='rb') as afile:
+        with open(app_path, mode='rb') as afile:
             buf = afile.read(block_size)
             while buf:
                 sha1.update(buf)

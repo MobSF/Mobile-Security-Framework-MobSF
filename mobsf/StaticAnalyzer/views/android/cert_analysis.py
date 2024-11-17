@@ -167,6 +167,7 @@ def apksigtool_cert(checksum, apk_path, tools_dir):
     certs_no = 0
     min_sdk = None
     av1, av2, av3, av4 = None, None, None, None
+    v1, v2, v3, v4 = None, None, None, None
     try:
         from apksigtool import (
             APKSignatureSchemeBlock,

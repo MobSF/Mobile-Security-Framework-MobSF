@@ -3,86 +3,97 @@
 import logging
 
 from libsast import Scanner
+from libsast.core_matcher.pattern_matcher import PatternMatcher
+from libsast.core_matcher.choice_matcher import ChoiceMatcher
+from libsast.common import get_worker_count
 
 from django.conf import settings
 
 from mobsf.MobSF.utils import (
-    append_scan_status,
     run_with_timeout,
-    settings_enabled,
 )
 
 logger = logging.getLogger(__name__)
 
 
-def scan(checksum, rule, extensions, paths, ignore_paths=None):
-    """The libsast scan."""
-    try:
-        options = {
-            'match_rules': rule,
-            'match_extensions': extensions,
-            'ignore_paths': ignore_paths,
-            'show_progress': False}
-        scanner = Scanner(options, paths)
-        res = run_with_timeout(scanner.scan, settings.SAST_TIMEOUT)
-        if res and res.get('pattern_matcher'):
-            return format_findings(res['pattern_matcher'], paths[0])
-    except Exception as exp:
-        msg = 'libsast scan failed'
-        logger.exception(msg)
-        append_scan_status(checksum, msg, repr(exp))
-    return {}
+class SastEngine:
+    def __init__(self, options, path):
+        self.root = path
+        mp = 'billiard' if settings.ASYNC_ANALYSIS else 'default'
+        # Override multiprocessing settings if set in the config
+        mp = settings.MULTIPROCESSING if settings.MULTIPROCESSING else mp
+        options['cpu_core'] = get_worker_count()
+        options['multiprocessing'] = mp
+        self.scan_paths = Scanner(options, [path]).get_scan_files()
+        self.pattern_matcher = PatternMatcher(options)
+
+    def scan(self):
+        """Scan the files with given rules."""
+        finds = run_with_timeout(
+            self.pattern_matcher.scan,
+            settings.SAST_TIMEOUT,
+            self.scan_paths)
+        return self.format_findings(finds)
+
+    def read_files(self):
+        """Read the files."""
+        logger.info('Reading file contents for SAST')
+        return self.pattern_matcher.read_file_contents(self.scan_paths)
+
+    def run_rules(self, file_contents, rule_path):
+        """Run the rules."""
+        finds = run_with_timeout(
+            self.pattern_matcher.regex_scan,
+            settings.SAST_TIMEOUT,
+            file_contents,
+            rule_path)
+        return self.format_findings(finds)
+
+    def format_findings(self, findings):
+        """Format the findings."""
+        for details in findings.values():
+            tmp_dict = {}
+            for file_meta in details['files']:
+                file_meta['file_path'] = file_meta[
+                    'file_path'].replace(self.root, '', 1)
+                file_path = file_meta['file_path']
+                start = file_meta['match_lines'][0]
+                end = file_meta['match_lines'][1]
+                if start == end:
+                    match_lines = start
+                else:
+                    exp_lines = []
+                    for i in range(start, end + 1):
+                        exp_lines.append(i)
+                    match_lines = ','.join(str(m) for m in exp_lines)
+                if file_path not in tmp_dict:
+                    tmp_dict[file_path] = str(match_lines)
+                elif tmp_dict[file_path].endswith(','):
+                    tmp_dict[file_path] += str(match_lines)
+                else:
+                    tmp_dict[file_path] += ',' + str(match_lines)
+            details['files'] = tmp_dict
+        return findings
 
 
-def niap_scan(checksum, rule, extensions, paths, apath, ignore_paths=None):
-    """NIAP scan."""
-    if not settings_enabled('NIAP_ENABLED'):
-        return {}
-    try:
-        msg = 'Running NIAP Analyzer'
-        logger.info(msg)
-        append_scan_status(checksum, msg)
-        if not apath:
-            apath = ''
-        options = {
-            'choice_rules': rule,
-            'alternative_path': apath,
-            'choice_extensions': extensions,
-            'ignore_paths': ignore_paths,
-            'show_progress': False}
-        scanner = Scanner(options, paths)
-        res = run_with_timeout(scanner.scan, settings.SAST_TIMEOUT)
-        if res and res.get('choice_matcher'):
-            return res['choice_matcher']
-    except Exception as exp:
-        msg = 'NIAP Analyzer Failed'
-        logger.exception(msg)
-        append_scan_status(checksum, msg, repr(exp))
-    return {}
+class ChoiceEngine:
+    def __init__(self, options, path):
+        self.root = path
+        mp = 'billiard' if settings.ASYNC_ANALYSIS else 'default'
+        options['cpu_core'] = get_worker_count()
+        options['multiprocessing'] = mp
+        self.scan_paths = Scanner(options, [path]).get_scan_files()
+        self.choice_matcher = ChoiceMatcher(options)
 
+    def read_files(self):
+        """Read the files."""
+        logger.info('Reading file contents for NIAP Scan')
+        return self.choice_matcher.read_file_contents(self.scan_paths)
 
-def format_findings(findings, root):
-    """Format findings."""
-    for details in findings.values():
-        tmp_dict = {}
-        for file_meta in details['files']:
-            file_meta['file_path'] = file_meta[
-                'file_path'].replace(root, '', 1)
-            file_path = file_meta['file_path']
-            start = file_meta['match_lines'][0]
-            end = file_meta['match_lines'][1]
-            if start == end:
-                match_lines = start
-            else:
-                exp_lines = []
-                for i in range(start, end + 1):
-                    exp_lines.append(i)
-                match_lines = ','.join(str(m) for m in exp_lines)
-            if file_path not in tmp_dict:
-                tmp_dict[file_path] = str(match_lines)
-            elif tmp_dict[file_path].endswith(','):
-                tmp_dict[file_path] += str(match_lines)
-            else:
-                tmp_dict[file_path] += ',' + str(match_lines)
-        details['files'] = tmp_dict
-    return findings
+    def run_rules(self, file_contents, rule_path):
+        """Run the rules."""
+        return run_with_timeout(
+            self.choice_matcher.regex_scan,
+            settings.SAST_TIMEOUT,
+            file_contents,
+            rule_path)

@@ -8,7 +8,6 @@ import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.MalwareAnalyzer.views.android import (
     apkid,
-    behaviour_analysis,
     permissions,
 )
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import MalwareDomainCheck
@@ -72,6 +71,10 @@ from mobsf.StaticAnalyzer.views.common.firebase import (
 from mobsf.StaticAnalyzer.views.common.appsec import (
     get_android_dashboard,
 )
+from mobsf.StaticAnalyzer.views.common.async_task import (
+    async_analysis,
+    update_enqueued_task,
+)
 from mobsf.MobSF.views.authorization import (
     Permissions,
     has_permission,
@@ -122,19 +125,23 @@ def print_scan_subject(checksum, app_dic, man_data):
     """Log scan subject."""
     app_name = app_dic['real_name']
     pkg_name = man_data['packagename']
-    if app_name or pkg_name:
-        if app_name and pkg_name:
-            subject = f'{app_name} ({pkg_name})'
-        elif app_name:
-            subject = app_name
-        elif pkg_name:
-            subject = pkg_name
-        msg = f'Performing Static Analysis on: {subject}'
-        logger.info(msg)
-        append_scan_status(checksum, msg)
+    subject = ''
+    if app_name and pkg_name:
+        subject = f'{app_name} ({pkg_name})'
+    elif pkg_name:
+        subject = pkg_name
+    elif app_name:
+        subject = app_name
+    msg = f'Performing Static Analysis on: {subject}'
+    logger.info(msg)
+    append_scan_status(checksum, msg)
+    return subject
 
 
-def apk_analysis_task(checksum, app_dic, rescan):
+def apk_analysis_task(checksum, app_dic, rescan, queue=False):
+    """APK Analysis Task."""
+    if queue:
+        settings.ASYNC_ANALYSIS = True
     append_scan_status(checksum, 'init')
     initialize_app_dic(checksum, app_dic, 'apk')
     msg = 'Extracting APK'
@@ -150,6 +157,9 @@ def apk_analysis_task(checksum, app_dic, rescan):
         msg = 'APK file is invalid or corrupt'
         logger.error(msg)
         append_scan_status(checksum, msg)
+        if queue:
+            return update_enqueued_task(
+                checksum, 'Failed', 'Failed')
         return None, msg
     app_dic['zipped'] = 'apk'
     app_dic['certz'] = get_hardcoded_cert_keystore(
@@ -170,7 +180,7 @@ def apk_analysis_task(checksum, app_dic, rescan):
         app_dic['app_dir'],
         True)
     # Print scan subject
-    print_scan_subject(checksum, app_dic, man_data)
+    subject = print_scan_subject(checksum, app_dic, man_data)
     app_dic['playstore'] = get_app_details(
         checksum,
         man_data['packagename'])
@@ -212,10 +222,6 @@ def apk_analysis_task(checksum, app_dic, rescan):
         app_dic['zipped'],
         app_dic['manifest_file'],
         man_data['perm'])
-    behaviour_an = behaviour_analysis.analyze(
-        checksum,
-        app_dic['app_dir'],
-        app_dic['zipped'])
     # Get the strings and metadata
     get_strings_metadata(
         checksum,
@@ -241,15 +247,17 @@ def apk_analysis_task(checksum, app_dic, rescan):
         cert_dic,
         elf_dict['elf_analysis'],
         apkid_results,
-        behaviour_an,
         trackers,
         rescan,
     )
+    if queue:
+        return update_enqueued_task(
+            checksum, subject, 'Success')
     return context, None
 
 
 def generate_dynamic_context(request, app_dic, checksum, context, api):
-    """Generate Response."""
+    """Generate Dynamic Context."""
     context['appsec'] = get_android_dashboard(context, True)
     context['average_cvss'] = get_avg_cvss(context['code_analysis'])
     logcat_file = Path(app_dic['app_dir']) / 'logcat.txt'
@@ -270,12 +278,111 @@ def apk_analysis(request, app_dic, rescan, api):
         context = get_context_from_db_entry(db_entry)
         return generate_dynamic_context(request, app_dic, checksum, context, api)
     else:
+        # APK Analysis
         if not has_permission(request, Permissions.SCAN, api):
             return print_n_send_error_response(request, 'Permission Denied', False)
+        if settings.ASYNC_ANALYSIS:
+            return async_analysis(
+                checksum,
+                app_dic.get('app_name', ''),
+                apk_analysis_task, checksum, app_dic, rescan)
         context, err = apk_analysis_task(checksum, app_dic, rescan)
         if err:
             return print_n_send_error_response(request, err, api)
         return generate_dynamic_context(request, app_dic, checksum, context, api)
+
+
+def src_analysis_task(checksum, app_dic, rescan, pro_type, queue=False):
+    """Android ZIP Source Code Analysis Begins."""
+    if queue:
+        settings.ASYNC_ANALYSIS = True
+    cert_dic = {
+        'certificate_info': '',
+        'certificate_status': '',
+        'description': '',
+    }
+    app_dic['strings'] = []
+    app_dic['secrets'] = []
+    # Above fields are only available for APK and not ZIP
+    app_dic['zipped'] = pro_type
+    app_dic['certz'] = get_hardcoded_cert_keystore(
+        checksum,
+        app_dic['files'])
+    # Manifest Data
+    man_data, man_analysis = get_manifest_data(
+        checksum,
+        app_dic)
+    # Get app name
+    app_dic['real_name'] = get_app_name(
+        None,
+        app_dic['app_dir'],
+        False)
+    # Print scan subject
+    subject = print_scan_subject(checksum, app_dic, man_data)
+    app_dic['playstore'] = get_app_details(
+        checksum,
+        man_data['packagename'])
+    # Malware Permission check
+    mal_perms = permissions.check_malware_permission(
+        checksum,
+        man_data['perm'])
+    man_analysis['malware_permissions'] = mal_perms
+    # Get icon
+    get_icon_from_src(
+        app_dic,
+        man_data['icons'])
+    code_an_dic = code_analysis(
+        checksum,
+        app_dic['app_dir'],
+        app_dic['zipped'],
+        app_dic['manifest_file'],
+        man_data['perm'])
+    # Get the strings and metadata
+    get_strings_metadata(
+        checksum,
+        None,
+        app_dic['app_dir'],
+        None,
+        app_dic['zipped'],
+        ['.java', '.kt'],
+        code_an_dic)
+    # Firebase DB Check
+    code_an_dic['firebase'] = firebase_analysis(
+        checksum,
+        code_an_dic)
+    # Domain Extraction and Malware Check
+    code_an_dic['domains'] = MalwareDomainCheck().scan(
+        checksum,
+        code_an_dic['urls_list'])
+    # Extract Trackers from Domains
+    trackers = Trackers.Trackers(
+        checksum,
+        None,
+        app_dic['tools_dir']).get_trackers_domains_or_deps(
+            code_an_dic['domains'], [])
+    context = save_get_ctx(
+        app_dic,
+        man_data,
+        man_analysis,
+        code_an_dic,
+        cert_dic,
+        [],
+        {},
+        trackers,
+        rescan,
+    )
+    if queue:
+        return update_enqueued_task(
+            checksum, subject, 'Success')
+    return context
+
+
+def generate_dynamic_src_context(request, context, api):
+    """Generate Dynamic Source Context."""
+    context['appsec'] = get_android_dashboard(context, True)
+    context['average_cvss'] = get_avg_cvss(context['code_analysis'])
+    template = 'static_analysis/android_source_analysis.html'
+    return context if api else render(request, template, context)
 
 
 def src_analysis(request, app_dic, rescan, api):
@@ -288,6 +395,7 @@ def src_analysis(request, app_dic, rescan, api):
         MD5=checksum)
     if db_entry.exists() and not rescan:
         context = get_context_from_db_entry(db_entry)
+        return generate_dynamic_src_context(request, context, api)
     elif ios_db_entry.exists() and not rescan:
         return {'type': 'ios'} if api else HttpResponseRedirect(ret)
     else:
@@ -315,94 +423,20 @@ def src_analysis(request, app_dic, rescan, api):
             append_scan_status(checksum, msg)
             ret = f'{ret}?rescan={str(int(rescan))}'
             return {'type': 'ios'} if api else HttpResponseRedirect(ret)
-
+        # Android Source Code Analysis
         if not has_permission(request, Permissions.SCAN, api):
             return print_n_send_error_response(
                 request,
                 'Permission Denied',
                 False)
-        # Android ZIP Source Code Analysis Begins
         if valid and (pro_type in ['eclipse', 'studio']):
-            cert_dic = {
-                'certificate_info': '',
-                'certificate_status': '',
-                'description': '',
-            }
-            app_dic['strings'] = []
-            app_dic['secrets'] = []
-            # Above fields are only available for APK and not ZIP
-            app_dic['zipped'] = pro_type
-            app_dic['certz'] = get_hardcoded_cert_keystore(
-                checksum,
-                app_dic['files'])
-            # Manifest Data
-            man_data, man_analysis = get_manifest_data(
-                checksum,
-                app_dic)
-            # Get app name
-            app_dic['real_name'] = get_app_name(
-                None,
-                app_dic['app_dir'],
-                False)
-            # Print scan subject
-            print_scan_subject(checksum, app_dic, man_data)
-            app_dic['playstore'] = get_app_details(
-                checksum,
-                man_data['packagename'])
-            # Malware Permission check
-            mal_perms = permissions.check_malware_permission(
-                checksum,
-                man_data['perm'])
-            man_analysis['malware_permissions'] = mal_perms
-            # Get icon
-            get_icon_from_src(
-                app_dic,
-                man_data['icons'])
-            code_an_dic = code_analysis(
-                checksum,
-                app_dic['app_dir'],
-                app_dic['zipped'],
-                app_dic['manifest_file'],
-                man_data['perm'])
-            behaviour_an = behaviour_analysis.analyze(
-                checksum,
-                app_dic['app_dir'],
-                app_dic['zipped'])
-            # Get the strings and metadata
-            get_strings_metadata(
-                checksum,
-                None,
-                app_dic['app_dir'],
-                None,
-                app_dic['zipped'],
-                ['.java', '.kt'],
-                code_an_dic)
-            # Firebase DB Check
-            code_an_dic['firebase'] = firebase_analysis(
-                checksum,
-                code_an_dic)
-            # Domain Extraction and Malware Check
-            code_an_dic['domains'] = MalwareDomainCheck().scan(
-                checksum,
-                code_an_dic['urls_list'])
-            # Extract Trackers from Domains
-            trackers = Trackers.Trackers(
-                checksum,
-                None,
-                app_dic['tools_dir']).get_trackers_domains_or_deps(
-                    code_an_dic['domains'], [])
-            context = save_get_ctx(
-                app_dic,
-                man_data,
-                man_analysis,
-                code_an_dic,
-                cert_dic,
-                [],
-                {},
-                behaviour_an,
-                trackers,
-                rescan,
-            )
+            if settings.ASYNC_ANALYSIS:
+                return async_analysis(
+                    checksum,
+                    app_dic.get('app_name', ''),
+                    src_analysis_task, checksum, app_dic, rescan, pro_type)
+            context = src_analysis_task(checksum, app_dic, rescan, pro_type)
+            return generate_dynamic_src_context(request, context, api)
         else:
             msg = 'This ZIP Format is not supported'
             if api:
@@ -418,10 +452,6 @@ def src_analysis(request, app_dic, rescan, api):
                 }
                 template = 'general/zip.html'
                 return render(request, template, ctx)
-    context['appsec'] = get_android_dashboard(context, True)
-    context['average_cvss'] = get_avg_cvss(context['code_analysis'])
-    template = 'static_analysis/android_source_analysis.html'
-    return context if api else render(request, template, context)
 
 
 def is_android_source(app_path):
