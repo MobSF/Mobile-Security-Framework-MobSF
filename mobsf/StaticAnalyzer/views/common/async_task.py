@@ -63,6 +63,7 @@ def async_analysis(checksum, app_name, func, *args):
 
 
 def update_enqueued_task(checksum, app_name, status):
+    """Update the Enqueued Task and others that matches the checksum."""
     EnqueuedTask.objects.filter(checksum=checksum).update(
         app_name=app_name,
         completed_at=timezone.now(),
