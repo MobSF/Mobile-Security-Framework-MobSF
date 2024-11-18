@@ -33,7 +33,7 @@ def async_analysis(checksum, app_name, func, *args):
         created_at__gte=timezone.now() - timedelta(minutes=60),
     ).exists()
     if recent_task_exists:
-        logger.info('Analysis already in progress')
+        logger.info('Analysis already completed or in progress')
         return HttpResponseRedirect('/tasks')
     # Clear old tasks
     queue_size = settings.QUEUE_MAX_SIZE
