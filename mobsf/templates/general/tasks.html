@@ -128,8 +128,13 @@
             addLoader(statusCell);
         } else {
             completedCell.textContent = new Date(task.completed_at).toLocaleString();
-            statusCell.classList.add("text-success");
-            statusCell.classList.remove("text-warning");
+            if (task.status === "Failed") {
+                statusCell.classList.add("text-danger");
+                statusCell.classList.remove("text-warning");
+            } else if (task.status === "Success") {
+                statusCell.classList.add("text-success");
+                statusCell.classList.remove("text-warning");
+            }
             if (task.status === "Success") {
                 addReportLink(task, statusCell);
             }

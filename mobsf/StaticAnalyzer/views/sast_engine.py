@@ -1,6 +1,7 @@
 # -*- coding: utf_8 -*-
 """SAST engine."""
 import logging
+import platform
 
 from libsast import Scanner
 from libsast.core_matcher.pattern_matcher import PatternMatcher
@@ -16,12 +17,27 @@ from mobsf.MobSF.utils import (
 logger = logging.getLogger(__name__)
 
 
+def get_multiprocessing_strategy():
+    """Get the multiprocessing strategy."""
+    if settings.MULTIPROCESSING:
+        # Settings take precedence
+        mp = settings.MULTIPROCESSING
+    elif platform.system() == 'Windows' and settings.ASYNC_ANALYSIS:
+        # Set to thread on Windows for async analysis
+        mp = 'thread'
+    elif settings.ASYNC_ANALYSIS:
+        # Set to billiard for async analysis
+        mp = 'billiard'
+    else:
+        # Defaults to processpoolexecutor for sync analysis
+        mp = 'default'
+    return mp
+
+
 class SastEngine:
     def __init__(self, options, path):
         self.root = path
-        mp = 'billiard' if settings.ASYNC_ANALYSIS else 'default'
-        # Override multiprocessing settings if set in the config explicitly
-        mp = settings.MULTIPROCESSING if settings.MULTIPROCESSING else mp
+        mp = get_multiprocessing_strategy()
         cpu_core = get_worker_count()
         options['cpu_core'] = cpu_core
         options['multiprocessing'] = mp
