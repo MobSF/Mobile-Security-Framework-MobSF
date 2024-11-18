@@ -125,7 +125,7 @@ def print_scan_subject(checksum, app_dic, man_data):
     """Log scan subject."""
     app_name = app_dic['real_name']
     pkg_name = man_data['packagename']
-    subject = ''
+    subject = 'Android App'
     if app_name and pkg_name:
         subject = f'{app_name} ({pkg_name})'
     elif pkg_name:
@@ -135,125 +135,134 @@ def print_scan_subject(checksum, app_dic, man_data):
     msg = f'Performing Static Analysis on: {subject}'
     logger.info(msg)
     append_scan_status(checksum, msg)
+    if subject == 'Failed':
+        subject = f'({subject})'
     return subject
 
 
 def apk_analysis_task(checksum, app_dic, rescan, queue=False):
     """APK Analysis Task."""
-    if queue:
-        settings.ASYNC_ANALYSIS = True
-    append_scan_status(checksum, 'init')
-    initialize_app_dic(checksum, app_dic, 'apk')
-    msg = 'Extracting APK'
-    logger.info(msg)
-    append_scan_status(checksum, msg)
-    app_dic['files'] = unzip(
-        checksum,
-        app_dic['app_path'],
-        app_dic['app_dir'])
-    logger.info('APK Extracted')
-    if not app_dic['files']:
-        # Can't Analyze APK, bail out.
-        msg = 'APK file is invalid or corrupt'
-        logger.error(msg)
+    context = None
+    try:
+        if queue:
+            settings.ASYNC_ANALYSIS = True
+        append_scan_status(checksum, 'init')
+        initialize_app_dic(checksum, app_dic, 'apk')
+        msg = 'Extracting APK'
+        logger.info(msg)
         append_scan_status(checksum, msg)
+        app_dic['files'] = unzip(
+            checksum,
+            app_dic['app_path'],
+            app_dic['app_dir'])
+        logger.info('APK Extracted')
+        if not app_dic['files']:
+            # Can't Analyze APK, bail out.
+            msg = 'APK file is invalid or corrupt'
+            logger.error(msg)
+            append_scan_status(checksum, msg)
+            if queue:
+                return update_enqueued_task(
+                    checksum, 'Failed', msg)
+            return context, msg
+        app_dic['zipped'] = 'apk'
+        app_dic['certz'] = get_hardcoded_cert_keystore(
+            checksum,
+            app_dic['files'])
+        # Parse APK with Androguard
+        andro_apk = parse_apk(
+            checksum,
+            app_dic['app_path'])
+        # Manifest Data
+        man_data, man_analysis = get_manifest_data(
+            checksum,
+            app_dic,
+            andro_apk)
+        # Get App name
+        app_dic['real_name'] = get_app_name(
+            andro_apk,
+            app_dic['app_dir'],
+            True)
+        # Print scan subject
+        subject = print_scan_subject(checksum, app_dic, man_data)
+        app_dic['playstore'] = get_app_details(
+            checksum,
+            man_data['packagename'])
+        # Malware Permission check
+        mal_perms = permissions.check_malware_permission(
+            checksum,
+            man_data['perm'])
+        man_analysis['malware_permissions'] = mal_perms
+        # Get icon
+        # apktool should run before this
+        get_icon_apk(andro_apk, app_dic)
+        elf_dict = library_analysis(
+            checksum,
+            app_dic['app_dir'],
+            'elf')
+        cert_dic = cert_info(
+            andro_apk,
+            app_dic,
+            man_data)
+        apkid_results = apkid.apkid_analysis(
+            checksum,
+            app_dic['app_path'])
+        trackers = Trackers.Trackers(
+            checksum,
+            app_dic['app_dir'],
+            app_dic['tools_dir']).get_trackers()
+        apk_2_java(
+            checksum,
+            app_dic['app_path'],
+            app_dic['app_dir'],
+            settings.DOWNLOADED_TOOLS_DIR)
+        dex_2_smali(
+            checksum,
+            app_dic['app_dir'],
+            app_dic['tools_dir'])
+        code_an_dic = code_analysis(
+            checksum,
+            app_dic['app_dir'],
+            app_dic['zipped'],
+            app_dic['manifest_file'],
+            man_data['perm'])
+        # Get the strings and metadata
+        get_strings_metadata(
+            checksum,
+            andro_apk,
+            app_dic['app_dir'],
+            elf_dict['elf_strings'],
+            app_dic['zipped'],
+            ['.java'],
+            code_an_dic)
+        # Firebase DB Check
+        code_an_dic['firebase'] = firebase_analysis(
+            checksum,
+            code_an_dic)
+        # Domain Extraction and Malware Check
+        code_an_dic['domains'] = MalwareDomainCheck().scan(
+            checksum,
+            code_an_dic['urls_list'])
+        context = save_get_ctx(
+            app_dic,
+            man_data,
+            man_analysis,
+            code_an_dic,
+            cert_dic,
+            elf_dict['elf_analysis'],
+            apkid_results,
+            trackers,
+            rescan,
+        )
         if queue:
             return update_enqueued_task(
-                checksum, 'Failed', 'Failed')
-        return None, msg
-    app_dic['zipped'] = 'apk'
-    app_dic['certz'] = get_hardcoded_cert_keystore(
-        checksum,
-        app_dic['files'])
-    # Parse APK with Androguard
-    andro_apk = parse_apk(
-        checksum,
-        app_dic['app_path'])
-    # Manifest Data
-    man_data, man_analysis = get_manifest_data(
-        checksum,
-        app_dic,
-        andro_apk)
-    # Get App name
-    app_dic['real_name'] = get_app_name(
-        andro_apk,
-        app_dic['app_dir'],
-        True)
-    # Print scan subject
-    subject = print_scan_subject(checksum, app_dic, man_data)
-    app_dic['playstore'] = get_app_details(
-        checksum,
-        man_data['packagename'])
-    # Malware Permission check
-    mal_perms = permissions.check_malware_permission(
-        checksum,
-        man_data['perm'])
-    man_analysis['malware_permissions'] = mal_perms
-    # Get icon
-    # apktool should run before this
-    get_icon_apk(andro_apk, app_dic)
-    elf_dict = library_analysis(
-        checksum,
-        app_dic['app_dir'],
-        'elf')
-    cert_dic = cert_info(
-        andro_apk,
-        app_dic,
-        man_data)
-    apkid_results = apkid.apkid_analysis(
-        checksum,
-        app_dic['app_path'])
-    trackers = Trackers.Trackers(
-        checksum,
-        app_dic['app_dir'],
-        app_dic['tools_dir']).get_trackers()
-    apk_2_java(
-        checksum,
-        app_dic['app_path'],
-        app_dic['app_dir'],
-        settings.DOWNLOADED_TOOLS_DIR)
-    dex_2_smali(
-        checksum,
-        app_dic['app_dir'],
-        app_dic['tools_dir'])
-    code_an_dic = code_analysis(
-        checksum,
-        app_dic['app_dir'],
-        app_dic['zipped'],
-        app_dic['manifest_file'],
-        man_data['perm'])
-    # Get the strings and metadata
-    get_strings_metadata(
-        checksum,
-        andro_apk,
-        app_dic['app_dir'],
-        elf_dict['elf_strings'],
-        app_dic['zipped'],
-        ['.java'],
-        code_an_dic)
-    # Firebase DB Check
-    code_an_dic['firebase'] = firebase_analysis(
-        checksum,
-        code_an_dic)
-    # Domain Extraction and Malware Check
-    code_an_dic['domains'] = MalwareDomainCheck().scan(
-        checksum,
-        code_an_dic['urls_list'])
-    context = save_get_ctx(
-        app_dic,
-        man_data,
-        man_analysis,
-        code_an_dic,
-        cert_dic,
-        elf_dict['elf_analysis'],
-        apkid_results,
-        trackers,
-        rescan,
-    )
-    if queue:
-        return update_enqueued_task(
-            checksum, subject, 'Success')
-    return context, None
+                checksum, subject, 'Success')
+        return context, None
+    except Exception as exp:
+        if queue:
+            return update_enqueued_task(
+                checksum, 'Failed', repr(exp))
+        return context, repr(exp)
 
 
 def generate_dynamic_context(request, app_dic, checksum, context, api):
@@ -294,86 +303,92 @@ def apk_analysis(request, app_dic, rescan, api):
 
 def src_analysis_task(checksum, app_dic, rescan, pro_type, queue=False):
     """Android ZIP Source Code Analysis Begins."""
-    if queue:
-        settings.ASYNC_ANALYSIS = True
-    cert_dic = {
-        'certificate_info': '',
-        'certificate_status': '',
-        'description': '',
-    }
-    app_dic['strings'] = []
-    app_dic['secrets'] = []
-    # Above fields are only available for APK and not ZIP
-    app_dic['zipped'] = pro_type
-    app_dic['certz'] = get_hardcoded_cert_keystore(
-        checksum,
-        app_dic['files'])
-    # Manifest Data
-    man_data, man_analysis = get_manifest_data(
-        checksum,
-        app_dic)
-    # Get app name
-    app_dic['real_name'] = get_app_name(
-        None,
-        app_dic['app_dir'],
-        False)
-    # Print scan subject
-    subject = print_scan_subject(checksum, app_dic, man_data)
-    app_dic['playstore'] = get_app_details(
-        checksum,
-        man_data['packagename'])
-    # Malware Permission check
-    mal_perms = permissions.check_malware_permission(
-        checksum,
-        man_data['perm'])
-    man_analysis['malware_permissions'] = mal_perms
-    # Get icon
-    get_icon_from_src(
-        app_dic,
-        man_data['icons'])
-    code_an_dic = code_analysis(
-        checksum,
-        app_dic['app_dir'],
-        app_dic['zipped'],
-        app_dic['manifest_file'],
-        man_data['perm'])
-    # Get the strings and metadata
-    get_strings_metadata(
-        checksum,
-        None,
-        app_dic['app_dir'],
-        None,
-        app_dic['zipped'],
-        ['.java', '.kt'],
-        code_an_dic)
-    # Firebase DB Check
-    code_an_dic['firebase'] = firebase_analysis(
-        checksum,
-        code_an_dic)
-    # Domain Extraction and Malware Check
-    code_an_dic['domains'] = MalwareDomainCheck().scan(
-        checksum,
-        code_an_dic['urls_list'])
-    # Extract Trackers from Domains
-    trackers = Trackers.Trackers(
-        checksum,
-        None,
-        app_dic['tools_dir']).get_trackers_domains_or_deps(
-            code_an_dic['domains'], [])
-    context = save_get_ctx(
-        app_dic,
-        man_data,
-        man_analysis,
-        code_an_dic,
-        cert_dic,
-        [],
-        {},
-        trackers,
-        rescan,
-    )
-    if queue:
-        return update_enqueued_task(
-            checksum, subject, 'Success')
+    context = None
+    try:
+        if queue:
+            settings.ASYNC_ANALYSIS = True
+        cert_dic = {
+            'certificate_info': '',
+            'certificate_status': '',
+            'description': '',
+        }
+        app_dic['strings'] = []
+        app_dic['secrets'] = []
+        # Above fields are only available for APK and not ZIP
+        app_dic['zipped'] = pro_type
+        app_dic['certz'] = get_hardcoded_cert_keystore(
+            checksum,
+            app_dic['files'])
+        # Manifest Data
+        man_data, man_analysis = get_manifest_data(
+            checksum,
+            app_dic)
+        # Get app name
+        app_dic['real_name'] = get_app_name(
+            None,
+            app_dic['app_dir'],
+            False)
+        # Print scan subject
+        subject = print_scan_subject(checksum, app_dic, man_data)
+        app_dic['playstore'] = get_app_details(
+            checksum,
+            man_data['packagename'])
+        # Malware Permission check
+        mal_perms = permissions.check_malware_permission(
+            checksum,
+            man_data['perm'])
+        man_analysis['malware_permissions'] = mal_perms
+        # Get icon
+        get_icon_from_src(
+            app_dic,
+            man_data['icons'])
+        code_an_dic = code_analysis(
+            checksum,
+            app_dic['app_dir'],
+            app_dic['zipped'],
+            app_dic['manifest_file'],
+            man_data['perm'])
+        # Get the strings and metadata
+        get_strings_metadata(
+            checksum,
+            None,
+            app_dic['app_dir'],
+            None,
+            app_dic['zipped'],
+            ['.java', '.kt'],
+            code_an_dic)
+        # Firebase DB Check
+        code_an_dic['firebase'] = firebase_analysis(
+            checksum,
+            code_an_dic)
+        # Domain Extraction and Malware Check
+        code_an_dic['domains'] = MalwareDomainCheck().scan(
+            checksum,
+            code_an_dic['urls_list'])
+        # Extract Trackers from Domains
+        trackers = Trackers.Trackers(
+            checksum,
+            None,
+            app_dic['tools_dir']).get_trackers_domains_or_deps(
+                code_an_dic['domains'], [])
+        context = save_get_ctx(
+            app_dic,
+            man_data,
+            man_analysis,
+            code_an_dic,
+            cert_dic,
+            [],
+            {},
+            trackers,
+            rescan,
+        )
+        if queue:
+            return update_enqueued_task(
+                checksum, subject, 'Success')
+    except Exception as exp:
+        if queue:
+            return update_enqueued_task(
+                checksum, 'Failed', repr(exp))
     return context
 
 

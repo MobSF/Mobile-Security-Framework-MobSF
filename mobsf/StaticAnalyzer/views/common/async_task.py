@@ -27,10 +27,10 @@ logger = logging.getLogger(__name__)
 
 def async_analysis(checksum, app_name, func, *args):
     # Check if there is any task with the same checksum
-    # created within the last 1 minute
+    # created within the last 60 minute
     recent_task_exists = EnqueuedTask.objects.filter(
         checksum=checksum,
-        created_at__gte=timezone.now() - timedelta(minutes=1),
+        created_at__gte=timezone.now() - timedelta(minutes=60),
     ).exists()
     if recent_task_exists:
         logger.info('Analysis already in progress')
@@ -74,10 +74,11 @@ def update_enqueued_task(checksum, app_name, status):
 
 def get_live_status(enq):
     """Get Live Status of the Task."""
-    if enq.status not in {'Success', 'Failed'}:
-        logs = get_scan_logs(enq.checksum)
-        if logs:
-            return logs[-1]
+    if enq.status == 'Success' or enq.app_name == 'Failed':
+        return enq.status
+    logs = get_scan_logs(enq.checksum)
+    if logs:
+        return logs[-1]
     return enq.status
 
 
