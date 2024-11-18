@@ -20,10 +20,14 @@ class SastEngine:
     def __init__(self, options, path):
         self.root = path
         mp = 'billiard' if settings.ASYNC_ANALYSIS else 'default'
-        # Override multiprocessing settings if set in the config
+        # Override multiprocessing settings if set in the config explicitly
         mp = settings.MULTIPROCESSING if settings.MULTIPROCESSING else mp
-        options['cpu_core'] = get_worker_count()
+        cpu_core = get_worker_count()
+        options['cpu_core'] = cpu_core
         options['multiprocessing'] = mp
+        if mp != 'default':
+            logger.debug(
+                'Multiprocessing strategy set to %s with (%d) CPU cores', mp, cpu_core)
         self.scan_paths = Scanner(options, [path]).get_scan_files()
         self.pattern_matcher = PatternMatcher(options)
 

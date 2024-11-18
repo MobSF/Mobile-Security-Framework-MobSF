@@ -52,10 +52,8 @@ services:
       - POSTGRES_DB=mobsf
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
-      - MOBSF_MULTIPROCESSING=thread
     depends_on:
-      postgres:
-        condition: service_healthy
+      - postgres
     networks:
       - mobsf_network
 
@@ -80,10 +78,8 @@ services:
       timeout: 10s
       retries: 5
     depends_on:
-      postgres:
-        condition: service_healthy
-      djangoq:
-        condition: service_started
+      - postgres
+      - djangoq
     networks:
       - mobsf_network
     extra_hosts:

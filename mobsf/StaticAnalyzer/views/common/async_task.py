@@ -19,6 +19,7 @@ from mobsf.MobSF.views.authentication import (
 )
 from mobsf.MobSF.utils import (
     append_scan_status,
+    get_scan_logs,
 )
 
 logger = logging.getLogger(__name__)
@@ -70,6 +71,15 @@ def update_enqueued_task(checksum, app_name, status):
     return True
 
 
+def get_live_status(enq):
+    """Get Live Status of the Task."""
+    if enq.status not in {'Success', 'Failed'}:
+        logs = get_scan_logs(enq.checksum)
+        if logs:
+            return logs[-1]
+    return enq.status
+
+
 @login_required
 @require_http_methods(['POST', 'GET'])
 def list_tasks(request):
@@ -85,7 +95,7 @@ def list_tasks(request):
                 'checksum': enq.checksum,
                 'created_at': enq.created_at,
                 'completed_at': enq.completed_at,
-                'status': enq.status,
+                'status': get_live_status(enq),
             })
         return JsonResponse(task_data, safe=False)
     context = {
