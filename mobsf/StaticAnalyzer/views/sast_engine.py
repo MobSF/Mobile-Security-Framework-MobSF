@@ -99,9 +99,8 @@ class SastEngine:
 class ChoiceEngine:
     def __init__(self, options, path):
         self.root = path
-        mp = 'billiard' if settings.ASYNC_ANALYSIS else 'default'
         options['cpu_core'] = get_worker_count()
-        options['multiprocessing'] = mp
+        options['multiprocessing'] = get_multiprocessing_strategy()
         self.scan_paths = Scanner(options, [path]).get_scan_files()
         self.choice_matcher = ChoiceMatcher(options)
 

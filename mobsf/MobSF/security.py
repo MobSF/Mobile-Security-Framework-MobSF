@@ -217,4 +217,8 @@ def sanitize_filename(filename):
     # Remove any characters
     # that are not alphanumeric, hyphens, underscores, or dots
     safe_filename = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
+    # Merge multiple underscores into one
+    safe_filename = re.sub(r'__+', '_', safe_filename)
+    # Remove leading and trailing underscores
+    safe_filename = safe_filename.strip('_')
     return safe_filename
