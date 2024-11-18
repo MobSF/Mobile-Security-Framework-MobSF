@@ -1,0 +1,12 @@
+name: "CodeQL config"
+
+queries:
+  - uses: security-extended
+
+query-filters:
+  - exclude:
+      id: py/path-injection  # To much false positives
+
+paths-ignore:
+  - "**/.git/**"
+  - "**/.github/**"

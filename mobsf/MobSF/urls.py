@@ -34,6 +34,7 @@ from mobsf.MobSF.views.api import api_ios_dynamic_analysis as api_idz
 from mobsf.StaticAnalyzer import tests
 from mobsf.StaticAnalyzer.views.common import (
     appsec,
+    async_task,
     pdf,
     shared_func,
     suppression,
@@ -204,7 +205,9 @@ if settings.API_ONLY == '0':
         re_path(r'^error/$', home.error, name='error'),
         re_path(r'^zip_format/$', home.zip_format),
         re_path(r'^dynamic_analysis/$', home.dynamic_analysis, name='dynamic'),
-
+        re_path(r'^tasks$',
+                async_task.list_tasks,
+                name='list_tasks'),
         # Static Analysis
         # Android
         re_path(fr'^static_analyzer/{checksum_regex}/$',

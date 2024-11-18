@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum
 
 from django.db import models
+from django.utils import timezone
 
 
 class DjangoPermissions(Enum):
@@ -167,3 +168,16 @@ class SuppressFindings(models.Model):
     SUPPRESS_RULE_ID = models.TextField(default=[])
     SUPPRESS_FILES = models.TextField(default={})
     SUPPRESS_TYPE = models.TextField(default='')
+
+
+class EnqueuedTask(models.Model):
+    task_id = models.CharField(max_length=255)
+    checksum = models.CharField(max_length=255)
+    file_name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=50, default='Enqueued')
+    completed_at = models.DateTimeField(null=True)
+    app_name = models.CharField(max_length=255, default='')
+
+    def __str__(self):
+        return f'{self.name} ({self.status})'

@@ -102,7 +102,6 @@ def get_context_from_analysis(app_dic,
                               cert_dic,
                               bin_anal,
                               apk_id,
-                              behaviour_an,
                               trackers) -> dict:
     """Get the context for APK/ZIP from analysis results."""
     try:
@@ -157,7 +156,7 @@ def get_context_from_analysis(app_dic,
             'files': app_dic['files'],
             'exported_count': man_an_dic['exported_cnt'],
             'apkid': apk_id,
-            'behaviour': behaviour_an,
+            'behaviour': code_an_dic['behaviour'],
             'trackers': trackers,
             'playstore_details': app_dic['playstore'],
             'secrets': code_an_dic['secrets'],
@@ -178,7 +177,6 @@ def save_or_update(update_type,
                    cert_dic,
                    bin_anal,
                    apk_id,
-                   behaviour_an,
                    trackers) -> None:
     """Save/Update an APK/ZIP DB entry."""
     try:
@@ -223,7 +221,7 @@ def save_or_update(update_type,
             'FILES': app_dic['files'],
             'EXPORTED_COUNT': man_an_dic['exported_cnt'],
             'APKID': apk_id,
-            'QUARK': behaviour_an,
+            'QUARK': code_an_dic['behaviour'],
             'TRACKERS': trackers,
             'PLAYSTORE_DETAILS': app_dic['playstore'],
             'NETWORK_SECURITY': man_an_dic['network_security'],
@@ -255,7 +253,7 @@ def save_or_update(update_type,
         append_scan_status(app_dic['md5'], msg, repr(exp))
 
 
-def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, behaviour, trk, rscn):
+def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, trk, rscn):
     # SAVE TO DB
     if rscn:
         msg = 'Updating Database...'
@@ -277,7 +275,6 @@ def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, behaviour, trk, rscn)
         cert,
         elf,
         apkid,
-        behaviour,
         trk,
     )
     return get_context_from_analysis(
@@ -288,6 +285,5 @@ def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, behaviour, trk, rscn)
         cert,
         elf,
         apkid,
-        behaviour,
         trk,
     )

@@ -33,6 +33,7 @@ from mobsf.MobSF.utils import (
     python_dict,
 )
 from mobsf.MobSF.init import api_key
+from mobsf.MobSF.security import sanitize_filename
 from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
@@ -430,7 +431,7 @@ def download_binary(request, checksum, api=False):
                 status=HTTP_STATUS_404)
         return file_download(
             dwd_file,
-            filename,
+            sanitize_filename(robj.FILE_NAME),
             allowed_exts[file_ext])
     except Exception:
         logger.exception('Download Binary Failed')

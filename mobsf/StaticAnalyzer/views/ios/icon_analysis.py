@@ -19,9 +19,10 @@ from mobsf.MobSF.utils import (
 logger = logging.getLogger(__name__)
 
 
-def get_icon_from_ipa(app_dict, binary):
+def get_icon_from_ipa(app_dict):
     """Get app icon from IPA."""
     try:
+        binary = app_dict['infoplist'].get('bin')
         md5 = app_dict['md5_hash']
         bin_dir = app_dict['bin_dir']
         msg = 'Fetching IPA icon path'
@@ -37,8 +38,8 @@ def get_icon_from_ipa(app_dict, binary):
             return
         icon_file = icons.pop()
         outfile = Path(settings.DWD_DIR) / f'{md5}-icon.png'
+        app_dict['icon_path'] = outfile.name
         tools_dir = Path(settings.BASE_DIR) / 'StaticAnalyzer' / 'tools' / 'ios'
-        cgbipng_bin = None
         arch = platform.machine()
         system = platform.system()
         # Uncrush PNG. CgBI -> PNG
@@ -54,24 +55,27 @@ def get_icon_from_ipa(app_dict, binary):
                     raise ValueError('PNG is not CgBI')
             except Exception:
                 shutil.copy2(icon_file, outfile.as_posix())
-        elif system == 'Windows' and arch in ('AMD64', 'x86'):
-            cgbipng_bin = 'CgbiPngFix.exe'
-        elif system == 'Linux' and arch == 'x86_64':
-            cgbipng_bin = 'CgbiPngFix_amd64'
-        elif system == 'Linux' and arch == 'aarch64':
-            cgbipng_bin = 'CgbiPngFix_arm64'
-        if cgbipng_bin:
-            cbin = tools_dir / 'CgbiPngFix' / cgbipng_bin
-            args = [cbin.as_posix(), '-i',
-                    icon_file, '-o', outfile.as_posix()]
-            try:
-                out = subprocess.run(args, capture_output=True)
-            except Exception:
-                # Fails or PNG is not crushed
-                shutil.copy2(icon_file, outfile.as_posix())
         else:
-            shutil.copy2(icon_file, outfile.as_posix())
-        app_dict['icon_path'] = outfile.name
+            # Windows/Linux
+            cgbipng_bin = None
+            if system == 'Windows' and arch in ('AMD64', 'x86'):
+                cgbipng_bin = 'CgbiPngFix.exe'
+            elif system == 'Linux' and arch == 'x86_64':
+                cgbipng_bin = 'CgbiPngFix_amd64'
+            elif system == 'Linux' and arch == 'aarch64':
+                cgbipng_bin = 'CgbiPngFix_arm64'
+            if cgbipng_bin:
+                cbin = tools_dir / 'CgbiPngFix' / cgbipng_bin
+                args = [cbin.as_posix(), '-i',
+                        icon_file, '-o', outfile.as_posix()]
+                try:
+                    out = subprocess.run(args, capture_output=True)
+                except Exception:
+                    # Fails or PNG is not crushed
+                    shutil.copy2(icon_file, outfile.as_posix())
+            else:
+                logger.warning('CgbiPngFix not available for %s %s', system, arch)
+                shutil.copy2(icon_file, outfile.as_posix())
     except Exception as exp:
         msg = 'Error Fetching IPA icon'
         logger.exception(msg)
