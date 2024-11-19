@@ -160,7 +160,7 @@ def send_response(data, api=False):
         return data
     return HttpResponse(
         json.dumps(data),
-        content_type='application/json')
+        content_type='application/json; charset=utf-8')
 
 
 def invalid_params(api=False):
