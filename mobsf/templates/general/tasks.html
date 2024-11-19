@@ -5,6 +5,7 @@
       sidebar-collapse
 {% endblock %}
 {% block extra_css %}
+<link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
 <style>
     /* Loader Spinner */
     .loader {
@@ -70,6 +71,7 @@
 </div>
 {% endblock %}
 {% block extra_scripts %}
+<script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script>
    document.addEventListener("DOMContentLoaded", function () {
     const tasksTableBody = document.querySelector("#tasks-table tbody");
@@ -224,6 +226,27 @@
 
     // Periodically update statuses
     setInterval(updateTaskStatuses, 5000); // Update every 5 seconds
+
+    function getQueryParam(paramName) {
+        const urlParams = new URLSearchParams(window.location.search); // Get the query string
+        return urlParams.has(paramName) ? urlParams.get(paramName) : null;
+    }
+
+    const q = getQueryParam('q');
+
+    if (q && q === 'completed') {
+        Swal.fire(
+            'Scan Task Recently Completed!',
+            'The scan was recently completed.',
+            'warning'
+        )
+    } else if (q && q === 'queued') {
+        Swal.fire(
+            'Scan Task Already Added!',
+            'This scan task has already been added to the scan queue.',
+            'warning'
+        )
+    }
 });
 
     </script>

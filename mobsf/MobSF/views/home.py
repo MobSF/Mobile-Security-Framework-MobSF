@@ -532,10 +532,6 @@ def delete_scan(request, api=False):
         scan = RecentScansDB.objects.filter(MD5=md5_hash)
         if not scan.exists():
             return send_response({'deleted': 'Scan not found in Database'}, api)
-        RecentScansDB.objects.filter(MD5=md5_hash).delete()
-        StaticAnalyzerAndroid.objects.filter(MD5=md5_hash).delete()
-        StaticAnalyzerIOS.objects.filter(MD5=md5_hash).delete()
-        StaticAnalyzerWindows.objects.filter(MD5=md5_hash).delete()
         if settings.ASYNC_ANALYSIS:
             # Handle Async Tasks
             et = EnqueuedTask.objects.filter(checksum=md5_hash).first()
@@ -543,6 +539,12 @@ def delete_scan(request, api=False):
                 # Queue is in progress, cannot delete the task
                 return send_response({
                     'deleted': 'A scan can only be deleted after it is completed'}, api)
+            EnqueuedTask.objects.filter(checksum=md5_hash).all().delete()
+        # Delete all related DB entries
+        RecentScansDB.objects.filter(MD5=md5_hash).delete()
+        StaticAnalyzerAndroid.objects.filter(MD5=md5_hash).delete()
+        StaticAnalyzerIOS.objects.filter(MD5=md5_hash).delete()
+        StaticAnalyzerWindows.objects.filter(MD5=md5_hash).delete()
         # Delete Upload Dir Contents
         app_upload_dir = os.path.join(settings.UPLD_DIR, md5_hash)
         if is_dir_exists(app_upload_dir):

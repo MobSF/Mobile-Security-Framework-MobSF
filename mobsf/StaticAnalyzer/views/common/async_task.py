@@ -48,11 +48,11 @@ def async_analysis(checksum, app_name, func, *args):
         if scan_completed:
             # scan already completed recently
             logger.warning('Analysis already completed in the last 60 minutes')
-            return HttpResponseRedirect('/tasks')
+            return HttpResponseRedirect('/tasks?q=completed')
         elif active_recently:
             # scan not completed but active recently
             logger.warning('Analysis already enqueued in the last 60 minutes')
-            return HttpResponseRedirect('/tasks')
+            return HttpResponseRedirect('/tasks?q=queued')
 
     # Clear old tasks
     queue_size = settings.QUEUE_MAX_SIZE
