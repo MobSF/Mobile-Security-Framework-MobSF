@@ -140,82 +140,91 @@ def get_scan_subject(app_dic, bin_dict):
     """Get Scan Subject."""
     app_name = None
     pkg_name = None
+    subject = 'iOS App'
     if bin_dict.get('bin_path'):
         app_name = bin_dict['bin_path'].name if bin_dict['bin_path'] else None
     if app_dic.get('infoplist'):
         pkg_name = app_dic['infoplist'].get('id')
 
     if app_name and pkg_name:
-        return f'{app_name} ({pkg_name})'
+        subject = f'{app_name} ({pkg_name})'
     elif pkg_name:
-        return pkg_name
+        subject = pkg_name
     elif app_name:
-        return app_name
-    else:
-        return 'iOS Binary'
+        subject = app_name
+    if subject == 'Failed':
+        subject = f'({subject})'
+    return subject
 
 
 def ipa_analysis_task(checksum, app_dic, rescan, queue=False):
     """IPA Analysis Task."""
-    if queue:
-        settings.ASYNC_ANALYSIS = True
-    scan_type = 'ipa'
-    append_scan_status(checksum, 'init')
-    msg = 'iOS Binary (IPA) Analysis Started'
-    logger.info(msg)
-    append_scan_status(checksum, msg)
-    initialize_app_dic(app_dic, checksum, scan_type)
+    context = None
+    try:
+        if queue:
+            settings.ASYNC_ANALYSIS = True
+        scan_type = 'ipa'
+        append_scan_status(checksum, 'init')
+        msg = 'iOS Binary (IPA) Analysis Started'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
+        initialize_app_dic(app_dic, checksum, scan_type)
 
-    if not extract_and_check_ipa(checksum, app_dic):
-        msg = ('IPA is malformed! MobSF cannot find Payload directory')
-        append_scan_status(checksum, 'IPA is malformed', msg)
+        if not extract_and_check_ipa(checksum, app_dic):
+            msg = ('IPA is malformed! MobSF cannot find Payload directory')
+            append_scan_status(checksum, 'IPA is malformed', msg)
+            if queue:
+                return update_enqueued_task(
+                    checksum, 'Failed', msg)
+            return context, msg
+        common_analysis(scan_type, app_dic, checksum)
+
+        # IPA Binary Analysis
+        bin_dict = binary_analysis(
+            checksum,
+            app_dic['bin_dir'],
+            app_dic['tools_dir'],
+            app_dic['app_dir'],
+            app_dic['infoplist'].get('bin'))
+        # Analyze dylibs and frameworks
+        lb = library_analysis(
+            checksum,
+            app_dic['bin_dir'],
+            'macho')
+        bin_dict['dylib_analysis'] = lb['macho_analysis']
+        bin_dict['framework_analysis'] = lb['framework_analysis']
+        # Extract String metadata from binary
+        code_dict = get_strings_metadata(
+            app_dic,
+            bin_dict,
+            app_dic['all_files'],
+            lb['macho_strings'])
+        # Domain Extraction and Malware Check
+        code_dict['domains'] = MalwareDomainCheck().scan(
+            checksum,
+            code_dict['urls_list'])
+        # Get Icon
+        get_icon_from_ipa(app_dic)
+        # Firebase and Trackers
+        common_firebase_and_trackers(code_dict, app_dic, checksum)
+
+        code_dict['api'] = {}
+        code_dict['code_anal'] = {}
+        context = save_get_ctx(
+            app_dic,
+            code_dict,
+            bin_dict,
+            rescan)
+        if queue:
+            subject = get_scan_subject(app_dic, bin_dict)
+            return update_enqueued_task(
+                checksum, subject, 'Success')
+        return context, None
+    except Exception as exp:
         if queue:
             return update_enqueued_task(
-                checksum, 'Failed', 'Failed')
-        return None, msg
-    common_analysis(scan_type, app_dic, checksum)
-
-    # IPA Binary Analysis
-    bin_dict = binary_analysis(
-        checksum,
-        app_dic['bin_dir'],
-        app_dic['tools_dir'],
-        app_dic['app_dir'],
-        app_dic['infoplist'].get('bin'))
-    # Analyze dylibs and frameworks
-    lb = library_analysis(
-        checksum,
-        app_dic['bin_dir'],
-        'macho')
-    bin_dict['dylib_analysis'] = lb['macho_analysis']
-    bin_dict['framework_analysis'] = lb['framework_analysis']
-    # Extract String metadata from binary
-    code_dict = get_strings_metadata(
-        app_dic,
-        bin_dict,
-        app_dic['all_files'],
-        lb['macho_strings'])
-    # Domain Extraction and Malware Check
-    code_dict['domains'] = MalwareDomainCheck().scan(
-        checksum,
-        code_dict['urls_list'])
-    # Get Icon
-    get_icon_from_ipa(app_dic)
-    # Firebase and Trackers
-    common_firebase_and_trackers(code_dict, app_dic, checksum)
-
-    code_dict['api'] = {}
-    code_dict['code_anal'] = {}
-    context = save_get_ctx(
-        app_dic,
-        code_dict,
-        bin_dict,
-        rescan)
-    if queue:
-        subject = get_scan_subject(app_dic, bin_dict)
-        return update_enqueued_task(
-            checksum, subject, 'Success')
-    return context, None
+                checksum, 'Failed', repr(exp))
+        return context, repr(exp)
 
 
 def generate_dynamic_context(request, app_dic, context, checksum, api):
@@ -254,51 +263,57 @@ def ipa_analysis(request, app_dic, rescan, api):
 
 def ios_analysis_task(checksum, app_dic, rescan, queue=False):
     """IOS Analysis Task."""
-    if queue:
-        settings.ASYNC_ANALYSIS = True
-    scan_type = 'zip'
-    logger.info('iOS Source Code Analysis Started')
-    initialize_app_dic(app_dic, checksum, scan_type)
+    context = None
+    try:
+        if queue:
+            settings.ASYNC_ANALYSIS = True
+        scan_type = 'zip'
+        logger.info('iOS Source Code Analysis Started')
+        initialize_app_dic(app_dic, checksum, scan_type)
 
-    # ANALYSIS BEGINS - Already Unzipped
-    # append_scan_status init done in android static analyzer
-    common_analysis(scan_type, app_dic, checksum)
+        # ANALYSIS BEGINS - Already Unzipped
+        # append_scan_status init done in android static analyzer
+        common_analysis(scan_type, app_dic, checksum)
 
-    # IOS Source Code Analysis
-    code_dict = ios_source_analysis(
-        checksum,
-        app_dic['app_dir'])
-    # Extract Strings and entropies from source code
-    ios_strs = strings_and_entropies(
-        checksum,
-        Path(app_dic['app_dir']),
-        ['.swift', '.m', '.h', '.plist', '.json'])
-    if ios_strs['secrets']:
-        app_dic['secrets'].extend(list(ios_strs['secrets']))
-    # Get App Icon
-    get_icon_source(app_dic)
-    # Firebase and Trackers
-    common_firebase_and_trackers(code_dict, app_dic, checksum)
+        # IOS Source Code Analysis
+        code_dict = ios_source_analysis(
+            checksum,
+            app_dic['app_dir'])
+        # Extract Strings and entropies from source code
+        ios_strs = strings_and_entropies(
+            checksum,
+            Path(app_dic['app_dir']),
+            ['.swift', '.m', '.h', '.plist', '.json'])
+        if ios_strs['secrets']:
+            app_dic['secrets'].extend(list(ios_strs['secrets']))
+        # Get App Icon
+        get_icon_source(app_dic)
+        # Firebase and Trackers
+        common_firebase_and_trackers(code_dict, app_dic, checksum)
 
-    bin_dict = {
-        'checksec': {},
-        'libraries': [],
-        'bin_code_analysis': {},
-        'strings': list(ios_strs['strings']),
-        'bin_info': {},
-        'bin_type': code_dict['source_type'],
-        'dylib_analysis': {},
-        'framework_analysis': {},
-    }
-    context = save_get_ctx(
-        app_dic,
-        code_dict,
-        bin_dict,
-        rescan)
-    if queue:
-        subject = get_scan_subject(app_dic, bin_dict)
-        return update_enqueued_task(
-            checksum, subject, 'Success')
+        bin_dict = {
+            'checksec': {},
+            'libraries': [],
+            'bin_code_analysis': {},
+            'strings': list(ios_strs['strings']),
+            'bin_info': {},
+            'bin_type': code_dict['source_type'],
+            'dylib_analysis': {},
+            'framework_analysis': {},
+        }
+        context = save_get_ctx(
+            app_dic,
+            code_dict,
+            bin_dict,
+            rescan)
+        if queue:
+            subject = get_scan_subject(app_dic, bin_dict)
+            return update_enqueued_task(
+                checksum, subject, 'Success')
+    except Exception as exp:
+        if queue:
+            return update_enqueued_task(
+                checksum, 'Failed', repr(exp))
     return context
 
 

@@ -1,6 +1,8 @@
 """Views to handle asynchronous tasks."""
 import logging
-from datetime import timedelta
+from datetime import (
+    timedelta,
+)
 
 from django.utils import timezone
 from django.shortcuts import render
@@ -13,7 +15,10 @@ from django.views.decorators.http import require_http_methods
 
 from django_q.tasks import async_task
 
-from mobsf.StaticAnalyzer.models import EnqueuedTask
+from mobsf.StaticAnalyzer.models import (
+    EnqueuedTask,
+    RecentScansDB,
+)
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
@@ -26,15 +31,29 @@ logger = logging.getLogger(__name__)
 
 
 def async_analysis(checksum, app_name, func, *args):
-    # Check if there is any task with the same checksum
-    # created within the last 1 minute
-    recent_task_exists = EnqueuedTask.objects.filter(
+    """Async Analysis Task."""
+    # Check if the task is already completed
+    recent = RecentScansDB.objects.filter(MD5=checksum)
+    scan_completed = recent[0].APP_NAME or recent[0].PACKAGE_NAME
+    # Check if the task is updated within the last 60 minutes
+    active_recently = recent[0].TIMESTAMP >= timezone.now() - timedelta(minutes=60)
+    # Check if the task is already enqueued within the last 60 minutes
+    queued_recently = EnqueuedTask.objects.filter(
         checksum=checksum,
-        created_at__gte=timezone.now() - timedelta(minutes=1),
+        created_at__gte=timezone.now() - timedelta(minutes=60),
     ).exists()
-    if recent_task_exists:
-        logger.info('Analysis already in progress')
-        return HttpResponseRedirect('/tasks')
+
+    # Additional checks on recent queue
+    if queued_recently:
+        if scan_completed:
+            # scan already completed recently
+            logger.warning('Analysis already completed in the last 60 minutes')
+            return HttpResponseRedirect('/tasks?q=completed')
+        elif active_recently:
+            # scan not completed but active recently
+            logger.warning('Analysis already enqueued in the last 60 minutes')
+            return HttpResponseRedirect('/tasks?q=queued')
+
     # Clear old tasks
     queue_size = settings.QUEUE_MAX_SIZE
     task_count = EnqueuedTask.objects.count()
@@ -74,10 +93,11 @@ def update_enqueued_task(checksum, app_name, status):
 
 def get_live_status(enq):
     """Get Live Status of the Task."""
-    if enq.status not in {'Success', 'Failed'}:
-        logs = get_scan_logs(enq.checksum)
-        if logs:
-            return logs[-1]
+    if enq.status == 'Success' or enq.app_name == 'Failed':
+        return enq.status
+    logs = get_scan_logs(enq.checksum)
+    if logs:
+        return logs[-1]
     return enq.status
 
 
