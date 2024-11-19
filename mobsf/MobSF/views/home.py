@@ -539,8 +539,8 @@ def delete_scan(request, api=False):
                 # Queue is in progress, cannot delete the task
                 return send_response({
                     'deleted': 'A scan can only be deleted after it is completed'}, api)
-            EnqueuedTask.objects.filter(checksum=md5_hash).all().delete()
         # Delete all related DB entries
+        EnqueuedTask.objects.filter(checksum=md5_hash).all().delete()
         RecentScansDB.objects.filter(MD5=md5_hash).delete()
         StaticAnalyzerAndroid.objects.filter(MD5=md5_hash).delete()
         StaticAnalyzerIOS.objects.filter(MD5=md5_hash).delete()
