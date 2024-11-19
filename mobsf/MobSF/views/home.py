@@ -249,6 +249,11 @@ def zip_format(request):
     return render(request, template, context)
 
 
+def robots_txt(request):
+    content = 'User-agent: *\nDisallow: /*/\nAllow: /*\n'
+    return HttpResponse(content, content_type='text/plain')
+
+
 @login_required
 def dynamic_analysis(request):
     """Dynamic Analysis Landing."""
@@ -305,6 +310,7 @@ def recent_scans(request, page_size=10, page_number=1):
         'entries': entries,
         'version': settings.MOBSF_VER,
         'page_obj': page_obj,
+        'async_scans': settings.ASYNC_ANALYSIS,
     }
     template = 'general/recent.html'
     return render(request, template, context)

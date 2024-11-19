@@ -204,6 +204,7 @@ if settings.API_ONLY == '0':
         re_path(r'^status/$', home.scan_status, name='status'),
         re_path(r'^error/$', home.error, name='error'),
         re_path(r'^zip_format/$', home.zip_format),
+        re_path(r'^robots.txt$', home.robots_txt),
         re_path(r'^dynamic_analysis/$', home.dynamic_analysis, name='dynamic'),
         re_path(r'^tasks$',
                 async_task.list_tasks,

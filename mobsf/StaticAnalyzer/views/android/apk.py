@@ -83,13 +83,17 @@ from mobsf.MobSF.views.authorization import (
 logger = logging.getLogger(__name__)
 
 
-def initialize_app_dic(checksum, app_dic, file_ext):
+def initialize_app_dic(app_dic, file_ext):
+    checksum = app_dic['md5']
     app_dic['app_file'] = f'{checksum}.{file_ext}'
     app_dic['app_path'] = (app_dic['app_dir'] / app_dic['app_file']).as_posix()
     app_dic['app_dir'] = app_dic['app_dir'].as_posix() + '/'
+    return checksum
+
+
+def get_size_and_hashes(app_dic):
     app_dic['size'] = str(file_size(app_dic['app_path'])) + 'MB'
-    app_dic['sha1'], app_dic['sha256'] = hash_gen(checksum, app_dic['app_path'])
-    return app_dic
+    app_dic['sha1'], app_dic['sha256'] = hash_gen(app_dic['md5'], app_dic['app_path'])
 
 
 def get_manifest_data(checksum, app_dic, andro_apk=None):
@@ -147,7 +151,7 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
         if queue:
             settings.ASYNC_ANALYSIS = True
         append_scan_status(checksum, 'init')
-        initialize_app_dic(checksum, app_dic, 'apk')
+        get_size_and_hashes(app_dic)
         msg = 'Extracting APK'
         logger.info(msg)
         append_scan_status(checksum, msg)
@@ -281,7 +285,7 @@ def generate_dynamic_context(request, app_dic, checksum, context, api):
 
 def apk_analysis(request, app_dic, rescan, api):
     """APK Analysis."""
-    checksum = app_dic['md5']
+    checksum = initialize_app_dic(app_dic, 'apk')
     db_entry = StaticAnalyzerAndroid.objects.filter(MD5=checksum)
     if db_entry.exists() and not rescan:
         context = get_context_from_db_entry(db_entry)
@@ -402,7 +406,7 @@ def generate_dynamic_src_context(request, context, api):
 
 def src_analysis(request, app_dic, rescan, api):
     """Source Code Analysis."""
-    checksum = app_dic['md5']
+    checksum = initialize_app_dic(app_dic, 'zip')
     ret = f'/static_analyzer_ios/{checksum}/'
     db_entry = StaticAnalyzerAndroid.objects.filter(
         MD5=checksum)
@@ -416,7 +420,7 @@ def src_analysis(request, app_dic, rescan, api):
     else:
         # Initialize for both Android and iOS Source Analysis
         append_scan_status(checksum, 'init')
-        initialize_app_dic(checksum, app_dic, 'zip')
+        get_size_and_hashes(app_dic)
         msg = 'Extracting ZIP'
         logger.info(msg)
         append_scan_status(checksum, msg)
