@@ -351,6 +351,7 @@ Q_CLUSTER = {
     'label': 'scan_queue',
     'orm': 'default',
     'max_attempts': 2,
+    'save_limit': -1,
 }
 QUEUE_MAX_SIZE = 100
 ASYNC_ANALYSIS = bool(os.getenv('MOBSF_ASYNC_ANALYSIS', '0') == '1')

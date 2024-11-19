@@ -68,12 +68,18 @@ from mobsf.MobSF.views.authorization import (
 logger = logging.getLogger(__name__)
 
 
-def initialize_app_dic(app_dic, checksum, scan_type):
+def initialize_app_dic(app_dic, file_ext):
     """Initialize App Dictionary."""
-    app_dic['app_file'] = f'{checksum}.{scan_type}'
+    checksum = app_dic['md5_hash']
+    app_dic['app_file'] = f'{checksum}.{file_ext}'
     app_dic['app_path'] = (app_dic['app_dirp'] / app_dic['app_file']).as_posix()
+    return checksum
+
+
+def get_size_and_hashes(app_dic):
     app_dic['size'] = str(file_size(app_dic['app_path'])) + 'MB'
-    app_dic['sha1'], app_dic['sha256'] = hash_gen(checksum, app_dic['app_path'])
+    app_dic['sha1'], app_dic['sha256'] = hash_gen(
+        app_dic['md5_hash'], app_dic['app_path'])
 
 
 def extract_and_check_ipa(checksum, app_dic):
@@ -163,12 +169,11 @@ def ipa_analysis_task(checksum, app_dic, rescan, queue=False):
     try:
         if queue:
             settings.ASYNC_ANALYSIS = True
-        scan_type = 'ipa'
         append_scan_status(checksum, 'init')
         msg = 'iOS Binary (IPA) Analysis Started'
         logger.info(msg)
         append_scan_status(checksum, msg)
-        initialize_app_dic(app_dic, checksum, scan_type)
+        get_size_and_hashes(app_dic)
 
         if not extract_and_check_ipa(checksum, app_dic):
             msg = ('IPA is malformed! MobSF cannot find Payload directory')
@@ -177,7 +182,7 @@ def ipa_analysis_task(checksum, app_dic, rescan, queue=False):
                 return update_enqueued_task(
                     checksum, 'Failed', msg)
             return context, msg
-        common_analysis(scan_type, app_dic, checksum)
+        common_analysis('ipa', app_dic, checksum)
 
         # IPA Binary Analysis
         bin_dict = binary_analysis(
@@ -241,7 +246,7 @@ def generate_dynamic_context(request, app_dic, context, checksum, api):
 
 def ipa_analysis(request, app_dic, rescan, api):
     """IPA Analysis."""
-    checksum = app_dic['md5_hash']
+    checksum = initialize_app_dic(app_dic, 'ipa')
     ipa_db = StaticAnalyzerIOS.objects.filter(MD5=checksum)
     if ipa_db.exists() and not rescan:
         context = get_context_from_db_entry(ipa_db)
@@ -267,13 +272,12 @@ def ios_analysis_task(checksum, app_dic, rescan, queue=False):
     try:
         if queue:
             settings.ASYNC_ANALYSIS = True
-        scan_type = 'zip'
         logger.info('iOS Source Code Analysis Started')
-        initialize_app_dic(app_dic, checksum, scan_type)
+        get_size_and_hashes(app_dic)
 
         # ANALYSIS BEGINS - Already Unzipped
         # append_scan_status init done in android static analyzer
-        common_analysis(scan_type, app_dic, checksum)
+        common_analysis('zip', app_dic, checksum)
 
         # IOS Source Code Analysis
         code_dict = ios_source_analysis(
@@ -327,7 +331,7 @@ def generate_dynamic_ios_context(request, context, api):
 
 def ios_analysis(request, app_dic, rescan, api):
     """IOS Source Code Analysis."""
-    checksum = app_dic['md5_hash']
+    checksum = initialize_app_dic(app_dic, 'zip')
     ios_zip_db = StaticAnalyzerIOS.objects.filter(MD5=checksum)
     if ios_zip_db.exists() and not rescan:
         context = get_context_from_db_entry(ios_zip_db)
