@@ -344,14 +344,15 @@ LOGGING = {
 Q_CLUSTER = {
     'name': 'scan_queue',
     'workers': int(os.getenv('MOBSF_ASYNC_WORKERS', 3)),
-    'recycle': 10,
+    'recycle': 5,
     'timeout': 3600,
     'retry': 3700,
     'compress': True,
     'label': 'scan_queue',
     'orm': 'default',
-    'max_attempts': 2,
+    'max_attempts': 1,
     'save_limit': -1,
+    'ack_failures': True,
 }
 QUEUE_MAX_SIZE = 100
 ASYNC_ANALYSIS = bool(os.getenv('MOBSF_ASYNC_ANALYSIS', '0') == '1')
