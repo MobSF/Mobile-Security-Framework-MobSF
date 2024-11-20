@@ -4,6 +4,7 @@ from datetime import (
     timedelta,
 )
 
+from django.dispatch import receiver
 from django.utils import timezone
 from django.shortcuts import render
 from django.conf import settings
@@ -14,6 +15,7 @@ from django.http import (
 from django.views.decorators.http import require_http_methods
 
 from django_q.tasks import async_task
+from django_q.signals import post_execute
 
 from mobsf.StaticAnalyzer.models import (
     EnqueuedTask,
@@ -28,6 +30,19 @@ from mobsf.MobSF.utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+@receiver(post_execute)
+def detect_timeout(sender, task, **kwargs):
+    """Detect scan task timeout."""
+    if 'Task exceeded maximum timeout' in task['result']:
+        task_id = task['id']
+        EnqueuedTask.objects.filter(task_id=task_id).update(
+            app_name='Failed',
+            completed_at=timezone.now(),
+            status='Scan Timeout',
+        )
+        logger.error('Task %s exceeded maximum timeout', task_id)
 
 
 def async_analysis(checksum, app_name, func, *args):
