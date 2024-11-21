@@ -102,7 +102,7 @@ def async_analysis(checksum, api, file_name, func, *args, **kwargs):
     logger.info(msg)
     append_scan_status(checksum, msg)
     if api:
-        return {'task_id': task_id}
+        return {'task_id': task_id, 'message': msg}
     return HttpResponseRedirect('/tasks')
 
 

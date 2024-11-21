@@ -110,10 +110,8 @@ def api_scan_logs(request):
     if not resp:
         return make_api_response(
             {'error': 'No scan logs found'}, 400)
-    response = make_api_response({
-        'logs': resp,
-    }, 200)
-    return response
+    return make_api_response({'logs': resp}, 200)
+
 
 
 @request_method(['POST'])
@@ -124,8 +122,7 @@ def api_tasks(request):
     if not resp:
         return make_api_response(
             {'error': 'Scan queue empty'}, 400)
-    response = make_api_response(resp, 200)
-    return response
+    return make_api_response(resp, 200)
 
 
 @request_method(['POST'])
