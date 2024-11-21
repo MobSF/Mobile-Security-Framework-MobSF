@@ -258,6 +258,7 @@ def ipa_analysis(request, app_dic, rescan, api):
         if settings.ASYNC_ANALYSIS:
             return async_analysis(
                 checksum,
+                api,
                 app_dic.get('file_name', ''),
                 ipa_analysis_task, checksum, app_dic, rescan)
         context, err = ipa_analysis_task(checksum, app_dic, rescan)
@@ -343,6 +344,7 @@ def ios_analysis(request, app_dic, rescan, api):
         if settings.ASYNC_ANALYSIS:
             return async_analysis(
                 checksum,
+                api,
                 app_dic.get('file_name', ''),
                 ios_analysis_task, checksum, app_dic, rescan)
         context = ios_analysis_task(checksum, app_dic, rescan)

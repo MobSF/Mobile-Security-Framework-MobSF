@@ -35,7 +35,8 @@ logger = logging.getLogger(__name__)
 @receiver(post_execute)
 def detect_timeout(sender, task, **kwargs):
     """Detect scan task timeout."""
-    if 'Task exceeded maximum timeout' in task['result']:
+    result = task.get('result')
+    if isinstance(result, str) and 'Task exceeded maximum timeout' in result:
         task_id = task['id']
         EnqueuedTask.objects.filter(task_id=task_id).update(
             app_name='Failed',
@@ -45,7 +46,7 @@ def detect_timeout(sender, task, **kwargs):
         logger.error('Task %s exceeded maximum timeout', task_id)
 
 
-def async_analysis(checksum, app_name, func, *args):
+def async_analysis(checksum, api, file_name, func, *args, **kwargs):
     """Async Analysis Task."""
     # Check if the task is already completed
     recent = RecentScansDB.objects.filter(MD5=checksum)
@@ -62,11 +63,17 @@ def async_analysis(checksum, app_name, func, *args):
     if queued_recently:
         if scan_completed:
             # scan already completed recently
-            logger.warning('Analysis already completed in the last 60 minutes')
+            msg = 'Analysis already completed in the last 60 minutes'
+            logger.warning(msg)
+            if api:
+                return {'task_id': None, 'message': msg}
             return HttpResponseRedirect('/tasks?q=completed')
         elif active_recently:
             # scan not completed but active recently
-            logger.warning('Analysis already enqueued in the last 60 minutes')
+            msg = 'Analysis already enqueued in the last 60 minutes'
+            logger.warning(msg)
+            if api:
+                return {'task_id': None, 'message': msg}
             return HttpResponseRedirect('/tasks?q=queued')
 
     # Clear old tasks
@@ -80,6 +87,7 @@ def async_analysis(checksum, app_name, func, *args):
             .values_list('id', flat=True)[:task_count - queue_size])
         # Delete tasks by IDs
         EnqueuedTask.objects.filter(id__in=oldest_task_ids).delete()
+
     # Enqueue the task
     task_id = async_task(
         func,
@@ -89,10 +97,12 @@ def async_analysis(checksum, app_name, func, *args):
     EnqueuedTask.objects.create(
         task_id=task_id,
         checksum=checksum,
-        file_name=app_name[:254])
+        file_name=file_name[:254])
     msg = f'Scan Queued with ID: {task_id}'
     logger.info(msg)
     append_scan_status(checksum, msg)
+    if api:
+        return {'task_id': task_id, 'message': msg}
     return HttpResponseRedirect('/tasks')
 
 
@@ -118,7 +128,7 @@ def get_live_status(enq):
 
 @login_required
 @require_http_methods(['POST', 'GET'])
-def list_tasks(request):
+def list_tasks(request, api=False):
     if request.method == 'POST':
         enqueued = EnqueuedTask.objects.all().order_by('-created_at')
         task_data = []
@@ -133,6 +143,8 @@ def list_tasks(request):
                 'completed_at': enq.completed_at,
                 'status': get_live_status(enq),
             })
+        if api:
+            return task_data
         return JsonResponse(task_data, safe=False)
     context = {
         'title': 'Scan Tasks',

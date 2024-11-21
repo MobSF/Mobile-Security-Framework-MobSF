@@ -14,8 +14,9 @@ OK = 200
 def make_api_response(data, status=OK):
     """Make API Response."""
     resp = JsonResponse(
-        data=data,  # lgtm [py/stack-trace-exposure]
-        status=status)
+        data=data,
+        status=status,
+        safe=False)
     resp['Access-Control-Allow-Origin'] = '*'
     resp['Access-Control-Allow-Methods'] = 'POST'
     resp['Access-Control-Allow-Headers'] = 'Authorization, X-Mobsf-Api-Key'
