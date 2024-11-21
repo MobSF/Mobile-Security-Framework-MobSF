@@ -341,12 +341,14 @@ LOGGING = {
         },
     },
 }
+ASYNC_ANALYSIS = bool(os.getenv('MOBSF_ASYNC_ANALYSIS', '0') == '1')
+ASYNC_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_ASYNC_ANALYSIS_TIMEOUT', '60'))
 Q_CLUSTER = {
     'name': 'scan_queue',
     'workers': int(os.getenv('MOBSF_ASYNC_WORKERS', 3)),
     'recycle': 5,
-    'timeout': 3600,
-    'retry': 3700,
+    'timeout': 1,  # ASYNC_ANALYSIS_TIMEOUT * 60,
+    'retry': 2,  # (ASYNC_ANALYSIS_TIMEOUT * 60) + 100,
     'compress': True,
     'label': 'scan_queue',
     'orm': 'default',
@@ -355,7 +357,6 @@ Q_CLUSTER = {
     'ack_failures': True,
 }
 QUEUE_MAX_SIZE = 100
-ASYNC_ANALYSIS = bool(os.getenv('MOBSF_ASYNC_ANALYSIS', '0') == '1')
 MULTIPROCESSING = os.getenv('MOBSF_MULTIPROCESSING')
 JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1000))
 SAST_TIMEOUT = int(os.getenv('MOBSF_SAST_TIMEOUT', 1000))
