@@ -118,7 +118,7 @@ def api_scan_logs(request):
 
 @request_method(['POST'])
 @csrf_exempt
-def api_scan_tasks(request):
+def api_tasks(request):
     """POST - Get Scan Queue."""
     resp = list_tasks(request, True)
     if not resp:
