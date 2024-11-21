@@ -23,6 +23,7 @@ from mobsf.StaticAnalyzer.views.android.views import view_source
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
 from mobsf.StaticAnalyzer.views.ios.views import view_source as ios_view_source
 from mobsf.StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
+from mobsf.StaticAnalyzer.views.common.async_task import list_tasks
 from mobsf.StaticAnalyzer.views.common.shared_func import compare_apps
 from mobsf.StaticAnalyzer.views.common.suppression import (
     delete_suppression,
@@ -112,6 +113,18 @@ def api_scan_logs(request):
     response = make_api_response({
         'logs': resp,
     }, 200)
+    return response
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_scan_tasks(request):
+    """POST - Get Scan Queue."""
+    resp = list_tasks(request, True)
+    if not resp:
+        return make_api_response(
+            {'error': 'Scan queue empty'}, 400)
+    response = make_api_response(resp, 200)
     return response
 
 

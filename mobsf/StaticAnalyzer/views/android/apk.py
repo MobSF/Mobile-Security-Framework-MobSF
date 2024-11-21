@@ -297,6 +297,7 @@ def apk_analysis(request, app_dic, rescan, api):
         if settings.ASYNC_ANALYSIS:
             return async_analysis(
                 checksum,
+                api,
                 app_dic.get('app_name', ''),
                 apk_analysis_task, checksum, app_dic, rescan)
         context, err = apk_analysis_task(checksum, app_dic, rescan)
@@ -452,6 +453,7 @@ def src_analysis(request, app_dic, rescan, api):
             if settings.ASYNC_ANALYSIS:
                 return async_analysis(
                     checksum,
+                    api,
                     app_dic.get('app_name', ''),
                     src_analysis_task, checksum, app_dic, rescan, pro_type)
             context = src_analysis_task(checksum, app_dic, rescan, pro_type)

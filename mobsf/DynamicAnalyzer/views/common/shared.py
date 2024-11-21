@@ -59,7 +59,7 @@ def onerror(func, path, exc_info):
     _, exc, _ = exc_info
     if exc.errno == errno.EACCES:  # Permission error
         try:
-            os.chmod(path, 0o777)
+            os.chmod(path, 0o755)
             func(path)
         except Exception:
             pass
