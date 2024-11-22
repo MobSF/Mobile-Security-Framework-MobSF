@@ -123,6 +123,7 @@ def so_analysis(request, app_dic, rescan, api):
             'urls_list': [],
             'urls': [],
             'emails': [],
+            'sbom': {},
         }
         # Get the strings and metadata from shared object
         get_strings_metadata(
