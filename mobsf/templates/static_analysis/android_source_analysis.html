@@ -242,6 +242,12 @@
                   <p>Libraries</p>
                 </a>
               </li>
+              <li class="nav-item">
+                <a href="#sbom" class="nav-link">
+                  <i class="fa fa-archive nav-icon"></i>
+                  <p>SBOM</p>
+                </a>
+              </li>
                <li class="nav-item">
                 <a href="#files" class="nav-link">
                   <i class="far fa-copy nav-icon"></i>
@@ -1744,6 +1750,28 @@
       </div>
 </section>
  <!-- ===========================end libraries ================================== -->
+ <a id="sbom" class="anchor"></a>
+ <section class="content">
+   <div class="container-fluid">
+   <div class="row">
+       <div class="col-lg-12">
+       <div class="card">
+         <div class="card-body">
+             <p>
+             <strong><i class="fa fa-archive"></i> SBOM</strong>
+             </p>
+               <div class="list-group">
+                 {% include 'base/list.html' with list=sbom.sbom_versioned type="Versioned Packages" limit=100 %}
+                 {% include 'base/list.html' with list=sbom.sbom_packages type="Packages" limit=100 %}
+             </div>
+           </div>
+         </div>
+       </div><!-- /.card -->
+       </div>
+       <!-- end row -->
+       </div>
+ </section>
+  <!-- ===========================end sbom ================================== -->
 <a id="files" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
