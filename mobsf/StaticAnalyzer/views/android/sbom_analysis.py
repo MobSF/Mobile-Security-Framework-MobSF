@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def merge_common_packages(items):
     """Merge common packages."""
-    items = list(items)  # Ensure the input is a list
+    items = list(items)
     items.sort()  # Sort items lexicographically
     merged = []
     for item in items:
@@ -46,7 +46,6 @@ def get_group_name(file_name, group):
         group, name = parts[0], parts[1]
     else:
         name = file_name.replace('_', '-')
-        # Update group for specific cases
         if name.startswith('kotlinx-'):
             group = 'org.jetbrains.kotlinx'
 
