@@ -113,7 +113,6 @@ def api_scan_logs(request):
     return make_api_response({'logs': resp}, 200)
 
 
-
 @request_method(['POST'])
 @csrf_exempt
 def api_tasks(request):

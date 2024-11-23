@@ -82,6 +82,7 @@ class StaticAnalyzerAndroid(models.Model):
     PLAYSTORE_DETAILS = models.TextField(default={})
     NETWORK_SECURITY = models.TextField(default=[])
     SECRETS = models.TextField(default=[])
+    SBOM = models.TextField(default={})
 
 
 class StaticAnalyzerIOS(models.Model):

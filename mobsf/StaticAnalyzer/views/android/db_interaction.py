@@ -88,6 +88,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'playstore_details': python_dict(db_entry[0].PLAYSTORE_DETAILS),
             'secrets': python_list(db_entry[0].SECRETS),
             'logs': get_scan_logs(db_entry[0].MD5),
+            'sbom': python_dict(db_entry[0].SBOM),
         }
         return context
     except Exception:
@@ -161,6 +162,7 @@ def get_context_from_analysis(app_dic,
             'playstore_details': app_dic['playstore'],
             'secrets': code_an_dic['secrets'],
             'logs': get_scan_logs(app_dic['md5']),
+            'sbom': code_an_dic['sbom'],
         }
         return context
     except Exception as exp:
@@ -226,6 +228,7 @@ def save_or_update(update_type,
             'PLAYSTORE_DETAILS': app_dic['playstore'],
             'NETWORK_SECURITY': man_an_dic['network_security'],
             'SECRETS': code_an_dic['secrets'],
+            'SBOM': code_an_dic['sbom'],
         }
         if update_type == 'save':
             db_entry = StaticAnalyzerAndroid.objects.filter(

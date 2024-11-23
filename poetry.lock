@@ -903,13 +903,13 @@ all = ["flake8 (>=7.1.1)", "mypy (>=1.11.2)", "pytest (>=8.3.2)", "ruff (>=0.6.2
 
 [[package]]
 name = "ip2location"
-version = "8.10.0"
+version = "8.10.4"
 description = "This is an IP geolocation library that enables the user to find the country, region, city, latitude and longitude, ZIP code, time zone, ISP, domain name, area code, weather info, mobile info, elevation, usage type, address type and IAB category from an IP address. It supports both IPv4 and IPv6 lookup."
 optional = false
 python-versions = "*"
 files = [
-    {file = "IP2Location-8.10.0-py3-none-any.whl", hash = "sha256:b6573b422569581b2f40425e1e8dd5fdba1f8a75d3a1be366c1f0886fede3ba4"},
-    {file = "IP2Location-8.10.0.tar.gz", hash = "sha256:f0eea26c655f701406fa9379a38a0b56cc0dc7d0c6a221d44bda5280978a75ab"},
+    {file = "IP2Location-8.10.4-py3-none-any.whl", hash = "sha256:4323b6a25c6afb29c2f2b0b8aca3c3d1868a0199b705afaded1174cdbd8dacef"},
+    {file = "ip2location-8.10.4.tar.gz", hash = "sha256:395b3db260c0fa1de6b003808fdea144b0aa76ceed26c7a49de929b454e903c5"},
 ]
 
 [[package]]
@@ -1442,28 +1442,25 @@ files = [
 
 [[package]]
 name = "openstep-parser"
-version = "1.5.4"
+version = "2.0.1"
 description = "OpenStep plist reader into python objects"
 optional = false
-python-versions = "*"
+python-versions = ">=3.8"
 files = [
-    {file = "openstep_parser-1.5.4-py3-none-any.whl", hash = "sha256:56d7d25f6bfb1b17ce6c522f2467cf114f70b0c910693a07d4513109e19e9b18"},
-    {file = "openstep_parser-1.5.4.tar.gz", hash = "sha256:f03c7fd9c78ac718c470cb0f667c1f09fa7f58786314f77fef8767302abe1658"},
+    {file = "openstep_parser-2.0.1-py3-none-any.whl", hash = "sha256:5921efe694fb48137ad5eece58eac49a5a4e0745da5868eb3bd98bc1e41b35b2"},
+    {file = "openstep_parser-2.0.1.tar.gz", hash = "sha256:f37ed387ede1aa6fa2610f9db88f2528d7218b2f42fd34271b4a20b578c68c0e"},
 ]
 
 [[package]]
 name = "packaging"
-version = "21.3"
+version = "24.2"
 description = "Core utilities for Python packages"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 files = [
-    {file = "packaging-21.3-py3-none-any.whl", hash = "sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"},
-    {file = "packaging-21.3.tar.gz", hash = "sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb"},
+    {file = "packaging-24.2-py3-none-any.whl", hash = "sha256:09abb1bccd265c01f4a3aa3f7a7db064b36514d2cba19a2f694fe6150451a759"},
+    {file = "packaging-24.2.tar.gz", hash = "sha256:c228a6dc5e932d346bc5739379109d49e8853dd8223571c7c5b55260edc0b97f"},
 ]
-
-[package.dependencies]
-pyparsing = ">=2.0.2,<3.0.5 || >3.0.5"
 
 [[package]]
 name = "paramiko"
@@ -2214,13 +2211,13 @@ lxml = "*"
 
 [[package]]
 name = "tldextract"
-version = "3.4.4"
+version = "5.1.3"
 description = "Accurately separates a URL's subdomain, domain, and public suffix, using the Public Suffix List (PSL). By default, this includes the public ICANN TLDs and their exceptions. You can optionally support the Public Suffix List's private domains as well."
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.9"
 files = [
-    {file = "tldextract-3.4.4-py3-none-any.whl", hash = "sha256:581e7dbefc90e7bb857bb6f768d25c811a3c5f0892ed56a9a2999ddb7b1b70c2"},
-    {file = "tldextract-3.4.4.tar.gz", hash = "sha256:5fe3210c577463545191d45ad522d3d5e78d55218ce97215e82004dcae1e1234"},
+    {file = "tldextract-5.1.3-py3-none-any.whl", hash = "sha256:78de310cc2ca018692de5ddf320f9d6bd7c5cf857d0fd4f2175f0cdf4440ea75"},
+    {file = "tldextract-5.1.3.tar.gz", hash = "sha256:d43c7284c23f5dc8a42fd0fee2abede2ff74cc622674e4cb07f514ab3330c338"},
 ]
 
 [package.dependencies]
@@ -2228,6 +2225,10 @@ filelock = ">=3.0.8"
 idna = "*"
 requests = ">=2.1.0"
 requests-file = ">=1.4"
+
+[package.extras]
+release = ["build", "twine"]
+testing = ["mypy", "pytest", "pytest-gitignore", "pytest-mock", "responses", "ruff", "syrupy", "tox", "tox-uv", "types-filelock", "types-requests"]
 
 [[package]]
 name = "tornado"
@@ -2665,4 +2666,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "4ce52e297085b7230f5456701fecc3913fabd942f2558f2cd85b67cbc8fedb97"
+content-hash = "47edc939d8d6d36767bbc3210b4440106dbda32948de859d18a100e458815e0c"

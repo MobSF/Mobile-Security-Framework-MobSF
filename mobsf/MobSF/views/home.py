@@ -7,9 +7,11 @@ import platform
 import re
 import shutil
 from pathlib import Path
+from datetime import timedelta
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
+from django.utils.timezone import now
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.http import require_http_methods
@@ -541,10 +543,14 @@ def delete_scan(request, api=False):
         if settings.ASYNC_ANALYSIS:
             # Handle Async Tasks
             et = EnqueuedTask.objects.filter(checksum=md5_hash).first()
-            if et and not et.completed_at:
-                # Queue is in progress, cannot delete the task
-                return send_response({
-                    'deleted': 'A scan can only be deleted after it is completed'}, api)
+            if et:
+                max_time_passed = now() - et.created_at > timedelta(
+                    minutes=settings.ASYNC_ANALYSIS_TIMEOUT)
+                if not (et.completed_at or max_time_passed):
+                    # Queue is in progress, cannot delete the task
+                    return send_response(
+                        {'deleted': 'A scan can only be deleted after it is completed'},
+                        api)
         # Delete all related DB entries
         EnqueuedTask.objects.filter(checksum=md5_hash).all().delete()
         RecentScansDB.objects.filter(MD5=md5_hash).delete()
@@ -565,7 +571,7 @@ def delete_scan(request, api=False):
                 os.remove(item_path)
             # Delete related directories
             if is_dir_exists(item_path) and valid_item:
-                shutil.rmtree(item_path)
+                shutil.rmtree(item_path, ignore_errors=True)
         return send_response({'deleted': 'yes'}, api)
     except Exception as exp:
         msg = str(exp)

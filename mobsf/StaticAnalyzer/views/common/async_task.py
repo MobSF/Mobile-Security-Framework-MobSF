@@ -52,11 +52,13 @@ def async_analysis(checksum, api, file_name, func, *args, **kwargs):
     recent = RecentScansDB.objects.filter(MD5=checksum)
     scan_completed = recent[0].APP_NAME or recent[0].PACKAGE_NAME
     # Check if the task is updated within the last 60 minutes
-    active_recently = recent[0].TIMESTAMP >= timezone.now() - timedelta(minutes=60)
+    active_recently = recent[0].TIMESTAMP >= timezone.now() - timedelta(
+        minutes=settings.ASYNC_ANALYSIS_TIMEOUT)
     # Check if the task is already enqueued within the last 60 minutes
     queued_recently = EnqueuedTask.objects.filter(
         checksum=checksum,
-        created_at__gte=timezone.now() - timedelta(minutes=60),
+        created_at__gte=timezone.now() - timedelta(
+            minutes=settings.ASYNC_ANALYSIS_TIMEOUT),
     ).exists()
 
     # Additional checks on recent queue

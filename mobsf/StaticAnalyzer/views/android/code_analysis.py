@@ -26,6 +26,9 @@ from mobsf.StaticAnalyzer.views.sast_engine import (
 from mobsf.MalwareAnalyzer.views.android import (
     behaviour_analysis,
 )
+from mobsf.StaticAnalyzer.views.android import (
+    sbom_analysis,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +86,7 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
         email_n_file = []
         url_n_file = []
         url_list = []
+        sbom = {}
         app_dir = Path(app_dir)
         src = get_android_src_dir(app_dir, typ).as_posix() + '/'
         skp = settings.SKIP_CLASS_PATH
@@ -95,10 +99,17 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
             'match_extensions': {'.java', '.kt'},
             'ignore_paths': skp,
         }
-        # Code Analysis
         sast = SastEngine(options, src)
         # Read data once and pass it to all the analysis
         file_data = sast.read_files()
+
+        # SBOM Analysis
+        sbom = sbom_analysis.sbom(app_dir, file_data)
+        msg = 'Android SBOM Analysis Completed'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
+
+        # Code Analysis
         code_findings = sast.run_rules(file_data, code_rules.as_posix())
         msg = 'Android SAST Completed'
         logger.info(msg)
@@ -186,6 +197,7 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
             'urls_list': url_list,
             'urls': url_n_file,
             'emails': email_n_file,
+            'sbom': sbom,
         }
         return code_an_dic
     except Exception as exp:
