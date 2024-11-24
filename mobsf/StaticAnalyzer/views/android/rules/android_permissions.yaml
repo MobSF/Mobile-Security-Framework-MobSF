@@ -5532,3 +5532,15 @@
     - \.isLimitAdTrackingEnabled
   input_case: exact
   severity: info
+- id: android.permission.ACCESS_ORIENTATION
+  message: android.permission.ACCESS_ORIENTATION
+  type: RegexAndOr
+  pattern:
+  - android\.hardware\.Sensor
+  - - getDefaultSensor\(
+    - \.TYPE_ACCELEROMETER
+    - onSensorChanged\(
+    - getRotationMatrix\(
+    - onAccuracyChanged\(
+  input_case: exact
+  severity: info
