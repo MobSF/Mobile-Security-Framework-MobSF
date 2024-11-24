@@ -52,51 +52,61 @@ def strings_from_so(checksum, elf_strings):
 
 def strings_from_apk(checksum, apk):
     """Extract Strings from an APK."""
-    dat = []
-    secrets = []
-    urls = []
-    urls_nf = []
-    emails_nf = []
-    firebase_creds = {}
+    results = {
+        'strings': set(),
+        'urls_list': [],
+        'urls_nf': [],
+        'emails_nf': [],
+        'secrets': [],
+        'firebase_creds': {},
+    }
     try:
         msg = 'Extracting String data from APK'
         logger.info(msg)
         append_scan_status(checksum, msg)
+
         rsrc = apk.get_android_resources()
-        if rsrc:
-            pkg = rsrc.get_packages_names()[0]
-            rsrc.get_strings_resources()
-            for i in rsrc.values[pkg].keys():
-                res_string = rsrc.values[pkg][i].get('string')
-                if not res_string:
+        if not rsrc:
+            return results
+
+        pkg = rsrc.get_packages_names()[0]
+        rsrc.get_strings_resources()
+
+        # Iterate over resource strings
+        for _res_key, res_value in rsrc.values.get(pkg, {}).items():
+            res_string = res_value.get('string')
+            if not res_string:
+                continue
+
+            for key, value in res_string:
+                if not value:
                     continue
-                for duo in res_string:
-                    if (duo[0] == 'google_api_key'
-                            and GOOGLE_API_KEY_REGEX.match(duo[1])):
-                        firebase_creds['google_api_key'] = duo[1]
-                    if (duo[0] == 'google_app_id'
-                            and GOOGLE_APP_ID_REGEX.match(duo[1])):
-                        firebase_creds['google_app_id'] = duo[1]
-                    cap_str = '"' + duo[0] + '" : "' + duo[1] + '"'
-                    # Extract possible secret holding keys
-                    if is_secret_key(duo[0] + '"') and ' ' not in duo[1]:
-                        secrets.append(cap_str)
-                    dat.append(cap_str)
-            # Extract URLs and Emails from Android String Resources
-            urls, urls_nf, emails_nf = url_n_email_extract(
-                ''.join(dat), 'Android String Resource')
+
+                # Extract Firebase credentials
+                if key == 'google_api_key' and GOOGLE_API_KEY_REGEX.match(value):
+                    results['firebase_creds']['google_api_key'] = value
+                elif key == 'google_app_id' and GOOGLE_APP_ID_REGEX.match(value):
+                    results['firebase_creds']['google_app_id'] = value
+
+                # Format and collect strings
+                formatted_str = f'"{key}" : "{value}"'
+                results['strings'].add(formatted_str)
+
+                # Check for possible secrets
+                if is_secret_key(key) and ' ' not in value:
+                    results['secrets'].append(formatted_str)
+
+        # Extract URLs and Emails from collected strings
+        combined_data = ''.join(list(set(results['strings'])))
+        ul, u_nf, e_nf = url_n_email_extract(combined_data, 'Android String Resource')
+        results['urls_list'], results['urls_nf'], results['emails_nf'] = ul, u_nf, e_nf
+
     except Exception as exp:
         msg = 'Failed to extract String data from APK'
         logger.exception(msg)
         append_scan_status(checksum, msg, repr(exp))
-    return {
-        'strings': list(set(dat)),
-        'urls_list': urls,
-        'urls_nf': urls_nf,
-        'emails_nf': emails_nf,
-        'secrets': secrets,
-        'firebase_creds': firebase_creds,
-    }
+
+    return results
 
 
 def strings_from_code(checksum, src_dir, typ, exts):
