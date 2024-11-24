@@ -654,6 +654,10 @@
     - getLastKnownLocation\(
     - getBestProvider\(
     - sendExtraCommand\(
+    - getScanResults\(
+    - startDiscovery\(
+    - enableReaderMode\(
+    - requestPeers\(
   input_case: exact
   severity: info
 - id: android.permission.ACCESS_FINE_LOCATION
@@ -692,6 +696,11 @@
     - sendExtraCommand\(
     - Manifest\.permission\.ACCESS_FINE_LOCATION
     - Context\.LOCATION_SERVICE
+    - addGeofences\(
+    - getScanResults\(
+    - startDiscovery\(
+    - enableReaderMode\(
+    - requestActivityTransitionUpdates\(
   input_case: exact
   severity: info
 - id: android.permission.ACCESS_LOCATION_EXTRA_COMMANDS
@@ -706,7 +715,7 @@
   message: android.permission.WAKE_LOCK
   type: RegexAndOr
   pattern:
-  - android\.media\.AsyncPlayer|android\.media\.MediaPlayer|android\.media\.Ringtone|android\.media\.RingtoneManager|android\.net\.sip|android\.net\.wifi|android\.os\.PowerManager|android\.widget\.VideoView|com\.android\.server
+  - android\.media\.AsyncPlayer|android\.media\.MediaPlayer|android\.media\.Ringtone|android\.media\.RingtoneManager|android\.net\.sip|android\.net\.wifi|android\.os\.PowerManager|android\.widget\.VideoView|com\.android\.server|android\.app\.DownloadManager|androidx\.work\.WorkManager|android\.app\.AlarmManager|com\.google\.android\.gms\.location
   - - stopPreviousRingtone\(
     - acquire\(
     - endCall\(
@@ -738,6 +747,10 @@
     - start\(
     - stopPlayback\(
     - suspend\(
+    - enqueue\(
+    - setAndAllowWhileIdle\(
+    - setExactAndAllowWhileIdle\(
+    - requestLocationUpdates\(
   input_case: exact
   severity: info
 - id: android.permission.MODIFY_AUDIO_SETTINGS
@@ -5342,8 +5355,12 @@
   message: android.permission.FOREGROUND_SERVICE
   type: RegexAndOr
   pattern:
-  - android\.content\.Context
+  - android\.content\.Context|android\.app\.Service|android\.media|androidx\.work\.WorkManager
   - - startForegroundService\(
+    - startForeground\(
+    - stopForeground\(
+    - stopSelf\(
+    - enqueue\(
   input_case: exact
   severity: info
 - id: android.permission.POST_NOTIFICATIONS
@@ -5368,6 +5385,18 @@
   - - setPairingConfirmation\(
     - connect\(
     - createBond\(
+  input_case: exact
+  severity: info
+- id: android.permission.BLUETOOTH_ADVERTISE
+  message: android.permission.BLUETOOTH_ADVERTISE
+  type: RegexAndOr
+  pattern:
+  - android\.bluetooth|com\.google\.android\.gms\.nearby\.connection
+  - - startAdvertising\(
+    - stopAdvertising\(
+    - addService\(
+    - openGattServer\(
+    - getConnectionsClient\(
   input_case: exact
   severity: info
 - id: android.permission.BLUETOOTH_SCAN
@@ -5440,15 +5469,14 @@
   message: com.google.android.c2dm.permission.RECEIVE
   type: RegexAndOr
   pattern:
-  - android\.content\.Intent
-  - - com\.google\.android\.c2dm\.intent\.REGISTRATION"
-  input_case: exact
+  - android\.content\.Intent|com\.google\.android\.gms\.gcm
+  - - com\.google\.android\.c2dm\.intent\.REGISTRATION|com\.google\.firebase\.messaging|onNewToken\(|onMessageReceived\(
   severity: info
 - id: com.google.android.c2dm.permission.SEND
   message: com.google.android.c2dm.permission.SEND
   type: RegexAndOr
   pattern:
-  - android\.content\.Intent
+  - android\.content\.Intent|com\.google\.android\.gms\.gcm
   - - com\.google\.android\.c2dm\.intent\.REGISTER
   input_case: exact
   severity: info
@@ -5479,5 +5507,28 @@
   - - Manifest\.permission\.READ_MEDIA_VIDEO
     - FileInputStream\(
     - getExternalStorageDirectory\(
+  input_case: exact
+  severity: info
+- id: com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE
+  message: com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE
+  type: RegexAndOr
+  pattern:
+  - com\.android\.installreferrer\.api
+  - - newBuilder\(
+    - getInstallReferrer\(
+    - getReferrerClickTimestampSeconds\(
+    - getInstallBeginTimestampSeconds\(
+    - onInstallReferrerServiceDisconnected\(
+    - endConnection\(
+  input_case: exact
+  severity: info
+- id: com.google.android.gms.permission.AD_ID
+  message: com.google.android.gms.permission.AD_ID
+  type: RegexAndOr
+  pattern:
+  - com\.google\.android\.gms\.ads
+  - - getAdvertisingIdInfo\(
+    - getDetectedActivity\(
+    - \.isLimitAdTrackingEnabled
   input_case: exact
   severity: info
