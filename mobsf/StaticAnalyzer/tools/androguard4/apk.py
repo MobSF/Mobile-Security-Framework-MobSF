@@ -24,7 +24,7 @@ from xml.dom.pulldom import SAX2DOM
 from asn1crypto import cms, x509, keys
 
 logger = logging.getLogger(__name__)
-logger.setLevel(level=logging.INFO)
+logger.setLevel(level=logging.CRITICAL)
 
 NS_ANDROID_URI = 'http://schemas.android.com/apk/res/android'
 NS_ANDROID = '{{{}}}'.format(NS_ANDROID_URI)  # Namespace as used by etree

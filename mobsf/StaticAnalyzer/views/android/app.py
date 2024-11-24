@@ -37,7 +37,7 @@ def get_app_name(a, app_dir, is_apk):
             try:
                 return a.get_app_name()
             except Exception:
-                logger.warning('Failed to get app name from parsed APK')
+                logger.warning('Failed to get app name from parsed APK object')
         # Look for app_name in values folder.
         val = base / 'apktool_out' / 'res' / 'values'
         if val.exists():
@@ -45,8 +45,6 @@ def get_app_name(a, app_dir, is_apk):
                 return get_app_name_from_values_folder(val.as_posix())
             except Exception:
                 logger.error('Failed to get app name from values folder')
-        else:
-            logger.warning('Cannot find app name')
     else:
         # For source code
         try:
