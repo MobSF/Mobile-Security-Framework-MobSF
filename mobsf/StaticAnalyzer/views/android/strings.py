@@ -53,7 +53,7 @@ def strings_from_so(checksum, elf_strings):
 def strings_from_apk(checksum, apk):
     """Extract Strings from an APK."""
     results = {
-        'strings': set(),
+        'strings': [],
         'urls_list': [],
         'urls_nf': [],
         'emails_nf': [],
@@ -90,7 +90,7 @@ def strings_from_apk(checksum, apk):
 
                 # Format and collect strings
                 formatted_str = f'"{key}" : "{value}"'
-                results['strings'].add(formatted_str)
+                results['strings'].append(formatted_str)
 
                 # Check for possible secrets
                 if is_secret_key(key) and ' ' not in value:
