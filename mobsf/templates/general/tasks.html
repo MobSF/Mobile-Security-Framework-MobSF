@@ -212,14 +212,24 @@
 
     async function updateTaskStatuses() {
         const tasks = await fetchTasks();
+        const existingTaskIds = Array.from(document.querySelectorAll("#tasks-table tbody tr"))
+            .map(row => row.getAttribute("data-task-id")); // Get existing task IDs from the table
+
         tasks.forEach((task) => {
             const statusCell = document.getElementById(`status-${task.task_id}`);
             const completedCell = document.getElementById(`completed-${task.task_id}`);
+
             if (statusCell && completedCell) {
+                // Update existing task status
                 updateCellStatus(task, statusCell, completedCell);
+            } else if (!existingTaskIds.includes(task.task_id)) {
+                // Add a new row if the task ID is not found, at the top of the table
+                const newRow = buildTableRow(task);
+                tasksTableBody.prepend(newRow); // Add the new row to the top
             }
         });
     }
+
 
     // Initial render
     renderTable();

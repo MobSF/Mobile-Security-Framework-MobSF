@@ -3772,11 +3772,12 @@
   message: android.permission.DELETE_PACKAGES
   type: RegexAndOr
   pattern:
-  - com\.android\.server
+  - com\.android\.server|android\.content\.Intent
   - - uninstall\(
     - deletePackage\(
     - deletePackageAsUser\(
     - setBlockUninstallForUser\(
+    - Intent\.ACTION_UNINSTALL_PACKAGE
   input_case: exact
   severity: info
 - id: android.permission.OBSERVE_GRANT_REVOKE_PERMISSIONS
