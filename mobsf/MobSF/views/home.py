@@ -480,15 +480,13 @@ def download(request):
 
 @login_required
 def generate_download(request):
-    """Generate downloads for uploaded binaries/source."""
+    """Generate downloads for smali/java zip."""
     try:
-        binary = ('apk', 'ipa', 'jar', 'aar', 'so', 'dylib', 'a')
-        source = ('smali', 'java')
         logger.info('Generating Downloads')
         md5 = request.GET['hash']
         file_type = request.GET['file_type']
         if (not is_md5(md5)
-                or file_type not in binary + source):
+                or file_type not in ('smali', 'java')):
             msg = 'Invalid download type or hash'
             logger.exception(msg)
             return print_n_send_error_response(request, msg)
@@ -509,12 +507,6 @@ def generate_download(request):
             shutil.make_archive(
                 dwd_file.as_posix(), 'zip', directory.as_posix())
             file_name = f'{md5}-smali.zip'
-        elif file_type in binary:
-            # Binaries
-            file_name = f'{md5}.{file_type}'
-            src = app_dir / file_name
-            dst = dwd_dir / file_name
-            shutil.copy2(src.as_posix(), dst.as_posix())
         return redirect(f'/download/{file_name}')
     except Exception:
         msg = 'Generating Downloads'
