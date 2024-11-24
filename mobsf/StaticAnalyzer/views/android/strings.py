@@ -97,8 +97,9 @@ def strings_from_apk(checksum, apk):
                     results['secrets'].append(formatted_str)
 
         # Extract URLs and Emails from collected strings
-        combined_data = ''.join(list(set(results['strings'])))
-        ul, u_nf, e_nf = url_n_email_extract(combined_data, 'Android String Resource')
+        results['strings'] = list(set(results['strings']))
+        ul, u_nf, e_nf = url_n_email_extract(
+            ''.join(results['strings']), 'Android String Resource')
         results['urls_list'], results['urls_nf'], results['emails_nf'] = ul, u_nf, e_nf
 
     except Exception as exp:
