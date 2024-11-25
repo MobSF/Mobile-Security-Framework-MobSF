@@ -35,7 +35,9 @@ def get_app_name(a, app_dir, is_apk):
         if a:
             # Parsed Androguard APK Object
             try:
-                return a.get_app_name()
+                app_name = a.get_app_name()
+                if app_name:
+                    return app_name
             except Exception:
                 logger.warning('Failed to get app name from parsed APK object')
         # Look for app_name in values folder.
