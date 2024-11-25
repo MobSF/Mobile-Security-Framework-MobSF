@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_apk(checksum, app_path):
-    """Androguard APK."""
+    """Androguard4 APK."""
     try:
         msg = 'Parsing APK with androguard'
         logger.info(msg)

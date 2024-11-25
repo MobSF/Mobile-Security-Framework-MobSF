@@ -101,7 +101,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             checksum,
             app_dic['files'])
         app_dic['playstore'] = {'error': True}
-        # Parse APK with Androguard
+        # Parse APK with Androguard4
         apk = parse_apk(
             checksum,
             app_dic['app_path'])

@@ -1,64 +1,13 @@
 # -*- coding: utf_8 -*-
 # flake8: noqa
-"""This file is from apkinspector licensed under the Apache License 2.0."""
+# ApkInspector - Nov 24, 2024 - 293ab2d89ab9ce011c7dbbc5df3c876172875a1c
 import io
-import zlib
+import os
 import struct
 from typing import Dict
 
-
-def extract_file_based_on_header_info(apk_file, local_header_info, central_directory_info):
-    """
-    Extracts a single file from the apk_file based on the information provided from the offset and the header_info.
-    It takes into account that the compression method provided might not be STORED or DEFLATED! The returned
-    'indicator', shows what compression method was used. Besides the standard STORED/DEFLATE it may return
-    'DEFLATED_TAMPERED', which means that the compression method found was not DEFLATED(8) but it should have been,
-    and 'STORED_TAMPERED' which means that the compression method found was not STORED(0) but should have been.
-
-    :param apk_file: The APK file e.g. with open('test.apk', 'rb') as apk_file
-    :type apk_file: bytesIO
-    :param local_header_info: The local header dictionary info for that specific filename
-    :type local_header_info: dict
-    :param central_directory_info: The central directory entry for that specific filename
-    :type central_directory_info: dict
-    :return: Returns the actual extracted data for that file along with an indication of whether a static analysis evasion technique was used or not.
-    :rtype: set(bytes, str)
-    """
-    filename_length = local_header_info["file_name_length"]
-    if local_header_info["compressed_size"] == 0 or local_header_info["uncompressed_size"] == 0:
-        compressed_size = central_directory_info["compressed_size"]
-        uncompressed_size = central_directory_info["uncompressed_size"]
-    else:
-        compressed_size = local_header_info["compressed_size"]
-        uncompressed_size = local_header_info["uncompressed_size"]
-
-    extra_field_length = local_header_info["extra_field_length"]
-    compression_method = local_header_info["compression_method"]
-    # Skip the offset + local header to reach the compressed data
-    local_header_size = 30  # Size of the local header in bytes
-    offset = central_directory_info["relative_offset_of_local_file_header"]
-    apk_file.seek(offset + local_header_size + filename_length + extra_field_length)
-    if compression_method == 0:  # Stored (no compression)
-        uncompressed_data = apk_file.read(uncompressed_size)
-        extracted_data = uncompressed_data
-        indicator = 'STORED'
-    elif compression_method == 8:
-        compressed_data = apk_file.read(compressed_size)
-        # -15 for windows size due to raw stream with no header or trailer
-        extracted_data = zlib.decompress(compressed_data, -15)
-        indicator = 'DEFLATED'
-    else:
-        try:
-            cur_loc = apk_file.tell()
-            compressed_data = apk_file.read(compressed_size)
-            extracted_data = zlib.decompress(compressed_data, -15)
-            indicator = 'DEFLATED_TAMPERED'
-        except:
-            apk_file.seek(cur_loc)
-            compressed_data = apk_file.read(uncompressed_size)
-            extracted_data = compressed_data
-            indicator = 'STORED_TAMPERED'
-    return extracted_data, indicator
+from .extract import extract_file_based_on_header_info, extract_all_files_from_central_directory
+from .helpers import pretty_print_header, save_to_json, save_data_to_file
 
 
 class EndOfCentralDirectoryRecord:
@@ -98,19 +47,18 @@ class EndOfCentralDirectoryRecord:
         signature_offset = -1
         file_size = apk_file.seek(0, 2)
         while offset < file_size:
-            position = file_size - offset - chunk_size
-            if position < 0:
-                position = 0
+            position = max(0, file_size - offset - chunk_size)
             apk_file.seek(position)
             chunk = apk_file.read(chunk_size)
             if not chunk:
                 break
-            # end of Central Directory File Header signature
-            signature_offset = chunk.rfind(b'\x50\x4b\x05\x06')
+            signature_offset = chunk.rfind(b'\x50\x4b\x05\x06')  # EOCD signature
             if signature_offset != -1:
                 eo_central_directory_offset = position + signature_offset
-                break  # Found End of central directory record (EOCD) signature
-            offset += chunk_size
+                break  # Found EOCD signature
+            # Adjust offset to overlap by 4 bytes
+            offset += chunk_size - 4
+
         if signature_offset == -1:
             raise ValueError(
                 "End of central directory record (EOCD) signature not found")
@@ -301,11 +249,11 @@ class CentralDirectory:
             relative_offset_of_local_file_header = struct.unpack('<I', apk_file.read(4))[
                 0]
             filename = struct.unpack(f'<{file_name_length}s', apk_file.read(file_name_length))[
-                0].decode('utf-8')
-            extra_field = struct.unpack(f'<{extra_field_length}s', apk_file.read(extra_field_length))[0].decode('utf-8',
-                                                                                                                'ignore')
-            file_comment = struct.unpack(f'<{file_comment_length}s', apk_file.read(file_comment_length))[0].decode(
-                'utf-8', 'ignore')
+                0].decode('utf-8', 'ignore')
+            extra_field = struct.unpack(f'<{extra_field_length}s', apk_file.read(
+                extra_field_length))[0].decode('utf-8', 'ignore')
+            file_comment = struct.unpack(f'<{file_comment_length}s', apk_file.read(
+                file_comment_length))[0].decode('utf-8', 'ignore')
             offset_in_central_directory = c_offset
 
             central_directory_entry = CentralDirectoryEntry(
@@ -398,10 +346,14 @@ class LocalHeaderRecord:
             uncompressed_size = struct.unpack('<I', apk_file.read(4))[0]
             file_name_length = struct.unpack('<H', apk_file.read(2))[0]
             extra_field_length = struct.unpack('<H', apk_file.read(2))[0]
-            filename = struct.unpack(f'<{file_name_length}s', apk_file.read(file_name_length))[
-                0].decode('utf-8')
-            extra_field = struct.unpack(f'<{extra_field_length}s', apk_file.read(extra_field_length))[0].decode('utf-8',
-                                                                                                                'ignore')
+            try:
+                filename = struct.unpack(f'<{file_name_length}s', apk_file.read(file_name_length))[
+                    0].decode('utf-8', 'ignore')
+                extra_field = struct.unpack(f'<{extra_field_length}s', apk_file.read(
+                    extra_field_length))[0].decode('utf-8', 'ignore')
+            except:
+                filename = entry_of_interest.filename
+                extra_field = entry_of_interest.extra_field
         return cls(
             version_needed_to_extract, general_purpose_bit_flag, compression_method,
             file_last_modification_time, file_last_modification_date, crc32_of_uncompressed_data,
@@ -488,7 +440,7 @@ class ZipEntry:
         Similar to parse, but instead of parsing the entire APK, it only targets the specified file.
 
         :param apk_file: The apk file expected raw
-        :type apk_file: io.TextIOWrapper
+        :type apk_file: bytesIO
         :param filename: the filename of the file to be parsed
         :type filename: str
         :param eocd: Optionally, the instance of the end of central directory from the APK
@@ -561,8 +513,8 @@ class ZipEntry:
         """
         extracted_file = extract_file_based_on_header_info(self.zip, self.get_local_header_dict(name),
                                                            self.get_central_directory_entry_dict(name))[0]
-        # if save:
-        #     save_data_to_file(f"EXTRACTED_{name}", extracted_file)
+        if save:
+            save_data_to_file(f"EXTRACTED_{name}", extracted_file)
         return extracted_file
 
     def infolist(self) -> Dict[str, CentralDirectoryEntry]:
@@ -582,3 +534,63 @@ class ZipEntry:
         :rtype: list
         """
         return [vl for vl in self.central_directory.to_dict()]
+
+    def extract_all(self, extract_path, apk_name):
+        """
+        Extracts all the contents of the APK.
+
+        :param extract_path: where to extract it
+        :type extract_path: str
+        :param apk_name: the name of the apk
+        :type apk_name: str
+        """
+        output_path = os.path.join(extract_path, apk_name)
+        if not extract_all_files_from_central_directory(self.zip, self.to_dict()["central_directory"],
+                                                        self.to_dict()["local_headers"], output_path):
+            print(f"Extraction successful for: {apk_name}")
+
+
+def print_headers_of_filename(cd_h_of_file, local_header_of_file):
+    """
+    Prints out the details for both the central directory header and the local file header. Useful for the CLI.
+
+    :param cd_h_of_file: central directory header of a filename as it may be retrieved from headers_of_filename
+    :type cd_h_of_file: dict
+    :param local_header_of_file: local header dictionary of a filename as it may be retrieved from headers_of_filename
+    :type local_header_of_file: dict
+    """
+    if not cd_h_of_file or not local_header_of_file:
+        print("Are you sure the filename exists?")
+        return
+    pretty_print_header("CENTRAL DIRECTORY")
+    for k in cd_h_of_file:
+        if k == 'Relative offset of local file header' or k == 'Offset in the central directory header':
+            print(f"{k:40} : {hex(int(cd_h_of_file[k]))} | {cd_h_of_file[k]}")
+        else:
+            print(f"{k:40} : {cd_h_of_file[k]}")
+    pretty_print_header("LOCAL HEADER")
+    for k in local_header_of_file:
+        print(f"{k:40} : {local_header_of_file[k]}")
+
+
+def show_and_save_info_of_headers(entries, apk_name, header_type: str, export: bool, show: bool):
+    """
+    Print information for each entry for the central directory header and allow to possibly export to JSON.
+
+    :param entries: The dictionary with all the entries for the central directory
+    :type entries: dict
+    :param apk_name: String with the name of the APK, so it can be used for the export.
+    :type apk_name: str
+    :param header_type: What type of header that is, either central_directory or local, to be used for the export
+    :type header_type: str
+    :param export: Boolean for exporting or not to JSON
+    :type export: bool
+    :param show: Boolean for printing or not the entries
+    :type show: bool
+    """
+    if show:
+        for entry in entries:
+            pretty_print_header(entry)
+            print(entries[entry])
+    if export:
+        save_to_json(f"{apk_name}_{header_type}_header.json", entries)

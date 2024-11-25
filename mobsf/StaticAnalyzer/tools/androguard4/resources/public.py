@@ -21,15 +21,16 @@ if _public_res is None:
                 _public_res[_type][_name] = _id
     else:
         raise Exception(
-            "need to copy the sdk/platforms/android-?/data/res/values/public.xml here")
+            "need to copy the sdk/platforms/android-?/data/res/values/public.xml here"
+        )
 
 SYSTEM_RESOURCES = {
     "attributes": {
         "forward": {k: v for k, v in _public_res['attr'].items()},
-        "inverse": {v: k for k, v in _public_res['attr'].items()}
+        "inverse": {v: k for k, v in _public_res['attr'].items()},
     },
     "styles": {
         "forward": {k: v for k, v in _public_res['style'].items()},
-        "inverse": {v: k for k, v in _public_res['style'].items()}
-    }
+        "inverse": {v: k for k, v in _public_res['style'].items()},
+    },
 }
