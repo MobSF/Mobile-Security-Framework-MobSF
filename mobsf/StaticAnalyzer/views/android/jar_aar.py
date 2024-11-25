@@ -8,7 +8,6 @@ from django.shortcuts import render
 import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.MalwareAnalyzer.views.android import (
-    behaviour_analysis,
     permissions,
 )
 from mobsf.MobSF.utils import (
@@ -209,10 +208,6 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             checksum,
             app_dic['app_dir'],
             code_an_dic)
-        behaviour_an = behaviour_analysis.analyze(
-            checksum,
-            app_dic['app_dir'],
-            APK_TYPE)
         # Get the strings and metadata
         get_strings_metadata(
             checksum,
@@ -240,7 +235,6 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             cert_dic,
             elf_dict['elf_analysis'],
             {},
-            behaviour_an,
             tracker_res,
             rescan,
         )

@@ -535,6 +535,7 @@ class Environment:
                                  'MobSF documentation!')
                 return False
         except Exception:
+            logger.exception('System check failed')
             logger.error(err_msg)
             return False
         return True

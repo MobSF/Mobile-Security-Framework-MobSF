@@ -7,9 +7,11 @@ import platform
 import re
 import shutil
 from pathlib import Path
+from datetime import timedelta
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
+from django.utils.timezone import now
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.http import require_http_methods
@@ -33,10 +35,12 @@ from mobsf.MobSF.utils import (
     python_dict,
 )
 from mobsf.MobSF.init import api_key
+from mobsf.MobSF.security import sanitize_filename
 from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
 from mobsf.StaticAnalyzer.models import (
+    EnqueuedTask,
     RecentScansDB,
     StaticAnalyzerAndroid,
     StaticAnalyzerIOS,
@@ -247,6 +251,11 @@ def zip_format(request):
     return render(request, template, context)
 
 
+def robots_txt(request):
+    content = 'User-agent: *\nDisallow: /*/\nAllow: /*\n'
+    return HttpResponse(content, content_type='text/plain')
+
+
 @login_required
 def dynamic_analysis(request):
     """Dynamic Analysis Landing."""
@@ -303,6 +312,7 @@ def recent_scans(request, page_size=10, page_number=1):
         'entries': entries,
         'version': settings.MOBSF_VER,
         'page_obj': page_obj,
+        'async_scans': settings.ASYNC_ANALYSIS,
     }
     template = 'general/recent.html'
     return render(request, template, context)
@@ -430,7 +440,7 @@ def download_binary(request, checksum, api=False):
                 status=HTTP_STATUS_404)
         return file_download(
             dwd_file,
-            filename,
+            sanitize_filename(robj.FILE_NAME),
             allowed_exts[file_ext])
     except Exception:
         logger.exception('Download Binary Failed')
@@ -470,15 +480,13 @@ def download(request):
 
 @login_required
 def generate_download(request):
-    """Generate downloads for uploaded binaries/source."""
+    """Generate downloads for smali/java zip."""
     try:
-        binary = ('apk', 'ipa', 'jar', 'aar', 'so', 'dylib', 'a')
-        source = ('smali', 'java')
         logger.info('Generating Downloads')
         md5 = request.GET['hash']
         file_type = request.GET['file_type']
         if (not is_md5(md5)
-                or file_type not in binary + source):
+                or file_type not in ('smali', 'java')):
             msg = 'Invalid download type or hash'
             logger.exception(msg)
             return print_n_send_error_response(request, msg)
@@ -499,12 +507,6 @@ def generate_download(request):
             shutil.make_archive(
                 dwd_file.as_posix(), 'zip', directory.as_posix())
             file_name = f'{md5}-smali.zip'
-        elif file_type in binary:
-            # Binaries
-            file_name = f'{md5}.{file_type}'
-            src = app_dir / file_name
-            dst = dwd_dir / file_name
-            shutil.copy2(src.as_posix(), dst.as_posix())
         return redirect(f'/download/{file_name}')
     except Exception:
         msg = 'Generating Downloads'
@@ -514,44 +516,55 @@ def generate_download(request):
 
 @login_required
 @permission_required(Permissions.DELETE)
+@require_http_methods(['POST'])
 def delete_scan(request, api=False):
     """Delete Scan from DB and remove the scan related files."""
     try:
-        if request.method == 'POST':
-            if api:
-                md5_hash = request.POST['hash']
-            else:
-                md5_hash = request.POST['md5']
-            data = {'deleted': 'scan hash not found'}
-            if re.match(MD5_REGEX, md5_hash):
-                # Delete DB Entries
-                scan = RecentScansDB.objects.filter(MD5=md5_hash)
-                if scan.exists():
-                    RecentScansDB.objects.filter(MD5=md5_hash).delete()
-                    StaticAnalyzerAndroid.objects.filter(MD5=md5_hash).delete()
-                    StaticAnalyzerIOS.objects.filter(MD5=md5_hash).delete()
-                    StaticAnalyzerWindows.objects.filter(MD5=md5_hash).delete()
-                    # Delete Upload Dir Contents
-                    app_upload_dir = os.path.join(settings.UPLD_DIR, md5_hash)
-                    if is_dir_exists(app_upload_dir):
-                        shutil.rmtree(app_upload_dir)
-                    # Delete Download Dir Contents
-                    dw_dir = settings.DWD_DIR
-                    for item in os.listdir(dw_dir):
-                        item_path = os.path.join(dw_dir, item)
-                        valid_item = item.startswith(md5_hash + '-')
-                        # Delete all related files
-                        if is_file_exists(item_path) and valid_item:
-                            os.remove(item_path)
-                        # Delete related directories
-                        if is_dir_exists(item_path) and valid_item:
-                            shutil.rmtree(item_path)
-                    data = {'deleted': 'yes'}
-            if api:
-                return data
-            else:
-                ctype = 'application/json; charset=utf-8'
-                return HttpResponse(json.dumps(data), content_type=ctype)
+        if api:
+            md5_hash = request.POST['hash']
+        else:
+            md5_hash = request.POST['md5']
+
+        if not re.match(MD5_REGEX, md5_hash):
+            return send_response({'deleted': 'Invalid scan hash'}, api)
+
+        # Delete DB Entries
+        scan = RecentScansDB.objects.filter(MD5=md5_hash)
+        if not scan.exists():
+            return send_response({'deleted': 'Scan not found in Database'}, api)
+        if settings.ASYNC_ANALYSIS:
+            # Handle Async Tasks
+            et = EnqueuedTask.objects.filter(checksum=md5_hash).first()
+            if et:
+                max_time_passed = now() - et.created_at > timedelta(
+                    minutes=settings.ASYNC_ANALYSIS_TIMEOUT)
+                if not (et.completed_at or max_time_passed):
+                    # Queue is in progress, cannot delete the task
+                    return send_response(
+                        {'deleted': 'A scan can only be deleted after it is completed'},
+                        api)
+        # Delete all related DB entries
+        EnqueuedTask.objects.filter(checksum=md5_hash).all().delete()
+        RecentScansDB.objects.filter(MD5=md5_hash).delete()
+        StaticAnalyzerAndroid.objects.filter(MD5=md5_hash).delete()
+        StaticAnalyzerIOS.objects.filter(MD5=md5_hash).delete()
+        StaticAnalyzerWindows.objects.filter(MD5=md5_hash).delete()
+        # Delete Upload Dir Contents
+        app_upload_dir = os.path.join(settings.UPLD_DIR, md5_hash)
+        if is_dir_exists(app_upload_dir):
+            shutil.rmtree(app_upload_dir)
+        # Delete Download Dir Contents
+        dw_dir = settings.DWD_DIR
+        for item in os.listdir(dw_dir):
+            item_path = os.path.join(dw_dir, item)
+            valid_item = item.startswith(md5_hash + '-')
+            # Delete all related files
+            if is_file_exists(item_path) and valid_item:
+                os.remove(item_path)
+            # Delete related directories
+            if is_dir_exists(item_path) and valid_item:
+                shutil.rmtree(item_path, ignore_errors=True)
+        return send_response({'deleted': 'yes'}, api)
     except Exception as exp:
         msg = str(exp)
         exp_doc = exp.__doc__

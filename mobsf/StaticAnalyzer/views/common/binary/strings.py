@@ -34,3 +34,4 @@ def strings_on_binary(bin_path):
         return list(set(strings_util(bin_path)))
     except Exception:
         logger.exception('Extracting strings from binary')
+    return []

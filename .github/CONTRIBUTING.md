@@ -15,7 +15,7 @@ The issue tracker is the preferred channel for [bug reports](#bugs),
 [features requests](#features) and [submitting pull
 requests](#pull-requests), but please respect the following restrictions:
 
-* Please **do not** use the issue tracker for personal support requests (use [MobSF Slack channel](https://join.slack.com/t/mobsf/shared_invite/zt-2huaz2nj9-ifViLV7g7w1xthx5D6rGhw) or 
+* Please **do not** use the issue tracker for personal support requests (use [MobSF Slack channel](https://join.slack.com/t/mobsf/shared_invite/zt-2umjnqlsm-sNSh9g4GFraPUBPqatwTxw) or 
   [Stack Overflow](https://stackoverflow.com/search?q=mobsf)).
 
 * Please **do not** derail or troll issues. Keep the discussion on topic and

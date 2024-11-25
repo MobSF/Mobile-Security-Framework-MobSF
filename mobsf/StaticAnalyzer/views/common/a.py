@@ -114,6 +114,8 @@ def a_analysis(request, app_dict, rescan, api):
             'bundle_supported_platforms': [],
             'bundle_version_name': '',
         }
+        app_dict['infoplist'] = infoplist_dict
+        app_dict['all_files'] = all_files
         app_dict['appstore'] = ''
         app_dict['secrets'] = []
         bin_dict = {
@@ -172,10 +174,8 @@ def a_analysis(request, app_dict, rescan, api):
         code_dict['trackers'] = trackers
         context = save_get_ctx(
             app_dict,
-            infoplist_dict,
             code_dict,
             bin_dict,
-            all_files,
             rescan)
     context['virus_total'] = None
     if settings.VT_ENABLED:

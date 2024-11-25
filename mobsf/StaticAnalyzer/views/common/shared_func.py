@@ -4,7 +4,6 @@ Shared Functions.
 
 Module providing the shared functions for iOS and Android
 """
-import io
 import hashlib
 import logging
 import os
@@ -30,6 +29,7 @@ from mobsf.MobSF.utils import (
     is_path_traversal,
     is_safe_path,
     print_n_send_error_response,
+    set_permissions,
 )
 from mobsf.MobSF.views.scanning import (
     add_to_recent_scan,
@@ -62,7 +62,7 @@ def hash_gen(checksum, app_path) -> tuple:
         sha1 = hashlib.sha1()
         sha256 = hashlib.sha256()
         block_size = 65536
-        with io.open(app_path, mode='rb') as afile:
+        with open(app_path, mode='rb') as afile:
             buf = afile.read(block_size)
             while buf:
                 sha1.update(buf)
@@ -108,6 +108,9 @@ def unzip(checksum, app_path, ext_path):
                 unzip_b = shutil.which('unzip')
                 subprocess.call(
                     [unzip_b, '-o', '-q', app_path, '-d', ext_path])
+                # Set permissions, packed files
+                # may not have proper permissions
+                set_permissions(ext_path)
                 dat = subprocess.check_output([unzip_b, '-qq', '-l', app_path])
                 dat = dat.decode('utf-8').split('\n')
                 files_det = ['Length   Date   Time   Name']
@@ -300,18 +303,24 @@ def find_java_source_folder(base_folder: Path):
                 if p[0].exists())
 
 
-def is_secret_key(inp):
+def is_secret_key(key):
     """Check if the key in the key/value pair is interesting."""
-    inp = inp.lower()
-    iden = (
-        'api"', 'key"', 'api_', 'key_', 'secret"',
-        'password"', 'aws', 'gcp', 's3_', '_s3', 'secret_',
-        'token"', 'username"', 'user_name"', 'user"',
+    key_lower = key.lower()
+    # Key ends with these strings
+    endswith = (
+        'api', 'key', 'secret', 'token', 'username',
+        'user_name', 'user', 'pass', 'password',
+        'private_key', 'access_key',
+    )
+    # Key contains these strings
+    contains = (
+        'api_', 'key_', 'aws', 's3_', '_s3', 'secret_',
         'bearer', 'jwt', 'certificate"', 'credential',
         'azure', 'webhook', 'twilio_', 'bitcoin',
         '_auth', 'firebase', 'oauth', 'authorization',
-        'private', 'pwd', 'session', 'token_',
+        'private', 'pwd', 'session', 'token_', 'gcp',
     )
+    # Key must not contain these strings
     not_string = (
         'label_', 'text', 'hint', 'msg_', 'create_',
         'message', 'new', 'confirm', 'activity_',
@@ -322,8 +331,10 @@ def is_secret_key(inp):
         'lable', 'hide_', 'old', 'update', 'error',
         'empty', 'txt_', 'lbl_',
     )
-    not_str = any(i in inp for i in not_string)
-    return any(i in inp for i in iden) and not not_str
+    not_contains_str = any(i in key_lower for i in not_string)
+    contains_str = any(i in key_lower for i in contains)
+    endswith_str = any(key_lower.endswith(i) for i in endswith)
+    return (endswith_str or contains_str) and not not_contains_str
 
 
 def strings_and_entropies(checksum, src, exts):

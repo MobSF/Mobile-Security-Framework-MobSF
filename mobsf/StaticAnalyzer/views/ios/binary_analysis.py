@@ -84,6 +84,7 @@ def binary_analysis(checksum, src, tools_dir, app_dir, executable_name):
         'strings': [],
         'bin_info': {},
         'bin_type': '',
+        'bin_path': None,
     }
     try:
         binary_findings = {}
@@ -133,8 +134,8 @@ def binary_analysis(checksum, src, tools_dir, app_dir, executable_name):
             bin_dict['bin_info'] = bin_info
             bin_dict['bin_type'] = bin_type
             logger.info('Running strings against the Binary')
-            bin_dict['strings'] = strings_on_binary(
-                bin_path.as_posix())
+            bin_dict['strings'] = strings_on_binary(bin_path.as_posix())
+            bin_dict['bin_path'] = bin_path
     except Exception as exp:
         msg = 'Failed to run IPA Binary Analysis'
         logger.exception(msg)

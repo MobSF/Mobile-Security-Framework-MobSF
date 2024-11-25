@@ -22,6 +22,10 @@ import unicodedata
 import threading
 from urllib.parse import urlparse
 from pathlib import Path
+from concurrent.futures import (
+    ThreadPoolExecutor,
+    TimeoutError as ThreadPoolTimeoutError,
+)
 
 from packaging.version import Version
 
@@ -57,6 +61,8 @@ EMAIL_REGEX = re.compile(r'[\w+.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
 USERNAME_REGEX = re.compile(r'^\w[\w\-\@\.]{1,35}$')
 GOOGLE_API_KEY_REGEX = re.compile(r'AIza[0-9A-Za-z-_]{35}$')
 GOOGLE_APP_ID_REGEX = re.compile(r'\d{1,2}:\d{1,50}:android:[a-f0-9]{1,50}')
+PKG_REGEX = re.compile(
+    r'package\s+([a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*);')
 
 
 class Color(object):
@@ -948,21 +954,28 @@ class TaskTimeoutError(Exception):
 
 
 def run_with_timeout(func, limit, *args, **kwargs):
-    def run_func(result, *args, **kwargs):
-        result.append(func(*args, **kwargs))
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(func, *args, **kwargs)
+        try:
+            return future.result(timeout=limit)
+        except ThreadPoolTimeoutError:
+            msg = f'function <{func.__name__}> timed out after {limit} seconds'
+            raise TaskTimeoutError(msg)
 
-    result = []
-    thread = threading.Thread(
-        target=run_func,
-        args=(result, *args),
-        kwargs=kwargs)
-    thread.start()
-    thread.join(limit)
 
-    if thread.is_alive():
-        msg = (f'function <{func.__name__}> '
-               f'timed out after {limit} seconds')
-        raise TaskTimeoutError(msg)
-    if result:
-        return result[0]
-    return None
+def set_permissions(path):
+    base_path = Path(path)
+    # Read/Write for directories without execute
+    perm_dir = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
+    # Read/Write for files
+    perm_file = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
+
+    # Set permissions for directories and files
+    for item in base_path.rglob('*'):
+        try:
+            if item.is_dir():
+                item.chmod(perm_dir)
+            elif item.is_file():
+                item.chmod(perm_file)
+        except Exception:
+            pass

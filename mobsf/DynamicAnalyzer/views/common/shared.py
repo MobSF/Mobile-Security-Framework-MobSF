@@ -3,6 +3,7 @@
 import logging
 import os
 import re
+import errno
 import json
 import tarfile
 import shutil
@@ -54,18 +55,35 @@ def safe_paths(tar_meta):
         yield fh
 
 
+def onerror(func, path, exc_info):
+    _, exc, _ = exc_info
+    if exc.errno == errno.EACCES:  # Permission error
+        try:
+            os.chmod(path, 0o755)
+            func(path)
+        except Exception:
+            pass
+    elif exc.errno == errno.ENOTEMPTY:  # Directory not empty
+        try:
+            func(path)
+        except Exception:
+            pass
+    else:
+        raise
+
+
 def untar_files(tar_loc, untar_dir):
     """Untar files."""
     logger.info('Extracting Tar files')
-    # Extract Device Data
-    if not tar_loc.exists():
-        return False
-    if untar_dir.exists():
-        # fix for permission errors
-        shutil.rmtree(untar_dir)
-    else:
-        os.makedirs(untar_dir)
     try:
+        # Extract Device Data
+        if not tar_loc.exists():
+            return False
+        if untar_dir.exists():
+            # fix for permission errors
+            shutil.rmtree(untar_dir, onerror=onerror)
+        else:
+            os.makedirs(untar_dir)
         with tarfile.open(tar_loc.as_posix(), errorlevel=1) as tar:
 
             def is_within_directory(directory, target):
@@ -142,7 +160,7 @@ def send_response(data, api=False):
         return data
     return HttpResponse(
         json.dumps(data),
-        content_type='application/json')
+        content_type='application/json; charset=utf-8')
 
 
 def invalid_params(api=False):

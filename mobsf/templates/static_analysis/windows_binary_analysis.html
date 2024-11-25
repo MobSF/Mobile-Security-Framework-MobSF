@@ -60,6 +60,14 @@
               </p>
             </a>
           </li>
+          <li class="nav-item">
+            <a href="#malware_lookup" class="nav-link">
+              <i class="fa fa-ban nav-icon"></i>
+              <p>
+                Malware Lookup
+              </p>
+            </a>
+          </li>
            {% if virus_total %}
               <li class="nav-item">
                 <a href="#virus_total" class="nav-link">
@@ -206,6 +214,7 @@
                    <a href="{% url 'static_analyzer_windows' checksum=md5 %}?rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
                    <a href="#" data-target="#mstrings" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-table"></i> View Strings</a>
                    <button type="button" class="btn btn-warning" data-toggle="modal" data-target=".scan-logs-mdl"><i class="fa fa-list" aria-hidden="true"></i> Scan Logs</button>
+                   <a href="{% url "download_binary" checksum=md5 %}" class="btn btn-warning"> <i class="fa fa-download"></i> Download APPX</a>
                </p>
               </div>
             </div><!-- /.card -->
@@ -280,6 +289,54 @@
     </div>
 </section>
  <!-- ===========================end binary analysis ================================== -->
+  <!---Malware Analysis Section-->
+ <a id="malware_lookup" class="anchor"></a>
+ <section class="content">
+   <div class="container-fluid">
+     <div class="row">
+         <div class="col-lg-12">
+         <div class="card">
+           <div class="card-body">
+             <p>
+              <strong><i class="fa fa-ban"></i> MALWARE LOOKUP</strong>
+              </p>
+                <div class="table-responsive">
+               <div class="row">
+                <div class="col-sm-3 col-6">
+                <div class="description-block border-right">
+                <span class="text-danger"><a href="https://www.virustotal.com/gui/file/{{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> VirusTotal Report</a></span>
+                </div>
+                </div>
+                
+                <div class="col-sm-3 col-6">
+                <div class="description-block border-right">
+                <span class="text-warning"></i><a href="https://tria.ge/s?q={{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> Triage Report</a>
+                </span>
+                </div>
+                </div>
+                
+                <div class="col-sm-3 col-6">
+                <div class="description-block border-right">
+                <span class="text-info"><a href="https://metadefender.com/results/hash/{{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> MetaDefender Report</a>
+                </span>
+                </div>
+                </div>
+                
+                <div class="col-sm-3 col-6">
+                  <div class="description-block border-right">
+                  <span class="text-success"><a href="https://www.hybrid-analysis.com/search?query={{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> Hybrid Analysis Report</a>
+                  </span>
+                  </div>
+                </div>
+              </div>
+           </div>
+         </div><!-- /.card -->
+         </div>
+         <!-- end row -->
+         </div>
+     </div>
+ </section>
+ <!-- ===========================end malware lookup ================================== -->
  {% if virus_total %}
 <a id="virus_total" class="anchor"></a>
 <section class="content">

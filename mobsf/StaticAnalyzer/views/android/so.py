@@ -116,14 +116,15 @@ def so_analysis(request, app_dic, rescan, api):
         apkid_results = {}
         code_an_dic = {
             'api': {},
+            'behaviour': {},
             'perm_mappings': {},
             'findings': {},
             'niap': {},
             'urls_list': [],
             'urls': [],
             'emails': [],
+            'sbom': {},
         }
-        behaviour_an = []
         # Get the strings and metadata from shared object
         get_strings_metadata(
             checksum,
@@ -157,7 +158,6 @@ def so_analysis(request, app_dic, rescan, api):
             cert_dic,
             elf_dict['elf_analysis'],
             apkid_results,
-            behaviour_an,
             trackers,
             rescan,
         )

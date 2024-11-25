@@ -180,6 +180,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'mobsf', '*']
 # Application definition
 INSTALLED_APPS = (
     # 'django.contrib.admin',
+    'django_q',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -307,6 +308,11 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
+        'django_q': {
+            'handlers': ['console', 'logfile'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
         'django.db.backends': {
             'handlers': ['console', 'logfile'],
             # DEBUG will log all queries, so change it to WARNING.
@@ -335,6 +341,23 @@ LOGGING = {
         },
     },
 }
+ASYNC_ANALYSIS = bool(os.getenv('MOBSF_ASYNC_ANALYSIS', '0') == '1')
+ASYNC_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_ASYNC_ANALYSIS_TIMEOUT', '60'))
+Q_CLUSTER = {
+    'name': 'scan_queue',
+    'workers': int(os.getenv('MOBSF_ASYNC_WORKERS', 3)),
+    'recycle': 5,
+    'timeout': ASYNC_ANALYSIS_TIMEOUT * 60,
+    'retry': (ASYNC_ANALYSIS_TIMEOUT * 60) + 100,
+    'compress': True,
+    'label': 'scan_queue',
+    'orm': 'default',
+    'max_attempts': 1,
+    'save_limit': -1,
+    'ack_failures': True,
+}
+QUEUE_MAX_SIZE = 100
+MULTIPROCESSING = os.getenv('MOBSF_MULTIPROCESSING')
 JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1000))
 SAST_TIMEOUT = int(os.getenv('MOBSF_SAST_TIMEOUT', 1000))
 BINARY_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_BINARY_ANALYSIS_TIMEOUT', 600))

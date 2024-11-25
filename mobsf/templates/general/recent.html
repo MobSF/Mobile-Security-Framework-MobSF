@@ -35,6 +35,9 @@
                  <div class="box">
         <div class="box-header with-border">
             <h3 class="box-title"><i class="fa fa-rocket"></i> Recent Scans</h3>
+            {% if async_scans %}
+            <p class="lead">View scan progress in the <strong><a href="{% url 'list_tasks' %}">Scan Queue</a></strong></p>
+            {% endif %}
         </div>
 
         <div class="box-body">
@@ -288,7 +291,7 @@
                                 md5: md5_hash,
                                 },
                             success : function(json) {
-                                if (json.deleted==='yes'){
+                                if (json.deleted ==='yes'){
                                     Swal.fire(
                                         'Deleted!',
                                         'The scan result is deleted!',
@@ -300,7 +303,7 @@
                                 else {
                                     Swal.fire(
                                     'Delete Failed',
-                                    'Cannot delete the scan result!',
+                                    json.deleted,
                                     'error'
                                     )
                                 }

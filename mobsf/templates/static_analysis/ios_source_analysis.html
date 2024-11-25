@@ -7,7 +7,6 @@
     <!-- DataTables -->
     <link href="{% static "datatables/css/datatables.combined.min.css" %}" rel="stylesheet">
     <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
-
     <style type="text/css" media="print">
         @page { size: landscape; }
         @media print {
@@ -371,6 +370,7 @@
                   <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-table"></i> Manage Suppressions</a>
                   <a data-target="#mplist" role="button" class="btn btn-primary" data-toggle="modal" href="#"><i class="fa fa-eye"></i> View Info.plist</a>
                  <button type="button" class="btn btn-warning" data-toggle="modal" data-target=".scan-logs-mdl"><i class="fa fa-list" aria-hidden="true"></i> Scan Logs</button>
+                 <a href="{% url "download_binary" checksum=md5 %}" class="btn btn-warning"> <i class="fa fa-download"></i> Download ZIP</a>
                </p>
               </div>
             </div><!-- /.card -->

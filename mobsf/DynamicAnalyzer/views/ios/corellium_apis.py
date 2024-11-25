@@ -29,6 +29,7 @@ CORELLIUM_API_KEY = getattr(
     settings,
     'CORELLIUM_API_KEY', '')
 logger = logging.getLogger(__name__)
+TIMEOUT = 20
 
 
 class CorelliumInit:
@@ -54,7 +55,7 @@ class CorelliumAPI(CorelliumInit):
         """Check API Availability."""
         try:
             r = requests.get(f'{self.api}/ready',
-                             timeout=5,
+                             timeout=TIMEOUT,
                              proxies=self.proxies,
                              verify=self.verify)
             if r.status_code in SUCCESS_RESP:
@@ -74,7 +75,7 @@ class CorelliumAPI(CorelliumInit):
             return False
         r = requests.get(
             f'{self.api}/projects',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -91,7 +92,7 @@ class CorelliumAPI(CorelliumInit):
             ids = []
             r = requests.get(
                 f'{self.api}/projects?ids_only=true',
-                timeout=5,
+                timeout=TIMEOUT,
                 headers=self.headers,
                 proxies=self.proxies,
                 verify=self.verify)
@@ -107,7 +108,7 @@ class CorelliumAPI(CorelliumInit):
         """Get SSH public keys associated with a project."""
         r = requests.get(
             f'{self.api}/projects/{self.project_id}/keys',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -128,7 +129,7 @@ class CorelliumAPI(CorelliumInit):
         }
         r = requests.post(
             f'{self.api}/projects/{self.project_id}/keys',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             json=data,
             proxies=self.proxies,
@@ -154,7 +155,7 @@ class CorelliumAPI(CorelliumInit):
         instances = []
         r = requests.get(
             f'{self.api}/instances',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -174,7 +175,7 @@ class CorelliumAPI(CorelliumInit):
         }
         r = requests.post(
             f'{self.api}/instances',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             json=data,
             proxies=self.proxies,
@@ -189,7 +190,7 @@ class CorelliumModelsAPI(CorelliumInit):
     def get_models(self):
         r = requests.get(
             f'{self.api}/models',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -210,7 +211,7 @@ class CorelliumModelsAPI(CorelliumInit):
             return False
         r = requests.get(
             f'{self.api}/models/{model}/software',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -232,7 +233,7 @@ class CorelliumInstanceAPI(CorelliumInit):
         data = {'paused': False}
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/start',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             json=data,
             proxies=self.proxies,
@@ -248,7 +249,7 @@ class CorelliumInstanceAPI(CorelliumInit):
         data = {'soft': True}
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/stop',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             json=data,
             proxies=self.proxies,
@@ -263,7 +264,7 @@ class CorelliumInstanceAPI(CorelliumInit):
         """Unpause instance."""
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/unpause',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -277,7 +278,7 @@ class CorelliumInstanceAPI(CorelliumInit):
         """Reboot instance."""
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/reboot',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -304,7 +305,7 @@ class CorelliumInstanceAPI(CorelliumInit):
         """Check instance status."""
         r = requests.get(
             f'{self.api}/instances/{self.instance_id}',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -320,7 +321,7 @@ class CorelliumInstanceAPI(CorelliumInit):
             r = requests.get(
                 (f'{self.api}/instances/{self.instance_id}'
                  '/screenshot.png?scale=1'),
-                timeout=5,
+                timeout=TIMEOUT,
                 headers=self.headers,
                 stream=True,
                 proxies=self.proxies,
@@ -337,7 +338,7 @@ class CorelliumInstanceAPI(CorelliumInit):
         """Start network capture."""
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/sslsplit/enable',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -354,7 +355,7 @@ class CorelliumInstanceAPI(CorelliumInit):
         """Stop network capture."""
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/sslsplit/disable',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -368,7 +369,7 @@ class CorelliumInstanceAPI(CorelliumInit):
         """Download network capture."""
         r = requests.get(
             f'{self.api}/instances/{self.instance_id}/networkMonitor.pcap',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -382,7 +383,7 @@ class CorelliumInstanceAPI(CorelliumInit):
         """Get Console Log."""
         r = requests.get(
             f'{self.api}/instances/{self.instance_id}/consoleLog',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -396,7 +397,7 @@ class CorelliumInstanceAPI(CorelliumInit):
         """Get SSH connection string."""
         r = requests.get(
             f'{self.api}/instances/{self.instance_id}/quickConnectCommand',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -484,7 +485,7 @@ class CorelliumInstanceAPI(CorelliumInit):
                     {'buttons': [], 'wait': 100}]
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/input',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             json=data,
             proxies=self.proxies,
@@ -506,7 +507,7 @@ class CorelliumAgentAPI(CorelliumInit):
         """Agent ready."""
         r = requests.get(
             f'{self.api}/instances/{self.instance_id}/agent/v1/app/ready',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -522,7 +523,7 @@ class CorelliumAgentAPI(CorelliumInit):
         """Unlock iOS device."""
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/agent/v1/system/unlock',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -556,7 +557,7 @@ class CorelliumAgentAPI(CorelliumInit):
         """Install IPA."""
         r = requests.post(
             f'{self.api}/instances/{self.instance_id}/agent/v1/app/install',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             json={'path': '/tmp/app.ipa'},
             proxies=self.proxies,
@@ -572,7 +573,7 @@ class CorelliumAgentAPI(CorelliumInit):
         r = requests.post(
             (f'{self.api}/instances/{self.instance_id}'
              f'/agent/v1/app/apps/{bundle_id}/run'),
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -587,7 +588,7 @@ class CorelliumAgentAPI(CorelliumInit):
         r = requests.post(
             (f'{self.api}/instances/{self.instance_id}'
              f'/agent/v1/app/apps/{bundle_id}/kill'),
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -602,7 +603,7 @@ class CorelliumAgentAPI(CorelliumInit):
         r = requests.post(
             (f'{self.api}/instances/{self.instance_id}'
              f'/agent/v1/app/apps/{bundle_id}/uninstall'),
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -616,7 +617,7 @@ class CorelliumAgentAPI(CorelliumInit):
         """List all apps installed."""
         r = requests.get(
             f'{self.api}/instances/{self.instance_id}/agent/v1/app/apps',
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)
@@ -631,7 +632,7 @@ class CorelliumAgentAPI(CorelliumInit):
         r = requests.get(
             (f'{self.api}/instances/{self.instance_id}'
              f'/agent/v1/app/icons?{bundleids}'),
-            timeout=5,
+            timeout=TIMEOUT,
             headers=self.headers,
             proxies=self.proxies,
             verify=self.verify)

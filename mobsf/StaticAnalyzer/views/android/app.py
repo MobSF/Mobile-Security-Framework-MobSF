@@ -33,21 +33,32 @@ def get_app_name(a, app_dir, is_apk):
     base = Path(app_dir)
     if is_apk:
         if a:
-            return a.get_app_name()
-        else:
-            val = base / 'apktool_out' / 'res' / 'values'
-            if val.exists():
+            # Parsed Androguard APK Object
+            try:
+                return a.get_app_name()
+            except Exception:
+                logger.warning('Failed to get app name from parsed APK object')
+        # Look for app_name in values folder.
+        val = base / 'apktool_out' / 'res' / 'values'
+        if val.exists():
+            try:
                 return get_app_name_from_values_folder(val.as_posix())
+            except Exception:
+                logger.error('Failed to get app name from values folder')
     else:
-        strings_path = base / 'app' / 'src' / 'main' / 'res' / 'values'
-        eclipse_path = base / 'res' / 'values'
-        if strings_path.exists():
-            return get_app_name_from_values_folder(
-                strings_path.as_posix())
-        elif eclipse_path.exists():
-            return get_app_name_from_values_folder(
-                eclipse_path.as_posix())
-    logger.warning('Cannot find values folder.')
+        # For source code
+        try:
+            strings_path = base / 'app' / 'src' / 'main' / 'res' / 'values'
+            eclipse_path = base / 'res' / 'values'
+            if strings_path.exists():
+                return get_app_name_from_values_folder(
+                    strings_path.as_posix())
+            elif eclipse_path.exists():
+                return get_app_name_from_values_folder(
+                    eclipse_path.as_posix())
+        except Exception:
+            logger.error('Failed to get app name')
+    logger.warning('Cannot find app name')
     return ''
 
 
