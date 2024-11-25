@@ -170,8 +170,12 @@ def plist_analysis(checksum, src, scan_type):
         plist_obj = {}
         with open(plist_file, 'rb') as fp:
             plist_obj = load(fp)
-        plist_info['plist_xml'] = dumps(
-            plist_obj).decode('utf-8', 'ignore')
+        try:
+            pxml = dumps(plist_obj).decode('utf-8', 'ignore')
+        except Exception:
+            logger.error('Failed to dump plist XML')
+            pxml = ''
+        plist_info['plist_xml'] = pxml
         plist_info['bin_name'] = (plist_obj.get('CFBundleDisplayName', '')
                                   or plist_obj.get('CFBundleName', ''))
         if not plist_info['bin_name'] and scan_type == 'ipa':
