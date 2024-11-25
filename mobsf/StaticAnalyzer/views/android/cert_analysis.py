@@ -25,8 +25,8 @@ from mobsf.MobSF.utils import (
     find_java_binary,
     gen_sha256_hash,
 )
-from mobsf.StaticAnalyzer.tools.androguard4.apk import (
-    get_certificate_name_string,
+from mobsf.StaticAnalyzer.tools.androguard4 import (
+    util,
 )
 
 logger = logging.getLogger(__name__)
@@ -77,14 +77,14 @@ def get_cert_details(data):
     """Get certificate details."""
     certlist = []
     x509_cert = asn1crypto.x509.Certificate.load(data)
-    subject = get_certificate_name_string(x509_cert.subject, short=True)
+    subject = util.get_certificate_name_string(x509_cert.subject, short=True)
     certlist.append(f'X.509 Subject: {subject}')
     certlist.append(f'Signature Algorithm: {x509_cert.signature_algo}')
     valid_from = x509_cert['tbs_certificate']['validity']['not_before'].native
     certlist.append(f'Valid From: {valid_from}')
     valid_to = x509_cert['tbs_certificate']['validity']['not_after'].native
     certlist.append(f'Valid To: {valid_to}')
-    issuer = get_certificate_name_string(x509_cert.issuer, short=True)
+    issuer = util.get_certificate_name_string(x509_cert.issuer, short=True)
     certlist.append(f'Issuer: {issuer}')
     certlist.append(f'Serial Number: {hex(x509_cert.serial_number)}')
     certlist.append(f'Hash Algorithm: {x509_cert.hash_algo}')

@@ -55,7 +55,7 @@ def get_manifest_file(app_dir, app_path, tools_dir, typ, apk):
 
 
 def get_android_manifest_androguard(apk, app_dir):
-    """Get AndroidManifest.xml using Androguard."""
+    """Get AndroidManifest.xml using Androguard4."""
     try:
         logger.info('Extracting AndroidManifest.xml with Androguard')
         if not apk:

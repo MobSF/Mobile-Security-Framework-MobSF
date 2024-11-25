@@ -173,7 +173,7 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
         app_dic['certz'] = get_hardcoded_cert_keystore(
             checksum,
             app_dic['files'])
-        # Parse APK with Androguard
+        # Parse APK with Androguard4
         andro_apk = parse_apk(
             checksum,
             app_dic['app_path'])
