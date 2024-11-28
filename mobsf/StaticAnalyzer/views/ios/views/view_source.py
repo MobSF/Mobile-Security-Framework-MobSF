@@ -116,7 +116,7 @@ def run(request, api=False):
                 # Handle invalid plist files (e.g., if it isn't binary or XML)
                 file_format = 'xml'
                 dat = Path(sfile).read_text()
-            except Exception:                
+            except Exception:
                 dat = None
         elif typ == 'db':
             file_format = 'asciidoc'

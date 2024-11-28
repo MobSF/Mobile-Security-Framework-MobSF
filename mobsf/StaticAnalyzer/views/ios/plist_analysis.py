@@ -84,7 +84,7 @@ def get_bundle_id(pobj, src):
                     if tc in i:
                         i = i.split(tc)[0]
                 possible_ids.add(i)
-        except Exception as e:
+        except Exception:
             logger.warning('Error in parsing .pbxproj')
     if possible_ids:
         possible_ids = filter(None, possible_ids)

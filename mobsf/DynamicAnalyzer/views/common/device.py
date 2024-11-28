@@ -20,6 +20,7 @@ from mobsf.MobSF.utils import (
 )
 
 from plistlib import (
+    FMT_XML,
     dumps,
 )
 
