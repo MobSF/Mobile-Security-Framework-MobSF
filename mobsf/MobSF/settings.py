@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 #       MOBSF CONFIGURATION
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 BANNER, VERSION, MOBSF_VER = get_mobsf_version()
-USE_HOME = True
+USE_HOME = os.getenv("MOBSF_USE_HOME", "1") == "1"
 # True : All Uploads/Downloads will be stored in user's home directory
 # False : All Uploads/Downloads will be stored under MobSF root directory
 
