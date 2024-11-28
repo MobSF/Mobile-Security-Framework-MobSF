@@ -17,9 +17,21 @@ from mobsf.MobSF.utils import (
 logger = logging.getLogger(__name__)
 
 
-def get_app_details(checksum, package_id):
+def get_app_details(app_dic, man_data):
     """Get App Details form PlayStore."""
+    checksum = app_dic['md5']
+    app_dic['playstore'] = {
+        'error': True,
+        'description': 'Failed to identify the package name',
+    }
     try:
+        if man_data.get('packagename'):
+            package_id = man_data['packagename']
+        elif app_dic.get('apk_features', {}).get('package'):
+            package_id = app_dic['apk_features']['package']
+        else:
+            logger.warning('Package Name not found')
+            return
         msg = f'Fetching Details from Play Store: {package_id}'
         logger.info(msg)
         append_scan_status(checksum, msg)
@@ -33,7 +45,7 @@ def get_app_details(checksum, package_id):
             det['androidVersionText'] = ''
     except Exception:
         det = app_search(checksum, package_id)
-    return det
+    app_dic['playstore'] = det
 
 
 def app_search(checksum, app_id):

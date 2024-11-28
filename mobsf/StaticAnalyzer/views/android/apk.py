@@ -1,4 +1,4 @@
-
+# -*- coding: utf_8 -*-
 """Android APK and Source Analysis."""
 import logging
 import shutil
@@ -29,8 +29,9 @@ from mobsf.StaticAnalyzer.views.common.binary.lib_analysis import (
     library_analysis,
 )
 from mobsf.StaticAnalyzer.views.android.app import (
-    get_app_name,
-    parse_apk,
+    aapt_parse,
+    androguard_parse,
+    get_apk_name,
 )
 from mobsf.StaticAnalyzer.views.android.cert_analysis import (
     cert_info,
@@ -53,10 +54,12 @@ from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
     manifest_analysis,
 )
 from mobsf.StaticAnalyzer.views.android.manifest_utils import (
-    get_manifest,
-    manifest_data,
+    extract_manifest_data,
+    get_parsed_manifest,
 )
-from mobsf.StaticAnalyzer.views.android.playstore import get_app_details
+from mobsf.StaticAnalyzer.views.android.playstore import (
+    get_app_details,
+)
 from mobsf.StaticAnalyzer.views.android.strings import (
     get_strings_metadata,
 )
@@ -73,6 +76,7 @@ from mobsf.StaticAnalyzer.views.common.appsec import (
 )
 from mobsf.StaticAnalyzer.views.common.async_task import (
     async_analysis,
+    enqueued_task_init,
     update_enqueued_task,
 )
 from mobsf.MobSF.views.authorization import (
@@ -96,39 +100,27 @@ def get_size_and_hashes(app_dic):
     app_dic['sha1'], app_dic['sha256'] = hash_gen(app_dic['md5'], app_dic['app_path'])
 
 
-def get_manifest_data(checksum, app_dic, andro_apk=None):
+def get_manifest_data(app_dic):
     """Get Manifest Data."""
-    # Manifest XML
-    mani_file, ns, mani_xml = get_manifest(
-        checksum,
-        app_dic['app_path'],
-        app_dic['app_dir'],
-        app_dic['tools_dir'],
-        app_dic['zipped'],
-        andro_apk,
-    )
-    app_dic['manifest_file'] = mani_file
-    app_dic['parsed_xml'] = mani_xml
+    # Manifest XML parsed
+    get_parsed_manifest(app_dic)
+    # Populates manifest_file, manifest_namespace, manifest_parsed_xml
+
     # Manifest data extraction
-    man_data = manifest_data(
-        checksum,
-        app_dic['parsed_xml'],
-        ns)
+    man_data_dic = extract_manifest_data(app_dic)
     # Manifest Analysis
-    man_analysis = manifest_analysis(
-        checksum,
-        app_dic['parsed_xml'],
-        ns,
-        man_data,
-        app_dic['zipped'],
-        app_dic['app_dir'])
-    return man_data, man_analysis
+    man_analysis = manifest_analysis(app_dic, man_data_dic)
+    return man_data_dic, man_analysis
 
 
-def print_scan_subject(checksum, app_dic, man_data):
+def print_scan_subject(app_dic, man_data):
     """Log scan subject."""
-    app_name = app_dic['real_name']
-    pkg_name = man_data['packagename']
+    checksum = app_dic['md5']
+    app_name = app_dic.get('real_name')
+    pkg_name = man_data.get('packagename')
+    pkg_name2 = app_dic.get('apk_features', {}).get('package')
+    if not pkg_name:
+        pkg_name = pkg_name2
     subject = 'Android App'
     if app_name and pkg_name:
         subject = f'{app_name} ({pkg_name})'
@@ -141,7 +133,13 @@ def print_scan_subject(checksum, app_dic, man_data):
     append_scan_status(checksum, msg)
     if subject == 'Failed':
         subject = f'({subject})'
-    return subject
+    app_dic['subject'] = subject
+
+
+def clean_up(app_dic):
+    """Clean up for pickling."""
+    app_dic['androguard_apk'] = None
+    app_dic['androguard_apk_resources'] = None
 
 
 def apk_analysis_task(checksum, app_dic, rescan, queue=False):
@@ -150,64 +148,42 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
     try:
         if queue:
             settings.ASYNC_ANALYSIS = True
+            enqueued_task_init(checksum)
         append_scan_status(checksum, 'init')
         get_size_and_hashes(app_dic)
         msg = 'Extracting APK'
         logger.info(msg)
         append_scan_status(checksum, msg)
+        app_dic['zipped'] = 'apk'
+        # Extract APK and get files
         app_dic['files'] = unzip(
             checksum,
             app_dic['app_path'],
             app_dic['app_dir'])
-        logger.info('APK Extracted')
-        if not app_dic['files']:
-            # Can't Analyze APK, bail out.
-            msg = 'APK file is invalid or corrupt'
-            logger.error(msg)
-            append_scan_status(checksum, msg)
-            if queue:
-                return update_enqueued_task(
-                    checksum, 'Failed', msg)
-            return context, msg
-        app_dic['zipped'] = 'apk'
-        app_dic['certz'] = get_hardcoded_cert_keystore(
-            checksum,
-            app_dic['files'])
-        # Parse APK with Androguard4
-        andro_apk = parse_apk(
-            checksum,
-            app_dic['app_path'])
+        # Extract APK data with Androguard
+        androguard_parse(app_dic)
+        # Populates androguard_apk, androguard_manifest_xml, androguard_string_resources
+        # Extract APK data with AAPT/AAPT2
+        aapt_parse(app_dic)  # Populates apk_features, files, apk_strings
+        get_hardcoded_cert_keystore(app_dic)  # Populates file_analysis
         # Manifest Data
-        man_data, man_analysis = get_manifest_data(
-            checksum,
-            app_dic,
-            andro_apk)
+        man_data_dic, man_analysis = get_manifest_data(app_dic)
         # Get App name
-        app_dic['real_name'] = get_app_name(
-            andro_apk,
-            app_dic['app_dir'],
-            True)
-        # Print scan subject
-        subject = print_scan_subject(checksum, app_dic, man_data)
-        app_dic['playstore'] = get_app_details(
-            checksum,
-            man_data['packagename'])
+        get_apk_name(app_dic)  # Populates real_name
+        print_scan_subject(app_dic, man_data_dic)  # Populate subject
+        get_app_details(app_dic, man_data_dic)  # Populates playstore
         # Malware Permission check
         mal_perms = permissions.check_malware_permission(
             checksum,
-            man_data['perm'])
+            man_data_dic['perm'])
         man_analysis['malware_permissions'] = mal_perms
         # Get icon
-        # apktool should run before this
-        get_icon_apk(andro_apk, app_dic)
+        get_icon_apk(app_dic)  # Populates icon_path
         elf_dict = library_analysis(
             checksum,
             app_dic['app_dir'],
             'elf')
-        cert_dic = cert_info(
-            andro_apk,
-            app_dic,
-            man_data)
+        cert_dic = cert_info(app_dic, man_data_dic)
         apkid_results = apkid.apkid_analysis(
             checksum,
             app_dic['app_path'])
@@ -229,14 +205,11 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
             app_dic['app_dir'],
             app_dic['zipped'],
             app_dic['manifest_file'],
-            man_data['perm'])
+            man_data_dic['perm'])
         # Get the strings and metadata
         get_strings_metadata(
-            checksum,
-            andro_apk,
-            app_dic['app_dir'],
+            app_dic,
             elf_dict['elf_strings'],
-            app_dic['zipped'],
             ['.java'],
             code_an_dic)
         # Firebase DB Check
@@ -249,7 +222,7 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
             code_an_dic['urls_list'])
         context = save_get_ctx(
             app_dic,
-            man_data,
+            man_data_dic,
             man_analysis,
             code_an_dic,
             cert_dic,
@@ -260,13 +233,16 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
         )
         if queue:
             return update_enqueued_task(
-                checksum, subject, 'Success')
+                checksum, app_dic['subject'], 'Success')
         return context, None
     except Exception as exp:
         if queue:
             return update_enqueued_task(
                 checksum, 'Failed', repr(exp))
         return context, repr(exp)
+    finally:
+        # Clean up
+        clean_up(app_dic)
 
 
 def generate_dynamic_context(request, app_dic, checksum, context, api):
@@ -312,6 +288,7 @@ def src_analysis_task(checksum, app_dic, rescan, pro_type, queue=False):
     try:
         if queue:
             settings.ASYNC_ANALYSIS = True
+            enqueued_task_init(checksum)
         cert_dic = {
             'certificate_info': '',
             'certificate_status': '',
@@ -321,45 +298,33 @@ def src_analysis_task(checksum, app_dic, rescan, pro_type, queue=False):
         app_dic['secrets'] = []
         # Above fields are only available for APK and not ZIP
         app_dic['zipped'] = pro_type
-        app_dic['certz'] = get_hardcoded_cert_keystore(
-            checksum,
-            app_dic['files'])
+        get_hardcoded_cert_keystore(app_dic)
         # Manifest Data
-        man_data, man_analysis = get_manifest_data(
-            checksum,
-            app_dic)
+        man_data_dic, man_analysis = get_manifest_data(app_dic)
         # Get app name
-        app_dic['real_name'] = get_app_name(
-            None,
-            app_dic['app_dir'],
-            False)
+        get_apk_name(app_dic)
         # Print scan subject
-        subject = print_scan_subject(checksum, app_dic, man_data)
-        app_dic['playstore'] = get_app_details(
-            checksum,
-            man_data['packagename'])
+        print_scan_subject(app_dic, man_data_dic)
+        get_app_details(app_dic, man_data_dic)
         # Malware Permission check
         mal_perms = permissions.check_malware_permission(
             checksum,
-            man_data['perm'])
+            man_data_dic['perm'])
         man_analysis['malware_permissions'] = mal_perms
         # Get icon
         get_icon_from_src(
             app_dic,
-            man_data['icons'])
+            man_data_dic['icons'])
         code_an_dic = code_analysis(
             checksum,
             app_dic['app_dir'],
             app_dic['zipped'],
             app_dic['manifest_file'],
-            man_data['perm'])
+            man_data_dic['perm'])
         # Get the strings and metadata
         get_strings_metadata(
-            checksum,
+            app_dic,
             None,
-            app_dic['app_dir'],
-            None,
-            app_dic['zipped'],
             ['.java', '.kt'],
             code_an_dic)
         # Firebase DB Check
@@ -378,7 +343,7 @@ def src_analysis_task(checksum, app_dic, rescan, pro_type, queue=False):
                 code_an_dic['domains'], [])
         context = save_get_ctx(
             app_dic,
-            man_data,
+            man_data_dic,
             man_analysis,
             code_an_dic,
             cert_dic,
@@ -389,7 +354,7 @@ def src_analysis_task(checksum, app_dic, rescan, pro_type, queue=False):
         )
         if queue:
             return update_enqueued_task(
-                checksum, subject, 'Success')
+                checksum, app_dic['subject'], 'Success')
     except Exception as exp:
         if queue:
             return update_enqueued_task(

@@ -4,6 +4,7 @@
 import logging
 import os
 from plistlib import (
+    FMT_XML,
     dumps,
     load,
     loads,
@@ -12,12 +13,6 @@ from pathlib import Path
 from re import sub
 
 from openstep_parser import OpenStepDecoder
-
-from biplist import (
-    InvalidPlistException,
-    readPlist,
-    writePlistToString,
-)
 
 from mobsf.MobSF.utils import (
     append_scan_status,
@@ -48,7 +43,7 @@ def get_bundle_id(pobj, src):
     Look up in Info.plist, entitlements, pbxproj
     """
     possible_ids = set()
-    skip_chars = {'$(', '${'}
+    skip_chars = ('$(', '${')
 
     # From old Info.plist
     bundle_id_og = pobj.get('CFBundleIdentifier', '')
@@ -89,7 +84,7 @@ def get_bundle_id(pobj, src):
                     if tc in i:
                         i = i.split(tc)[0]
                 possible_ids.add(i)
-        except Exception:
+        except Exception as e:
             logger.warning('Error in parsing .pbxproj')
     if possible_ids:
         possible_ids = filter(None, possible_ids)
@@ -101,10 +96,13 @@ def get_bundle_id(pobj, src):
 def convert_bin_xml(bin_xml_file):
     """Convert Binary XML to Readable XML."""
     try:
-        plist_obj = readPlist(bin_xml_file)
-        data = writePlistToString(plist_obj)
-        return data
-    except InvalidPlistException:
+        with open(bin_xml_file, 'rb') as fp:
+            plist_obj = load(fp)
+
+        # Serializing the plist object to a binary plist string
+        data = dumps(plist_obj, fmt=FMT_XML)
+        Path(bin_xml_file).write_bytes(data)
+    except Exception:
         logger.warning('Failed to convert plist')
 
 

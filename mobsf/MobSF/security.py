@@ -8,8 +8,8 @@ from shutil import which
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 
-
 from mobsf.MobSF.utils import (
+    find_aapt,
     find_java_binary,
     gen_sha256_hash,
     get_adb,
@@ -72,8 +72,12 @@ def get_executable_hashes():
         downloaded_tools,
         manage_py,
     ]
+    aapts = [find_aapt('aapt'), find_aapt('aapt2')]
+    exec_loc.extend(Path(a) for a in aapts if a)
     # External binaries used directly by MobSF
     system_bins = [
+        'aapt',
+        'aapt2',
         'adb',
         'which',
         'wkhtmltopdf',
@@ -110,6 +114,8 @@ def get_executable_hashes():
         settings.CLASSDUMP_BINARY,
         settings.CLASSDUMP_SWIFT_BINARY,
         getattr(settings, 'BUNDLE_TOOL', ''),
+        getattr(settings, 'AAPT2_BINARY', ''),
+        getattr(settings, 'AAPT_BINARY', ''),
     ]
     for ubin in user_defined_bins:
         if ubin:

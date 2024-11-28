@@ -42,15 +42,20 @@ HASH_FUNCS = {
 }
 
 
-def get_hardcoded_cert_keystore(checksum, files):
+def get_hardcoded_cert_keystore(app_dic):
     """Returns the hardcoded certificate keystore."""
+    app_dic['file_analysis'] = []
+    checksum = app_dic['md5']
     try:
+        files = app_dic.get('files') or app_dic.get('apk_files')
         msg = 'Getting Hardcoded Certificates/Keystores'
         logger.info(msg)
         append_scan_status(checksum, msg)
         findings = []
         certz = []
         key_store = []
+        if not files:
+            return
         for file_name in files:
             if '.' not in file_name:
                 continue
@@ -66,7 +71,7 @@ def get_hardcoded_cert_keystore(checksum, files):
         if key_store:
             desc = 'Hardcoded Keystore found.'
             findings.append({'finding': desc, 'files': key_store})
-        return findings
+        app_dic['file_analysis'] = findings
     except Exception as exp:
         msg = 'Getting Hardcoded Certificates/Keystores'
         append_scan_status(checksum, msg, repr(exp))
@@ -183,26 +188,29 @@ def apksigtool_cert(checksum, apk_path, tools_dir):
             av1 = True
         else:
             av1 = False
-        _, sig_block = extract_v2_sig(apk_path)
-        for pair in parse_apk_signing_block(sig_block).pairs:
-            b = pair.value
-            if isinstance(b, APKSignatureSchemeBlock):
-                signed = True
-                for signer in b.signers:
-                    av2 = b.is_v2()
-                    av3 = b.is_v3()
-                    if b.is_v3():
-                        min_sdk = signer.min_sdk
-                    certs_no = len(signer.signed_data.certificates)
-                    for cert in signer.signed_data.certificates:
-                        d = get_cert_details(cert.data)
-                        for i in d:
-                            if i not in certs:
-                                certs.append(i)
-                    p = get_pub_key_details(signer.public_key.data)
-                    for j in p:
-                        if j not in pub_keys:
-                            pub_keys.append(j)
+        try:
+            _, sig_block = extract_v2_sig(apk_path)
+            for pair in parse_apk_signing_block(sig_block).pairs:
+                b = pair.value
+                if isinstance(b, APKSignatureSchemeBlock):
+                    signed = True
+                    for signer in b.signers:
+                        av2 = b.is_v2()
+                        av3 = b.is_v3()
+                        if b.is_v3():
+                            min_sdk = signer.min_sdk
+                        certs_no = len(signer.signed_data.certificates)
+                        for cert in signer.signed_data.certificates:
+                            d = get_cert_details(cert.data)
+                            for i in d:
+                                if i not in certs:
+                                    certs.append(i)
+                        p = get_pub_key_details(signer.public_key.data)
+                        for j in p:
+                            if j not in pub_keys:
+                                pub_keys.append(j)
+        except Exception:
+            logger.warning('Failed to get signature versions with apksigtool')
 
         if signed:
             certlist.append('Binary is signed')
@@ -289,12 +297,13 @@ def get_cert_data(checksum, a, app_path, tools_dir):
     }
 
 
-def cert_info(a, app_dic, man_dict):
+def cert_info(app_dic, man_dict):
     """Return certificate information."""
     try:
         msg = 'Reading Code Signing Certificate'
         logger.info(msg)
         append_scan_status(app_dic['md5'], msg)
+        a = app_dic.get('androguard_apk')
         manifestfile = None
         manidat = ''
         files = []

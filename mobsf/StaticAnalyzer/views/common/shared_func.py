@@ -51,6 +51,16 @@ from mobsf.MobSF.views.authorization import (
 
 
 logger = logging.getLogger(__name__)
+RESERVED_FILE_NAMES = [
+    'AndroidManifest.xml',
+    'resources.arsc',
+    'META-INF/MANIFEST.MF',
+    'META-INF/CERT.SF',
+    'META-INF/CERT.RSA',
+    'META-INF/CERT.DSA',
+    'classes.dex']
+for i in range(2, 50):
+    RESERVED_FILE_NAMES.append(f'classes{i}.dex')
 
 
 def hash_gen(checksum, app_path) -> tuple:
@@ -77,49 +87,119 @@ def hash_gen(checksum, app_path) -> tuple:
         append_scan_status(checksum, msg, repr(exp))
 
 
+def is_reserved_file_conflict(file_path):
+    """Check for reserved file conflict."""
+    if any(file_path.startswith(i) and file_path != i for i in RESERVED_FILE_NAMES):
+        return True
+    return False
+
+
 def unzip(checksum, app_path, ext_path):
+    """Unzip APK.
+
+    Unzip a APK archive while handling encrypted files, reserved file conflicts,
+    path traversal (Zip Slip), and permission adjustments. Some of the anti-analysis
+    techniques used by malware authors and packers are handled here.
+
+    Args:
+        checksum (str): The checksum of the file.
+        app_path (str): Path to the ZIP archive.
+        ext_path (str): Path to extract the files.
+
+    Returns:
+        list: A list of files extracted or an empty list if an error occurs.
+    """
     msg = 'Unzipping'
     logger.info(msg)
     append_scan_status(checksum, msg)
+    files = []
+    original_ext_path = ext_path
     try:
-        files = []
         with zipfile.ZipFile(app_path, 'r') as zipptr:
+            files = zipptr.namelist()
             for fileinfo in zipptr.infolist():
-                filename = fileinfo.filename
-                if not isinstance(filename, str):
-                    filename = str(
-                        filename, encoding='utf-8', errors='replace')
-                files.append(filename)
-                zipptr.extract(filename, ext_path)
-        return files
+                ext_path = original_ext_path
+
+                # Skip encrypted files
+                if fileinfo.flag_bits & 0x1:
+                    msg = f'Skipping encrypted file {fileinfo.filename}'
+                    logger.warning(msg)
+                    continue
+
+                file_path = fileinfo.filename.rstrip('/\\')  # Remove trailing slashes
+
+                # Decode the filename
+                if not isinstance(file_path, str):
+                    file_path = file_path.decode('utf-8', errors='replace')
+
+                # Check for reserved file conflict
+                if is_reserved_file_conflict(file_path):
+                    ext_path = str(Path(ext_path) / '_conflict_')
+
+                # Handle Zip Slip
+                if is_path_traversal(file_path):
+                    msg = f'Zip slip detected. skipped extracting {file_path}'
+                    logger.error(msg)
+                    continue
+
+                # Fix permissions
+                if fileinfo.is_dir():
+                    # Directories should have rwxr-xr-x (755)
+                    # Skip creating directories
+                    continue
+                else:
+                    # Files should have rw-r--r-- (644)
+                    fileinfo.external_attr = (0o100644 << 16) | (
+                        fileinfo.external_attr & 0xFFFF)
+
+                # Extract the file
+                try:
+                    zipptr.extract(file_path, ext_path)
+                except Exception:
+                    logger.warning('Failed to extract %s', file_path)
     except Exception as exp:
         msg = f'Unzipping Error - {str(exp)}'
         logger.error(msg)
         append_scan_status(checksum, msg, repr(exp))
+        # Fallback to OS unzip
+        ofiles = os_unzip(checksum, app_path, ext_path)
+        if not files:
+            files = ofiles
+    return files
+
+
+def os_unzip(checksum, app_path, ext_path):
+    """Unzip using OS utility."""
+    msg = 'Attempting to unzip with OS unzip utility'
+    logger.info(msg)
+    append_scan_status(checksum, msg)
+    try:
         if platform.system() == 'Windows':
             msg = 'Unzipping Error. Not yet implemented in Windows'
             logger.warning(msg)
             append_scan_status(checksum, msg)
-        else:
-            msg = 'Attempting to unzip with OS unzip utility'
-            logger.info(msg)
+            return []
+        unzip_b = shutil.which('unzip')
+        if not unzip_b:
+            msg = 'OS Unzip utility not found'
+            logger.warning(msg)
             append_scan_status(checksum, msg)
-            try:
-                unzip_b = shutil.which('unzip')
-                subprocess.call(
-                    [unzip_b, '-o', '-q', app_path, '-d', ext_path])
-                # Set permissions, packed files
-                # may not have proper permissions
-                set_permissions(ext_path)
-                dat = subprocess.check_output([unzip_b, '-qq', '-l', app_path])
-                dat = dat.decode('utf-8').split('\n')
-                files_det = ['Length   Date   Time   Name']
-                files_det = files_det + dat
-                return files_det
-            except Exception as exp:
-                msg = 'Unzipping Error with OS unzip utility'
-                logger.exception(msg)
-                append_scan_status(checksum, msg, repr(exp))
+            return []
+        subprocess.call(
+            [unzip_b, '-o', '-q', app_path, '-d', ext_path])
+        # Set permissions, packed files
+        # may not have proper permissions
+        set_permissions(ext_path)
+        # List files in the unzipped directory
+        dat = subprocess.check_output([unzip_b, '-qq', '-l', app_path])
+        dat = dat.decode('utf-8').split('\n')
+        files_det = ['Length   Date   Time   Name']
+        return files_det + dat
+    except Exception as exp:
+        msg = 'Unzipping Error with OS unzip utility'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
+    return []
 
 
 def lipo_thin(checksum, src, dst):
@@ -347,7 +427,7 @@ def strings_and_entropies(checksum, src, exts):
         'secrets': set(),
     }
     try:
-        if not src.exists():
+        if not (src and src.exists()):
             return data
         excludes = ('\\u0', 'com.google.')
         eslash = ('Ljava', 'Lkotlin', 'kotlin', 'android')

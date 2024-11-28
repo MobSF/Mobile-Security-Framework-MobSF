@@ -8,6 +8,9 @@ from pathlib import Path
 from mobsf.StaticAnalyzer.tools.androguard4 import (
     apk,
 )
+from mobsf.StaticAnalyzer.views.android import (
+    aapt,
+)
 from mobsf.MobSF.utils import (
     append_scan_status,
 )
@@ -15,53 +18,118 @@ from mobsf.MobSF.utils import (
 logger = logging.getLogger(__name__)
 
 
-def parse_apk(checksum, app_path):
-    """Androguard4 APK."""
+def aapt_parse(app_dict):
+    """Extract features from APK using aapt/aapt2."""
+    checksum = app_dict['md5']
+    app_dict['apk_features'] = {}
+    app_dict['apk_strings'] = []
+    try:
+        msg = 'Extracting APK features using aapt/aapt2'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
+        aapt_obj = aapt.AndroidAAPT(app_dict['app_path'])
+        app_dict['apk_features'] = aapt_obj.get_apk_features()
+        if not app_dict.get('files'):
+            app_dict['files'] = aapt_obj.get_apk_files()
+        app_dict['apk_strings'] = aapt_obj.get_apk_strings()
+    except Exception as exp:
+        msg = 'Failed to extract APK features using aapt/aapt2'
+        logger.warning(msg)
+        append_scan_status(checksum, msg, repr(exp))
+
+
+def androguard_parse(app_dict):
+    """Extract features from APK using androguard."""
+    checksum = app_dict['md5']
+    app_dict['androguard_apk'] = None
+    app_dict['androguard_manifest_xml'] = None
+    app_dict['androguard_apk_resources'] = None
+    app_dict['androguard_apk_name'] = None
+    app_dict['androguard_apk_icon'] = None
     try:
         msg = 'Parsing APK with androguard'
         logger.info(msg)
         append_scan_status(checksum, msg)
-        return apk.APK(app_path)
+        a = apk.APK(app_dict['app_path'])
+        if not a:
+            msg = 'Failed to parse APK with androguard'
+            logger.warning(msg)
+            append_scan_status(checksum, msg)
+            return
+        app_dict['androguard_apk'] = a
+        try:
+            app_dict['androguard_apk_name'] = a.get_app_name()
+        except Exception as exp:
+            msg = 'Failed to get app name with androguard'
+            logger.warning(msg)
+            append_scan_status(checksum, msg, repr(exp))
+        try:
+            app_dict['androguard_apk_icon'] = a.get_app_icon(max_dpi=0xFFFE - 1)
+        except Exception as exp:
+            msg = 'Failed to get app icon with androguard'
+            logger.warning(msg)
+            append_scan_status(checksum, msg, repr(exp))
+        try:
+            xml = a.get_android_manifest_axml().get_xml()
+            app_dict['androguard_manifest_xml'] = xml
+        except Exception as exp:
+            msg = 'Failed to parse AndroidManifest.xml with androguard'
+            logger.warning(msg)
+            append_scan_status(checksum, msg, repr(exp))
+        try:
+            app_dict['androguard_apk_resources'] = a.get_android_resources()
+        except Exception as exp:
+            msg = 'Failed to parse resources with androguard'
+            logger.warning(msg)
+            append_scan_status(checksum, msg, repr(exp))
     except Exception as exp:
         msg = 'Failed to parse APK with androguard'
+        logger.error(msg)
         append_scan_status(checksum, msg, repr(exp))
-        return None
 
 
-def get_app_name(a, app_dir, is_apk):
+def get_apk_name(app_dic):
     """Get app name."""
-    base = Path(app_dir)
-    if is_apk:
-        if a:
-            # Parsed Androguard APK Object
-            try:
-                app_name = a.get_app_name()
-                if app_name:
-                    return app_name
-            except Exception:
-                logger.warning('Failed to get app name from parsed APK object')
-        # Look for app_name in values folder.
-        val = base / 'apktool_out' / 'res' / 'values'
-        if val.exists():
-            try:
-                return get_app_name_from_values_folder(val.as_posix())
-            except Exception:
-                logger.error('Failed to get app name from values folder')
+    real_name = ''
+    base = Path(app_dic['app_dir'])
+
+    # Check if it's an APK and try to retrieve the app name
+    if app_dic.get('androguard_apk_name') or app_dic.get('apk_features'):
+        app_name = (
+            app_dic.get('androguard_apk_name')
+            or app_dic.get('apk_features', {}).get('application_label')
+        )
+        if app_name:
+            real_name = app_name
+        else:
+            # Fallback: Look for app_name in the values folder
+            values_path = base / 'apktool_out' / 'res' / 'values'
+            if values_path.exists():
+                try:
+                    real_name = get_app_name_from_values_folder(values_path.as_posix())
+                except Exception:
+                    logger.error('Failed to get app name from values folder')
+
+    # Check if it's source code and try to retrieve the app name
     else:
-        # For source code
         try:
-            strings_path = base / 'app' / 'src' / 'main' / 'res' / 'values'
-            eclipse_path = base / 'res' / 'values'
-            if strings_path.exists():
-                return get_app_name_from_values_folder(
-                    strings_path.as_posix())
-            elif eclipse_path.exists():
-                return get_app_name_from_values_folder(
-                    eclipse_path.as_posix())
+            # Check paths for values folders
+            paths_to_check = [
+                base / 'app' / 'src' / 'main' / 'res' / 'values',
+                base / 'res' / 'values',
+            ]
+            for path in paths_to_check:
+                if path.exists():
+                    real_name = get_app_name_from_values_folder(path.as_posix())
+                    break
         except Exception:
-            logger.error('Failed to get app name')
-    logger.warning('Cannot find app name')
-    return ''
+            logger.error('Failed to get app name from source code')
+
+    if not real_name:
+        logger.warning('Cannot find app name')
+
+    # Update the app dictionary
+    app_dic['real_name'] = real_name
 
 
 def get_app_name_from_values_folder(values_dir):

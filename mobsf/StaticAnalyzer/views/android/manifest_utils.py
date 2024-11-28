@@ -1,22 +1,18 @@
 # -*- coding: utf_8 -*-
 """Android manifest analysis utils."""
 import logging
-import os
 import re
-import subprocess
-import tempfile
 from pathlib import Path
-from xml.dom import minidom
-from xml.parsers.expat import ExpatError
+
+from defusedxml.minidom import parseString
 
 from bs4 import BeautifulSoup
 
-from django.conf import settings
-
 from mobsf.MobSF.utils import (
     append_scan_status,
-    find_java_binary,
-    is_file_exists,
+)
+from mobsf.StaticAnalyzer.views.android.converter import (
+    run_apktool,
 )
 
 # pylint: disable=E0401
@@ -31,97 +27,79 @@ ANDROID_8_0_LEVEL = 26
 ANDROID_MANIFEST_FILE = 'AndroidManifest.xml'
 
 
-def get_manifest_file(app_dir, app_path, tools_dir, typ, apk):
-    """Read the manifest file."""
+def get_manifest_file(app_dic):
+    """Get AndroidManifest.xml file path.
+
+    Used by get_parsed_manifest() and manifest_view.run()
+    """
+    manifest = None
     try:
-        manifest = ''
+        app_path = Path(app_dic['app_path'])
+        app_dir = Path(app_dic['app_dir'])
+        tools_dir = Path(app_dic['tools_dir'])
+        typ = app_dic['zipped']
+        checksum = app_dic['md5']
+        androguard_xml = app_dic.get('androguard_manifest_xml')
+
         if typ == 'aar':
             logger.info('Getting AndroidManifest.xml from AAR')
-            manifest = os.path.join(app_dir, ANDROID_MANIFEST_FILE)
+            manifest = app_dir / ANDROID_MANIFEST_FILE
         elif typ == 'apk':
             logger.info('Getting AndroidManifest.xml from APK')
-            manifest = get_manifest_apk(app_path, app_dir, tools_dir, apk)
+            manifest = app_dir / 'apktool_out' / ANDROID_MANIFEST_FILE
+            if manifest.exists():
+                return manifest
+
+            # Run apktool to extract AndroidManifest.xml
+            manifest.parent.mkdir(parents=True, exist_ok=True)
+            run_apktool(app_path, app_dir, tools_dir)
+
+            if not manifest.exists() and androguard_xml:
+                logger.warning(
+                    'apktool failed to extract AndroidManifest.xml,'
+                    ' fallback to androguard')
+                manifest.write_bytes(androguard_xml)
+            elif not androguard_xml:
+                msg = ('Failed to extract AndroidManifest.xml'
+                       ' from APK with apktool and androguard')
+                logger.error(msg)
+                append_scan_status(checksum, msg, 'apktool and androguard failed')
+        elif typ == 'eclipse':
+            logger.info('Getting AndroidManifest.xml'
+                        ' from Eclipse project source code')
+            manifest = app_dir / ANDROID_MANIFEST_FILE
+        elif typ == 'studio':
+            logger.info('Getting AndroidManifest.xml'
+                        ' from Android Studio project source code')
+            manifest = app_dir / 'app' / 'src' / \
+                'main' / ANDROID_MANIFEST_FILE
         else:
-            logger.info('Getting AndroidManifest.xml from Source Code')
-            if typ == 'eclipse':
-                manifest = os.path.join(app_dir, ANDROID_MANIFEST_FILE)
-            elif typ == 'studio':
-                manifest = os.path.join(
-                    app_dir,
-                    f'app/src/main/{ANDROID_MANIFEST_FILE}')
-        return manifest
+            logger.error('Unknown project type')
     except Exception:
         logger.exception('Getting AndroidManifest.xml file')
-
-
-def get_android_manifest_androguard(apk, app_dir):
-    """Get AndroidManifest.xml using Androguard4."""
-    try:
-        logger.info('Extracting AndroidManifest.xml with Androguard')
-        if not apk:
-            logger.warning('Androgaurd APK parsing failed')
-            return
-        manifest = apk.get_android_manifest_axml()
-        if not manifest:
-            return
-        manifest_file = Path(app_dir) / 'apktool_out' / ANDROID_MANIFEST_FILE
-        manifest_file.write_bytes(manifest.get_xml())
-    except Exception:
-        logger.exception('Error Extracting AndroidManifest.xml with Androguard')
-    return None
-
-
-def get_manifest_apk(app_path, app_dir, tools_dir, apk):
-    """Get readable AndroidManifest.xml.
-
-    Should be called before get_icon_apk() function
-    """
-    try:
-        manifest = None
-        if (len(settings.APKTOOL_BINARY) > 0
-                and is_file_exists(settings.APKTOOL_BINARY)):
-            apktool_path = settings.APKTOOL_BINARY
-        else:
-            apktool_path = os.path.join(tools_dir, 'apktool_2.10.0.jar')
-        output_dir = os.path.join(app_dir, 'apktool_out')
-        args = [find_java_binary(),
-                '-jar',
-                '-Djdk.util.zip.disableZip64ExtraFieldValidation=true',
-                apktool_path,
-                '--match-original',
-                '--frame-path',
-                tempfile.gettempdir(),
-                '-f', '-s', 'd',
-                app_path,
-                '-o',
-                output_dir]
-        manifest = os.path.join(output_dir, ANDROID_MANIFEST_FILE)
-        if is_file_exists(manifest):
-            # APKTool already created readable XML
-            return manifest
-        logger.info('Converting AXML to XML')
-        subprocess.check_output(args)
-    except subprocess.CalledProcessError:
-        # APK tool failed
-        logger.warning('apktool failed to extract AndroidManifest.xml')
-        get_android_manifest_androguard(apk, app_dir)
-    except Exception:
-        logger.exception('Getting Manifest file')
     return manifest
 
 
 def get_xml_namespace(xml_str):
     """Get namespace."""
-    m = re.search(r'manifest (.{1,250}?):', xml_str)
-    if m:
-        return m.group(1)
-    logger.warning('XML namespace not found')
-    return None
+    match = re.search(r'manifest (.{1,250}?):', xml_str)
+    if not match:
+        logger.warning('XML namespace not found')
+        return None
+
+    namespace = match.group(1)
+
+    # Handle standard and non-standard namespaces
+    if namespace == 'xmlns':
+        namespace = 'android'
+    elif namespace != 'android':
+        logger.warning('Non-standard XML namespace: %s', namespace)
+
+    return namespace
 
 
 def get_fallback():
-    logger.warning('Using Fake XML to continue the Analysis')
-    return minidom.parseString(
+    return parseString(
         (r'<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android='
          r'"http://schemas.android.com/apk/res/android" '
          r'android:versionCode="Failed"  '
@@ -141,46 +119,63 @@ def bs4_xml_parser(xml_str):
     return None
 
 
-def get_manifest(checksum, app_path, app_dir, tools_dir, typ, apk):
-    """Get the manifest file."""
+def get_parsed_manifest(app_dic):
+    """Get the parsed manifest XML, file path and namespace."""
+    checksum = app_dic['md5']
+    parsed_xml = None
+    manifest_file = None
+    app_dic['manifest_file'] = None
+    app_dic['manifest_namespace'] = 'android'
+    app_dic['manifest_parsed_xml'] = get_fallback()
     try:
-        ns = 'android'
-        manifest_file = get_manifest_file(
-            app_dir,
-            app_path,
-            tools_dir,
-            typ,
-            apk)
-        mfile = Path(manifest_file)
-        if not mfile.exists():
-            logger.warning('apktool failed to extract '
-                           'AndroidManifest.xml')
-            return manifest_file, ns, get_fallback()
+        manifest_file = get_manifest_file(app_dic)
+        if not (manifest_file and manifest_file.exists()):
+            logger.warning('APK AndroidManifest.xml file not found')
+            app_dic['manifest_file'] = manifest_file
+            return
+
+        app_dic['manifest_file'] = manifest_file
         msg = 'Parsing AndroidManifest.xml'
         logger.info(msg)
         append_scan_status(checksum, msg)
-        xml_str = mfile.read_text('utf-8', 'ignore')
-        ns = get_xml_namespace(xml_str)
-        if ns and ns == 'xmlns':
-            ns = 'android'
-        if ns and ns != 'android':
-            logger.warning('Non standard XML namespace: %s', ns)
+
+        # Parse manifest XML
+        xml_str = manifest_file.read_text('utf-8', 'ignore')
+        app_dic['manifest_namespace'] = get_xml_namespace(xml_str)
+        # apktool generated AndroidManifest.xml for APK
+        parsed_xml = parseString(xml_str)
+        app_dic['manifest_parsed_xml'] = parsed_xml
+        return
+    except Exception:
         try:
-            return manifest_file, ns, minidom.parseString(xml_str)
-        except ExpatError:
-            logger.warning('Parsing AndroidManifest.xml failed')
-            return manifest_file, ns, minidom.parseString(
-                bs4_xml_parser(xml_str))
-    except Exception as exp:
-        msg = 'Parsing AndroidManifest.xml failed'
-        logger.exception(msg)
-        append_scan_status(checksum, msg, repr(exp))
-    return manifest_file, ns, get_fallback()
+            logger.warning('Failed parsing AndroidManifest.xml, fallback to androguard')
+            parsed_xml = parseString(app_dic['androguard_manifest_xml'])
+            # Overwrite the file with androguard generated XML
+            manifest_file.write_bytes(app_dic['androguard_manifest_xml'])
+            app_dic['manifest_parsed_xml'] = parsed_xml
+            return
+        except Exception:
+            logger.warning('Failed parsing androguard AndroidManifest.xml'
+                           ', fallback to bs4')
+        try:
+            parsed_xml = parseString(bs4_xml_parser(xml_str))
+            app_dic['manifest_parsed_xml'] = parsed_xml
+            return
+        except Exception as exp:
+            msg = 'Parsing AndroidManifest.xml using all methods'
+            logger.exception(msg)
+            append_scan_status(checksum, msg, repr(exp))
 
 
-def manifest_data(checksum, mfxml, ns):
-    """Extract manifest data."""
+def extract_manifest_data(app_dic):
+    """Extract manifest data.
+
+    Backup data from apk_features (aapt2) if not found in manifest.
+    """
+    checksum = app_dic['md5']
     try:
+        mfxml = app_dic['manifest_parsed_xml']
+        ns = app_dic['manifest_namespace']
         msg = 'Extracting Manifest Data'
         logger.info(msg)
         append_scan_status(checksum, msg)
@@ -219,12 +214,12 @@ def manifest_data(checksum, mfxml, ns):
             # Esteve 08.08.2016 - begin - If android:targetSdkVersion
             # is not set, the default value is the one of the
             # minSdkVersiontargetsdk
-            # = node.getAttribute (f'{ns}:targetSdkVersion')
-            if node.getAttribute(f'{ns}:targetSdkVersion'):
+            if app_dic.get('apk_features', {}).get('target_sdk_version'):
+                targetsdk = app_dic['apk_features']['target_sdk_version']
+            elif node.getAttribute(f'{ns}:targetSdkVersion'):
                 targetsdk = node.getAttribute(f'{ns}:targetSdkVersion')
             else:
                 targetsdk = node.getAttribute(f'{ns}:minSdkVersion')
-            # End
         for node in manifest:
             package = node.getAttribute('package')
             androidversioncode = node.getAttribute(f'{ns}:versionCode')
@@ -277,6 +272,8 @@ def manifest_data(checksum, mfxml, ns):
         android_permission_tags = ('com.google.', 'android.', 'com.google.')
         for permission in permissions:
             perm.append(permission.getAttribute(f'{ns}:name'))
+        if not perm and app_dic.get('apk_features', {}).get('permissions'):
+            perm = app_dic['apk_features']['permissions']
         for full_perm in perm:
             # For general android permissions
             prm = full_perm
@@ -299,7 +296,15 @@ def manifest_data(checksum, mfxml, ns):
                         'Unknown permission',
                         'Unknown permission from android reference',
                     ]
-
+        pkg_backup = app_dic.get('apk_features', {}).get('package')
+        mainact_backup = app_dic.get('apk_features', {}).get('launchable_activity')
+        minsdk_backup = app_dic.get('apk_features', {}).get('min_sdk_version')
+        if not package and pkg_backup:
+            package = pkg_backup
+        if not mainact and mainact_backup:
+            mainact = mainact_backup
+        if not minsdk and minsdk_backup:
+            minsdk = minsdk_backup
         man_data_dic = {
             'services': svc,
             'activities': act,

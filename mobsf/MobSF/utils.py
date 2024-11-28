@@ -184,6 +184,32 @@ def find_java_binary():
     return 'java'
 
 
+def find_aapt(tool_name):
+    """Find the specified tool (aapt or aapt2)."""
+    # Check system PATH for the tool
+    tool_path = shutil.which(tool_name)
+    if tool_path:
+        return tool_path
+
+    # Check common Android SDK locations
+    home_dir = Path.home()  # Get the user's home directory
+    sdk_paths = [
+        home_dir / 'Library' / 'Android' / 'sdk',  # macOS
+        home_dir / 'Android' / 'Sdk',              # Linux
+        home_dir / 'AppData' / 'Local' / 'Android' / 'Sdk',  # Windows
+    ]
+
+    for sdk_path in sdk_paths:
+        build_tools_path = sdk_path / 'build-tools'
+        if build_tools_path.exists():
+            for version in sorted(build_tools_path.iterdir(), reverse=True):
+                tool_path = version / tool_name
+                if tool_path.exists():
+                    return str(tool_path)
+
+    return None
+
+
 def print_n_send_error_response(request,
                                 msg,
                                 api=False,
@@ -667,6 +693,8 @@ def common_check(instance_id):
 
 def is_path_traversal(user_input):
     """Check for path traversal."""
+    if not user_input:
+        return False
     if (('../' in user_input)
         or ('%2e%2e' in user_input)
         or ('..' in user_input)
@@ -836,6 +864,7 @@ def get_android_dm_exception_msg():
 
 def get_android_src_dir(app_dir, typ):
     """Get Android source code location."""
+    src = None
     if typ == 'apk':
         src = app_dir / 'java_source'
     elif typ == 'studio':

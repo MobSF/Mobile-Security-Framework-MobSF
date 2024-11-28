@@ -1,4 +1,8 @@
 #!/bin/bash
+JDK_FILE=openjdk-22.0.2_linux-x64_bin.tar.gz
+JDK_FILE_ARM=openjdk-22.0.2_linux-aarch64_bin.tar.gz
+WKH_FILE=wkhtmltox_0.12.6.1-3.bookworm_amd64.deb
+WKH_FILE_ARM=wkhtmltox_0.12.6.1-3.bookworm_arm64.deb
 
 # For apktool
 mkdir -p /home/mobsf/.local/share/apktool/framework

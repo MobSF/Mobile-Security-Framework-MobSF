@@ -19,10 +19,9 @@ from mobsf.MobSF.utils import (
     read_sqlite,
 )
 
-from biplist import (
-    writePlistToString,
+from plistlib import (
+    dumps,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +56,7 @@ def view_file(request, api=False):
             return print_n_send_error_response(request, err, api)
         dat = sfile.read_text('ISO-8859-1')
         if fil.endswith('.plist') and dat.startswith('bplist0'):
-            dat = writePlistToString(dat).decode('utf-8', 'ignore')
+            dat = dumps(dat, fmt=FMT_XML).decode('utf-8', 'ignore')
         if fil.endswith(('.xml', '.plist')) and typ in ['xml', 'plist']:
             rtyp = 'xml'
         elif typ == 'db':

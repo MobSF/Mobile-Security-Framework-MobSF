@@ -177,6 +177,7 @@ class EnqueuedTask(models.Model):
     file_name = models.CharField(max_length=255)
     created_at = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=255, default='Enqueued')
+    started_at = models.DateTimeField(null=True)
     completed_at = models.DateTimeField(null=True)
     app_name = models.CharField(max_length=255, default='')
 
