@@ -228,3 +228,15 @@ def sanitize_filename(filename):
     # Remove leading and trailing underscores
     safe_filename = safe_filename.strip('_')
     return safe_filename
+
+
+def sanitize_for_logging(filename: str, max_length: int = 255) -> str:
+    """Sanitize a filename to prevent log injection."""
+    # Remove newline, carriage return, and other risky characters
+    filename = filename.replace('\n', '_').replace('\r', '_').replace('\t', '_')
+
+    # Allow only safe characters (alphanumeric, underscore, dash, and period)
+    filename = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
+
+    # Truncate filename to the maximum allowed length
+    return filename[:max_length]

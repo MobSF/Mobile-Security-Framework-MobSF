@@ -20,6 +20,9 @@ from django.utils.html import escape
 from django.http import HttpResponseRedirect
 
 from mobsf.MobSF import settings
+from mobsf.MobSF.security import (
+    sanitize_for_logging,
+)
 from mobsf.MobSF.utils import (
     EMAIL_REGEX,
     STRINGS_REGEX,
@@ -122,7 +125,8 @@ def unzip(checksum, app_path, ext_path):
 
                 # Skip encrypted files
                 if fileinfo.flag_bits & 0x1:
-                    msg = f'Skipping encrypted file {fileinfo.filename}'
+                    msg = ('Skipping encrypted file '
+                           f'{sanitize_for_logging(fileinfo.filename)}')
                     logger.warning(msg)
                     continue
 
@@ -138,7 +142,8 @@ def unzip(checksum, app_path, ext_path):
 
                 # Handle Zip Slip
                 if is_path_traversal(file_path):
-                    msg = f'Zip slip detected. skipped extracting {file_path}'
+                    msg = ('Zip slip detected. skipped extracting'
+                           f' {sanitize_for_logging(file_path)}')
                     logger.error(msg)
                     continue
 
@@ -156,7 +161,8 @@ def unzip(checksum, app_path, ext_path):
                 try:
                     zipptr.extract(file_path, ext_path)
                 except Exception:
-                    logger.warning('Failed to extract %s', file_path)
+                    logger.warning(
+                        'Failed to extract %s', sanitize_for_logging(file_path))
     except Exception as exp:
         msg = f'Unzipping Error - {str(exp)}'
         logger.error(msg)
