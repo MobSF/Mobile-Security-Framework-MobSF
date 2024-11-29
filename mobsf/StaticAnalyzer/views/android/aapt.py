@@ -47,7 +47,7 @@ class AndroidAAPT:
         else:
             self.aapt_path = find_aapt('aapt')
 
-        # Ensure at least one tool is available
+        # Ensure both aapt and aapt2 are found
         if not (self.aapt2_path and self.aapt_path):
             raise FileNotFoundError('aapt and aapt2 found')
 

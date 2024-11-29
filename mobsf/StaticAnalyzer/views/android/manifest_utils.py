@@ -170,7 +170,7 @@ def get_parsed_manifest(app_dic):
 def extract_manifest_data(app_dic):
     """Extract manifest data.
 
-    Backup data from apk_features (aapt2) if not found in manifest.
+    Data from apk_features (aapt2) is also available as a fallback.
     """
     checksum = app_dic['md5']
     try:
