@@ -32,6 +32,10 @@ def aapt_parse(app_dict):
         if not app_dict.get('files'):
             app_dict['files'] = aapt_obj.get_apk_files()
         app_dict['apk_strings'] = aapt_obj.get_apk_strings()
+    except FileNotFoundError:
+        msg = 'aapt and aapt2 not found, skipping APK feature extraction'
+        logger.warning(msg)
+        append_scan_status(checksum, msg)
     except Exception as exp:
         msg = 'Failed to extract APK features using aapt/aapt2'
         logger.warning(msg)

@@ -3,6 +3,7 @@
 import re
 import logging
 import subprocess
+from platform import system
 from pathlib import Path
 
 from django.conf import settings
@@ -37,7 +38,8 @@ class AndroidAAPT:
                 and Path(settings.AAPT2_BINARY).exists()):
             self.aapt2_path = settings.AAPT2_BINARY
         else:
-            self.aapt2_path = find_aapt('aapt2')
+            aapt2 = 'aapt2.exe' if system() == 'Windows' else 'aapt2'
+            self.aapt2_path = find_aapt(aapt2)
 
         # Check for custom AAPT path in settings
         if (getattr(settings, 'AAPT_BINARY', '')
@@ -45,7 +47,8 @@ class AndroidAAPT:
                 and Path(settings.AAPT_BINARY).exists()):
             self.aapt_path = settings.AAPT_BINARY
         else:
-            self.aapt_path = find_aapt('aapt')
+            aapt = 'aapt.exe' if system() == 'Windows' else 'aapt'
+            self.aapt_path = find_aapt(aapt)
 
         # Ensure both aapt and aapt2 are found
         if not (self.aapt2_path and self.aapt_path):
