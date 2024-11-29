@@ -55,6 +55,7 @@ from mobsf.StaticAnalyzer.views.common.appsec import (
 )
 from mobsf.StaticAnalyzer.views.common.async_task import (
     async_analysis,
+    enqueued_task_init,
     update_enqueued_task,
 )
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
@@ -169,6 +170,7 @@ def ipa_analysis_task(checksum, app_dic, rescan, queue=False):
     try:
         if queue:
             settings.ASYNC_ANALYSIS = True
+            enqueued_task_init(checksum)
         append_scan_status(checksum, 'init')
         msg = 'iOS Binary (IPA) Analysis Started'
         logger.info(msg)
@@ -273,6 +275,7 @@ def ios_analysis_task(checksum, app_dic, rescan, queue=False):
     try:
         if queue:
             settings.ASYNC_ANALYSIS = True
+            enqueued_task_init(checksum)
         logger.info('iOS Source Code Analysis Started')
         get_size_and_hashes(app_dic)
 

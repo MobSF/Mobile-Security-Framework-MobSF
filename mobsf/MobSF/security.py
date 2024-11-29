@@ -6,10 +6,11 @@ import re
 import sys
 from shutil import which
 from pathlib import Path
+from platform import system
 from concurrent.futures import ThreadPoolExecutor
 
-
 from mobsf.MobSF.utils import (
+    find_aapt,
     find_java_binary,
     gen_sha256_hash,
     get_adb,
@@ -72,9 +73,21 @@ def get_executable_hashes():
         downloaded_tools,
         manage_py,
     ]
+    aapt = 'aapt'
+    aapt2 = 'aapt2'
+    if system() == 'Windows':
+        aapt = 'aapt.exe'
+        aapt2 = 'aapt2.exe'
+    aapts = [find_aapt(aapt), find_aapt(aapt2)]
+    exec_loc.extend(Path(a) for a in aapts if a)
     # External binaries used directly by MobSF
     system_bins = [
+        'aapt',
+        'aapt.exe',
+        'aapt2',
+        'aapt2.exe',
         'adb',
+        'adb.exe',
         'which',
         'wkhtmltopdf',
         'httptools',
@@ -110,6 +123,8 @@ def get_executable_hashes():
         settings.CLASSDUMP_BINARY,
         settings.CLASSDUMP_SWIFT_BINARY,
         getattr(settings, 'BUNDLE_TOOL', ''),
+        getattr(settings, 'AAPT2_BINARY', ''),
+        getattr(settings, 'AAPT_BINARY', ''),
     ]
     for ubin in user_defined_bins:
         if ubin:
@@ -222,3 +237,15 @@ def sanitize_filename(filename):
     # Remove leading and trailing underscores
     safe_filename = safe_filename.strip('_')
     return safe_filename
+
+
+def sanitize_for_logging(filename: str, max_length: int = 255) -> str:
+    """Sanitize a filename to prevent log injection."""
+    # Remove newline, carriage return, and other risky characters
+    filename = filename.replace('\n', '_').replace('\r', '_').replace('\t', '_')
+
+    # Allow only safe characters (alphanumeric, underscore, dash, and period)
+    filename = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
+
+    # Truncate filename to the maximum allowed length
+    return filename[:max_length]

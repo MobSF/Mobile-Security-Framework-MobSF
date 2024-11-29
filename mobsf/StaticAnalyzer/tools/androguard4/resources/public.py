@@ -1,7 +1,8 @@
 # -*- coding: utf_8 -*-
 # flake8: noqa
 import os
-from xml.dom import minidom
+
+from defusedxml.minidom import parseString
 
 _public_res = None
 # copy the newest sdk/platforms/android-?/data/res/values/public.xml here
@@ -11,7 +12,7 @@ if _public_res is None:
     xmlfile = os.path.join(root, "public.xml")
     if os.path.isfile(xmlfile):
         with open(xmlfile, "r") as fp:
-            _xml = minidom.parseString(fp.read())
+            _xml = parseString(fp.read())
             for element in _xml.getElementsByTagName("public"):
                 _type = element.getAttribute('type')
                 _name = element.getAttribute('name')

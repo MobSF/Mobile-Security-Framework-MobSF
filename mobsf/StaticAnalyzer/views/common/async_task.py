@@ -108,6 +108,13 @@ def async_analysis(checksum, api, file_name, func, *args, **kwargs):
     return HttpResponseRedirect('/tasks')
 
 
+def enqueued_task_init(checksum):
+    """Store Task start."""
+    EnqueuedTask.objects.filter(checksum=checksum).update(
+        started_at=timezone.now(),
+    )
+
+
 def update_enqueued_task(checksum, app_name, status):
     """Update the Enqueued Task and others that matches the checksum."""
     EnqueuedTask.objects.filter(checksum=checksum).update(
@@ -124,7 +131,7 @@ def get_live_status(enq):
         return enq.status
     logs = get_scan_logs(enq.checksum)
     if logs:
-        return logs[-1]
+        return logs[-1].get('status', '')
     return enq.status
 
 
@@ -142,6 +149,7 @@ def list_tasks(request, api=False):
                 'app_name': enq.app_name,
                 'checksum': enq.checksum,
                 'created_at': enq.created_at,
+                'started_at': enq.started_at,
                 'completed_at': enq.completed_at,
                 'status': get_live_status(enq),
             })

@@ -71,6 +71,17 @@ def permission_transform(perm_mappings):
 
 def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
     """Perform the code analysis."""
+    result = {
+        'api': {},
+        'behaviour': {},
+        'perm_mappings': {},
+        'findings': {},
+        'niap': {},
+        'urls_list': [],
+        'urls': [],
+        'emails': [],
+        'sbom': {},
+    }
     try:
         root = Path(settings.BASE_DIR) / 'StaticAnalyzer' / 'views'
         and_rules = root / 'android' / 'rules'
@@ -78,15 +89,6 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
         api_rules = and_rules / 'android_apis.yaml'
         perm_rules = and_rules / 'android_permissions.yaml'
         niap_rules = and_rules / 'android_niap.yaml'
-        code_findings = {}
-        api_findings = {}
-        perm_mappings = {}
-        behaviour_findings = {}
-        niap_findings = {}
-        email_n_file = []
-        url_n_file = []
-        url_list = []
-        sbom = {}
         app_dir = Path(app_dir)
         src = get_android_src_dir(app_dir, typ).as_posix() + '/'
         skp = settings.SKIP_CLASS_PATH
@@ -104,13 +106,14 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
         file_data = sast.read_files()
 
         # SBOM Analysis
-        sbom = sbom_analysis.sbom(app_dir, file_data)
+        result['sbom'] = sbom_analysis.sbom(app_dir, file_data)
         msg = 'Android SBOM Analysis Completed'
         logger.info(msg)
         append_scan_status(checksum, msg)
 
         # Code Analysis
-        code_findings = sast.run_rules(file_data, code_rules.as_posix())
+        result['findings'] = sast.run_rules(
+            file_data, code_rules.as_posix())
         msg = 'Android SAST Completed'
         logger.info(msg)
         append_scan_status(checksum, msg)
@@ -120,19 +123,21 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
         logger.info(msg)
         append_scan_status(checksum, msg)
         sast = SastEngine(options, src)
-        api_findings = sast.run_rules(file_data, api_rules.as_posix())
+        result['api'] = sast.run_rules(
+            file_data, api_rules.as_posix())
         msg = 'Android API Analysis Completed'
         logger.info(msg)
         append_scan_status(checksum, msg)
 
         # Permission Mapping
-        rule_file = get_perm_rules(checksum, perm_rules, android_permissions)
+        rule_file = get_perm_rules(
+            checksum, perm_rules, android_permissions)
         if rule_file:
             msg = 'Android Permission Mapping Started'
             logger.info(msg)
             append_scan_status(checksum, msg)
             sast = SastEngine(options, src)
-            perm_mappings = permission_transform(
+            result['perm_mappings'] = permission_transform(
                 sast.run_rules(file_data, rule_file.name))
             msg = 'Android Permission Mapping Completed'
             logger.info(msg)
@@ -141,7 +146,7 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
 
         # Behavior Analysis
         sast = SastEngine(options, src)
-        behaviour_findings = behaviour_analysis.analyze(
+        result['behaviour'] = behaviour_analysis.analyze(
             checksum, sast, file_data)
 
         # NIAP Scan
@@ -151,13 +156,14 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
             append_scan_status(checksum, msg)
             niap_options = {
                 'choice_rules': niap_rules.as_posix(),
-                'alternative_path': manifest_file if manifest_file else '',
+                'alternative_path': str(manifest_file) if manifest_file else '',
                 'choice_extensions': {'.java', '.xml'},
                 'ignore_paths': skp,
             }
             cengine = ChoiceEngine(niap_options, src)
             file_data = cengine.read_files()
-            niap_findings = cengine.run_rules(file_data, niap_rules.as_posix())
+            result['niap'] = cengine.run_rules(
+                file_data, niap_rules.as_posix())
             msg = 'NIAP Analysis Completed'
             logger.info(msg)
             append_scan_status(checksum, msg)
@@ -182,25 +188,14 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
                 relative_java_path = pfile.as_posix().replace(src, '')
                 urls, urls_nf, emails_nf = url_n_email_extract(
                     content, relative_java_path)
-                url_list.extend(urls)
-                url_n_file.extend(urls_nf)
-                email_n_file.extend(emails_nf)
+                result['urls_list'].extend(urls)
+                result['urls'].extend(urls_nf)
+                result['emails'].extend(emails_nf)
         msg = 'Email and URL Extraction Completed'
         logger.info(msg)
         append_scan_status(checksum, msg)
-        code_an_dic = {
-            'api': api_findings,
-            'behaviour': behaviour_findings,
-            'perm_mappings': perm_mappings,
-            'findings': code_findings,
-            'niap': niap_findings,
-            'urls_list': url_list,
-            'urls': url_n_file,
-            'emails': email_n_file,
-            'sbom': sbom,
-        }
-        return code_an_dic
     except Exception as exp:
         msg = 'Failed to perform code analysis'
         logger.exception(msg)
         append_scan_status(checksum, msg, repr(exp))
+    return result

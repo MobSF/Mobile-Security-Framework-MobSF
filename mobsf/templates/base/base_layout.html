@@ -26,6 +26,16 @@
     body {
       zoom: 0.8; 
     }
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1040; /* Ensure it is above most elements but below modal */
+      background-color: rgba(0, 0, 0, 0.5); /* Default backdrop color */
+    }
+
   </style>
   {% block extra_css %}
  

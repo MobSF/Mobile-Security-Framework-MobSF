@@ -50,7 +50,7 @@ def strings_from_so(checksum, elf_strings):
     return sos
 
 
-def strings_from_apk(checksum, apk):
+def strings_from_apk(checksum, app_dic):
     """Extract Strings from an APK."""
     results = {
         'strings': [],
@@ -65,36 +65,42 @@ def strings_from_apk(checksum, apk):
         logger.info(msg)
         append_scan_status(checksum, msg)
 
-        rsrc = apk.get_android_resources()
-        if not rsrc:
-            return results
+        rsrc = app_dic.get('androguard_apk_resources')
+        if rsrc:
+            pkg = rsrc.get_packages_names()[0]
+            rsrc.get_strings_resources()
 
-        pkg = rsrc.get_packages_names()[0]
-        rsrc.get_strings_resources()
-
-        # Iterate over resource strings
-        for _res_key, res_value in rsrc.values.get(pkg, {}).items():
-            res_string = res_value.get('string')
-            if not res_string:
-                continue
-
-            for key, value in res_string:
-                if not value:
+            # Iterate over resource strings
+            for _res_key, res_value in rsrc.values.get(pkg, {}).items():
+                res_string = res_value.get('string')
+                if not res_string:
                     continue
 
-                # Extract Firebase credentials
-                if key == 'google_api_key' and GOOGLE_API_KEY_REGEX.match(value):
-                    results['firebase_creds']['google_api_key'] = value
-                elif key == 'google_app_id' and GOOGLE_APP_ID_REGEX.match(value):
-                    results['firebase_creds']['google_app_id'] = value
+                for key, value in res_string:
+                    if not value:
+                        continue
 
-                # Format and collect strings
-                formatted_str = f'"{key}" : "{value}"'
-                results['strings'].append(formatted_str)
+                    # Extract Firebase credentials
+                    if key == 'google_api_key' and GOOGLE_API_KEY_REGEX.match(value):
+                        results['firebase_creds']['google_api_key'] = value
+                    elif key == 'google_app_id' and GOOGLE_APP_ID_REGEX.match(value):
+                        results['firebase_creds']['google_app_id'] = value
 
-                # Check for possible secrets
-                if is_secret_key(key) and ' ' not in value:
-                    results['secrets'].append(formatted_str)
+                    # Format and collect strings
+                    formatted_str = f'"{key}" : "{value}"'
+                    results['strings'].append(formatted_str)
+
+                    # Check for possible secrets
+                    if is_secret_key(key) and ' ' not in value:
+                        results['secrets'].append(formatted_str)
+        elif app_dic.get('apk_strings'):
+            # No secret key check for APK strings
+            results['strings'] = app_dic['apk_strings']
+        else:
+            msg = 'Failed to extract String data from APK'
+            logger.warning(msg)
+            append_scan_status(checksum, msg)
+            return results
 
         # Extract URLs and Emails from collected strings
         results['strings'] = list(set(results['strings']))
@@ -129,9 +135,11 @@ def strings_from_code(checksum, src_dir, typ, exts):
     return data
 
 
-def get_strings_metadata(
-        checksum, apk, app_dir, elf_strings, typ, exts, code_dic):
+def get_strings_metadata(app_dic, elf_strings, exts, code_dic):
     """Get Strings, secrets, entropies, URLs, emails."""
+    checksum = app_dic['md5']
+    typ = app_dic['zipped']
+    app_dir = app_dic['app_dir']
     strings = {
         'strings_apk_res': {},
         'strings_so': [],
@@ -141,9 +149,9 @@ def get_strings_metadata(
     urls_n_files = []
     emails_n_files = []
     secrets = []
-    if apk:
+    if app_dic.get('androguard_string_resources') or app_dic.get('apk_strings'):
         # APK
-        apk_res = strings_from_apk(checksum, apk)
+        apk_res = strings_from_apk(checksum, app_dic)
         code_dic['firebase_creds'] = apk_res['firebase_creds']
         strings['strings_apk_res'] = apk_res['strings']
         urls_list.extend(apk_res['urls_list'])

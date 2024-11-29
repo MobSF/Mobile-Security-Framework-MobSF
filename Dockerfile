@@ -20,10 +20,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
     USER_ID=9901 \
     MOBSF_PLATFORM=docker \
     MOBSF_ADB_BINARY=/usr/bin/adb \
-    JDK_FILE=openjdk-22.0.2_linux-x64_bin.tar.gz \
-    JDK_FILE_ARM=openjdk-22.0.2_linux-aarch64_bin.tar.gz \
-    WKH_FILE=wkhtmltox_0.12.6.1-3.bookworm_amd64.deb \
-    WKH_FILE_ARM=wkhtmltox_0.12.6.1-3.bookworm_arm64.deb \
     JAVA_HOME=/jdk-22.0.2 \
     PATH=/jdk-22.0.2/bin:/root/.local/bin:$PATH \
     DJANGO_SUPERUSER_USERNAME=mobsf \
@@ -32,6 +28,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
 RUN apt update -y && \
     apt install -y --no-install-recommends \
+    android-sdk-build-tools \
     android-tools-adb \
     build-essential \
     curl \

@@ -2354,9 +2354,11 @@
              <strong><i class="fa fa-archive"></i> SBOM</strong>
              </p>
                <div class="list-group">
+                {% if sbom %}
                  {% include 'base/list.html' with list=sbom.sbom_versioned type="Versioned Packages" limit=100 %}
                  {% include 'base/list.html' with list=sbom.sbom_packages type="Packages" limit=100 %}
-             </div>
+                {% endif %}
+              </div>
            </div>
          </div>
        </div><!-- /.card -->
@@ -2555,11 +2557,13 @@ imageSeries.data = [
 {% endblock %}
 {% block scan_logs %}
 <table id="scan_logs" class="table table-bordered table-hover table-striped">
+  <thead>
     <tr>
         <th>Timestamp</th>
         <th>Event</th>
         <th>Error</th>
     </tr>
+  </thead>
 <tbody>
   {% for log in logs %}
   <tr>

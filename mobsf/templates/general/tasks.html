@@ -50,8 +50,7 @@
                         <tr>
                             <th>Scan Task</th>
                             <th>Filename</th>
-                            <th>Queued At</th>
-                            <th>Completed At</th>
+                            <th>Timeline</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -123,25 +122,6 @@
         statusCell.appendChild(reportLink);
     }
 
-    function updateCellStatus(task, statusCell, completedCell) {
-        statusCell.textContent = task.status.status || task.status;
-
-        if (!task.completed_at) {
-            addLoader(statusCell);
-        } else {
-            completedCell.textContent = new Date(task.completed_at).toLocaleString();
-            if (task.status === "Success") {
-                statusCell.classList.add("text-success");
-                statusCell.classList.remove("text-warning");
-                addReportLink(task, statusCell);
-            } else if (task.app_name === "Failed")  {
-                statusCell.classList.add("text-danger");
-                statusCell.classList.remove("text-warning");
-            }
-        }
-        addAppName(task, statusCell);
-    }
-
     function buildTableRow(task) {
         const row = document.createElement("tr");
         row.setAttribute("data-task-id", task.task_id);
@@ -151,10 +131,14 @@
         const taskP = document.createElement("p");
         const checksumP = document.createElement("p");
 
-        taskP.innerHTML = '<strong>Task ID: </strong> ';
+        const taskLabel = document.createElement("strong");
+        taskLabel.textContent = "Task ID: ";
+        taskP.appendChild(taskLabel);
         taskP.appendChild(document.createTextNode(task.task_id));
 
-        checksumP.innerHTML = '<strong>Checksum: </strong> ';
+        const checksumLabel = document.createElement("strong");
+        checksumLabel.textContent = "Checksum: ";
+        checksumP.appendChild(checksumLabel);
         checksumP.appendChild(document.createTextNode(task.checksum));
 
         taskIdCell.appendChild(taskP);
@@ -164,31 +148,74 @@
         const fileNameCell = document.createElement("td");
         fileNameCell.textContent = task.file_name;
 
-        // Queued At
-        const queuedAtCell = document.createElement("td");
-        const date = new Date(task.created_at);
-        queuedAtCell.textContent = date.toLocaleString();
-
-        // Completed At
-        const completedCell = document.createElement("td");
-        completedCell.setAttribute("id", `completed-${task.task_id}`);
-        completedCell.textContent = task.completed_at ? new Date(task.completed_at).toLocaleString() : null;
+        // Timeline
+        const timelineCell = document.createElement("td");
+        timelineCell.setAttribute("id", `timeline-${task.task_id}`);
 
         // Status
         const statusCell = document.createElement("td");
         statusCell.setAttribute("id", `status-${task.task_id}`);
         statusCell.classList.add(task.completed_at ? "text-success" : "text-warning");
 
-        updateCellStatus(task, statusCell, completedCell);
+        updateCellStatus(task, statusCell, timelineCell);
 
         // Append cells to row
         row.appendChild(taskIdCell);
         row.appendChild(fileNameCell);
-        row.appendChild(queuedAtCell);
-        row.appendChild(completedCell);
+        row.appendChild(timelineCell);
         row.appendChild(statusCell);
 
         return row;
+    }
+
+    function updateCellStatus(task, statusCell, timelineCell) {
+        // Update the status text
+        statusCell.textContent = task.status;
+
+        // Clear existing content in timelineCell
+        while (timelineCell.firstChild) {
+            timelineCell.removeChild(timelineCell.firstChild);
+        }
+
+        // Create and append "Queued At"
+        const queuedAtElement = document.createElement("p");
+        const queuedAtLabel = document.createElement("strong");
+        queuedAtLabel.textContent = "Queued At: ";
+        queuedAtElement.appendChild(queuedAtLabel);
+        queuedAtElement.appendChild(document.createTextNode(task.created_at ? new Date(task.created_at).toLocaleString() : "N/A"));
+        timelineCell.appendChild(queuedAtElement);
+
+        // Create and append "Started At"
+        const startedAtElement = document.createElement("p");
+        const startedAtLabel = document.createElement("strong");
+        startedAtLabel.textContent = "Started At: ";
+        startedAtElement.appendChild(startedAtLabel);
+        startedAtElement.appendChild(document.createTextNode(task.started_at ? new Date(task.started_at).toLocaleString() : "N/A"));
+        timelineCell.appendChild(startedAtElement);
+
+        // Create and append "Completed At"
+        const completedAtElement = document.createElement("p");
+        const completedAtLabel = document.createElement("strong");
+        completedAtLabel.textContent = "Completed At: ";
+        completedAtElement.appendChild(completedAtLabel);
+        completedAtElement.appendChild(document.createTextNode(task.completed_at ? new Date(task.completed_at).toLocaleString() : "N/A"));
+        timelineCell.appendChild(completedAtElement);
+
+        // Add loader or success indicators
+        if (!task.completed_at) {
+            addLoader(statusCell);
+        } else {
+            if (task.status === "Success") {
+                statusCell.classList.add("text-success");
+                statusCell.classList.remove("text-warning");
+                addReportLink(task, statusCell);
+            } else if (task.status === "Failed") {
+                statusCell.classList.add("text-danger");
+                statusCell.classList.remove("text-warning");
+            }
+        }
+
+        addAppName(task, statusCell);
     }
 
     async function renderTable() {
@@ -198,7 +225,7 @@
         if (tasks.length === 0) {
             const noTasksRow = document.createElement("tr");
             const noTasksCell = document.createElement("td");
-            noTasksCell.setAttribute("colspan", "5");
+            noTasksCell.setAttribute("colspan", "4");
             noTasksCell.textContent = "No tasks in queue.";
             noTasksRow.appendChild(noTasksCell);
             tasksTableBody.appendChild(noTasksRow);
@@ -217,11 +244,11 @@
 
         tasks.forEach((task) => {
             const statusCell = document.getElementById(`status-${task.task_id}`);
-            const completedCell = document.getElementById(`completed-${task.task_id}`);
+            const timelineCell = document.getElementById(`timeline-${task.task_id}`);
 
-            if (statusCell && completedCell) {
-                // Update existing task status
-                updateCellStatus(task, statusCell, completedCell);
+            if (statusCell && timelineCell) {
+                // Update existing task status and timeline
+                updateCellStatus(task, statusCell, timelineCell);
             } else if (!existingTaskIds.includes(task.task_id)) {
                 // Add a new row if the task ID is not found, at the top of the table
                 const newRow = buildTableRow(task);
@@ -229,6 +256,7 @@
             }
         });
     }
+
 
 
     // Initial render

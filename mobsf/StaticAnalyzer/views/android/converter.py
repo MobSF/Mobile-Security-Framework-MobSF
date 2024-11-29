@@ -10,6 +10,7 @@ import subprocess
 import threading
 import stat
 from pathlib import Path
+from tempfile import gettempdir
 
 from django.conf import settings
 
@@ -153,3 +154,37 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
         msg = 'Decompiling with JADX failed'
         logger.exception(msg)
         append_scan_status(checksum, msg, repr(exp))
+
+
+def run_apktool(app_path, app_dir, tools_dir):
+    """Get readable AndroidManifest.xml from APK."""
+    try:
+        if (len(settings.APKTOOL_BINARY) > 0
+                and Path(settings.APKTOOL_BINARY).exists()):
+            apktool_path = Path(settings.APKTOOL_BINARY)
+        else:
+            apktool_path = tools_dir / 'apktool_2.10.0.jar'
+
+        # Prepare output directory and manifest file paths
+        output_dir = app_dir / 'apktool_out'
+        # Run apktool to extract AndroidManifest.xml
+        args = [find_java_binary(),
+                '-jar',
+                '-Djdk.util.zip.disableZip64ExtraFieldValidation=true',
+                str(apktool_path),
+                '--match-original',
+                '--frame-path',
+                gettempdir(),
+                '-f', '-s', 'd',
+                str(app_path),
+                '-o',
+                str(output_dir)]
+        logger.info('Converting AXML to XML with apktool')
+        with open(os.devnull, 'w') as fnull:
+            subprocess.run(
+                args,
+                stdout=fnull,
+                stderr=subprocess.STDOUT,
+                timeout=settings.JADX_TIMEOUT)
+    except Exception:
+        logger.warning('apktool failed to extract AndroidManifest.xml')

@@ -462,6 +462,8 @@ else:
     VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')
     APKTOOL_BINARY = os.getenv('MOBSF_APKTOOL_BINARY', '')
     ADB_BINARY = os.getenv('MOBSF_ADB_BINARY', '')
+    AAPT2_BINARY = os.getenv('MOBSF_AAPT2_BINARY', '')
+    AAPT_BINARY = os.getenv('MOBSF_AAPT_BINARY', '')
 
     # iOS 3P Tools
     JTOOL_BINARY = os.getenv('MOBSF_JTOOL_BINARY', '')
