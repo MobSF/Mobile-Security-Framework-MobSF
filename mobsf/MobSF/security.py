@@ -6,6 +6,7 @@ import re
 import sys
 from shutil import which
 from pathlib import Path
+from platform import system
 from concurrent.futures import ThreadPoolExecutor
 
 from mobsf.MobSF.utils import (
@@ -72,13 +73,21 @@ def get_executable_hashes():
         downloaded_tools,
         manage_py,
     ]
-    aapts = [find_aapt('aapt'), find_aapt('aapt2')]
+    aapt = 'aapt'
+    aapt2 = 'aapt2'
+    if system() == 'Windows':
+        aapt = 'aapt.exe'
+        aapt2 = 'aapt2.exe'
+    aapts = [find_aapt(aapt), find_aapt(aapt2)]
     exec_loc.extend(Path(a) for a in aapts if a)
     # External binaries used directly by MobSF
     system_bins = [
         'aapt',
+        'aapt.exe',
         'aapt2',
+        'aapt2.exe',
         'adb',
+        'adb.exe',
         'which',
         'wkhtmltopdf',
         'httptools',
