@@ -190,6 +190,7 @@ def get_icon_apk_res(app_dic):
             icon_src = icon_name
 
         if icon_name and icon_name.endswith('.xml'):
+            # Handle XML icon case
             apktool_res = False
             # Can be vector XML/XML pointing to vector files
             # Convert AXML to XML for vector
@@ -216,10 +217,11 @@ def get_icon_apk_res(app_dic):
             else:
                 # if we cannot find from xml
                 icon_src = guess_icon_path(str(res_path))
-        else:
+        elif icon_name:
             # We found png icon, the easy path
             icon_src = (app_dir / icon_name).as_posix()
 
+        # Log warning if correct icon is not found
         if icon_src.endswith('.xml'):
             logger.warning('Cannot find icon file from xml')
             icon_src = ''

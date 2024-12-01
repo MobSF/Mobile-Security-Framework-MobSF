@@ -345,8 +345,8 @@ ASYNC_ANALYSIS = bool(os.getenv('MOBSF_ASYNC_ANALYSIS', '0') == '1')
 ASYNC_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_ASYNC_ANALYSIS_TIMEOUT', '60'))
 Q_CLUSTER = {
     'name': 'scan_queue',
-    'workers': int(os.getenv('MOBSF_ASYNC_WORKERS', 3)),
-    'recycle': 5,
+    'workers': int(os.getenv('MOBSF_ASYNC_WORKERS', '2')),
+    'recycle': 100,
     'timeout': ASYNC_ANALYSIS_TIMEOUT * 60,
     'retry': (ASYNC_ANALYSIS_TIMEOUT * 60) + 100,
     'compress': True,

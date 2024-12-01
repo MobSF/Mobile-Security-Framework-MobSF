@@ -76,8 +76,8 @@ from mobsf.StaticAnalyzer.views.common.appsec import (
 )
 from mobsf.StaticAnalyzer.views.common.async_task import (
     async_analysis,
-    enqueued_task_init,
-    update_enqueued_task,
+    mark_task_completed,
+    mark_task_started,
 )
 from mobsf.MobSF.views.authorization import (
     Permissions,
@@ -148,7 +148,7 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
     try:
         if queue:
             settings.ASYNC_ANALYSIS = True
-            enqueued_task_init(checksum)
+            mark_task_started(checksum)
         append_scan_status(checksum, 'init')
         get_size_and_hashes(app_dic)
         msg = 'Extracting APK'
@@ -232,12 +232,12 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
             rescan,
         )
         if queue:
-            return update_enqueued_task(
+            return mark_task_completed(
                 checksum, app_dic['subject'], 'Success')
         return context, None
     except Exception as exp:
         if queue:
-            return update_enqueued_task(
+            return mark_task_completed(
                 checksum, 'Failed', repr(exp))
         return context, repr(exp)
     finally:
@@ -288,7 +288,7 @@ def src_analysis_task(checksum, app_dic, rescan, pro_type, queue=False):
     try:
         if queue:
             settings.ASYNC_ANALYSIS = True
-            enqueued_task_init(checksum)
+            mark_task_started(checksum)
         cert_dic = {
             'certificate_info': '',
             'certificate_status': '',
@@ -353,11 +353,11 @@ def src_analysis_task(checksum, app_dic, rescan, pro_type, queue=False):
             rescan,
         )
         if queue:
-            return update_enqueued_task(
+            return mark_task_completed(
                 checksum, app_dic['subject'], 'Success')
     except Exception as exp:
         if queue:
-            return update_enqueued_task(
+            return mark_task_completed(
                 checksum, 'Failed', repr(exp))
     return context
 

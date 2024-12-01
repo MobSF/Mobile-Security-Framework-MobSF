@@ -55,8 +55,8 @@ from mobsf.StaticAnalyzer.views.common.appsec import (
 )
 from mobsf.StaticAnalyzer.views.common.async_task import (
     async_analysis,
-    enqueued_task_init,
-    update_enqueued_task,
+    mark_task_completed,
+    mark_task_started,
 )
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
     MalwareDomainCheck,
@@ -170,7 +170,7 @@ def ipa_analysis_task(checksum, app_dic, rescan, queue=False):
     try:
         if queue:
             settings.ASYNC_ANALYSIS = True
-            enqueued_task_init(checksum)
+            mark_task_started(checksum)
         append_scan_status(checksum, 'init')
         msg = 'iOS Binary (IPA) Analysis Started'
         logger.info(msg)
@@ -181,11 +181,12 @@ def ipa_analysis_task(checksum, app_dic, rescan, queue=False):
             msg = ('IPA is malformed! MobSF cannot find Payload directory')
             append_scan_status(checksum, 'IPA is malformed', msg)
             if queue:
-                return update_enqueued_task(
+                return mark_task_completed(
                     checksum, 'Failed', msg)
             return context, msg
-        common_analysis('ipa', app_dic, checksum)
 
+        # Common Analysis
+        common_analysis('ipa', app_dic, checksum)
         # IPA Binary Analysis
         bin_dict = binary_analysis(
             checksum,
@@ -224,12 +225,12 @@ def ipa_analysis_task(checksum, app_dic, rescan, queue=False):
             rescan)
         if queue:
             subject = get_scan_subject(app_dic, bin_dict)
-            return update_enqueued_task(
+            return mark_task_completed(
                 checksum, subject, 'Success')
         return context, None
     except Exception as exp:
         if queue:
-            return update_enqueued_task(
+            return mark_task_completed(
                 checksum, 'Failed', repr(exp))
         return context, repr(exp)
 
@@ -275,7 +276,7 @@ def ios_analysis_task(checksum, app_dic, rescan, queue=False):
     try:
         if queue:
             settings.ASYNC_ANALYSIS = True
-            enqueued_task_init(checksum)
+            mark_task_started(checksum)
         logger.info('iOS Source Code Analysis Started')
         get_size_and_hashes(app_dic)
 
@@ -316,11 +317,11 @@ def ios_analysis_task(checksum, app_dic, rescan, queue=False):
             rescan)
         if queue:
             subject = get_scan_subject(app_dic, bin_dict)
-            return update_enqueued_task(
+            return mark_task_completed(
                 checksum, subject, 'Success')
     except Exception as exp:
         if queue:
-            return update_enqueued_task(
+            return mark_task_completed(
                 checksum, 'Failed', repr(exp))
     return context
 

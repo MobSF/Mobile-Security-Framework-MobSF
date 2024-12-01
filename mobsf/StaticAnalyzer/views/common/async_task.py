@@ -48,35 +48,52 @@ def detect_timeout(sender, task, **kwargs):
 
 def async_analysis(checksum, api, file_name, func, *args, **kwargs):
     """Async Analysis Task."""
-    # Check if the task is already completed
+    # Check if the scan is already completed and successful
+    scan_completed = False
     recent = RecentScansDB.objects.filter(MD5=checksum)
-    scan_completed = recent[0].APP_NAME or recent[0].PACKAGE_NAME
-    # Check if the task is updated within the last 60 minutes
-    active_recently = recent[0].TIMESTAMP >= timezone.now() - timedelta(
-        minutes=settings.ASYNC_ANALYSIS_TIMEOUT)
+    if recent.exists() and (recent[0].APP_NAME or recent[0].PACKAGE_NAME):
+        # Successful scan will have APP_NAME or PACKAGE_NAME
+        scan_completed = True
+    # Check if task is already completed within the last 60 minutes
+    # Can be success or failed
+    completed_at_recently = EnqueuedTask.objects.filter(
+        checksum=checksum,
+        completed_at__gte=timezone.now() - timedelta(
+            minutes=settings.ASYNC_ANALYSIS_TIMEOUT),
+    ).exists()
+
     # Check if the task is already enqueued within the last 60 minutes
     queued_recently = EnqueuedTask.objects.filter(
         checksum=checksum,
         created_at__gte=timezone.now() - timedelta(
             minutes=settings.ASYNC_ANALYSIS_TIMEOUT),
     ).exists()
+    # Check if the task is already started within the last 60 minutes
+    started_at_recently = EnqueuedTask.objects.filter(
+        checksum=checksum,
+        started_at__gte=timezone.now() - timedelta(
+            minutes=settings.ASYNC_ANALYSIS_TIMEOUT),
+    ).exists()
 
-    # Additional checks on recent queue
-    if queued_recently:
-        if scan_completed:
-            # scan already completed recently
-            msg = 'Analysis already completed in the last 60 minutes'
-            logger.warning(msg)
-            if api:
-                return {'task_id': None, 'message': msg}
-            return HttpResponseRedirect('/tasks?q=completed')
-        elif active_recently:
-            # scan not completed but active recently
-            msg = 'Analysis already enqueued in the last 60 minutes'
-            logger.warning(msg)
-            if api:
-                return {'task_id': None, 'message': msg}
-            return HttpResponseRedirect('/tasks?q=queued')
+    # Prevent duplicate scans in the last 60 minutes
+    if scan_completed and completed_at_recently:
+        # scan task already completed with success/failure recently
+        msg = ('Analysis already completed/failed in the '
+               f'last {settings.ASYNC_ANALYSIS_TIMEOUT} minutes. '
+               'Please try again later.')
+        logger.warning(msg)
+        if api:
+            return {'task_id': None, 'message': msg}
+        return HttpResponseRedirect('/tasks?q=completed')
+    elif queued_recently or started_at_recently:
+        # scan not completed but queued or started recently
+        msg = ('Analysis already enqueued in the '
+               f'last {settings.ASYNC_ANALYSIS_TIMEOUT} minutes. '
+               'Please wait for the current scan to complete.')
+        logger.warning(msg)
+        if api:
+            return {'task_id': None, 'message': msg}
+        return HttpResponseRedirect('/tasks?q=queued')
 
     # Clear old tasks
     queue_size = settings.QUEUE_MAX_SIZE
@@ -108,15 +125,15 @@ def async_analysis(checksum, api, file_name, func, *args, **kwargs):
     return HttpResponseRedirect('/tasks')
 
 
-def enqueued_task_init(checksum):
-    """Store Task start."""
+def mark_task_started(checksum):
+    """Register the enqued task and others that matches the checksum as started."""
     EnqueuedTask.objects.filter(checksum=checksum).update(
         started_at=timezone.now(),
     )
 
 
-def update_enqueued_task(checksum, app_name, status):
-    """Update the Enqueued Task and others that matches the checksum."""
+def mark_task_completed(checksum, app_name, status):
+    """Update the enqueued task and others that matches the checksum as completed."""
     EnqueuedTask.objects.filter(checksum=checksum).update(
         app_name=app_name[:254],
         completed_at=timezone.now(),
