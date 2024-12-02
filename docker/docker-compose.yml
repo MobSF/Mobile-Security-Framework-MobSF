@@ -63,9 +63,10 @@ services:
       context: ..
       dockerfile: Dockerfile
     restart: always
+    tty: true
     volumes:
       - $HOME/MobSF/mobsf_data:/home/mobsf/.MobSF
-    environment: 
+    environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=mobsf
