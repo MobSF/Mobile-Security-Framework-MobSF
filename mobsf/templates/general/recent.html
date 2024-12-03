@@ -184,6 +184,18 @@
 {% block extra_scripts %}
 <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script>
+
+    // Escape HTML
+    function escapeHtml(unsafe)
+    {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     // Diff functions
     var diff_first_md5 = '';
     var diff_first_name = '';
@@ -231,7 +243,7 @@
     }
 
     function diff_cleanup() {
-        first_td_id = diff_first_md5 + '_' + diff_first_name;
+        first_td_id = diff_first_md5 + '_' + escapeHtml(diff_first_name);
         $('[id="' + first_td_id + '"]').closest("tr").removeClass("selected");
         $('[id="' + first_td_id + '"]').closest("tbody").removeClass("selectable_table");
         diff_first_md5 = "";
@@ -254,8 +266,8 @@
             title: '<strong>Diff confirmation</strong>',
             type: 'info',
             html:
-                '<strong>Do you want to diff - </strong><br />' + diff_first_name +
-                '<br /> <strong>with - <br /> </strong>' + diff_second_name + ' <br /> <strong>?</strong>',
+                '<strong>Do you want to diff - </strong><br />' + escapeHtml(diff_first_name) +
+                '<br /> <strong>with - <br /> </strong>' + escapeHtml(diff_second_name) + ' <br /> <strong>?</strong>',
 
             showCancelButton: true,
             cancelButtonText: 'Cancel',

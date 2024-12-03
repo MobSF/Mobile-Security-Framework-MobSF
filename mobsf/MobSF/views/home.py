@@ -163,7 +163,7 @@ class Upload(object):
         request = self.request
         scanning = Scanning(request)
         content_type = self.file.content_type
-        file_name = self.file.name
+        file_name = sanitize_filename(self.file.name)
         logger.info('MIME Type: %s FILE: %s', content_type, file_name)
         if self.file_type.is_apk():
             return scanning.scan_apk()
