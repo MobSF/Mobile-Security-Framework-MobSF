@@ -41,6 +41,8 @@ Quick setup with docker
 ```
 docker pull opensecurity/mobile-security-framework-mobsf:latest
 docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
+
+# Default username and password: mobsf/mobsf
 ```
 
 [![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70686099-3855f780-1c79-11ea-8141-899e39459da2.png)](https://mobsf.github.io/docs)
