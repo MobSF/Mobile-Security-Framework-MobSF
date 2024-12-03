@@ -51,5 +51,37 @@ if (-not $AVD_FOUND) {
 }
 
 # Start the emulator with user-defined AVD and port
-Start-Process -FilePath $EMULATOR_PATH -ArgumentList "-avd $AVD_NAME -writable-system -no-snapshot -wipe-data -port $START_PORT"
-Write-Output "Emulator started with AVD $AVD_NAME on port $START_PORT."
+Start-Process -NoNewWindow -FilePath $EMULATOR_PATH -ArgumentList "-avd $AVD_NAME -writable-system -no-snapshot -wipe-data -port $START_PORT"
+Write-Output "Starting AVD $AVD_NAME on port $START_PORT."
+ 
+# Wait for the emulator to boot completely
+Write-Output "Waiting for emulator to boot..."
+& $ADB_PATH wait-for-device
+Start-Sleep -Seconds 5
+Write-Output "Emulator booted successfully."
+ 
+# Allow /system remount
+Write-Output "Restarting adb as root..."
+Start-Process -NoNewWindow -Wait -FilePath $ADB_PATH -ArgumentList "root"
+ 
+Write-Output "Disabling AVB verification..."
+Start-Process -NoNewWindow -Wait -FilePath $ADB_PATH -ArgumentList "shell avbctl disable-verification"
+ 
+Write-Output "Disabling verity..."
+Start-Process -NoNewWindow -Wait -FilePath $ADB_PATH -ArgumentList "disable-verity"
+ 
+Write-Output "Restarting emulator..."
+Start-Process -NoNewWindow -Wait -FilePath $ADB_PATH -ArgumentList "reboot"
+ 
+Write-Output "Waiting for emulator to reboot..."
+& $ADB_PATH wait-for-device
+Start-Sleep -Seconds 5
+Write-Output "Emulator rebooted successfully."
+ 
+Write-Output "Restarting adb as root..."
+Start-Process -NoNewWindow -Wait -FilePath $ADB_PATH -ArgumentList "root"
+ 
+Write-Output "Remounting the filesystem..."
+Start-Process -NoNewWindow -Wait -FilePath $ADB_PATH -ArgumentList "remount"
+ 
+Write-Output "Emulator ready for Dynamic Analysis with MobSF."

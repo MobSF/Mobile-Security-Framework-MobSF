@@ -66,7 +66,9 @@ done
 
 # Start the emulator with user-defined AVD and port
 "$EMULATOR_PATH" -avd "$AVD_NAME" -writable-system -no-snapshot -wipe-data -port "$START_PORT" >/dev/null 2>&1 &
-echo "$(tput setaf 2)Emulator AVD $AVD_NAME started on port $START_PORT$(tput sgr0)"
+echo "$(tput setaf 2)Starting AVD $AVD_NAME on port $START_PORT$(tput sgr0)"
+echo "Waiting for emulator to boot..."
+"$ADB_PATH" wait-for-device
 
 # Check if socat is available only on Linux
 if [ "$(uname)" = "Linux" ]; then
@@ -124,7 +126,7 @@ if [ -n "$GAPPS_ZIP" ]; then
     tar -x --strip-components 2 -f $f -C $PLAY_EXTRACT_DIR || { echo "$(tput setaf 1)Error: Extraction failed$(tput sgr0)"; exit 1; }
   done
 
-  echo "Waiting for emulator to complete booting..."
+  echo "Waiting for the emulator to be ready..."
   sleep 25
   echo "Installing PlayStore components"
   "$ADB_PATH" root
