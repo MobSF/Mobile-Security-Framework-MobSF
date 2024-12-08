@@ -42,10 +42,10 @@ def common_fields(findings, data):
         files_dict = cd.get('files', {})
         files_lines = [f"{file}, line(s) {lines}"
                        for file, lines in files_dict.items()]
-        formated_files_str = '\n'.join(files_lines)
+        all_files_str = '\n'.join(files_lines)
 
         if files_dict:
-            fdesc = f'{desc}\n{ref}\n\nFiles:\n{formated_files_str}'
+            fdesc = f'{desc}\n{ref}\n\nFiles:\n{all_files_str}'
         else:
             fdesc = f'{desc}\n{ref}'
 
