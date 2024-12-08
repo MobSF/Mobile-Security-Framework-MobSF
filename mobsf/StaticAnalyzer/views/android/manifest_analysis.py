@@ -762,9 +762,11 @@ def manifest_analysis(app_dic, man_data_dic):
                 ret_list.append(('sms_receiver_port_found', (dataport,), ()))
         # INTENTS
         for intent in intents:
+            processed_priorities = []
             if intent.getAttribute(f'{ns}:priority').isdigit():
                 value = intent.getAttribute(f'{ns}:priority')
-                if int(value) > 100:
+                if int(value) > 100 and value not in processed_priorities:
+                    processed_priorities.append(value)
                     ret_list.append(
                         ('high_intent_priority_found', (value,), ()))
         # ACTIONS
