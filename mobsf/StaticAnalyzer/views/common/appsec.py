@@ -51,7 +51,7 @@ def common_fields(findings, data):
 
         findings[sev].append({
             'title': cd['metadata']['description'],
-            'description': f'{desc}\n{ref}',
+            'description': fdesc,
             'section': 'code',
         })
     # Permissions
