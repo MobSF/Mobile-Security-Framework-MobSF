@@ -219,12 +219,12 @@ MANIFEST_DESC = {
         'name': 'Data SMS Receiver Set on Port: %s Found. [android:port]',
     },
     'high_intent_priority_found': {
-        'title': 'High Intent Priority (%s) {%s} hit(s)<br>[android:priority]',
+        'title': 'High Intent Priority (%s) - {%s} hit(s)<br>[android:priority]',
         'level': 'warning',
         'description': ('By setting an intent priority higher than another'
                         ' intent, the app effectively overrides '
                         'other requests.'),
-        'name': 'High Intent Priority (%s) {%s} hit(s) [android:priority]',
+        'name': 'High Intent Priority (%s) - {%s} hit(s) [android:priority]',
     },
     'high_action_priority_found': {
         'title': 'High Action Priority (%s)<br>[android:priority] ',
