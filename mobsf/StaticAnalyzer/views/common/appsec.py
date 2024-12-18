@@ -40,7 +40,7 @@ def common_fields(findings, data):
         ref = cd['metadata'].get('ref', '')
 
         files_dict = cd.get('files', {})
-        files_lines = [f"{file}, line(s) {lines}"
+        files_lines = [f'{file}, line(s) {lines}'
                        for file, lines in files_dict.items()]
         all_files_str = '\n'.join(files_lines)
 
