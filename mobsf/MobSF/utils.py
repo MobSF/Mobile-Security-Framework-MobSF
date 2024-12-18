@@ -98,6 +98,17 @@ def upstream_proxy(flaw_type):
     return proxies, verify
 
 
+def get_system_resources():
+    """Get CPU and Memory Available."""
+    # Get number of physical cores
+    physical_cores = psutil.cpu_count(logical=False)
+    # Get number of logical processors (threads)
+    logical_processors = psutil.cpu_count(logical=True)
+    # Get total RAM
+    total_ram = psutil.virtual_memory().total / (1024 ** 3)  # Convert bytes to GB
+    return physical_cores, logical_processors, total_ram
+
+
 def print_version():
     """Print MobSF Version."""
     logger.info(settings.BANNER)
@@ -122,6 +133,8 @@ def print_version():
         dst_str = f' ({dist}) '
     env_str = f'OS Environment: {os}{dst_str}{pltfm}'
     logger.info(env_str)
+    cores, threads, ram = get_system_resources()
+    logger.info('CPU Cores: %s, Threads: %s, RAM: %.2f GB', cores, threads, ram)
     find_java_binary()
     check_basic_env()
     thread = threading.Thread(target=check_update, name='check_update')
