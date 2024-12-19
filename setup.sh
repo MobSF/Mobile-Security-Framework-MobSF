@@ -17,12 +17,17 @@ if [[ "$py_major" -ne 3 || "$py_minor" -lt 10 || "$py_minor" -gt 12 ]]; then
 fi
 echo "[INSTALL] Found Python ${python_version}"
 
-# Check and upgrade pip
-if python3 -m pip -V &>/dev/null; then
+# Pip Check and Upgrade
+python3 -m pip -V
+if [ $? -eq 0 ]; then
     echo '[INSTALL] Found pip'
-    upgrade_cmd="python3 -m pip install --no-cache-dir --upgrade pip"
-    [[ "$(uname)" != "Darwin" ]] && upgrade_cmd+=" --user"
-    eval $upgrade_cmd
+    # check if python is running in venv. The location for venv should be differ from /usr/lib/python3.xx
+    pip_location=`python3 -m pip -V`
+    if [[ $unamestr == 'Darwin' || "$pip_location" != "/usr/lib/python"* ]]; then
+        python3 -m pip install --no-cache-dir --upgrade pip
+    else
+        python3 -m pip install --no-cache-dir --upgrade pip --user
+    fi
 else
     echo '[ERROR] python3-pip not installed'
     exit 1
