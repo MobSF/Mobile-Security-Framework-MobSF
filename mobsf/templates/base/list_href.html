@@ -1,0 +1,8 @@
+{% if list|length != 0 %}
+<details {% if list|length < limit %}open{% endif %}>
+  <summary>{% if list|length < limit %}Showing{% else %}Show{% endif %} all <strong>{{ list | length }}</strong> {{ type }}</summary>
+  {% for val in list %}
+    <a href="{% url "view_source" %}?file={{ val | pathify }}.java&amp;md5={{ md5 }}&amp;type={{app_type}}"> {{ val }}</a><br/>
+  {% endfor %}
+</details>
+{% endif %}

@@ -1,14 +1,6 @@
 # Security Policy
 
-## Supported Versions
-
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.0.x   | :x:                |
-| 2.0.x   | :x:                |
-| 3.0.x   | :white_check_mark: |
-| 4.0.x   | :white_check_mark: |
-
+Keeping MobSF updated to the latest version is essential for ensuring security and stability.
 
 ## Reporting a Vulnerability
 
@@ -18,6 +10,9 @@ Please report all security issues [here](https://github.com/MobSF/Mobile-Securit
 
 | Vulnerability | Affected Versions |
 | ------- | ------------------ |
+| [Stored Cross-Site Scripting Vulnerability in Recent Scans "Diff or Compare"](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-5jc6-h9w7-jm3p) | `<=4.2.8` |
+| [Zip Slip Vulnerability in .a extraction](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-4hh3-vj32-gr6j) | `<=4.0.6` |
+| [Open Redirect in Login redirect](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-8m9j-2f32-2vx4) | `<=4.0.4` |
 | [SSRF in firebase database check](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-wpff-wm84-x5cx) | `<=3.9.7` |
 | [SSRF in AppLink check via abusing url redirect](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-m435-9v6r-v5f6) | `<=3.9.6` |
 | [SSRF in AppLink check via crafted android:host](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-wfgj-wrgh-h3r3) | `<=3.9.5`|

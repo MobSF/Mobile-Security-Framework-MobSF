@@ -37,16 +37,16 @@ TYPE_INT_HEX = 0x11
 # The 'data' is either 0 or 1, for input "false" or "true" respectively.
 TYPE_INT_BOOLEAN = 0x12
 # Beginning of color integer flavors...
-TYPE_FIRST_COLOR_INT = 0x1c
+TYPE_FIRST_COLOR_INT = 0x1C
 # The 'data' is a raw integer value of the form #aarrggbb.
-TYPE_INT_COLOR_ARGB8 = 0x1c
+TYPE_INT_COLOR_ARGB8 = 0x1C
 # The 'data' is a raw integer value of the form #rrggbb.
-TYPE_INT_COLOR_RGB8 = 0x1d
+TYPE_INT_COLOR_RGB8 = 0x1D
 # The 'data' is a raw integer value of the form #argb.
-TYPE_INT_COLOR_ARGB4 = 0x1e
+TYPE_INT_COLOR_ARGB4 = 0x1E
 # The 'data' is a raw integer value of the form #rgb.
-TYPE_INT_COLOR_RGB4 = 0x1f
+TYPE_INT_COLOR_RGB4 = 0x1F
 # ...end of integer flavors.
-TYPE_LAST_COLOR_INT = 0x1f
+TYPE_LAST_COLOR_INT = 0x1F
 # ...end of integer flavors.
-TYPE_LAST_INT = 0x1f
+TYPE_LAST_INT = 0x1F

@@ -22,6 +22,9 @@ from mobsf.StaticAnalyzer.views.android.db_interaction import (
     get_context_from_db_entry as adb)
 from mobsf.StaticAnalyzer.views.ios.db_interaction import (
     get_context_from_db_entry as idb)
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +39,20 @@ def common_fields(findings, data):
             sev = cd['metadata']['severity']
         desc = cd['metadata']['description']
         ref = cd['metadata'].get('ref', '')
+
+        files_dict = cd.get('files', {})
+        files_lines = [f'{file}, line(s) {lines}'
+                       for file, lines in files_dict.items()]
+        all_files_str = '\n'.join(files_lines)
+
+        if files_dict:
+            fdesc = f'{desc}\n{ref}\n\nFiles:\n{all_files_str}'
+        else:
+            fdesc = f'{desc}\n{ref}'
+
         findings[sev].append({
             'title': cd['metadata']['description'],
-            'description': f'{desc}\n{ref}',
+            'description': fdesc,
             'section': 'code',
         })
     # Permissions
@@ -69,7 +83,7 @@ def common_fields(findings, data):
     # File Analysis
     cert_files = None
     cfp = []
-    for fa in data['file_analysis']:
+    for fa in data.get('file_analysis', []):
         if isinstance(fa, str):
             # FA is being used by so/dylib
             continue
@@ -121,15 +135,11 @@ def common_fields(findings, data):
             })
     # Firebase
     for fb in data['firebase_urls']:
-        if fb['open']:
-            fdb = fb['url']
-            findings['high'].append({
-                'title': 'Firebase DB is exposed publicly.',
-                'description': (
-                    f'The Firebase database at {fdb} is exposed'
-                    ' to internet without any authentication'),
-                'section': 'firebase',
-            })
+        findings[fb['severity']].append({
+            'title': fb['title'],
+            'description': fb['description'],
+            'section': 'firebase',
+        })
     # Trackers
     if 'trackers' in data['trackers']:
         findings['total_trackers'] = data['trackers']['total_trackers']
@@ -347,6 +357,7 @@ def get_ios_dashboard(context, from_ctx=False):
     return findings
 
 
+@login_required
 def appsec_dashboard(request, checksum, api=False):
     """Provide data for appsec dashboard."""
     try:

@@ -2,20 +2,28 @@
 """MobSF REST API V 1."""
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
 )
 from mobsf.MobSF.utils import (
+    get_scan_logs,
     is_md5,
 )
 from mobsf.MobSF.views.helpers import request_method
-from mobsf.MobSF.views.home import RecentScans, Upload, delete_scan
+from mobsf.MobSF.views.home import (
+    RecentScans,
+    Upload,
+    delete_scan,
+    search,
+)
 from mobsf.MobSF.views.api.api_middleware import make_api_response
-from mobsf.StaticAnalyzer.views.android import view_source
+from mobsf.StaticAnalyzer.views.android.views import view_source
 from mobsf.StaticAnalyzer.views.android.static_analyzer import static_analyzer
-from mobsf.StaticAnalyzer.views.ios import view_source as ios_view_source
+from mobsf.StaticAnalyzer.views.ios.views import view_source as ios_view_source
 from mobsf.StaticAnalyzer.views.ios.static_analyzer import static_analyzer_ios
+from mobsf.StaticAnalyzer.views.common.async_task import list_tasks
 from mobsf.StaticAnalyzer.views.common.shared_func import compare_apps
 from mobsf.StaticAnalyzer.views.common.suppression import (
     delete_suppression,
@@ -66,7 +74,7 @@ def api_scan(request):
             {'error': 'The file is not uploaded/available'}, 500)
     scan_type = robj[0].SCAN_TYPE
     # APK, Source Code (Android/iOS) ZIP, SO, JAR, AAR
-    if scan_type in {'xapk', 'apk', 'apks', 'zip', 'so', 'jar', 'aar'}:
+    if scan_type in settings.ANDROID_EXTS:
         resp = static_analyzer(request, checksum, True)
         if 'type' in resp:
             resp = static_analyzer_ios(request, checksum, True)
@@ -75,20 +83,45 @@ def api_scan(request):
         else:
             response = make_api_response(resp, 200)
     # IPA
-    elif scan_type in {'ipa', 'dylib', 'a'}:
+    elif scan_type in settings.IOS_EXTS:
         resp = static_analyzer_ios(request, checksum, True)
         if 'error' in resp:
             response = make_api_response(resp, 500)
         else:
             response = make_api_response(resp, 200)
     # APPX
-    elif scan_type == 'appx':
+    elif scan_type in settings.WINDOWS_EXTS:
         resp = windows.staticanalyzer_windows(request, checksum, True)
         if 'error' in resp:
             response = make_api_response(resp, 500)
         else:
             response = make_api_response(resp, 200)
     return response
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_scan_logs(request):
+    """POST - Get Scan logs."""
+    if 'hash' not in request.POST:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = get_scan_logs(request.POST['hash'])
+    if not resp:
+        return make_api_response(
+            {'error': 'No scan logs found'}, 400)
+    return make_api_response({'logs': resp}, 200)
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_tasks(request):
+    """POST - Get Scan Queue."""
+    resp = list_tasks(request, True)
+    if not resp:
+        return make_api_response(
+            {'error': 'Scan queue empty'}, 400)
+    return make_api_response(resp, 200)
 
 
 @request_method(['POST'])
@@ -159,6 +192,21 @@ def api_json_report(request):
         response = make_api_response(
             {'error': 'JSON Generation Error'}, 500)
     return response
+
+
+@request_method(['POST'])
+@csrf_exempt
+def api_search(request):
+    """Search by checksum or text."""
+    if 'query' not in request.POST:
+        return make_api_response(
+            {'error': 'Missing Parameters'}, 422)
+    resp = search(request, api=True)
+    if 'checksum' in resp:
+        request.POST = {'hash': resp['checksum']}
+        return api_json_report(request)
+    elif 'error' in resp:
+        return make_api_response(resp, 404)
 
 
 @request_method(['POST'])

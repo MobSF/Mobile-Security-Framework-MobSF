@@ -21,6 +21,9 @@ from mobsf.StaticAnalyzer.views.common.binary.strings import (
 from mobsf.StaticAnalyzer.views.ios.binary_rule_matcher import (
     binary_rule_matcher,
 )
+from mobsf.MobSF.utils import (
+    append_scan_status,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -53,23 +56,26 @@ def get_bin_info(bin_file):
 
 
 def ipa_macho_analysis(binary):
+    data = {
+        'checksec': {},
+        'symbols': [],
+        'libraries': [],
+    }
     try:
         logger.info('Running MachO Analysis on: %s', binary.name)
         cs = MachOChecksec(binary)
         chksec = cs.checksec()
         symbols = cs.get_symbols()
         libs = cs.get_libraries()
-        return {
-            'checksec': chksec,
-            'symbols': symbols,
-            'libraries': libs,
-        }
+        data['checksec'] = chksec
+        data['symbols'] = symbols
+        data['libraries'] = libs
     except Exception:
         logger.exception('Running MachO Analysis')
-        return {}
+    return data
 
 
-def binary_analysis(src, tools_dir, app_dir, executable_name):
+def binary_analysis(checksum, src, tools_dir, app_dir, executable_name):
     """Binary Analysis of IPA."""
     bin_dict = {
         'checksec': {},
@@ -78,10 +84,13 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
         'strings': [],
         'bin_info': {},
         'bin_type': '',
+        'bin_path': None,
     }
     try:
         binary_findings = {}
-        logger.info('Starting Binary Analysis')
+        msg = 'Starting Binary Analysis'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         dirs = Path(src).glob('*')
         dot_app_dir = ''
         bin_name = ''
@@ -99,19 +108,24 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
                 bin_name = executable_name
         # Bin Path - Dir/Payload/x.app/x
         bin_path = bin_dir / bin_name
-        if not (bin_path.exists() or bin_path.is_file()):
-            logger.warning(
-                'MobSF Cannot find binary in %s', bin_path.as_posix())
-            logger.warning('Skipping Binary analysis')
+        if not (bin_path.exists() and bin_path.is_file()):
+            msg = (
+                f'MobSF Cannot find binary in {bin_path.as_posix()}. '
+                'Skipping Binary Analysis.')
+            logger.warning(msg)
+            append_scan_status(checksum, 'Skipping binary analysis', msg)
         else:
             macho = ipa_macho_analysis(bin_path)
             bin_info = get_bin_info(bin_path)
             bin_type = detect_bin_type(macho['libraries'])
             classdump = get_class_dump(
+                checksum,
                 tools_dir,
                 bin_path,
-                app_dir, bin_type)
+                app_dir,
+                bin_type)
             binary_rule_matcher(
+                checksum,
                 binary_findings,
                 macho['symbols'], classdump)
             bin_dict['checksec'] = macho['checksec']
@@ -120,8 +134,10 @@ def binary_analysis(src, tools_dir, app_dir, executable_name):
             bin_dict['bin_info'] = bin_info
             bin_dict['bin_type'] = bin_type
             logger.info('Running strings against the Binary')
-            bin_dict['strings'] = strings_on_binary(
-                bin_path.as_posix())
-    except Exception:
-        logger.exception('IPA Binary Analysis')
+            bin_dict['strings'] = strings_on_binary(bin_path.as_posix())
+            bin_dict['bin_path'] = bin_path
+    except Exception as exp:
+        msg = 'Failed to run IPA Binary Analysis'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
     return bin_dict

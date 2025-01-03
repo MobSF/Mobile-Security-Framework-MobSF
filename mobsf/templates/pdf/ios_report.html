@@ -793,6 +793,37 @@
                    
       {% endif %}
     {% endif %}
+    {% if firebase_urls %} 
+    <h2><i class="fas fa-database"></i> FIREBASE DATABASES ANALYSIS</h2>
+          <table class="basic">
+                <thead>
+                <tr>
+                  <th>TITLE</th>
+                  <th>SEVERITY</th>
+                  <th>DESCRIPTION</th>
+                </tr>
+              </thead>
+          <tbody>
+                {% for find in firebase_urls %}
+                <tr>
+                  <td>{{ find.title }}</td>
+                  <td>
+                  {% if find.severity == 'high' %}
+                  <span class="danger">high</span>
+                  {% elif find.severity  == 'secure' %}
+                    <span class="success">secure</span>
+                  {% elif find.severity  == 'warning' %}
+                    <span class="warning">warning</span>
+                  {% elif find.severity  == 'info' %}
+                  <span class="info">info</span>
+                  {% endif %}
+                  </td>
+                  <td>{{ find.description }}</td>
+                  </tr>
+                {% endfor %} 
+                  </tbody>
+                  </table>
+      {% endif %}
       {% if domains  %}
 
       <h2><i class="fa fa-exclamation"></i> OFAC SANCTIONED COUNTRIES</h2>
@@ -892,37 +923,6 @@
 										</table>
         {% endif %}
 {% endif %}
-       {% if firebase_urls %} 
-      <h2><i class="fas fa-database"></i> FIREBASE DATABASES</h2>
-            <table class="basic">
-                  <thead>
-                  <tr>
-                     <th>FIREBASE URL</th>
-                     <th>DETAILS</th>
-                  </tr>
-                 </thead>
-             <tbody>
-                  {% for item in firebase_urls %}
-                    <tr>
-                       <td>
-                       {{ item.url }}
-                        </td>
-                       <td>
-                         {% if item.open %}
-                          <span class="danger">high</span></br>Firebase DB is exposed publicly.
-                        {% else %}
-                         <span class="info">info</span></br>App talks to a Firebase Database.
-                         {% endif %}
-                      
-                       </td>
-                    </tr>
-                  {% endfor %} 
-                    </tbody>
-                    </table>
-         {% endif %}
-
-      
-
       {% if emails %}
       <h2><i class="fas fa-envelope"></i> EMAILS</h2>
           <table class="basic">
@@ -1065,6 +1065,37 @@
                   </p>
        {% endif %}
     {% endif %}
+    <h2><i class="fas fa-list"></i> SCAN LOGS</h2>
+    <table id="scan_logs" class="basic">
+      <tr>
+          <th>Timestamp</th>
+          <th>Event</th>
+          <th>Error</th>
+      </tr>
+  <tbody>
+    {% for log in logs %}
+    <tr>
+      <td>
+        {{log.timestamp}}
+      </td>
+      <td>
+        {{log.status}}
+      </td>
+      <td>
+        {% if not log.exception %}
+        <p class="text-success">
+          OK
+        </p>
+        {% else %}
+        <p class="text-danger">
+        {{log.exception}}
+         </p>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  </table>
     </article>
     <article id="columns">
       </br>

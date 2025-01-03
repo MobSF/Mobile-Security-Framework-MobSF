@@ -7,13 +7,16 @@ import requests
 from concurrent.futures import ThreadPoolExecutor
 
 from mobsf.MobSF.utils import (
+    append_scan_status,
     is_number,
     upstream_proxy,
     valid_host,
 )
 from mobsf.StaticAnalyzer.views.android import (
-    android_manifest_desc,
     network_security,
+)
+from mobsf.StaticAnalyzer.views.android.kb import (
+    android_manifest_desc,
 )
 
 
@@ -57,6 +60,8 @@ ANDROID_API_LEVEL_MAP = {
     '32': '12L',
     '33': '13',
     '34': '14',
+    '35': '15',
+    '36': '16',
 }
 
 
@@ -76,6 +81,7 @@ def assetlinks_check(act_name, well_knowns):
 
     return findings
 
+
 def _check_url(host, w_url):
     try:
         iden = 'sha256_cert_fingerprints'
@@ -84,10 +90,10 @@ def _check_url(host, w_url):
         status_code = 0
 
         r = requests.get(w_url,
-            allow_redirects=False,
-            proxies=proxies,
-            verify=verify,
-            timeout=5)
+                         timeout=5,
+                         allow_redirects=False,
+                         proxies=proxies,
+                         verify=verify)
 
         status_code = r.status_code
         if status_code == 302:
@@ -103,7 +109,7 @@ def _check_url(host, w_url):
 
     except Exception:
         logger.error(f'Well Known Assetlinks Check for URL: {w_url}')
-        return {'url': w_url, 
+        return {'url': w_url,
                 'host': host,
                 'status_code': None,
                 'status': False}
@@ -150,9 +156,9 @@ def get_browsable_activities(node, ns):
                         path_patterns.append(path_pattern)
                     # Collect possible well-known paths
                     if (scheme
-                          and scheme in ('http', 'https')
-                          and host
-                          and host != '*'):
+                        and scheme in ('http', 'https')
+                        and host
+                            and host != '*'):
                         host = host.replace('*.', '').replace('#', '')
                         if not valid_host(host):
                             continue
@@ -177,11 +183,18 @@ def get_browsable_activities(node, ns):
         logger.exception('Getting Browsable Activities')
 
 
-def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
+def manifest_analysis(app_dic, man_data_dic):
     """Analyse manifest file."""
     # pylint: disable=C0301
+    checksum = app_dic['md5']
+    mfxml = app_dic['manifest_parsed_xml']
+    ns = app_dic['manifest_namespace']
+    src_type = app_dic['zipped']
+    app_dir = app_dic['app_dir']
     try:
-        logger.info('Manifest Analysis Started')
+        msg = 'Manifest Analysis Started'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         exp_count = dict.fromkeys(['act', 'ser', 'bro', 'cnt'], 0)
         applications = mfxml.getElementsByTagName('application')
         data_tag = mfxml.getElementsByTagName('data')
@@ -748,12 +761,18 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
                 dataport = data.getAttribute(f'{ns}:port')
                 ret_list.append(('sms_receiver_port_found', (dataport,), ()))
         # INTENTS
+        processed_priorities = {}
         for intent in intents:
             if intent.getAttribute(f'{ns}:priority').isdigit():
                 value = intent.getAttribute(f'{ns}:priority')
                 if int(value) > 100:
-                    ret_list.append(
-                        ('high_intent_priority_found', (value,), ()))
+                    if value not in processed_priorities:
+                        processed_priorities[value] = 1
+                    else:
+                        processed_priorities[value] += 1
+        for priority, count in processed_priorities.items():
+            ret_list.append(
+                ('high_intent_priority_found', (priority, count,), ()))
         # ACTIONS
         for action in actions:
             if action.getAttribute(f'{ns}:priority').isdigit():
@@ -801,11 +820,14 @@ def manifest_analysis(mfxml, ns, man_data_dic, src_type, app_dir):
             'browsable_activities': browsable_activities,
             'permissions': permissions,
             'network_security': network_security.analysis(
+                checksum,
                 app_dir,
                 do_netsec,
                 debuggable,
                 src_type),
         }
         return man_an_dic
-    except Exception:
-        logger.exception('Performing Manifest Analysis')
+    except Exception as exp:
+        msg = 'Error Performing Manifest Analysis'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))

@@ -11,7 +11,7 @@ from bs4 import element
 ANDROID_PERMISSION_DOCS_URL = ('https://developer.android.com/'
                                'reference/android/Manifest.permission')
 
-response = requests.get(ANDROID_PERMISSION_DOCS_URL)
+response = requests.get(ANDROID_PERMISSION_DOCS_URL, timeout=5)
 content = Soup(response.content, 'html.parser')
 
 online_permissions = {}
@@ -47,7 +47,7 @@ for pd in permission_divs:
 # check the permissions we currently have in dvm_permissions.py
 DVM_PERMISSIONS = {}
 eval(compile(open('../mobsf/StaticAnalyzer/views/'
-                  'android/dvm_permissions.py').read(),
+                  'android/kb/dvm_permissions.py').read(),
              '<string>',
              'exec'))
 MANIFEST_PERMISSIONS = DVM_PERMISSIONS['MANIFEST_PERMISSION']

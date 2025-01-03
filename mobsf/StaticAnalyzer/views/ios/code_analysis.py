@@ -10,7 +10,10 @@ from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     url_n_email_extract,
 )
-from mobsf.StaticAnalyzer.views.sast_engine import scan
+from mobsf.StaticAnalyzer.views.sast_engine import SastEngine
+from mobsf.MobSF.utils import (
+    append_scan_status,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +38,7 @@ def merge_findings(swift, objc):
     return code_analysis
 
 
-def ios_source_analysis(src):
+def ios_source_analysis(checksum, src):
     """IOS Objective-C and Swift Code Analysis."""
     try:
         logger.info('Starting iOS Source Code and PLIST Analysis')
@@ -51,46 +54,75 @@ def ios_source_analysis(src):
         domains = {}
         source_type = ''
         source_types = set()
+        skp = settings.SKIP_CLASS_PATH
+        msg = 'iOS Source Code Analysis Started'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
 
-        # Code and API Analysis
-        objc_findings = scan(
-            objective_c_rules.as_posix(),
-            {'.m'},
-            [src],
-            settings.SKIP_CLASS_PATH)
+        # Objective C Analysis
+        options = {
+            'match_rules': objective_c_rules.as_posix(),
+            'match_extensions': {'.m'},
+            'ignore_paths': skp,
+        }
+        objc_findings = SastEngine(options, src).scan()
         if objc_findings:
             source_types.add(_SourceType.objc)
-        swift_findings = scan(
-            swift_rules.as_posix(),
-            {'.swift'},
-            [src],
-            settings.SKIP_CLASS_PATH)
+
+        # Swift Analysis
+        options = {
+            'match_rules': swift_rules.as_posix(),
+            'match_extensions': {'.swift'},
+            'ignore_paths': skp,
+        }
+        swift_findings = SastEngine(options, src).scan()
         if swift_findings:
             source_types.add(_SourceType.swift)
         code_findings = merge_findings(swift_findings, objc_findings)
+        msg = 'iOS Source Code Analysis Completed'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
+
         # API Analysis
-        api_findings = scan(
-            api_rules.as_posix(),
-            {'.m', '.swift'},
-            [src],
-            settings.SKIP_CLASS_PATH)
+        msg = 'iOS API Analysis Started'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
+        options = {
+            'match_rules': api_rules.as_posix(),
+            'match_extensions': {'.m', '.swift'},
+            'ignore_paths': skp,
+        }
+        api_findings = SastEngine(options, src).scan()
+        msg = 'iOS API Analysis Completed'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
 
         # Extract URLs and Emails
-        skp = settings.SKIP_CLASS_PATH
+        msg = 'Extracting Emails and URLs from Source Code'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         for pfile in Path(src).rglob('*'):
             if (
                 (pfile.suffix in ('.m', '.swift')
                     and any(skip_path in pfile.as_posix()
                             for skip_path in skp) is False
-                    and pfile.is_dir() is False)
+                    and pfile.is_file())
             ):
-                relative_java_path = pfile.as_posix().replace(src, '')
+                content = None
+                try:
+                    content = pfile.read_text('utf-8', 'ignore')
+                    # Certain file path cannot be read in windows
+                except Exception:
+                    continue
+                relative_src_path = pfile.as_posix().replace(src, '')
                 urls, urls_nf, emails_nf = url_n_email_extract(
-                    pfile.read_text('utf-8', 'ignore'), relative_java_path)
+                    content, relative_src_path)
                 url_list.extend(urls)
                 url_n_file.extend(urls_nf)
                 email_n_file.extend(emails_nf)
-
+        msg = 'Email and URL Extraction Completed'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         if not source_types:
             source_type = _SourceType.nocode.value
         elif len(source_types) > 1:
@@ -100,9 +132,12 @@ def ios_source_analysis(src):
 
         urls_list = list(set(url_list))
         # Domain Extraction and Malware Check
-        logger.info('Performing Malware Check on extracted Domains')
-        domains = MalwareDomainCheck().scan(urls_list)
-        logger.info('Finished Code Analysis, Email and URL Extraction')
+        domains = MalwareDomainCheck().scan(
+            checksum,
+            urls_list)
+        msg = 'Finished Code Analysis, Email and URL Extraction'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         code_analysis_dict = {
             'api': api_findings,
             'code_anal': code_findings,
@@ -113,6 +148,7 @@ def ios_source_analysis(src):
             'source_type': source_type,
         }
         return code_analysis_dict
-
-    except Exception:
-        logger.exception('iOS Source Code Analysis')
+    except Exception as exp:
+        msg = 'iOS Source Analysis Failed'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))

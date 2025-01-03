@@ -16,115 +16,100 @@
       <!-- Google Font: Source Sans Pro -->
       <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
    </head>
-   <body>
+   <body class="text-center">
 
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a  class="navbar-brand abs">
-                <img src="{% static "img/mobsf_logo.png" %}" width="20%" height="20%"/>
+    <div class="d-flex h-100 p-3 mx-auto flex-column">  
+        <nav class="nav nav-masthead justify-content-center">
+            <a class="nav-link active" href="{% url 'recent' %}">SCANS</a>
+            <a class="nav-link" href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>
+            <div class="pad">
+                <img src="{% static "img/mobsf_logo.png" %}" alt="MobSF Logo" height="30" width="90" />
+            </div>  
+            <a class="nav-link" href="{% url 'api_docs' %}">API</a>
+            <a class="nav-link" href="{% url 'about' %}">ABOUT</a>
+            {% if user.is_authenticated %}
+            <a id="dropdownSubMenu1" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle"><i class="fa fa-user-circle" aria-hidden="true"></i> </a>
+            <a class="nav-link"></a>
+            <ul aria-labelledby="dropdownSubMenu1" class="dropdown-menu border-0 shadow" style="left: 0px; right: inherit;">
+                <li><a href="#" class="dropdown-item"> <small>{{ request.user.username }} <span class="badge badge-primary"> {% if user.is_staff %} Admin {% else %}{{ request.user.groups.all.0 }} {% endif %}</span></small></a></li>
+                <li class="dropdown-divider"></li>
+                <li><a href="{% url 'change_password' %}" class="dropdown-item"><i class="fa fa-asterisk" aria-hidden="true"></i> Change Password </a></li>
+                {% if user.is_staff %}<li><a href="{% url 'users' %}" class="dropdown-item"><i class="fa fa-users" aria-hidden="true"></i> User Management </a></li>{% endif %}
+                <li><a href="{% url 'logout' %}" class="dropdown-item"><i class="fa fa-power-off" aria-hidden="true"></i> Logout </a></li>
+            </ul>
+            {% endif %}
+            <a class="nav-link">
+                <form action="/search" method="GET">
+                    <input name="query" type="text" class="form-control form-control-sm" placeholder="Search">
+                </form>
             </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsingNavbar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="navbar-collapse collapse" id="collapsingNavbar">
-                <ul class="navbar-nav">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="{% url 'recent' %}">RECENT</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'api_docs' %}">API</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" target="_blank" href="https://mobsf.github.io/docs/#/">DOCS</a>
-                    </li>
-                    <li class="nav-item">
-                        <a  class="nav-link" href="{% url 'about' %}">ABOUT</a>
-                    </li>
-                    <li class="nav-item">
-                        <a>
-                        <form action="/search" method="GET">
-                            <input name="md5" type="text" class="form-control" placeholder="Search MD5">
-                        </form>
-                        </a>
-                    </li>
-                </ul>
+        </nav>
+
+        <header class="masthead mb-auto">
+            <div class="inner">
             </div>
-        </div>
-    </nav>
+        </header>
 
-    <div class="site-wrapper">
-         <div class="site-wrapper-inner">
-            <div class="cover-container">
-               <div class="masthead clearfix">
-                  <div align="center" class="inner">
-                  </div>
-               </div>
-               <div class="inner cover">
-                  <div style="visibility:hidden; opacity:0" id="drop">
-                     <div id="textnode">Drop anywhere!</div>
-                  </div>
-                  </br>
-                  <form id="upload_form" enctype="multipart/form-data" method="post">
-                     {% csrf_token %}
-                     <div class="fileUpload btn btn-default btn-lg" id="but">
-                        <input type="file" name="file" id="uploadFile" placeholder="Choose File" multiple>
-                        <span class="fas fa-cloud-upload-alt"></span>
-                        Upload &amp; Analyze
-                     </div>
-                     <br />
-                     <small><i>Drag &amp; Drop anywhere!</i></small>
-                     <h5 id="status"></h5>
-                     <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;" ></progress>
-                  </form>
-               </div>
-               <div class="mastfoot">
-                
-                  <input type="download" id="package" class="form-control" placeholder="Download & Scan by package name"/>
-
-
-                  <div class="inner">
-                     <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">API</a>   |  <a href="{% url 'donate' %}">DONATE ♥</a> |  <a target="_blank"
-                         href="https://mobsf.github.io/docs/#/">DOCS</a>  | <a href="{% url 'about' %}">ABOUT</a></h6>
-                     </br>
-                     <p>&copy; {% now "Y" %}  Mobile Security Framework - MobSF {{ version }}</p>
-                  </div>
-               </div>
+        <main role="main" class="inner cover">
+            <div class="inner cover">
+                <div style="visibility:hidden; opacity:0" id="drop">
+                <div id="textnode">Drop anywhere!</div>
+                </div>
+                </br>
+                <form id="upload_form" enctype="multipart/form-data" method="post">
+                {% csrf_token %}
+                <div class="fileUpload btn btn-lg btn-secondary" id="but">
+                    <input type="file" name="file" id="uploadFile" placeholder="Choose File" multiple>
+                    <span class="fas fa-cloud-upload-alt"></span>
+                    Upload &amp; Analyze
+                </div>
+                <br />
+                <small><i>Drag &amp; Drop anywhere!</i></small>
+                <p></p>
+                <h5 class="lead" id="status"></h5>
+                <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;" ></progress>
+                </form>
             </div>
-         </div>
-      </div>
+        </main>
 
-      <div class="hidden loading">
+        <footer class="mastfoot mt-auto">
+            <input type="download" id="package" class="form-control form-control-sm" placeholder="Download & Scan Package"/>
+            <p></p>
+            <div class="inner">
+                <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">API</a>   |  <a href="{% url 'donate' %}">DONATE ♥</a> |  <a target="_blank"
+                    href="https://mobsf.github.io/docs/#/">DOCS</a>  | <a href="{% url 'about' %}">ABOUT</a></h6>
+                </br>
+                <p>&copy; {% now "Y" %}  Mobile Security Framework - MobSF {{ version }}</p>
+            </div>
+            <div id="alert" class="alert-bar">Analysis started! Please wait to be redirected or check recent scans after sometime.</div>
+        </footer>
+    </div>
+
+    <!--Loading Ring-->
+    <div class="hidden loading">
         <div class='uil-ring-css' style='transform:scale(0.79);'>
           <div></div>
         </div>
-        </div>
+    </div>
 
-        <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
-        <script src="{% static "others/js/notify.min.js" %}"></script>
-        <!-- Bootstrap 4 -->
-        <script src="{% static "adminlte/plugins/bootstrap/bootstrap.bundle.min.js" %}"></script>
+    <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
+    <script src="{% static "adminlte/plugins/bootstrap/bootstrap.bundle.min.js" %}"></script>
       <script>
             let warning = "This is a demo MobSF instance. Anything uploaded here will be publicly available. Do you want to continue?";
             // Result View
             function load_result(url){
                 hide_loader();
-                var xhr = new XMLHttpRequest()
-                xhr.open('GET', url, true)
-                xhr.addEventListener("loadstart", function(evt){
-                    Notifier.snackbar({
-                        message: "Analysis started! Please wait to be redirected or check recent scans after sometime.",
-                        duration: 10,
-                    });
-                })
-                xhr.addEventListener("load", function (evt) {
-                    window.location.href = window.location.href + url;
-                }, false);
-                xhr.send();
+                // Display alert notification
+                var x = document.getElementById("alert");
+                x.className = "alert-bar show slide-up";
+                setTimeout(function () {
+                    x.className = x.className.replace("show", "");
+                }, 10000);
+
+                // Redirect after showing alertbar
+                setTimeout(function () {
+                    window.location.href = url;
+                }, 1000); // Adjust delay as needed
             }
 
             //Download and scan APK
@@ -143,18 +128,9 @@
                         },
                         success : function(json){
                             if (json.status === 'ok'){
-                                i = 1;
                                 setInterval(function() {
-                                    dot = '';
-                                    for (x = 1; x <= i; x++) {
-                                        dot += '.';
-                                    }
-                                    _("status").innerText = "Analyzing" + dot;
-                                    i += 1;
-                                    if (i == 5) {
-                                        i = 1;
-                                    }
-                                }, 2000);
+                                    get_status(json.hash);
+                                }, 500);
 
                                 url = json.analyzer + '/' + json.hash + '/';
                                 load_result(url);
@@ -165,6 +141,9 @@
                         },
                         error : function(xhr, ajaxOptions, thrownError) {
                             hide_loader();
+                            if (thrownError === 'Forbidden'){
+                                _("status").innerText = "You do not have permission to download and scan!";
+                            }
                         }
                     });
                 }
@@ -182,36 +161,63 @@
             function _(el){
                 return document.getElementById(el);
             }
+
             // Response Handler     
             function responseHandler(json, isbutton) {
                 if (json.status === 'error') {
                     _("status").innerText = json.description;
                 } else {
-                    i = 1;
                     setInterval(function() {
-                        dot = '';
-                        for (x = 1; x <= i; x++) {
-                            dot += '.';
-                        }
-                        _("status").innerText = "Analyzing" + dot;
-                        i += 1;
-                        if (i == 5) {
-                            i = 1;
-                        }
-                    }, 2000);
+                        get_status(json.hash);
+                    }, 500);
                     var url = json.analyzer + '/' + json.hash + '/';
                     load_result(url);
                 }
             }
+
+
+           // Get Scan status
+           function get_status(checksum){
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", '{% url "status" %}', true);
+                xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xhr.onload = function() {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.status === 'ok') {
+                            const last_log = response.logs[response.logs.length - 1];
+                            _("status").innerText = last_log.status + ' .';
+                            var number = Math.ceil((Math.floor(Math.random() * 5)));
+                            for (i=0;i<number;i++){
+                                _("status").innerText += '.';
+                            }
+                        }
+                    } else {
+                        console.log("Error:", xhr.statusText);
+                    }
+                };
+                xhr.onerror = function() {
+                    console.log("Failed to get scan status");
+                };
+                xhr.send('hash=' + checksum);
+           }
+
             function progressHandler(event) {
                 var percent = (event.loaded / event.total) * 100;
-                console.log("Uploaded..." + Math.round(percent));
+                console.log("Uploaded ..." + Math.round(percent));
                 _("progressBar").value = Math.round(percent);
-                _("status").innerText = Math.round(percent) + "% Uploaded...";
+                _("status").innerText = Math.round(percent) + "% Uploaded ...";
             }
             function completeHandler(event) {
-                var json = JSON.parse(event.target.responseText);
-                responseHandler(json);
+                if(event.currentTarget.status === 403){
+                    _("status").innerText = "You do not have permission to upload!";
+                    return;
+                } else {
+                    var json = JSON.parse(event.target.responseText);
+                    responseHandler(json);
+                }
             }
             function errorHandler(event) {
                 _("status").innerText = "Upload Failed!";
@@ -222,10 +228,10 @@
           // Is valid file extensions
           function isValidExt(file_name){
                 var val = file_name.toLowerCase();
-                var regex = new RegExp("^(.{1,300}?)\.(ipa|apk|apks|xapk|jar|aar|so|dylib|a|zip|appx)$");
+                var regex = new RegExp("^(.{1,300}?)\.({{exts}})$");
                 val = val.replace(/^.*[\\\/]/, '');
                 if (!(regex.test(val))) {
-                    _('status').innerText = "Please upload APK/APKS/XAPK/JAR/AAR/SO/IPA/DYLIB/A/ZIP/APPX only!";
+                    _('status').innerText = "MobSF only supports APK, APKS, XAPK, AAB, JAR, AAR, SO, IPA, DYLIB, A, ZIP, and APPX files.";
                     return false;
                 }
                 return true;
@@ -248,7 +254,7 @@
                     return;
                 }
                 _("progressBar").style.visibility = "visible";
-                var url = '/upload/'
+                var url = '{% url "upload" %}'
                 var xhr = new XMLHttpRequest()
                 xhr.open('POST', url, true)
                 xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')

@@ -32,10 +32,19 @@ from mobsf.DynamicAnalyzer.views.ios.corellium_apis import (
 from mobsf.DynamicAnalyzer.views.ios.corellium_ssh import (
     ssh_jumphost_reverse_port_forward,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
+from mobsf.MobSF.views.authorization import (
+    Permissions,
+    permission_required,
+)
 
 logger = logging.getLogger(__name__)
 
 
+@login_required
+@permission_required(Permissions.SCAN)
 def dynamic_analysis(request, api=False):
     """The iOS Dynamic Analysis Entry point."""
     try:
@@ -87,6 +96,8 @@ def dynamic_analysis(request, api=False):
         return print_n_send_error_response(request, exp, api)
 
 
+@login_required
+@permission_required(Permissions.SCAN)
 def dynamic_analyzer(request, api=False):
     """Dynamic Analyzer for in-device iOS apps."""
     try:

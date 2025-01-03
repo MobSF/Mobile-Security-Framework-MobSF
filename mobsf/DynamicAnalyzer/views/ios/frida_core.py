@@ -268,6 +268,8 @@ class Frida:
                 self.container_file.write_text(self.app_container)
             except frida.InvalidOperationError:
                 pass
+            if not self.extras:
+                return
             raction = self.extras.get('rclass_action')
             rclass = self.extras.get('rclass_name')
             rclass_pattern = self.extras.get('rclass_pattern')

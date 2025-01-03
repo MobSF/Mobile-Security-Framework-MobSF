@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 import threading
 import time
+from pathlib import Path
 from base64 import b64encode
 from hashlib import md5
 
@@ -368,7 +369,7 @@ class Environment:
             return 'emulator'
         elif (b'genymotion' in out.lower()
                 or any(char.isdigit() for char in ver)):
-            logger.info('Found Genymotion x86 Android VM')
+            logger.info('Found Genymotion Android VM')
             return 'genymotion'
         elif b'corellium' in out:
             logger.info('Found Corellium ARM Android VM')
@@ -436,31 +437,71 @@ class Environment:
             device_packages[md5] = (pkg, apk)
         return device_packages
 
+    def download_apk_packages(self, pkg_path, out_file):
+        """Download APK package(s)."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Download APK package(s)
+            # Can be single or multiple packages
+            out = self.adb_command([
+                'pull',
+                pkg_path.as_posix(),
+                temp_dir,
+            ])
+            fmt = out.decode('utf-8').strip()
+            logger.info('ADB Pull Output: %s', fmt)
+            # Filter for APK files in the directory
+            apk_files = []
+            for f in Path(temp_dir).glob('*.apk'):
+                if f.is_file():
+                    apk_files.append(f)
+            # Check if there is exactly one APK file
+            if len(apk_files) == 1:
+                shutil.move(apk_files[0], out_file)
+                return 'apk'
+            else:
+                # If there are multiple APK files, zip them
+                shutil.make_archive(out_file, 'zip', root_dir=temp_dir, base_dir='.')
+                # Rename the zip file to APK
+                apks_file = out_file.with_suffix('.apk')
+                os.rename(out_file.as_posix() + '.zip', apks_file)
+                return 'apks'
+
+    def get_apk_packages(self, package):
+        """Get all APK packages from device."""
+        out = self.adb_command([
+            'pm',
+            'path',
+            package], True)
+        return out.decode('utf-8').strip()
+
+    def get_apk_parent_directory(self, package):
+        """Get parent directory of APK packages."""
+        package_out = self.get_apk_packages(package)
+        package_out = package_out.split()
+        if ('package:' in package_out[0]
+                and package_out[0].endswith('.apk')):
+            path = package_out[0].split('package:', 1)[1].strip()
+            return Path(path).parent
+        return False
+
     def get_apk(self, checksum, package):
         """Download APK from device."""
         try:
-            out_dir = os.path.join(settings.UPLD_DIR, checksum + '/')
-            if not os.path.exists(out_dir):
-                os.makedirs(out_dir)
-            out_file = os.path.join(out_dir, f'{checksum}.apk')
-            if is_file_exists(out_file):
-                return out_file
-            out = self.adb_command([
-                'pm',
-                'path',
-                package], True)
-            out = out.decode('utf-8').rstrip()
-            path = out.split('package:', 1)[1].strip()
-            logger.info('Downloading APK')
-            self.adb_command([
-                'pull',
-                path,
-                out_file,
-            ])
-            if is_file_exists(out_file):
-                return out_file
+            # Do not download if already exists
+            out_dir = Path(settings.UPLD_DIR) / checksum
+            out_dir.mkdir(parents=True, exist_ok=True)
+            out_file = out_dir / f'{checksum}.apk'
+            if out_file.exists():
+                return 'apk'
+            # Get APK package parent directory
+            pkg_path = self.get_apk_parent_directory(package)
+            if pkg_path:
+                # Download APK package(s)
+                logger.info('Downloading APK')
+                return self.download_apk_packages(pkg_path, out_file)
         except Exception:
-            return False
+            logger.exception('Failed to download APK')
+        return False
 
     def system_check(self, runtime):
         """Check if /system is writable."""
@@ -494,6 +535,7 @@ class Environment:
                                  'MobSF documentation!')
                 return False
         except Exception:
+            logger.exception('System check failed')
             logger.error(err_msg)
             return False
         return True
@@ -652,7 +694,7 @@ class Environment:
         elif arch == 'x86_64':
             frida_arch = 'x86_64'
         else:
-            logger.error('Make sure a Genymotion Android x86 VM'
+            logger.error('Make sure a Genymotion Android VM'
                          ' or Android Studio Emulator'
                          ' instance is running')
             return

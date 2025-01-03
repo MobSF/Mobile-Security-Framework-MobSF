@@ -96,7 +96,7 @@
           <!-- /.col -->
 
 
-          <div class="col-md-4">
+          <div class="col-md-3">
             <div class="card card-default">
               <!-- /.card-header -->
               <div class="card-body">
@@ -160,16 +160,13 @@
                   <textarea id="stat"></textarea>
                 <!--box-->
                 <div id="frida_options" class="box box-primary">
-                    <div class="box-header with-border">
-                      <h3 class="box-title">Frida Scripts</h3>
-                    </div>
                     <!-- /.box-header -->
                     <!-- form start -->
                     <form role="form">
                       <div class="box-body">
                         <div class="form-group">
                             <hr/>
-                        <h4> Default </h4>
+                        <h4> Default Frida Scripts</h4>
                              <label>
                              <input name="default_hooks" type="checkbox" value="jailbreak_bypass" checked>
                               Jailbreak Detection Bypass 
@@ -178,7 +175,7 @@
                         </div>
                         <hr/>
                           <div class="form-group">
-                      <h4> Trace </h4>
+                      <h4> Trace Frida Scripts</h4>
                         <label>
                           <input name="dump_hooks" type="checkbox" value="network" checked>
                             Network
@@ -234,7 +231,7 @@
                       </div>
                      <hr/>
                         <div class="form-group">
-                        <h4> Auxiliary </h4>
+                        <h4> Auxiliary Frida Scripts</h4>
                             <label>
                             <input name="auxiliary" type="checkbox" value="enum_class" id="enum_class">
                               Enumerate Classes
@@ -276,7 +273,10 @@
 
                       </div>
                       <!-- /.box-body -->
-
+                      <hr/>
+                      <div class="form-group">
+                        <h4> Instrumentation </h4>
+                      </div>
                       <div class="box-footer">
                       <button id="run" type="submit" class="btn btn-success btn-sm"><i class="fas fa-play"></i> Run</button>
                       <button id="frida_spawn" type="submit" class="btn btn-success btn-sm"><i class="far fa-play-circle"></i> Spawn & Inject</button>
@@ -306,7 +306,7 @@
           </div>
           <!-- /.col -->
 
-           <div class="col-md-4" id="codeedit">
+           <div class="col-md-5" id="codeedit">
             <div class="card card-default">
               <div class="card-header">
                 <h3 class="card-title"><i class="fa fa-code"></i> Frida Code Editor </h3>

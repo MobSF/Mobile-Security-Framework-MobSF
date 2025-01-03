@@ -2,13 +2,15 @@
 import subprocess
 import functools
 import logging
+import re
 import sys
 from shutil import which
 from pathlib import Path
+from platform import system
 from concurrent.futures import ThreadPoolExecutor
 
-
 from mobsf.MobSF.utils import (
+    find_aapt,
     find_java_binary,
     gen_sha256_hash,
     get_adb,
@@ -63,15 +65,29 @@ def generate_hashes(dirlocs):
 def get_executable_hashes():
     # Internal Binaries shipped with MobSF
     base = Path(settings.BASE_DIR)
+    downloaded_tools = Path(settings.DOWNLOADED_TOOLS_DIR)
     manage_py = base.parent / 'manage.py'
     exec_loc = [
         base / 'DynamicAnalyzer' / 'tools',
         base / 'StaticAnalyzer' / 'tools',
+        downloaded_tools,
         manage_py,
     ]
+    aapt = 'aapt'
+    aapt2 = 'aapt2'
+    if system() == 'Windows':
+        aapt = 'aapt.exe'
+        aapt2 = 'aapt2.exe'
+    aapts = [find_aapt(aapt), find_aapt(aapt2)]
+    exec_loc.extend(Path(a) for a in aapts if a)
     # External binaries used directly by MobSF
     system_bins = [
+        'aapt',
+        'aapt.exe',
+        'aapt2',
+        'aapt2.exe',
         'adb',
+        'adb.exe',
         'which',
         'wkhtmltopdf',
         'httptools',
@@ -86,6 +102,8 @@ def get_executable_hashes():
         'BinSkim.exe',
         'BinScope.exe',
         'nuget.exe',
+        'where.exe',
+        'wkhtmltopdf.exe',
     ]
     for sbin in system_bins:
         bin_path = which(sbin)
@@ -104,6 +122,9 @@ def get_executable_hashes():
         settings.JTOOL_BINARY,
         settings.CLASSDUMP_BINARY,
         settings.CLASSDUMP_SWIFT_BINARY,
+        getattr(settings, 'BUNDLE_TOOL', ''),
+        getattr(settings, 'AAPT2_BINARY', ''),
+        getattr(settings, 'AAPT_BINARY', ''),
     ]
     for ubin in user_defined_bins:
         if ubin:
@@ -130,9 +151,9 @@ def store_exec_hashes_at_first_run():
         hashes['signature'] = signature
         EXECUTABLE_HASH_MAP = hashes
     except Exception:
-        logger.warning('Cannot calculate executable hashes, '
-                       'disabling runtime executable '
-                       'tampering detection')
+        logger.exception('Cannot calculate executable hashes, '
+                         'disabling runtime executable '
+                         'tampering detection')
 
 
 def subprocess_hook(oldfunc, *args, **kwargs):
@@ -149,6 +170,7 @@ def subprocess_hook(oldfunc, *args, **kwargs):
     for arg in agmtz:
         if arg.endswith('.jar'):
             exec2 = Path(arg).as_posix()
+            break
     if '/' in exec1 or '\\' in exec1:
         exec1 = Path(exec1).as_posix()
     else:
@@ -162,7 +184,7 @@ def subprocess_hook(oldfunc, *args, **kwargs):
                 ' has been modified during runtime')
             logger.error(msg)
             raise Exception(msg)
-    if exec2 and exec1 in EXECUTABLE_HASH_MAP:
+    if exec2 and exec2 in EXECUTABLE_HASH_MAP:
         executable_in_hash_map = True
         if EXECUTABLE_HASH_MAP[exec2] != sha256(exec2):
             msg = (
@@ -193,3 +215,37 @@ def wrap_function(oldfunction, newfunction):
     def run(*args, **kwargs):
         return newfunction(oldfunction, *args, **kwargs)
     return run
+
+
+def sanitize_redirect(url):
+    """Sanitize Redirect URL."""
+    root = '/'
+    if url.startswith('//'):
+        return root
+    elif url.startswith('/'):
+        return url
+    return root
+
+
+def sanitize_filename(filename):
+    """Sanitize Filename."""
+    # Remove any characters
+    # that are not alphanumeric, hyphens, underscores, or dots
+    safe_filename = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
+    # Merge multiple underscores into one
+    safe_filename = re.sub(r'__+', '_', safe_filename)
+    # Remove leading and trailing underscores
+    safe_filename = safe_filename.strip('_')
+    return safe_filename
+
+
+def sanitize_for_logging(filename: str, max_length: int = 255) -> str:
+    """Sanitize a filename to prevent log injection."""
+    # Remove newline, carriage return, and other risky characters
+    filename = filename.replace('\n', '_').replace('\r', '_').replace('\t', '_')
+
+    # Allow only safe characters (alphanumeric, underscore, dash, and period)
+    filename = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
+
+    # Truncate filename to the maximum allowed length
+    return filename[:max_length]

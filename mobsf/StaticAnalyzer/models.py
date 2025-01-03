@@ -1,10 +1,25 @@
 from datetime import datetime
+from enum import Enum
 
 from django.db import models
-# Create your models here.
+from django.utils import timezone
+
+
+class DjangoPermissions(Enum):
+    SCAN = ('can_scan', 'Scan Files')
+    SUPPRESS = ('can_suppress', 'Suppress Findings')
+    DELETE = ('can_delete', 'Delete Scans')
+
+
+P = DjangoPermissions
 
 
 class RecentScansDB(models.Model):
+    class Meta:
+        """Meta class for RecentScansDB model."""
+
+        permissions = (P.DELETE.value, P.SCAN.value)
+
     ANALYZER = models.CharField(max_length=50, default='')
     SCAN_TYPE = models.CharField(max_length=10, default='')
     FILE_NAME = models.CharField(max_length=260, default='')
@@ -13,9 +28,15 @@ class RecentScansDB(models.Model):
     VERSION_NAME = models.CharField(max_length=50, default='')
     MD5 = models.CharField(max_length=32, default='', primary_key=True)
     TIMESTAMP = models.DateTimeField(default=datetime.now)
+    SCAN_LOGS = models.TextField(default=[])
 
 
 class StaticAnalyzerAndroid(models.Model):
+    class Meta:
+        """Meta class for StaticAnalyzerAndroid model."""
+
+        permissions = (P.DELETE.value, P.SCAN.value)
+
     FILE_NAME = models.CharField(max_length=260, default='')
     APP_NAME = models.CharField(max_length=255, default='')
     APP_TYPE = models.CharField(max_length=20, default='')
@@ -61,9 +82,15 @@ class StaticAnalyzerAndroid(models.Model):
     PLAYSTORE_DETAILS = models.TextField(default={})
     NETWORK_SECURITY = models.TextField(default=[])
     SECRETS = models.TextField(default=[])
+    SBOM = models.TextField(default={})
 
 
 class StaticAnalyzerIOS(models.Model):
+    class Meta:
+        """Meta class for StaticAnalyzerIOS model."""
+
+        permissions = (P.DELETE.value, P.SCAN.value)
+
     FILE_NAME = models.CharField(max_length=255, default='')
     APP_NAME = models.CharField(max_length=255, default='')
     APP_TYPE = models.CharField(max_length=20, default='')
@@ -104,6 +131,11 @@ class StaticAnalyzerIOS(models.Model):
 
 
 class StaticAnalyzerWindows(models.Model):
+    class Meta:
+        """Meta class for StaticAnalyzerWindows model."""
+
+        permissions = (P.DELETE.value, P.SCAN.value)
+
     FILE_NAME = models.CharField(max_length=260, default='')
     APP_NAME = models.CharField(max_length=260, default='')
     PUBLISHER_NAME = models.TextField(default='')
@@ -128,7 +160,26 @@ class StaticAnalyzerWindows(models.Model):
 
 
 class SuppressFindings(models.Model):
+    class Meta:
+        """Meta class for SuppressFindings model."""
+
+        permissions = (P.DELETE.value, P.SCAN.value, P.SUPPRESS.value)
+
     PACKAGE_NAME = models.CharField(max_length=260, default='')
     SUPPRESS_RULE_ID = models.TextField(default=[])
     SUPPRESS_FILES = models.TextField(default={})
     SUPPRESS_TYPE = models.TextField(default='')
+
+
+class EnqueuedTask(models.Model):
+    task_id = models.CharField(max_length=255)
+    checksum = models.CharField(max_length=255)
+    file_name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=255, default='Enqueued')
+    started_at = models.DateTimeField(null=True)
+    completed_at = models.DateTimeField(null=True)
+    app_name = models.CharField(max_length=255, default='')
+
+    def __str__(self):
+        return f'{self.name} ({self.status})'

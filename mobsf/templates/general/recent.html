@@ -35,6 +35,9 @@
                  <div class="box">
         <div class="box-header with-border">
             <h3 class="box-title"><i class="fa fa-rocket"></i> Recent Scans</h3>
+            {% if async_scans %}
+            <p class="lead">View scan progress in the <strong><a href="{% url 'list_tasks' %}">Scan Queue</a></strong></p>
+            {% endif %}
         </div>
 
         <div class="box-body">
@@ -67,8 +70,8 @@
                                     {% endif %}
                                     {% endif %}
                                   {% endif %}
-                                  <p><a class="btn btn-primary btn-sm" href="../{{ e.ANALYZER }}/{{e.MD5}}/"><i class="fas fa-eye"></i> Static Report</a>
-                                  {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:"%}
+                                  <p><a class="btn btn-primary btn-sm" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/"><i class="fas fa-eye"></i> Static Report</a>
+                                  {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:" or '.aab' == e.FILE_NAME|slice:"-4:" %}
                                     <a  class="btn btn-success btn-sm {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "dynamic_report" checksum=e.MD5 %}"><i class="fa fa-mobile"></i> Dynamic Report</a>
                                   {% elif '.ipa' == e.FILE_NAME|slice:"-4:" %}
                                     {% if e.PACKAGE_NAME %}
@@ -86,6 +89,7 @@
                                 {% if '.apk' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-android fa-3x"></i>
                                 {% elif '.xapk' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-android fa-3x"></i>
                                 {% elif '.apks' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-android fa-3x"></i>
+                                {% elif '.aab' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-android fa-3x"></i>
                                 {% elif '.jar' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-java fa-3x"></i>
                                 {% elif '.aar' == e.FILE_NAME|slice:"-4:"%}<i class="fas fa-table fa-3x"></i>
                                 {% elif '.so' == e.FILE_NAME|slice:"-3:"%}<i class="fa fa-th-large fa-3x"></i>
@@ -100,9 +104,10 @@
                             <td>{{ e.TIMESTAMP }}</td>
                             <td><p>
                                    <a class="btn btn-outline-primary btn-sm" href="{% url "pdf" checksum=e.MD5%}"><i class="fas fa-file-pdf"></i></a>
-                                   <a class="btn btn-outline-info btn-sm" href="../{{ e.ANALYZER }}/{{e.MD5}}/?rescan=1"><i class="fas fa-sync-alt"></i></a>
+                                   <a class="btn btn-outline-info btn-sm" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/?rescan=1"><i class="fas fa-sync-alt"></i></a>
+                                   <a class="btn btn-outline-secondary btn-sm" href="{% url "download_binary" checksum=e.MD5%}"><i class="fas fa-download"></i></a>
                                 </p>
-                            {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:"%}
+                            {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:" or '.aab' == e.FILE_NAME|slice:"-4:"%}
                                 <p><a class="diffButton btn btn-warning btn-sm" id="{{ e.MD5 }}_{{ e.FILE_NAME }}"><i class="fas fa-not-equal"></i> Diff or Compare</a>
                                 </p>
                             {% endif %}
@@ -113,7 +118,57 @@
                     </tbody>
                 </table>
             </div>
-
+            <!--pagination-->
+            <nav aria-label="Pagination">
+                <ul class="pagination justify-content-center">
+                  {% if page_obj.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.previous_page_number %}">Previous</a>
+                  </li>   
+                  {% else %}
+                  <li class="page-item">
+                  <a class="page-link">Previous</a>
+                  </li>
+                  {% endif %}
+      
+                  {% for i in page_obj.paginator.page_range %}
+                  {% if page_obj.number == i %}
+                  <li class="page-item active">
+                      <a class="page-link" href="#">{{ i }} </a>
+                  </li>
+                  {% else %}
+                  <li class="page-item">
+                      <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=i %}">{{ i }}</a>
+                  </li>
+                  {% endif %}
+                  {% endfor %}
+      
+                  {% if page_obj.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.next_page_number %}">Next</a>
+                   </li>
+                  {% else %}
+                  <li class="page-item">
+                    <a class="page-link">Next</a>
+                  </li>
+                  {% endif %}
+                  <li class="page-item">
+                    <div class="dropdown">
+                        <button class="page-link dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          Items per page
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=5 page_number=page_obj.number %}">5</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=10 page_number=page_obj.number %}">10</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=20 page_number=page_obj.number %}">20</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=50 page_number=page_obj.number %}">50</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=100 page_number=page_obj.number %}">100</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=250 page_number=page_obj.number %}">250</a>
+                        </div>
+                      </div>
+                </ul>
+              </nav>
+            <!--end pagination-->
         </div>
         <!-- /.box-body -->
     </div>
@@ -129,6 +184,18 @@
 {% block extra_scripts %}
 <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script>
+
+    // Escape HTML
+    function escapeHtml(unsafe)
+    {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     // Diff functions
     var diff_first_md5 = '';
     var diff_first_name = '';
@@ -176,7 +243,7 @@
     }
 
     function diff_cleanup() {
-        first_td_id = diff_first_md5 + '_' + diff_first_name;
+        first_td_id = diff_first_md5 + '_' + escapeHtml(diff_first_name);
         $('[id="' + first_td_id + '"]').closest("tr").removeClass("selected");
         $('[id="' + first_td_id + '"]').closest("tbody").removeClass("selectable_table");
         diff_first_md5 = "";
@@ -199,8 +266,8 @@
             title: '<strong>Diff confirmation</strong>',
             type: 'info',
             html:
-                '<strong>Do you want to diff - </strong><br />' + diff_first_name +
-                '<br /> <strong>with - <br /> </strong>' + diff_second_name + ' <br /> <strong>?</strong>',
+                '<strong>Do you want to diff - </strong><br />' + escapeHtml(diff_first_name) +
+                '<br /> <strong>with - <br /> </strong>' + escapeHtml(diff_second_name) + ' <br /> <strong>?</strong>',
 
             showCancelButton: true,
             cancelButtonText: 'Cancel',
@@ -236,7 +303,7 @@
                                 md5: md5_hash,
                                 },
                             success : function(json) {
-                                if (json.deleted==='yes'){
+                                if (json.deleted ==='yes'){
                                     Swal.fire(
                                         'Deleted!',
                                         'The scan result is deleted!',
@@ -248,7 +315,7 @@
                                 else {
                                     Swal.fire(
                                     'Delete Failed',
-                                    'Cannot delete the scan result!',
+                                    json.deleted,
                                     'error'
                                     )
                                 }

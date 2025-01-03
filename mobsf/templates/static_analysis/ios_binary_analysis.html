@@ -141,6 +141,12 @@
             </a>
              </li>
             {% endif %}
+            <li class="nav-item">
+              <a href="#firebase" class="nav-link">
+                <i class="fas fa-database nav-icon"></i>
+                <p>Firebase Analysis</p>
+              </a>
+            </li>
             </ul>
           </li>
           <li class="nav-item has-treeview">
@@ -152,6 +158,12 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="#malware_lookup" class="nav-link">
+                  <i class="fa fa-ban nav-icon"></i>
+                  <p>Malware Lookup</p>
+                </a>
+              </li>
               {% if virus_total %}
                 <li class="nav-item">
                   <a href="#virus_total" class="nav-link">
@@ -189,12 +201,6 @@
                 <a href="#urls" class="nav-link">
                   <i class="fas fa-globe nav-icon"></i>
                   <p>URLs</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="#firebase" class="nav-link">
-                  <i class="fas fa-database nav-icon"></i>
-                  <p>Firebase DB</p>
                 </a>
               </li>
               <li class="nav-item">
@@ -445,7 +451,8 @@
                 <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
                 </p>
                  <a role="button" class="btn btn-info" href="{% url 'static_analyzer_ios' checksum=md5 %}?rescan=1" ><i class="fa fa-sync"></i> Rescan</a>
-                 <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-list"></i> Manage Suppressions</a>
+                 <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-table"></i> Manage Suppressions</a>
+                 <button type="button" class="btn btn-warning" data-toggle="modal" data-target=".scan-logs-mdl"><i class="fa fa-list" aria-hidden="true"></i> Scan Logs</button>
                 </p>
               </div>
             </div><!-- /.card -->
@@ -463,7 +470,7 @@
                     {% if app_type not in 'Dylib,A' %}
                     <a target="_blank" href="{% url 'view_file_ios' %}?file=classdump.txt&amp;md5={{ md5 }}&amp;type=ios" class="btn btn-warning" role="button"><i class="fa fa-code"></i> View Class Dump</a>
                     {% endif %}
-                    <a href="{% url 'generate_downloads' %}?hash={{ md5 }}&amp;file_type={% if app_type in 'Dylib' %}dylib{% elif app_type in 'A' %}a{% else %}ipa{% endif %}" class="btn btn-warning"> <i class="fa fa-download"></i> Download {% if app_type in 'Dylib' %}DYLIB{% elif app_type in 'A' %}A{% else %}IPA{% endif %}</a>
+                    <a href="{% url "download_binary" checksum=md5 %}" class="btn btn-warning"> <i class="fa fa-download"></i> Download {% if app_type in 'Dylib' %}DYLIB{% elif app_type in 'A' %}A{% else %}IPA{% endif %}</a>
                  </p>
                 </div>
               </div>
@@ -1231,6 +1238,102 @@
 </section>
  <!-- ===========================end file analysis ================================== -->
  {% endif %}
+ <a id="firebase" class="anchor"></a>
+ <section class="content">
+   <div class="container-fluid">
+     <div class="row">
+         <div class="col-lg-12">
+         <div class="card">
+           <div class="card-body">
+             <p>
+              <strong><i class="fas fa-database"></i> FIREBASE DATABASE ANALYSIS</strong>
+              </p>
+               <div class="table-responsive">
+              <table id="table_firebase" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                      <th>TITLE</th>
+                      <th>SEVERITY</th>
+                      <th>DESCRIPTION</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for find in firebase_urls %}
+                  <tr>
+                  <td>{{ find.title }}</td>
+                  <td>
+                  {% if find.severity == 'high' %}
+                    <span class="badge bg-danger">high</span>
+                  {% elif find.severity  == 'secure' %}
+                    <span class="badge bg-success">secure</span>
+                  {% elif find.severity  == 'warning' %}
+                    <span class="badge bg-warning">warning</span>
+                  {% elif find.severity  == 'info' %}
+                    <span class="badge bg-info">info</span>
+                  {% endif %}
+                  </td>
+                  <td>{{ find.description }}</td>
+                  </tr>
+                  {% endfor %}
+              </tbody>
+             </table>
+             </div>
+           </div>
+         </div><!-- /.card -->
+         </div>
+         <!-- end row -->
+         </div>
+     </div>
+ </section>
+  <!-- ===========================end firebase db analysis ================================== -->
+ <!---Malware Analysis Section-->
+ <a id="malware_lookup" class="anchor"></a>
+ <section class="content">
+   <div class="container-fluid">
+     <div class="row">
+         <div class="col-lg-12">
+         <div class="card">
+           <div class="card-body">
+             <p>
+              <strong><i class="fa fa-ban"></i> MALWARE LOOKUP</strong>
+              </p>
+                <div class="table-responsive">
+               <div class="row">
+                <div class="col-sm-3 col-6">
+                <div class="description-block border-right">
+                <span class="text-danger"><a href="https://www.virustotal.com/gui/file/{{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> VirusTotal Report</a></span>
+                </div>
+                </div>
+                
+                <div class="col-sm-3 col-6">
+                <div class="description-block border-right">
+                <span class="text-warning"></i><a href="https://tria.ge/s?q={{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> Triage Report</a>
+                </span>
+                </div>
+                </div>
+                
+                <div class="col-sm-3 col-6">
+                <div class="description-block border-right">
+                <span class="text-info"><a href="https://metadefender.com/results/hash/{{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> MetaDefender Report</a>
+                </span>
+                </div>
+                </div>
+                
+                <div class="col-sm-3 col-6">
+                  <div class="description-block border-right">
+                  <span class="text-success"><a href="https://www.hybrid-analysis.com/search?query={{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> Hybrid Analysis Report</a>
+                  </span>
+                  </div>
+                </div>
+              </div>
+           </div>
+         </div><!-- /.card -->
+         </div>
+         <!-- end row -->
+         </div>
+     </div>
+ </section>
+ <!-- ===========================end malware lookup ================================== -->
 {% if virus_total %}
 <a id="virus_total" class="anchor"></a>
 <section class="content">
@@ -1446,53 +1549,6 @@
     </div>
 </section>
  <!-- ===========================end urls ================================== -->
- <a id="firebase" class="anchor"></a>
-<section class="content">
-  <div class="container-fluid">
-    <div class="row">
-        <div class="col-lg-12">
-        <div class="card">
-          <div class="card-body">
-            <p>
-             <strong><i class="fas fa-database"></i> FIREBASE DATABASE</strong>
-             </p>
-              <div class="table-responsive">
-               {% if firebase_urls %} 
-             <table id="table_firebase" class="table table-bordered table-hover table-striped">
-                  <thead>
-                  <tr>
-                     <th>FIREBASE URL</th>
-                     <th>DETAILS</th>
-                  </tr>
-                 </thead>
-               
-                 <tbody>
-                  {% for item in firebase_urls %}
-                    <tr>
-                       <td>
-                       {{ item.url }}
-                        </td>
-                       <td>
-                         {% if item.open %}
-                          <span class="badge bg-danger">high</span><br/>Firebase Database is exposed publicly.
-                        {% else %}
-                         <span class="badge bg-primary">info</span><br/>App talks to a Firebase database.
-                         {% endif %}
-                       </td>
-                    </tr>
-                  {% endfor %} 
-               </tbody>
-            </table>
-             {% endif %}
-            </div>
-          </div>
-        </div><!-- /.card -->
-        </div>
-        <!-- end row -->
-        </div>
-    </div>
-</section>
- <!-- ===========================end firebase db ================================== -->
  <a id="emails" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
@@ -1862,4 +1918,39 @@
   {% endif %}
   ];
   </script>
+{% endblock %}
+{% block scan_logs %}
+<table id="scan_logs" class="table table-bordered table-hover table-striped">
+ <thead>
+  <tr>
+      <th>Timestamp</th>
+      <th>Event</th>
+      <th>Error</th>
+  </tr>
+ </thead>
+ <tbody>
+  {% for log in logs %}
+  <tr>
+    <td>
+      {{log.timestamp}}
+    </td>
+    <td>
+      {{log.status}}
+    </td>
+    <td>
+      {% if not log.exception %}
+      <p class="text-success">
+        OK
+      </p>
+      {% else %}
+      <p class="text-danger">
+      {{log.exception}}
+       </p>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+</table>
+
 {% endblock %}

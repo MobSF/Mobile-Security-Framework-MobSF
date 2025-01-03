@@ -161,6 +161,23 @@
     owasp-mobile: m1
     masvs: platform-7
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05h-Testing-Platform-Interaction.md#testing-javascript-execution-in-webviews-mstg-platform-5
+- id: android_webview_allow_file_from_url
+  message: >-
+    Ensure that user controlled URLs never reaches the Webview. Enabling file access
+    from URLs in WebView can leak sensitive information from the file system.
+  type: RegexAndOr
+  pattern:
+    - setJavaScriptEnabled\(true\)
+    - - \.setAllowFileAccessFromFileURLs\(true\)
+      - \.setAllowUniversalAccessFromFileURLs\(true\)
+  severity: warning
+  input_case: exact
+  metadata:
+    cvss: 6.1
+    cwe: cwe-200
+    owasp-mobile: m1
+    masvs: platform-7
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05h-Testing-Platform-Interaction.md#static-analysis-6
 - id: android_sql_cipher_aes256
   message: >-
     This App uses SQL Cipher. SQLCipher provides 256-bit AES encryption to
@@ -579,7 +596,7 @@
   type: RegexOr
   pattern:
     - MODE_WORLD_WRITABLE
-    - \.getSharedPreferences\(.{0,50}2\)
+    - \.getSharedPreferences\(.{0,50}?2\)
     - 'openFileOutput\(\s*".{1,48}"\s*,\s*2\s*\)'
   severity: high
   input_case: exact
@@ -594,7 +611,7 @@
   type: RegexOr
   pattern:
     - MODE_WORLD_READABLE
-    - \.getSharedPreferences\(.{0,50}1\)
+    - \.getSharedPreferences\(.{0,50}?1\)
     - 'openFileOutput\(\s*".{1,48}"\s*,\s*1\s*\)'
   severity: high
   input_case: exact
