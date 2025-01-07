@@ -86,9 +86,11 @@ def is_tls_redirect(url_from: str, url_to: str):
     """Check if redirect is a simple TLS (i.e. safe) upgrade."""
     if not url_from.startswith("http://") or not url_to.startswith("https://"):
         return False
-    
+
     if url_from[7:] == url_to[8:]:
         return True
+    else:
+        return False
 
 
 def _check_url(host, w_url):
@@ -107,13 +109,15 @@ def _check_url(host, w_url):
         status_code = r.status_code
         if status_code in (301, 302):
             redirect_url = r.headers.get('Location')
-            
+
             # recurse (redirect) only if redirect URL is a simple TLS upgrade
             if redirect_url and is_tls_redirect(w_url, redirect_url):
-                logger.info(f'{status_code} Redirect detected (TLS upgrade) || From: {w_url} || To: {redirect_url}')
+                logger.info(
+                    f'{status_code} Redirect detected (TLS upgrade) || From: {w_url} || To: {redirect_url}')
                 return _check_url(host, redirect_url)
             else:
-                logger.warning(f'{status_code} Redirect detected || From: {w_url} || To: {redirect_url}')
+                logger.warning(
+                    f'{status_code} Redirect detected || From: {w_url} || To: {redirect_url}')
                 status = False
         if (str(status_code).startswith('2') and iden in str(r.json())):
             status = True
