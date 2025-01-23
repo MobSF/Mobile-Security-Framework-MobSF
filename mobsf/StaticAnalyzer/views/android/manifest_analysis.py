@@ -82,46 +82,33 @@ def assetlinks_check(act_name, well_knowns):
     return findings
 
 
-def is_tls_redirect(url_from: str, url_to: str):
-    """Check if redirect is a simple TLS (i.e. safe) upgrade."""
-    if not url_from.startswith("http://") or not url_to.startswith("https://"):
-        return False
-
-    if url_from[7:] == url_to[8:]:
-        return True
-    else:
-        return False
-
-
 def _check_url(host, w_url):
+    """Check for the presence of Assetlinks URL."""
     try:
         iden = 'sha256_cert_fingerprints'
         proxies, verify = upstream_proxy('https')
         status = False
         status_code = 0
 
-        r = requests.get(w_url,
-                         timeout=5,
-                         allow_redirects=False,
-                         proxies=proxies,
-                         verify=verify)
+        urls = {w_url}
+        if w_url.startswith('http://'):
+            # Upgrade http to https
+            urls.add(f'https://{w_url[7:]}')
 
-        status_code = r.status_code
+        for url in urls:
+            r = requests.get(url,
+                             timeout=5,
+                             allow_redirects=False,
+                             proxies=proxies,
+                             verify=verify)
+
+            status_code = r.status_code
+            if (str(status_code).startswith('2') and iden in str(r.json())):
+                status = True
+                break
         if status_code in (301, 302):
-            redirect_url = r.headers.get('Location')
-
-            # recurse (redirect) only if redirect URL is a simple TLS upgrade
-            if redirect_url and is_tls_redirect(w_url, redirect_url):
-                logger.info(
-                    f'{status_code} Redirect detected (TLS upgrade) || From: {w_url} || To: {redirect_url}')
-                return _check_url(host, redirect_url)
-            else:
-                logger.warning(
-                    f'{status_code} Redirect detected || From: {w_url} || To: {redirect_url}')
-                status = False
-        if (str(status_code).startswith('2') and iden in str(r.json())):
-            status = True
-
+            logger.warning('Status Code: [%d], Redirecting to '
+                           'a different URL, skipping check!', status_code)
         return {'url': w_url,
                 'host': host,
                 'status_code': status_code,
