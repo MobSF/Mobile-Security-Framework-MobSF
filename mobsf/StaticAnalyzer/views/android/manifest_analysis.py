@@ -83,25 +83,32 @@ def assetlinks_check(act_name, well_knowns):
 
 
 def _check_url(host, w_url):
+    """Check for the presence of Assetlinks URL."""
     try:
         iden = 'sha256_cert_fingerprints'
         proxies, verify = upstream_proxy('https')
         status = False
         status_code = 0
 
-        r = requests.get(w_url,
-                         timeout=5,
-                         allow_redirects=False,
-                         proxies=proxies,
-                         verify=verify)
+        urls = {w_url}
+        if w_url.startswith('http://'):
+            # Upgrade http to https
+            urls.add(f'https://{w_url[7:]}')
 
-        status_code = r.status_code
-        if status_code == 302:
-            logger.warning('302 Redirect detected, skipping check')
-            status = False
-        if (str(status_code).startswith('2') and iden in str(r.json())):
-            status = True
+        for url in urls:
+            r = requests.get(url,
+                             timeout=5,
+                             allow_redirects=False,
+                             proxies=proxies,
+                             verify=verify)
 
+            status_code = r.status_code
+            if (str(status_code).startswith('2') and iden in str(r.json())):
+                status = True
+                break
+        if status_code in (301, 302):
+            logger.warning('Status Code: [%d], Redirecting to '
+                           'a different URL, skipping check!', status_code)
         return {'url': w_url,
                 'host': host,
                 'status_code': status_code,
