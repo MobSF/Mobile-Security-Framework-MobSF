@@ -1,3 +1,98 @@
+### v4.3.0 Changelog
+
+- Features or Enhancements
+   - Added django-q2-based asynchronous scans for Android and iOS binaries and source code
+   - Async analysis REST API support & Docs
+   - Unified async scan timeout
+   - Allow incomplete scan delete after async scan timeout duration
+   - Added support for Android SBOM analysis
+   - Added Anti-analysis bypasses
+   - Handle packed APKs, refactor unzip to handle malformed APK files
+   - Handle reserved filename conflict during ZIP extraction
+   -  Fixed permissions of extracted files to counter anti-analysis techniques
+   - JADX fallback to DEX files on APK decompilation failure
+   - apktool fallback to androguard for AndroidManifest.xml extraction
+   - Resolved APK parsing errors in androguard
+   - apksigner.jar fallback to apksigtool/androguard for signature version extraction
+   - Added explicit timeout for all HTTP requests
+   - Support proxy for all HTTPS calls
+   - Optimize jadx download, support system proxy
+   - Replaced Quark with Behaviour Analysis using ported quark rules
+   - Add support for pulling split apks from Android Dynamic Analyzer
+   - Add support for sample download in recent scans.
+   - Support custom home directory from environment variables
+   - Reduce iOS binary findings severity to warning from high
+   - QA on docker-compose, added example nginx config
+   - Added docker-compose_swarm.yml and docker secrets support by @antonkap
+   - IPA PNG Uncrush support for Windows and Linux
+   - Automatically handle https upgrade for http urls in Android Assetlinks check
+   - APKID QA.
+   - Bash and Batch file script QA.
+   - Android Report template optimizations on how exported components are displayed.
+   - Clickable Android Activities, Services, Providers, and Recievers
+   - Updated Android version support to 11.0 for Android Studio AVD
+   - Created helper scripts for AVDs `scripts/start_avd.sh` and `scripts/start_avd.ps1`
+   - Added malware lookup using SHA2 with VirusTotal, Triage, Hybrid Analysis, and MetaDefender
+   - Optimized APK ZIP analysis for improved performance
+   - Fixed untar permission errors in dynamic analysis
+   - Added bypass for SSL pinning in Boye's AbstractVerifier
+   - Updated bypass for SSL pinning in Appmattus's CertificateTransparencyInterceptor
+   - Introduced SSL pinning detector script
+   - Improved Frida intent dumper script
+   - Added Frida intent tracer script
+   - Enabled asynchronous scans in Docker Compose setup
+   - Performed QA for Android and iOS SAST modules
+   - Added Frida script for audit-webview
+   - Introduced Frida script for trace-javascript-interface
+   - Upgraded libsast for improved file reading, multiprocessing, and multithreading
+   - Fixed PNG crush issues on Darwin systems
+   - Performed QA on the home screen UI
+   - Updated httptools and libsast dependencies
+   -  Improvements in scan queue
+   - Added a robots.txt
+   - Code QA untar permissions
+   - Added and updated permission mapping rules
+   - Handle errors gracefully from get_app_name and icon_analysis
+   - Add new scans in tasks view without needing and explicit refresh
+   - Optimizing downloads, adding downloads for source code types and windows appx
+   - Androguard, ApkInspector code bump
+   - Patch Androguard AXML to log a warning on parse error reserved must be zero! instead of raise
+   - Fallback on get app name when androguard returns empty string
+   - Bump to google fork of baksmali 3.0.8
+   - IPA: Graceful handling of plist dump exception
+   - Dockerfile QA
+   - Add sdk-build-tools to Docker image
+   - Replace biplist with plistlib std lib
+   - Added support for APK parsing with aapt2/aapt
+   - Use aapt/aapt2 as a fallback for APK parsing, files listing and string extraction
+   - Tasks List API to return string status
+   - Replaced all minidom calls with defusedxml.minidom
+   - Code QA on android manifest data extraction and parsing
+   - Improved android file analysis
+   - Improved android manifest data extraction
+   - Improved android icon file extraction
+   - Improved android app name extraction
+   - Improved android appstore package details extraction
+   - Android string extraction to fallback on aapt2 strings
+   - APK analysis arguments refactor
+   - Explicit Zipslip handling during ZIP extraction
+   - Graceful files extraction on unzip failure
+   - Removed bail out and continue analysis
+   - Moved androguard parsing to the start of static analysis
+   - AndroidManifest.xml fallback from apktool to androguard during extraction and parsing
+   - Updated Tasks UI to show started at
+   - Save only unique intent priorities in findings
+   - Add files list in scorecard description
+   
+- Bug Fixes
+  - Bug fix in firebase analysis
+  - Fixed bug in certificate analysis.
+  - Fix TOCTOU in delete scans view
+  - Bug fix in enqueue model schema
+  - Bug Fix in app_dict init.
+  - Fixed a bug in iOS pbxproj parsing
+  - Fixed a bug executing setup.sh script in python venv
+
 ### v4.1.3 Changelog
 
 - Features or Enhancements
