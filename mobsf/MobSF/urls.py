@@ -48,6 +48,7 @@ from mobsf.StaticAnalyzer.views.ios import view_source as io_view_source
 
 from . import settings
 
+paginate = r'(?P<page_size>[0-9]{1,10})/(?P<page_number>[0-9]{1,10})'
 
 urlpatterns = [
     # REST API
@@ -172,6 +173,9 @@ if settings.API_ONLY == '0':
         re_path(r'^donate$', home.donate, name='donate'),
         re_path(r'^api_docs$', home.api_docs, name='api_docs'),
         re_path(r'^recent_scans$', home.recent_scans, name='recent'),
+        re_path(fr'^recent_scans/{paginate}/$',
+                home.recent_scans,
+                name='scans_paginated'),
         re_path(r'^update_scan/$', home.update_scan, name='update_scan'),
         re_path(r'^delete_scan/$', home.delete_scan, name='delete_scan'),
         re_path(r'^search$', home.search),

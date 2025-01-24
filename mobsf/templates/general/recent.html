@@ -149,11 +149,11 @@
                             <td>
                                 <p>                                    
                                     {% if e.COMPLETE %}
-                                    <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../{{ e.ANALYZER }}/{{e.MD5}}/"><i class="fas fa-eye" title="View static analysis scan details"></i> Scan Details</a><br/>
+                                    <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/"><i class="fas fa-eye" title="View static analysis scan details"></i> Scan Details</a><br/>
                                         {% if e.FILE_NAME|slice:"-6:" != '.dylib' %}
                                             {% if e.FILE_NAME|slice:"-3:" != '.so' %}
                                                 {% if e.FILE_NAME|slice:"-2:" != '.a' %}
-                                                <a class="btn btn-primary btn-warning btn-sm" style="margin-bottom: 3px;  width: 125px;" href="../appsec_dashboard/{{ e.MD5 }}/"><i class="fas fa-user-shield" title="View security scorecard"></i> Scorecard</a><br/>
+                                                <a class="btn btn-primary btn-warning btn-sm" style="margin-bottom: 3px;  width: 125px;" href="../../../appsec_dashboard/{{ e.MD5 }}/"><i class="fas fa-user-shield" title="View security scorecard"></i> Scorecard</a><br/>
                                                 {% endif %}
                                             {% endif %}
                                         {% endif %}
@@ -171,7 +171,7 @@
                                     {% endif %}
                                     <a class="btn btn-outline-primary btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="javascript:void(0);"><i class="fas fa-trash" title="Delete Scan"></i></a>
                                     {% if e.COMPLETE %}                                        
-                                        <a class="btn btn-outline-primary btn-sm" href="../pdf/{{ e.MD5 }}/"><i class="fas fa-file-pdf" title="PDF Report"></i></a>                                                                                                                  
+                                        <a class="btn btn-outline-primary btn-sm" href="../../../pdf/{{ e.MD5 }}/"><i class="fas fa-file-pdf" title="PDF Report"></i></a>                                                                                                                  
                                     {% endif %}                                    
                                 </p>
                             </td>
@@ -180,6 +180,57 @@
                     </tbody>
                 </table>
             </div>
+            <!--pagination-->
+            <nav aria-label="Pagination">
+                <ul class="pagination justify-content-center">
+                  {% if page_obj.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.previous_page_number %}">Previous</a>
+                  </li>   
+                  {% else %}
+                  <li class="page-item">
+                  <a class="page-link">Previous</a>
+                  </li>
+                  {% endif %}
+      
+                  {% for i in page_obj.paginator.page_range %}
+                  {% if page_obj.number == i %}
+                  <li class="page-item active">
+                      <a class="page-link" href="#">{{ i }} </a>
+                  </li>
+                  {% else %}
+                  <li class="page-item">
+                      <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=i %}">{{ i }}</a>
+                  </li>
+                  {% endif %}
+                  {% endfor %}
+      
+                  {% if page_obj.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.next_page_number %}">Next</a>
+                   </li>
+                  {% else %}
+                  <li class="page-item">
+                    <a class="page-link">Next</a>
+                  </li>
+                  {% endif %}
+                  <li class="page-item">
+                    <div class="dropdown">
+                        <button class="page-link dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          Items per page
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=5 page_number=page_obj.number %}">5</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=10 page_number=page_obj.number %}">10</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=20 page_number=page_obj.number %}">20</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=50 page_number=page_obj.number %}">50</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=100 page_number=page_obj.number %}">100</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=250 page_number=page_obj.number %}">250</a>
+                        </div>
+                      </div>
+                </ul>
+              </nav>
+            <!--end pagination-->
         </div>
         <!-- /.box-body -->
     </div>
@@ -411,7 +462,7 @@
                 var cleanEmails = get_clean_emails(item);
                 var release = ($("#releaseInput" + item).prop("checked") ? "True" : "False");
                 $.ajax({
-                        url: '../update_scan/',
+                        url: '../../../update_scan/',
                         type: 'POST',
                         dataType: 'json',
                         data: {

@@ -302,7 +302,7 @@ def not_found(request):
     return render(request, template, context)
 
 
-def recent_scans(request):
+def recent_scans(request, page_size=10, page_number=1):
     """Show Recent Scans Route."""
     entries = []
     sfilter = request.GET.get('filter', '')
@@ -322,9 +322,15 @@ def recent_scans(request):
         if (not email_filter):
             email_filter = '@@'
         db_obj = db_obj.filter(EMAIL__contains=email_filter)
-    db_obj = db_obj.order_by('-TIMESTAMP')[:100]
+    db_obj = db_obj.order_by('-TIMESTAMP').values()
 
-    recentscans = db_obj.values()
+    paginator = Paginator(
+        db_obj, page_size,
+    )
+    page_obj = paginator.get_page(page_number)
+    page_obj.page_size = page_size
+
+    recentscans = page_obj
     android = StaticAnalyzerAndroid.objects.all()
     ios = StaticAnalyzerIOS.objects.all()
     updir = Path(settings.UPLD_DIR)
@@ -372,6 +378,7 @@ def recent_scans(request):
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
         'filter': filter,
         'tenant_static': settings.TENANT_STATIC_URL,
+        'page_obj': page_obj,
     }
     template = 'general/recent.html'
     return render(request, template, context)
