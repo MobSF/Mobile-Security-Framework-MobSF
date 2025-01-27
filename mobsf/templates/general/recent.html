@@ -184,16 +184,16 @@
             <nav aria-label="Pagination">
                 <ul class="pagination justify-content-center">
                   {% if page_obj.has_previous %}
-                  <li class="page-item">
+                  <li class="page-item previous">
                     <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.previous_page_number %}">Previous</a>
                   </li>   
                   {% else %}
-                  <li class="page-item">
-                  <a class="page-link">Previous</a>
+                  <li class="page-item previous disabled">
+                    <a class="page-link">Previous</a>
                   </li>
                   {% endif %}
       
-                  {% for i in page_obj.paginator.page_range %}
+                  {% for i in page_obj.paginator.get_elided_page_range %}
                   {% if page_obj.number == i %}
                   <li class="page-item active">
                       <a class="page-link" href="#">{{ i }} </a>
@@ -206,11 +206,11 @@
                   {% endfor %}
       
                   {% if page_obj.has_next %}
-                  <li class="page-item">
+                  <li class="page-item next">
                     <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.next_page_number %}">Next</a>
                    </li>
                   {% else %}
-                  <li class="page-item">
+                  <li class="page-item next disabled">
                     <a class="page-link">Next</a>
                   </li>
                   {% endif %}
