@@ -302,7 +302,7 @@ def not_found(request):
     return render(request, template, context)
 
 
-def recent_scans(request, page_size=10, page_number=1):
+def recent_scans(request, page_size=20, page_number=1):
     """Show Recent Scans Route."""
     entries = []
     sfilter = request.GET.get('filter', '')

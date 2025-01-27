@@ -447,6 +447,7 @@ TENANT_STATIC_URL = STATIC_URL + os.getenv('TENANT_ID', '')
 if (not TENANT_STATIC_URL.endswith('/')):
     TENANT_STATIC_URL = TENANT_STATIC_URL + '/'
 JADX_THREADS = os.getenv('JADX_THREADS', '4')
+DEFAULT_PAGINATION_CLASS = 'utils.FasterPageNumberPagination'
 
 # Customization settings
 CZ100 = os.getenv('CZ100', '')
