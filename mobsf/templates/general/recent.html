@@ -193,22 +193,28 @@
                   </li>
                   {% endif %}
       
-                  {% for i in page_obj.paginator.get_elided_page_range %}
+                  {% for i in paginator_range %}
                   {% if page_obj.number == i %}
                   <li class="page-item active">
                       <a class="page-link" href="#">{{ i }} </a>
                   </li>
-                  {% else %}
-                  <li class="page-item">
-                      <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=i %}">{{ i }}</a>
-                  </li>
+                  {% else %} 
+                    {% if i == page_obj.paginator.ELLIPSIS %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">{{ page_obj.paginator.ELLIPSIS }} </a>
+                    </li>
+                    {% else %}         
+                    <li class="page-item">
+                        <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=i %}">{{ i }}</a>
+                    </li>
+                    {% endif %}
                   {% endif %}
                   {% endfor %}
       
                   {% if page_obj.has_next %}
                   <li class="page-item next">
                     <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.next_page_number %}">Next</a>
-                   </li>
+                  </li>
                   {% else %}
                   <li class="page-item next disabled">
                     <a class="page-link">Next</a>
@@ -228,7 +234,8 @@
                           <a class="dropdown-item" href="{% url 'scans_paginated' page_size=250 page_number=page_obj.number %}">250</a>
                         </div>
                       </div>
-                </ul>
+                    </div>
+                </li>
               </nav>
             <!--end pagination-->
         </div>

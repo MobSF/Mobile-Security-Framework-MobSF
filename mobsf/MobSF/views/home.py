@@ -372,6 +372,12 @@ def recent_scans(request, page_size=20, page_number=1):
             entry['COMPLETE'] = entry['TIMESTAMP']
             entry['ERROR'] = 'Unable to find cyberspect_scans record'
         entries.append(entry)
+
+    paginator_range = page_obj.paginator.get_elided_page_range(
+        page_number,
+        on_each_side=3,
+        on_ends=1,
+    )
     context = {
         'title': 'Scanned Apps',
         'entries': entries,
@@ -381,6 +387,7 @@ def recent_scans(request, page_size=20, page_number=1):
         'filter': filter,
         'tenant_static': settings.TENANT_STATIC_URL,
         'page_obj': page_obj,
+        'paginator_range': paginator_range,
     }
     template = 'general/recent.html'
     return render(request, template, context)
