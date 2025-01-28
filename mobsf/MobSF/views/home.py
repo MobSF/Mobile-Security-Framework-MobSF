@@ -325,7 +325,8 @@ def recent_scans(request, page_size=20, page_number=1):
     db_obj = db_obj.order_by('-TIMESTAMP').values()
 
     paginator = Paginator(db_obj, page_size)
-    page_obj = paginator.get_page(page_number)    
+    page_obj = paginator.get_page(page_number)
+    page_obj.page_size = page_size
     md5_list = [i['MD5'] for i in page_obj]
 
     android = StaticAnalyzerAndroid.objects.filter(
