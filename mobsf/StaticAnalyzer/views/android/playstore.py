@@ -1,4 +1,5 @@
 # -*- coding: utf_8 -*-
+import ssl
 from google_play_scraper import app
 
 from bs4 import BeautifulSoup
@@ -7,12 +8,18 @@ import requests
 
 import logging
 
+from urllib.request import (
+    HTTPSHandler,
+    ProxyHandler,
+    build_opener,
+    install_opener,
+)
+
 from django.conf import settings
 
-from mobsf.MobSF.utils import (
-    append_scan_status,
-    upstream_proxy,
-)
+from mobsf.MobSF.utils import append_scan_status
+
+from mobsf.MobSF.proxy import upstream_proxy
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +42,15 @@ def get_app_details(app_dic, man_data):
         msg = f'Fetching Details from Play Store: {package_id}'
         logger.info(msg)
         append_scan_status(checksum, msg)
+        proxies,verify = upstream_proxy('https', for_urllib=True)
+        proxy_handler = ProxyHandler(proxies)
+        if verify:
+            ssl_context = ssl.create_default_context()
+        else:
+            ssl_context = ssl._create_unverified_context()
+        https_handler = HTTPSHandler(context=ssl_context)
+        opener = build_opener(proxy_handler, https_handler)
+        install_opener(opener)
         det = app(package_id)
         det.pop('descriptionHTML', None)
         det.pop('comments', None)

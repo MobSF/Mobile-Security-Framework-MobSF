@@ -9,10 +9,9 @@ from django.conf import settings
 
 import requests
 
-from mobsf.MobSF.utils import (
-    is_number,
-    upstream_proxy,
-)
+from mobsf.MobSF.proxy import upstream_proxy
+
+from mobsf.MobSF.utils import is_number
 
 
 SUCCESS_RESP = (200, 204)
