@@ -10,6 +10,9 @@ Please report all security issues [here](https://github.com/MobSF/Mobile-Securit
 
 | Vulnerability | Affected Versions |
 | ------- | ------------------ |
+| [Partial Denial of Service due to strict regex check in iOS report view URL](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-jrm8-xgf3-fwqr) | `<=4.3.0` |
+| [Local Privilege escalation due to leaked REST API key in web UI](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-79f6-p65j-3m2m) | `<=4.3.0` |
+| [Stored Cross-Site Scripting in iOS dynamic_analysis view via `bundle` id](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-cxqq-w3x5-7ph3) | `<=4.3.0` |
 | [Stored Cross-Site Scripting Vulnerability in Recent Scans "Diff or Compare"](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-5jc6-h9w7-jm3p) | `<=4.2.8` |
 | [Zip Slip Vulnerability in .a extraction](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-4hh3-vj32-gr6j) | `<=4.0.6` |
 | [Open Redirect in Login redirect](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-8m9j-2f32-2vx4) | `<=4.0.4` |

@@ -49,8 +49,9 @@ def ios_view_report(request, bundle_id, api=False):
         else:
             dev = ''
         if not strict_package_check(bundle_id):
-            # We need this check since bundleid
-            # is not validated in REST API
+            # bundle_id is not validated in REST API.
+            # Also bundleid is not strictly validated
+            # in URL path.
             return print_n_send_error_response(
                 request,
                 'Invalid iOS Bundle id',
