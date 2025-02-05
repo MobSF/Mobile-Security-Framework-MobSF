@@ -403,7 +403,7 @@ function list_apps(){
                                   <td><p>
                                       <a class="btn btn-success disable" onclick="dynamic_loader()" href="${url}"><i class="fab fa-apple"></i> Start Dynamic Analysis</a> 
                                       <a class="btn btn-info ${buttonState}" href="../../ios/view_report/${escapeHtml(bundle)}"><i class="fa fa-mobile"></i> View Report </a>
-                                      <a class="btn btn-warning" id="${$('#ios_dynamic').val()}" onclick="remove_app(this, '${bundle}')"><i class="fas fa-trash-alt"></i>  Uninstall</a>
+                                      <a class="btn btn-warning" id="${$('#ios_dynamic').val()}" onclick="remove_app(this, '${escapeHtml(bundle)}')"><i class="fas fa-trash-alt"></i>  Uninstall</a>
                                       </p>
                                   </td></tr>`);
                         }
