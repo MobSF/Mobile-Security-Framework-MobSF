@@ -138,7 +138,7 @@ def get_user_role(roles):
     elif vrole or settings.IDP_MOBSF_DEFAULT_GROUP == 'Viewer':
         logger.info(f"User assigned to {VIEWER_GROUP} group.")
         return VIEWER_GROUP
-    logger.warning("User does not have an authorized role.")
+    logger.warning(f"User does not have an authorized role.")
     return None
 
 
