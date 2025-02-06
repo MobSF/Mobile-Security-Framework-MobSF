@@ -186,7 +186,7 @@ def saml_acs(request):
         role = get_user_role(attributes['role'])
         if not role:
             raise Exception(
-                "You don't have an authorized role.")
+                "You don't have an authorized SSO group.")
         if User.objects.filter(username=email).exists():
             user = User.objects.get(username=email)
             user.groups.clear()
