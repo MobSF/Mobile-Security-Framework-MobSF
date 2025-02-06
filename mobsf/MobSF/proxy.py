@@ -29,7 +29,7 @@ def upstream_proxy(flaw_type, for_urllib=False):
             proxies = {}
         else:
             proxies = {flaw_type: None}
-    verify = settings.UPSTREAM_PROXY_SSL_VERIFY in ('true', '"true"', 'True', '"True"')
+    verify = settings.UPSTREAM_PROXY_SSL_VERIFY in ('1', '"1"')
     return proxies, verify
 
 

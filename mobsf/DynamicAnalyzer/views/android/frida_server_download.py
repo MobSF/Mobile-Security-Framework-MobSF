@@ -9,9 +9,9 @@ import requests
 
 from django.conf import settings
 
-from mobsf.MobSF.proxy import upstream_proxy
-
 from mobsf.MobSF.utils import is_internet_available
+
+from mobsf.MobSF.proxy import upstream_proxy
 
 
 logger = logging.getLogger(__name__)

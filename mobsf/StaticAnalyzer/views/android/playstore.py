@@ -66,7 +66,7 @@ def get_app_details(app_dic, man_data):
         det['description'] = description.get_text()
         det['error'] = False
         if 'androidVersionText' not in det:
-            det['androidVersionText'] = ''  
+            det['androidVersionText'] = ''
     except Exception:
         det = app_search(checksum, package_id)
     app_dic['playstore'] = det
