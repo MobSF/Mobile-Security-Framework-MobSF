@@ -379,7 +379,7 @@ IDP_ENTITY_ID = os.getenv('MOBSF_IDP_ENTITY_ID')
 IDP_SSO_URL = os.getenv('MOBSF_IDP_SSO_URL')
 IDP_X509CERT = os.getenv('MOBSF_IDP_X509CERT')
 IDP_IS_ADFS = os.getenv('MOBSF_IDP_IS_ADFS', '0')
-IIDP_MAINTAINER_GROUP = os.getenv('MOBSF_IDP_MAINTAINER_GROUP', 'Maintainer').split(',')
+IDP_MAINTAINER_GROUP = os.getenv('MOBSF_IDP_MAINTAINER_GROUP', 'Maintainer').split(',')
 IDP_VIEWER_GROUP = os.getenv('MOBSF_IDP_VIEWER_GROUP', 'Viewer').split(',')
 IDP_MOBSF_DEFAULT_GROUP = os.getenv('MOBSF_IDP_DEFAULT_GROUP')
 # SP Configuration
