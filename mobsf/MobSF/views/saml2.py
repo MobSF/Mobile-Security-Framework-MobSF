@@ -23,7 +23,6 @@ from mobsf.MobSF.views.authorization import (
     MAINTAINER_GROUP,
     VIEWER_GROUP,
 )
-
 from mobsf.MobSF.utils import (
     print_n_send_error_response,
 )
