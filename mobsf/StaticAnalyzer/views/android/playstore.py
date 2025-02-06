@@ -15,6 +15,8 @@ from urllib.request import (
     install_opener,
 )
 
+from mobsf.MobSF.settings import (PLAYSTORE)
+
 from django.conf import settings
 
 from mobsf.MobSF.utils import append_scan_status
@@ -51,14 +53,16 @@ def get_app_details(app_dic, man_data):
         https_handler = HTTPSHandler(context=ssl_context)
         opener = build_opener(proxy_handler, https_handler)
         install_opener(opener)
-        det = app(package_id)
-        det.pop('descriptionHTML', None)
-        det.pop('comments', None)
-        description = BeautifulSoup(det['description'], features='lxml')
-        det['description'] = description.get_text()
-        det['error'] = False
-        if 'androidVersionText' not in det:
-            det['androidVersionText'] = ''
+        with opener.open(Request(PLAYSTORE), timeout=5) as response:
+            if response.status == 200:
+                det = app(package_id)
+                det.pop('descriptionHTML', None)
+                det.pop('comments', None)
+                description = BeautifulSoup(det['description'], features='lxml')
+                det['description'] = description.get_text()
+                det['error'] = False
+                if 'androidVersionText' not in det:
+                    det['androidVersionText'] = ''
     except Exception:
         det = app_search(checksum, package_id)
     app_dic['playstore'] = det

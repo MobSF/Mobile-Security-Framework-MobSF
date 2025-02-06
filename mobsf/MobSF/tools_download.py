@@ -26,7 +26,7 @@ def download_file(url, file_path):
     req = Request(url)
     system_proxies = getproxies()
     if system_proxies:
-        proxies=system_proxies
+        proxies=system_proxies 
     else:
         proxies, verify = upstream_proxy('https', for_urllib=True)
     proxy_handler = ProxyHandler(proxies)
