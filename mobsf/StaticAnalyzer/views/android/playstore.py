@@ -11,6 +11,7 @@ import logging
 from urllib.request import (
     HTTPSHandler,
     ProxyHandler,
+    Request,
     build_opener,
     install_opener,
 )
@@ -53,16 +54,19 @@ def get_app_details(app_dic, man_data):
         https_handler = HTTPSHandler(context=ssl_context)
         opener = build_opener(proxy_handler, https_handler)
         install_opener(opener)
-        with opener.open(Request(PLAYSTORE), timeout=5) as response:
-            if response.status == 200:
-                det = app(package_id)
-                det.pop('descriptionHTML', None)
-                det.pop('comments', None)
-                description = BeautifulSoup(det['description'], features='lxml')
-                det['description'] = description.get_text()
-                det['error'] = False
-                if 'androidVersionText' not in det:
-                    det['androidVersionText'] = ''
+        try:
+            with opener.open(Request(PLAYSTORE), timeout=5) as response:
+                if response.status == 200:
+                    det = app(package_id)
+        except Exception:
+            logger.warning(f'Play Store unreachable, skipping')
+        det.pop('descriptionHTML', None)
+        det.pop('comments', None)
+        description = BeautifulSoup(det['description'], features='lxml')
+        det['description'] = description.get_text()
+        det['error'] = False
+        if 'androidVersionText' not in det:
+            det['androidVersionText'] = ''  
     except Exception:
         det = app_search(checksum, package_id)
     app_dic['playstore'] = det
