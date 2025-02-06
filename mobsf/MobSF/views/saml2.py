@@ -133,12 +133,12 @@ def get_user_role(roles):
     mrole = any(gp in maintainer_groups for gp in user_roles)
     vrole = any(gp in viewer_groups for gp in user_roles)
     if mrole or settings.IDP_MOBSF_DEFAULT_GROUP == 'Maintainer':
-        logger.info(f"User assigned to {MAINTAINER_GROUP} group.")
+        logger.info('User assigned to %s group.', MAINTAINER_GROUP)
         return MAINTAINER_GROUP
     elif vrole or settings.IDP_MOBSF_DEFAULT_GROUP == 'Viewer':
-        logger.info(f"User assigned to {VIEWER_GROUP} group.")
+        logger.info('User assigned to %s group.', VIEWER_GROUP)
         return VIEWER_GROUP
-    logger.warning(f"User does not have an authorized role.")
+    logger.warning('User does not have an authorized SSO group.')
     return None
 
 
@@ -185,7 +185,7 @@ def saml_acs(request):
         role = get_user_role(attributes['role'])
         if not role:
             raise Exception(
-                "You don't have an authorized SSO group.")
+                'You do not have an authorized SSO group.')
         if User.objects.filter(username=email).exists():
             user = User.objects.get(username=email)
             user.groups.clear()
