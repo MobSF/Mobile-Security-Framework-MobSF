@@ -6,6 +6,7 @@ from . import settings
 
 logger = logging.getLogger(__name__)
 
+
 def upstream_proxy(flaw_type, for_urllib=False):
     """Set upstream Proxy if needed."""
     if settings.UPSTREAM_PROXY_ENABLED:
@@ -65,4 +66,3 @@ def docker_translate_proxy_ip(ip):
     if ip and ip.strip() in ('127.0.0.1', 'localhost'):
         return 'host.docker.internal'
     return ip
-

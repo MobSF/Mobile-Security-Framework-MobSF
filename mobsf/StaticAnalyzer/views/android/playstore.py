@@ -8,7 +8,6 @@ from bs4 import BeautifulSoup
 import requests
 
 import logging
-
 from urllib.request import (
     HTTPSHandler,
     ProxyHandler,
@@ -17,12 +16,11 @@ from urllib.request import (
     install_opener,
 )
 
-from mobsf.MobSF.settings import (PLAYSTORE)
-
-from django.conf import settings
-
+from mobsf.MobSF.settings import PLAYSTORE
 from mobsf.MobSF.utils import append_scan_status
 from mobsf.MobSF.proxy import upstream_proxy
+
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +43,7 @@ def get_app_details(app_dic, man_data):
         msg = f'Fetching Details from Play Store: {package_id}'
         logger.info(msg)
         append_scan_status(checksum, msg)
-        proxies,verify = upstream_proxy('https', for_urllib=True)
+        proxies, verify = upstream_proxy('https', for_urllib=True)
         proxy_handler = ProxyHandler(proxies)
         if verify:
             ssl_context = ssl.create_default_context()
@@ -59,7 +57,7 @@ def get_app_details(app_dic, man_data):
                 if response.status == 200:
                     det = app(package_id)
         except Exception:
-            logger.warning(f'Play Store unreachable, skipping')
+            logger.warning('Play Store unreachable, skipping')
         det.pop('descriptionHTML', None)
         det.pop('comments', None)
         description = BeautifulSoup(det['description'], features='lxml')
