@@ -6,7 +6,6 @@ from mobsf.MobSF.utils import (
     append_scan_status,
     valid_host,
 )
-
 from mobsf.MobSF.proxy import upstream_proxy
 
 import requests

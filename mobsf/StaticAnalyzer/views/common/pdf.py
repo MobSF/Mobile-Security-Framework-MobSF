@@ -18,9 +18,7 @@ from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
 )
-
 from mobsf.MobSF.proxy import upstream_proxy
-
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
     StaticAnalyzerAndroid,

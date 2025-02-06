@@ -7,12 +7,13 @@ import platform
 import ssl
 from pathlib import Path
 from urllib.request import (
-    ProxyHandler,
     HTTPSHandler,
+    ProxyHandler,
     Request,
     build_opener,
     getproxies,
 )
+
 from mobsf.MobSF.proxy import upstream_proxy
 
 logging.basicConfig(

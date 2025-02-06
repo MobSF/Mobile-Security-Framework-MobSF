@@ -36,15 +36,14 @@ import psutil
 import requests
 
 from mobsf.MobSF.proxy import (
-    upstream_proxy,
     docker_translate_localhost,
+    upstream_proxy,
 )
 
 from django.shortcuts import render
 from django.utils import timezone
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
-
 from mobsf.MobSF. init import api_key
 
 from . import settings

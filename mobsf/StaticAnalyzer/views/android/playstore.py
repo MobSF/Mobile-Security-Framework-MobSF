@@ -1,5 +1,6 @@
 # -*- coding: utf_8 -*-
 import ssl
+
 from google_play_scraper import app
 
 from bs4 import BeautifulSoup
@@ -21,7 +22,6 @@ from mobsf.MobSF.settings import (PLAYSTORE)
 from django.conf import settings
 
 from mobsf.MobSF.utils import append_scan_status
-
 from mobsf.MobSF.proxy import upstream_proxy
 
 logger = logging.getLogger(__name__)
