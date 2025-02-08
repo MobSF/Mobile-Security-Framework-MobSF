@@ -177,6 +177,11 @@ def static_analyzer(request_data, checksum, api=False):
                 MD5=app_dic['md5'])
             if db_entry.exists() and not rescan:
                 context = get_context_from_db_entry(db_entry)
+                if settings.VT_ENABLED:
+                    vt = VirusTotal.VirusTotal()
+                    context['virus_total'] = vt.get_result(
+                        app_dic['app_path'],
+                        app_dic['md5'])
             else:
                 # ANALYSIS BEGINS
                 app_dic['size'] = str(
@@ -305,18 +310,12 @@ def static_analyzer(request_data, checksum, api=False):
                     tracker_res,
                     rescan,
                 )
+                context['virus_total'] = None
             context['appsec'] = get_android_dashboard(context, True)
             context['average_cvss'] = get_avg_cvss(
                 context['code_analysis'])
             context['dynamic_analysis_done'] = is_file_exists(
                 os.path.join(app_dic['app_dir'], 'logcat.txt'))
-
-            context['virus_total'] = None
-            if settings.VT_ENABLED:
-                vt = VirusTotal.VirusTotal()
-                context['virus_total'] = vt.get_result(
-                    app_dic['app_path'],
-                    app_dic['md5'])
             context['template'] = \
                 'static_analysis/android_binary_analysis.html'
             logger.info('Scan complete')

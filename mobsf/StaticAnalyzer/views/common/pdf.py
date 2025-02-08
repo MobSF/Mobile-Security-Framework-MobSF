@@ -84,14 +84,11 @@ def pdf(request, checksum, api=False, jsonres=False):
         # Do VT Scan only on binaries
         context['virus_total'] = None
         ext = os.path.splitext(context['file_name'].lower())[1]
-        logger.info('VirusTotal ext: ' + ext)
-        if settings.VT_ENABLED and ext != '.zip':            
+        if settings.VT_ENABLED and ext != '.zip':
             app_bin = os.path.join(
                 settings.UPLD_DIR,
                 checksum + '/',
                 checksum + ext)
-            logger.info(app_bin)
-            logger.info(checksum)
             vt = VirusTotal.VirusTotal()
             context['virus_total'] = vt.get_result(app_bin, checksum)
         # Get Local Base URL

@@ -39,6 +39,11 @@ def so_analysis(request, app_dic, rescan, api):
     db_entry = StaticAnalyzerAndroid.objects.filter(MD5=app_dic['md5'])
     if db_entry.exists() and not rescan:
         context = get_context_from_db_entry(db_entry)
+        if settings.VT_ENABLED:
+            vt = VirusTotal.VirusTotal()
+            context['virus_total'] = vt.get_result(
+                app_dic['app_path'],
+                app_dic['md5'])
     else:
         app_dic['size'] = f'{str(file_size(app_dic["app_path"]))}MB'
         app_dic['sha1'], app_dic['sha256'] = hash_gen(app_dic['app_path'])
@@ -145,14 +150,9 @@ def so_analysis(request, app_dic, rescan, api):
             trackers,
             rescan,
         )
+        context['virus_total'] = None
     context['appsec'] = {}
     context['average_cvss'] = None
     context['dynamic_analysis_done'] = False
-    context['virus_total'] = None
-    if settings.VT_ENABLED:
-        vt = VirusTotal.VirusTotal()
-        context['virus_total'] = vt.get_result(
-            app_dic['app_path'],
-            app_dic['md5'])
     context['template'] = 'static_analysis/android_binary_analysis.html'
     return context

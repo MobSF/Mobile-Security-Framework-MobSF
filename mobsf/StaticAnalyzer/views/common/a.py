@@ -63,6 +63,11 @@ def a_analysis(request, app_dict, rescan, api):
         MD5=app_dict['md5_hash'])
     if ipa_db.exists() and not rescan:
         context = get_context_from_db_entry(ipa_db)
+        if settings.VT_ENABLED:
+            vt = VirusTotal.VirusTotal()
+            context['virus_total'] = vt.get_result(
+                app_dict['app_path'],
+                app_dict['md5_hash'])
     else:
         logger.info('Static Library Analysis Started')
         app_dict['size'] = str(
@@ -161,12 +166,7 @@ def a_analysis(request, app_dict, rescan, api):
             bin_dict,
             all_files,
             rescan)
-    context['virus_total'] = None
-    if settings.VT_ENABLED:
-        vt = VirusTotal.VirusTotal()
-        context['virus_total'] = vt.get_result(
-            app_dict['app_path'],
-            app_dict['md5_hash'])
+        context['virus_total'] = None
     context['appsec'] = {}
     context['average_cvss'] = None
     context['template'] = 'static_analysis/ios_binary_analysis.html'

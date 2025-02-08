@@ -135,6 +135,11 @@ def static_analyzer_ios(request_data, checksum, api=False):
                 MD5=app_dict['md5_hash'])
             if ipa_db.exists() and not rescan:
                 context = get_context_from_db_entry(ipa_db)
+                if settings.VT_ENABLED:
+                    vt = VirusTotal.VirusTotal()
+                    context['virus_total'] = vt.get_result(
+                        app_dict['app_path'],
+                        app_dict['md5_hash'])
             else:
                 logger.info('iOS Binary (IPA) Analysis Started')
                 app_dict['size'] = str(
@@ -214,12 +219,7 @@ def static_analyzer_ios(request_data, checksum, api=False):
                     bin_dict,
                     all_files,
                     rescan)
-            context['virus_total'] = None
-            if settings.VT_ENABLED:
-                vt = VirusTotal.VirusTotal()
-                context['virus_total'] = vt.get_result(
-                    app_dict['app_path'],
-                    app_dict['md5_hash'])
+                context['virus_total'] = None
             context['appsec'] = get_ios_dashboard(context, True)
             context['average_cvss'] = get_avg_cvss(
                 context['binary_analysis'])
