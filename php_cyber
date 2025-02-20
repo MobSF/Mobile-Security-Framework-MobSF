@@ -1,0 +1,118 @@
+Basic Structure
+
+/email_scanner
+    /config
+        config.php
+    /src
+        EmailScanner.php
+        Scanner.php
+        Logger.php
+        Database.php
+    /public
+        index.php
+    /logs
+        scanner.log
+
+Configuration
+
+<?php
+return [
+    'email' => [
+        'hostname' => '{imap.example.com:993/imap/ssl}INBOX',
+        'username' => 'your_email@example.com',
+        'password' => 'your_password',
+    ],
+    'database' => [
+        'host' => 'localhost',
+        'dbname' => 'email_scanner',
+        'user' => 'db_user',
+        'password' => 'db_password',
+    ],
+    'scan_keywords' => ['spam', 'malware', 'virus'],
+];
+
+Database Connection
+
+<?php
+class Database {
+    private $pdo;
+
+    public function __construct($config) {
+        $this->pdo = new PDO("mysql:host={$config['host']};dbname={$config['dbname']}", $config['user'], $config['password']);
+    }
+
+    public function logEmail($subject, $body, $isSpam) {
+        $stmt = $this->pdo->prepare("INSERT INTO email_logs (subject, body, is_spam) VALUES (?, ?, ?)");
+        $stmt->execute([$subject, $body, $isSpam]);
+    }
+}
+
+Email Scanner 
+
+<?php
+class EmailScanner {
+    private $inbox;
+    private $db;
+    private $scanKeywords;
+
+    public function __construct($config) {
+        $this->inbox = imap_open($config['hostname'], $config['username'], $config['password']);
+        $this->db = new Database($config['database']);
+        $this->scanKeywords = $config['scan_keywords'];
+    }
+
+    public function scanEmails() {
+        $emails = imap_search($this->inbox, 'UNSEEN');
+        if ($emails) {
+            foreach ($emails as $emailNumber) {
+                $overview = imap_fetch_overview($this->inbox, $emailNumber, 0);
+                $message = imap_fetchbody($this->inbox, $emailNumber, 1);
+                $isSpam = $this->isSpam($message);
+                $this->db->logEmail($overview[0]->subject, $message, $isSpam);
+                imap_setflag_full($this->inbox, $emailNumber, "\\Seen");
+            }
+        }
+    }
+
+    private function isSpam($message) {
+        foreach ($this->scanKeywords as $keyword) {
+            if (stripos($message, $keyword) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function __destruct() {
+        imap_close($this->inbox);
+    }
+}
+
+Logger
+
+<?php
+class Logger {
+    private $logFile;
+
+    public function __construct($logFile) {
+        $this->logFile = $logFile;
+    }
+
+    public function log($message) {
+        file_put_contents($this->logFile, date('Y-m-d H:i:s') . " - " . $message . PHP_EOL, FILE_APPEND);
+    }
+}
+
+Entry Point
+
+<?php
+require '../config/config.php';
+require '../src/Database.php';
+require '../src/EmailScanner.php';
+require '../src/Logger.php';
+
+$config = require
+
+
+
+
