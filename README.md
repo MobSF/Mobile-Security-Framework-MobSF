@@ -4,7 +4,7 @@
 
 Mobile Security Framework (MobSF) is a security research platform for mobile applications in Android, iOS and Windows Mobile. MobSF can be used for a variety of use cases such as mobile application security, penetration testing, malware analysis, and privacy analysis. The Static Analyzer supports popular mobile app binaries like APK, IPA, APPX and source code. Meanwhile, the Dynamic Analyzer supports both Android and iOS applications and offers a platform for interactive instrumented testing, runtime data and network traffic analysis. MobSF seamlessly integrates with your DevSecOps or CI/CD pipeline, facilitated by REST APIs and CLI tools, enhancing your security workflow with ease.
 
-Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82e3a63c-4813-11e6-9430-6015d98aeaab.png) in India
+Made with in India" ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82e3a63c-4813-11e6-9430-6015d98aeaab.png)
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/opensecurity/mobile-security-framework-mobsf?style=social)](https://hub.docker.com/r/opensecurity/mobile-security-framework-mobsf/) [![python](https://img.shields.io/badge/python-3.10+-blue.svg?logo=python&labelColor=yellow)](https://www.python.org/downloads/)
 [![PyPI version](https://badge.fury.io/py/mobsf.svg)](https://badge.fury.io/py/mobsf)
@@ -70,11 +70,10 @@ docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:la
 
 ## Contribution, Feature Requests & Bugs
 
-* Read [CONTRIBUTING.md](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md) before opening bugs, feature requests and pull request.
+* "Read CONTRIBUTING.md before opening bugs, feature requests, and pull requests."
 * For Project updates and announcements, follow [@ajinabraham](https://twitter.com/ajinabraham) or [@OpenSecurity_IN](https://twitter.com/OpenSecurity_IN).
-* Github Issues are only for tracking bugs and feature requests. Do not post support or help queries there. We have a slack channel for that.
-
-### Static Analysis - Android
+* "Github Issues are only for tracking bugs and feature requests. Do not post support or help queries there. We have a slack channel for that." "GitHub" Issues are only for tracking bugs and feature requests. Do not post support or help queries there. We have a Slack channel for that."
+* ### Static Analysis - Android
 
 ![mobsf_android_static_analysis](https://user-images.githubusercontent.com/4301109/95506503-f9b6c980-097d-11eb-803a-f88321e1feb7.gif)
 
