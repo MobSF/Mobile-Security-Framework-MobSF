@@ -47,8 +47,9 @@ jobs:
     - name: Install macOS Dependencies
       if: startsWith(matrix.os, 'macOS')
       run: |
-        curl -L https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-2/wkhtmltox-0.12.6-2.macos-cocoa.pkg -O
-        installer -pkg wkhtmltox-0.12.6-2.macos-cocoa.pkg -target ~
+        export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-2/
+        export WKHTML_PKG=wkhtmltox-0.12.6-2.macos-cocoa.pkg
+        curl -L ${WKHTML_URL}${WKHTML_PKG} -O && sudo installer -pkg ${WKHTML_PKG} -target ~ && rm -rf ${WKHTML_PKG}
 
     - name: Install Windows Dependencies
       if: startsWith(matrix.os, 'windows')
