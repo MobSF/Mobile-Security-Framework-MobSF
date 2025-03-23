@@ -85,7 +85,7 @@ def open_firebase(checksum, url):
             logger.warning(invalid)
             return url, False
         purl = urlparse(url)
-        if not purl.netloc.endswith('firebaseio.com'):
+        if not purl.netloc.endswith('.firebaseio.com'):
             logger.warning(invalid)
             return url, False
         base_url = f'{purl.scheme}://{purl.netloc}/.json'
@@ -116,7 +116,7 @@ def firebase_db_check(checksum, code_an_dic):
     try:
         urls = list(set(code_an_dic['urls_list']))
         for url in urls:
-            if 'firebaseio.com' not in url:
+            if '.firebaseio.com' not in url:
                 continue
             returl, is_open = open_firebase(checksum, url)
             if is_open:
