@@ -47,7 +47,8 @@ jobs:
     - name: Install macOS Dependencies
       if: startsWith(matrix.os, 'macOS')
       run: |
-        brew install --cask wkhtmltopdf
+        curl -L https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-2/wkhtmltox-0.12.6-2.macos-cocoa.pkg -O
+        installer -pkg wkhtmltox-0.12.6-2.macos-cocoa.pkg -target ~
 
     - name: Install Windows Dependencies
       if: startsWith(matrix.os, 'windows')
