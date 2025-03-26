@@ -275,17 +275,9 @@ const get_lines = function() {
 
 function show_file(strPath) {
     $.ajax({
-        type: "POST",
-        url: "{% url "api_view_source" %}",
+        type: "GET",
+        url: "{% url "view_source" %}?json=1&md5={{ hash }}&type={{ source_type }}&file=" + strPath,
         dataType: 'json',
-        headers: {
-            "Authorization": "{{ api_key }}"
-        },
-        data: {
-            type: "{{ source_type }}",
-            hash: "{{ hash }}",
-            file: strPath
-        },
         success: function(strFileData) {
             var code_block = $("pre#fileoutput")
             code_block.text(strFileData.data);
