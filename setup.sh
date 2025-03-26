@@ -11,8 +11,8 @@ py_major=${python_version%%.*}
 py_minor=${python_version#*.}
 py_minor=${py_minor%%.*}
 
-if [[ "$py_major" -ne 3 || "$py_minor" -lt 10 || "$py_minor" -gt 12 ]]; then
-    echo "[ERROR] MobSF dependencies require Python 3.10 - 3.12. You have Python ${python_version}."
+if [[ "$py_major" -ne 3 || "$py_minor" -lt 10 ]]; then
+    echo "[ERROR] MobSF dependencies require Python 3.10. You have Python ${python_version}."
     exit 1
 fi
 echo "[INSTALL] Found Python ${python_version}"
