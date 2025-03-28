@@ -265,11 +265,16 @@ def valid_host(host):
         if not host.startswith(prefixs):
             host = f'http://{host}'
         parsed = urlparse(host)
+        scheme = parsed.scheme
         domain = parsed.netloc
         hostname = parsed.hostname
         path = parsed.path
         query = parsed.query
         params = parsed.params
+
+        # Allow only http and https schemes
+        if scheme not in ('http', 'https'):
+            return False
 
         # Check for hostname
         if not hostname:
