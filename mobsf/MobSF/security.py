@@ -256,6 +256,7 @@ def sanitize_for_logging(filename: str, max_length: int = 255) -> str:
 
 def valid_host(host):
     """Check if host is valid, run SSRF checks."""
+    default_timeout = socket.getdefaulttimeout()
     try:
         if len(host) > 2083:  # Standard URL length limit
             return False
@@ -283,7 +284,8 @@ def valid_host(host):
             return False
 
         # Resolve dns to get ipv4 or ipv6 address
-        ip_addresses = socket.getaddrinfo(hostname, None, timeout=5)
+        socket.setdefaulttimeout(5)  # 5 second timeout
+        ip_addresses = socket.getaddrinfo(hostname, None)
         for ip in ip_addresses:
             ip_obj = ipaddress.ip_address(ip[4][0])
             if (ip_obj.is_private
@@ -311,3 +313,6 @@ def valid_host(host):
         return True
     except Exception:
         return False
+    finally:
+        # Restore default socket timeout
+        socket.setdefaulttimeout(default_timeout)
