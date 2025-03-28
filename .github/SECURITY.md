@@ -4,7 +4,7 @@ Keeping MobSF updated to the latest version is essential for ensuring security a
 
 ## Reporting a Vulnerability
 
-Please report all security issues [here](https://github.com/MobSF/Mobile-Security-Framework-MobSF/issues) or email ajin25(gmail). We believe in coordinated and responsible disclosure.
+Please report all security issues [here](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/new) or email ajin25(gmail). We believe in coordinated and responsible disclosure.
 
 ## Past Security Issues
 
