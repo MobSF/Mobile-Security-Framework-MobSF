@@ -271,6 +271,7 @@ def valid_host(host):
         path = parsed.path
         query = parsed.query
         params = parsed.params
+        port = parsed.port
 
         # Allow only http and https schemes
         if scheme not in ('http', 'https'):
@@ -278,6 +279,10 @@ def valid_host(host):
 
         # Check for hostname
         if not hostname:
+            return False
+
+        # Validate port - only allow 80 and 443
+        if port and port not in (80, 443):
             return False
 
         # Check for URL credentials
