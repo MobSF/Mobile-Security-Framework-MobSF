@@ -3,10 +3,13 @@ import subprocess
 import functools
 import logging
 import re
+import socket
+import ipaddress
 import sys
 from shutil import which
 from pathlib import Path
 from platform import system
+from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor
 
 from mobsf.MobSF.utils import (
@@ -249,3 +252,77 @@ def sanitize_for_logging(filename: str, max_length: int = 255) -> str:
 
     # Truncate filename to the maximum allowed length
     return filename[:max_length]
+
+
+def valid_host(host):
+    """Check if host is valid, run SSRF checks."""
+    default_timeout = socket.getdefaulttimeout()
+    try:
+        if len(host) > 2083:  # Standard URL length limit
+            return False
+
+        prefixs = ('http://', 'https://')
+        if not host.startswith(prefixs):
+            host = f'http://{host}'
+        parsed = urlparse(host)
+        scheme = parsed.scheme
+        domain = parsed.netloc
+        hostname = parsed.hostname
+        path = parsed.path
+        query = parsed.query
+        params = parsed.params
+        port = parsed.port
+
+        # Allow only http and https schemes
+        if scheme not in ('http', 'https'):
+            return False
+
+        # Check for hostname
+        if not hostname:
+            return False
+
+        # Validate port - only allow 80 and 443
+        if port and port not in (80, 443):
+            return False
+
+        # Check for URL credentials
+        if '@' in domain:
+            return False
+
+        # Detect parser escapes, only host is allowed
+        if len(path) > 0 or len(query) > 0 or len(params) > 0:
+            return False
+
+        # Resolve dns to get ipv4 or ipv6 address
+        socket.setdefaulttimeout(5)  # 5 second timeout
+        ip_addresses = socket.getaddrinfo(hostname, None)
+        for ip in ip_addresses:
+            ip_obj = ipaddress.ip_address(ip[4][0])
+            if (ip_obj.is_private
+                or ip_obj.is_loopback
+                or ip_obj.is_link_local
+                or ip_obj.is_reserved
+                or ip_obj.is_multicast
+                    or ip_obj.is_unspecified):
+                return False
+
+            # Additional checks for specific IPv4 ranges
+            if isinstance(ip_obj, ipaddress.IPv4Address):
+                problematic_networks = [
+                    '127.0.0.0/8',
+                    '169.254.0.0/16',
+                    '172.16.0.0/12',
+                    '192.168.0.0/16',
+                    '10.0.0.0/8',
+                ]
+                for network in problematic_networks:
+                    if ip_obj in ipaddress.IPv4Network(network):
+                        return False
+
+        # If all checks pass, return True
+        return True
+    except Exception:
+        return False
+    finally:
+        # Restore default socket timeout
+        socket.setdefaulttimeout(default_timeout)
