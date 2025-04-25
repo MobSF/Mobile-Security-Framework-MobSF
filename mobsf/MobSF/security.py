@@ -148,8 +148,8 @@ def get_executable_hashes():
 
 def store_exec_hashes_at_first_run():
     """Store executable hashes at first run."""
+    global EXECUTABLE_HASH_MAP
     try:
-        global EXECUTABLE_HASH_MAP
         hashes, signature = get_executable_hashes()
         hashes['signature'] = signature
         EXECUTABLE_HASH_MAP = hashes
@@ -160,7 +160,6 @@ def store_exec_hashes_at_first_run():
 
 
 def subprocess_hook(oldfunc, *args, **kwargs):
-    global EXECUTABLE_HASH_MAP
     if isinstance(args[0], str):
         # arg is a string
         agmtz = args[0].split()
