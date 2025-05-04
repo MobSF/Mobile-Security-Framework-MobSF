@@ -120,6 +120,8 @@ def unzip(checksum, app_path, ext_path):
     try:
         with zipfile.ZipFile(app_path, 'r') as zipptr:
             files = zipptr.namelist()
+            total_size = 0
+            stop_fallback_extraction = False
             for fileinfo in zipptr.infolist():
                 ext_path = original_ext_path
 
@@ -145,7 +147,25 @@ def unzip(checksum, app_path, ext_path):
                     msg = ('Zip slip detected. skipped extracting'
                            f' {sanitize_for_logging(file_path)}')
                     logger.error(msg)
+                    stop_fallback_extraction = True
                     continue
+
+                # Check uncompressed size
+                if not fileinfo.is_dir():
+                    total_size += fileinfo.file_size
+                    if fileinfo.file_size > settings.ZIP_MAX_UNCOMPRESSED_FILE_SIZE:
+                        size_mb = fileinfo.file_size / (1024 * 1024)
+                        msg = (f'File too large ({size_mb:.2f} MB). Skipping '
+                               f'{sanitize_for_logging(file_path)}')
+                        logger.warning(msg)
+                    if total_size > settings.ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE:
+                        stop_fallback_extraction = True
+                        total_size_mb = total_size / (1024 * 1024)
+                        msg = ('Total uncompressed size '
+                               f'({total_size_mb:.2f} MB) exceeds limit. '
+                               'Aborting extraction.')
+                        logger.error(msg)
+                        raise Exception(msg)
 
                 # Fix permissions
                 if fileinfo.is_dir():
@@ -167,6 +187,11 @@ def unzip(checksum, app_path, ext_path):
         msg = f'Unzipping Error - {str(exp)}'
         logger.error(msg)
         append_scan_status(checksum, msg, repr(exp))
+        # Do not fallback to OS unzip
+        # if the total uncompressed file size is too large
+        # or if zip slip is detected
+        if stop_fallback_extraction:
+            return files
         # Fallback to OS unzip
         ofiles = os_unzip(checksum, app_path, ext_path)
         if not files:
