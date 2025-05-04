@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mobsf"
-version = "4.3.2"
+version = "4.3.3"
 description = "Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis."
 keywords = ["mobsf", "mobile security framework", "mobile security", "security tool", "static analysis", "dynamic analysis", "malware analysis"]
 authors = ["Ajin Abraham <ajin@opensecurity.in>"]
@@ -62,6 +62,7 @@ django-q2 = "^1.7.4"
 defusedxml = "^0.7.1"
 xmlsec = "1.3.14" # Remove this after xmlsec issue is resolved: https://github.com/xmlsec/python-xmlsec/issues/345
 lxml = "5.3.1" # Same as above
+bleach = "^6.2.0"
 
 [build-system]
 requires = ["poetry-core"]
