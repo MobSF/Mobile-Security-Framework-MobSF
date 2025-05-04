@@ -10,6 +10,7 @@ Please report all security issues [here](https://github.com/MobSF/Mobile-Securit
 
 | Vulnerability | Affected Versions |
 | ------- | ------------------ |
+| [Stored Cross Site Scripting (XSS) via malicious SVG app icon](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-mwfg-948f-2cc5) | `<=4.3.2` |
 | [SSRF on assetlinks_check with DNS Rebinding](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-fcfq-m8p6-gw56) | `<=4.3.1` |
 | [Partial Denial of Service due to strict regex check in iOS report view URL](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-jrm8-xgf3-fwqr) | `<=4.3.0` |
 | [Local Privilege escalation due to leaked REST API key in web UI](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-79f6-p65j-3m2m) | `<=4.3.0` |
