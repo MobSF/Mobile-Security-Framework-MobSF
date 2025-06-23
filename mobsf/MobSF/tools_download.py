@@ -70,15 +70,14 @@ def download_file(url, file_path):
     if system_proxies:
         proxies = system_proxies
         verify = True  # Default to verify for system proxies
-        logger.info('Using system proxies: %s (SSL verify: %s)', proxies, verify)
+        logger.info('Using system proxies (SSL verify: %s)', verify)
     else:
         # Check if MobSF upstream proxy is explicitly configured
         upstream_proxy_enabled = bool(os.getenv('MOBSF_UPSTREAM_PROXY_ENABLED', ''))
 
         if upstream_proxy_enabled:
             proxies, verify = standalone_upstream_proxy()
-            logger.info('Using MobSF upstream proxies: %s (SSL verify: %s)',
-                        proxies, verify)
+            logger.info('Using MobSF upstream proxies (SSL verify: %s)', verify)
         else:
             # No proxy configuration - use direct connection
             proxies = {}
