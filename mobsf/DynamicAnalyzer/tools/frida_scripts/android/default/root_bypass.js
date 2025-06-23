@@ -205,39 +205,49 @@ Java.performNow(function () {
 
     // Native Root Check Bypass
 
-    Interceptor.attach(Module.findExportByName("libc.so", "fopen"), {
-        onEnter: function (args) {
-            var path = Memory.readCString(args[0]);
-            path = path.split("/");
-            var executable = path[path.length - 1];
-            var shouldFakeReturn = (RootBinaries.indexOf(executable) > -1)
-            if (shouldFakeReturn) {
-                Memory.writeUtf8String(args[0], "/notexists");
-                send("[RootDetection Bypass] native fopen");
-            }
-        },
-        onLeave: function (retval) {
+    try {
+        const libc = Process.getModuleByName("libc.so");
+        
+        Interceptor.attach(libc.getExportByName("fopen"), {
+            onEnter: function (args) {
+                try{
+                var path = Memory.readCString(args[0]);
+                path = path.split("/");
+                var executable = path[path.length - 1];
+                var shouldFakeReturn = (RootBinaries.indexOf(executable) > -1)
+                if (shouldFakeReturn) {
+                    args[0].writeUtf8String("/notexists");
+                    send("[RootDetection Bypass] native fopen");
+                }
+                } catch(e){}
+            },
+            onLeave: function (retval) {
 
-        }
-    });
-    Interceptor.attach(Module.findExportByName("libc.so", "system"), {
-        onEnter: function (args) {
-            var cmd = Memory.readCString(args[0]);
-            send("[RootDetection Bypass] SYSTEM CMD: " + cmd);
-            if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id") {
-                send("[RootDetection Bypass] native system: " + cmd);
-                Memory.writeUtf8String(args[0], "grep");
             }
-            if (cmd == "su") {
-                send("[RootDetection Bypass] native system: " + cmd);
-                Memory.writeUtf8String(args[0], "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled");
+        });
+        
+        Interceptor.attach(libc.getExportByName("system"), {
+            onEnter: function (args) {
+                try{
+                var cmd = Memory.readCString(args[0]);
+                send("[RootDetection Bypass] SYSTEM CMD: " + cmd);
+                if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id") {
+                    send("[RootDetection Bypass] native system: " + cmd);
+                    args[0].writeUtf8String("grep");
+                }
+                if (cmd == "su") {
+                    send("[RootDetection Bypass] native system: " + cmd);
+                    args[0].writeUtf8String("justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled");
+                }
+                } catch(e){}
+            },
+            onLeave: function (retval) {
+
             }
-        },
-        onLeave: function (retval) {
-
-        }
-
-    });
+        });
+    } catch (err) {
+        send('[RootDetection Bypass] Error hooking libc.so: ' + err);
+    }
     /*
 
     TO IMPLEMENT:

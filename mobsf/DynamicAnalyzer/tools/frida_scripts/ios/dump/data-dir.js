@@ -41,13 +41,13 @@ function getDataProtectionKeysForAllPaths() {
     var paths = listHomeDirectoryContents();
 
     var isDir = Memory.alloc(Process.pointerSize);
-    Memory.writePointer(isDir, NULL);
+    isDir.writePointer(NULL);
 
     for (var i = 0; i < paths.length; i++) {
 
         fileManager.fileExistsAtPath_isDirectory_(paths[i], isDir);
 
-        if (Memory.readPointer(isDir) == 0) {
+        if (isDir.readPointer().equals(0)) {
             dict.push({
                 path: paths[i],
                 fileProtectionKey: getDataProtectionKeyForPath(paths[i])

@@ -7,32 +7,31 @@
 //Twitter: https://twitter.com/xploresec
 //GitHub: https://github.com/interference-security
 // Modified for MobSF
-function NSlog(){
-	send('Tracing NSLog Calls');
-	Interceptor.attach(Module.findExportByName("Foundation", "NSLog"), {
+// Modified to support Frida 17.0.0+
+// NSLog Dumper
+// Author : @apps3c
+// Capture NSLog and NSLogv traces
+
+try {
+	const foundation = Process.getModuleByName("Foundation");
+	
+	Interceptor.attach(foundation.getExportByName("NSLog"), {
 		onEnter: function(args) {
 			send(JSON.stringify({'[MBSFDUMP] nslog': 'NSLog -> ' + ObjC.Object(ptr(args[0])).toString() + ', ' + Memory.readCString(ptr(args[1]))}));
+		},
+		onLeave: function(retval) {
 		}
 	});
-}
 
-function NSLogv(){
-	//As per the Apple documentation NSLog calls NSLogv in the background but for some reason it is not working. Still working on a fix.
-	Interceptor.attach(Module.findExportByName("Foundation", "NSLogv"), {
+	Interceptor.attach(foundation.getExportByName("NSLogv"), {
 		onEnter: function(args) {
 			send(JSON.stringify({'[MBSFDUMP] nslog': 'NSLogv -> ' + ObjC.Object(ptr(args[0])).toString()+ ', ' + Memory.readCString(ptr(args[1]))}));
+		},
+		onLeave: function(retval) {
 		}
 	});
+	
+	send("NSLog dumper loaded successfully");
+} catch (e) {
+	send("Error loading NSLog dumper: " + e);
 }
-
-try {
-	setTimeout(() => {
-		NSlog();
-	}, 1000);
-
-} catch(err) {}
-try {
-	setTimeout(() => {
-		NSLogv();
-	}, 1000);
-} catch(err) {}
