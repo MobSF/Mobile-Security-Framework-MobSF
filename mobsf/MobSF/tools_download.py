@@ -4,8 +4,11 @@ import shutil
 import tempfile
 import zipfile
 import platform
+import os
+import ssl
 from pathlib import Path
 from urllib.request import (
+    HTTPSHandler,
     ProxyHandler,
     Request,
     build_opener,
@@ -19,11 +22,77 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def standalone_upstream_proxy():
+    """Set upstream Proxy for urllib - standalone."""
+    upstream_proxy_enabled = bool(os.getenv('MOBSF_UPSTREAM_PROXY_ENABLED', ''))
+
+    if upstream_proxy_enabled:
+        upstream_proxy_username = os.getenv('MOBSF_UPSTREAM_PROXY_USERNAME', '')
+        upstream_proxy_password = os.getenv('MOBSF_UPSTREAM_PROXY_PASSWORD', '')
+        upstream_proxy_type = os.getenv('MOBSF_UPSTREAM_PROXY_TYPE', 'http')
+        upstream_proxy_ip = os.getenv('MOBSF_UPSTREAM_PROXY_IP', '127.0.0.1')
+        upstream_proxy_port = int(os.getenv('MOBSF_UPSTREAM_PROXY_PORT', '3128'))
+
+        # Handle Docker proxy IP translation
+        if os.getenv('MOBSF_PLATFORM') == 'docker':
+            if (upstream_proxy_ip and upstream_proxy_ip.strip() in
+                    ('127.0.0.1', 'localhost')):
+                upstream_proxy_ip = 'host.docker.internal'
+
+        if not upstream_proxy_username:
+            proxy_port = str(upstream_proxy_port)
+            proxy_host = f'{upstream_proxy_type}://{upstream_proxy_ip}:{proxy_port}'
+        else:
+            proxy_port = str(upstream_proxy_port)
+            proxy_host = (f'{upstream_proxy_type}://{upstream_proxy_username}:'
+                          f'{upstream_proxy_password}@{upstream_proxy_ip}:'
+                          f'{proxy_port}')
+
+        # For urllib, we need to set both http and https proxies
+        proxies = {
+            'http': proxy_host,
+            'https': proxy_host,
+        }
+    else:
+        proxies = {}
+
+    upstream_proxy_ssl_verify = os.getenv('MOBSF_UPSTREAM_PROXY_SSL_VERIFY', '1')
+    verify = upstream_proxy_ssl_verify in ('1', '"1"')
+    return proxies, verify
+
+
 def download_file(url, file_path):
     req = Request(url)
+
+    # Check for system proxies first (http_proxy, https_proxy env vars)
     system_proxies = getproxies()
-    proxy_handler = ProxyHandler(system_proxies)
-    opener = build_opener(proxy_handler)
+
+    if system_proxies:
+        proxies = system_proxies
+        verify = True  # Default to verify for system proxies
+        logger.info('Using system proxies: %s (SSL verify: %s)', proxies, verify)
+    else:
+        # Check if MobSF upstream proxy is explicitly configured
+        upstream_proxy_enabled = bool(os.getenv('MOBSF_UPSTREAM_PROXY_ENABLED', ''))
+
+        if upstream_proxy_enabled:
+            proxies, verify = standalone_upstream_proxy()
+            logger.info('Using MobSF upstream proxies: %s (SSL verify: %s)',
+                        proxies, verify)
+        else:
+            # No proxy configuration - use direct connection
+            proxies = {}
+            verify = True
+
+    proxy_handler = ProxyHandler(proxies)
+
+    if verify:
+        ssl_context = ssl.create_default_context()
+    else:
+        ssl_context = ssl._create_unverified_context()
+
+    https_handler = HTTPSHandler(context=ssl_context)
+    opener = build_opener(proxy_handler, https_handler)
 
     with opener.open(req) as response:
         if response.status == 200:
