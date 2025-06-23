@@ -20,7 +20,7 @@ try {
                 const module = Process.getModuleByName(moduleName);
                 const hookAddress = module.base.add(nativeFuncOffset);
 
-                send(`[+] Hooking native method at ${hookAddress} (${moduleName}+0x${nativeFuncOffset.toString(16)})`);
+                send("[+] Hooking native method at " + hookAddress + " (" + moduleName + "+0x" + nativeFuncOffset.toString(16) + ")");
 
                 Interceptor.attach(hookAddress, {
                     onEnter(args) {
