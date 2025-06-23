@@ -28,7 +28,7 @@ try {
                             send("[-] Hook invoked");
                             send(JSON.stringify({
                                 a1: args[1].toInt32(),
-                                a2: args[2].readPointer().readUtf8String(),
+                                a2: args[2] && args[2].readPointer() ? args[2].readPointer().readUtf8String() : null,
                                 a3: Boolean(args[3].toInt32())
                             }, null, 2));
                         } catch (err) {
