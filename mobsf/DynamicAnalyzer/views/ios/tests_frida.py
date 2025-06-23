@@ -103,7 +103,7 @@ def ios_instrument(request, api=False):
             data['message'] = frida_obj.ps()
         elif action == 'get':
             # Get injected Frida script.
-            data['message'] = frida_obj.get_script()
+            data['message'] = frida_obj.get_script(nolog=True)
         if action in ('spawn', 'session'):
             if pid and pid.isdigit():
                 # Attach to a different pid/bundle id

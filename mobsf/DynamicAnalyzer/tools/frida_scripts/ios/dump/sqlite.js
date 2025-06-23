@@ -1,13 +1,16 @@
 send("Tracing SQLite Queries");
 
 function hookSql(func, position, pretext) {
-    var to_hook = Module.findExportByName('libsqlite3.dylib', func);
-    Interceptor.attach(to_hook, {
-        onEnter: function(args) {
-            send(JSON.stringify({'[MBSFDUMP] sql': pretext + args[position].readCString()}));
-        },
-        onLeave: function(retval) {}
-    });
+    try {
+        const libsqlite3 = Process.getModuleByName('libsqlite3.dylib');
+        var to_hook = libsqlite3.getExportByName(func);
+        Interceptor.attach(to_hook, {
+            onEnter: function(args) {
+                send(JSON.stringify({'[MBSFDUMP] sql': pretext + args[position].readCString()}));
+            },
+            onLeave: function(retval) {}
+        });
+    } catch (e) {}
 }
 try {
     hookSql('sqlite3_open', 0, 'OPEN: ');

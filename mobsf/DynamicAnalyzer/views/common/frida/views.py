@@ -1,7 +1,5 @@
 """Shared Frida Views."""
 import logging
-import glob
-import os
 from pathlib import Path
 
 from django.conf import settings
@@ -12,7 +10,6 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
     send_response,
 )
 from mobsf.MobSF.utils import (
-    is_file_exists,
     is_md5,
     is_safe_path,
     print_n_send_error_response,
@@ -36,11 +33,8 @@ def list_frida_scripts(request, api=False):
     device = request.POST.get('device', 'android')
     if device != 'android':
         device = 'ios'
-    others = os.path.join(settings.TOOLS_DIR,
-                          'frida_scripts',
-                          device,
-                          'others')
-    files = glob.glob(others + '**/*.js', recursive=True)
+    others = Path(settings.TOOLS_DIR) / 'frida_scripts' / device / 'others'
+    files = list(others.rglob('*.js'))
     for item in files:
         scripts.append(Path(item).stem)
     scripts.sort()
@@ -53,7 +47,7 @@ def list_frida_scripts(request, api=False):
 
 @login_required
 @require_http_methods(['POST'])
-def get_script(request, api=False):
+def get_script_content(request, api=False):
     """Get frida scripts from others."""
     data = {'status': 'ok', 'content': ''}
     try:
@@ -61,20 +55,17 @@ def get_script(request, api=False):
         if device != 'android':
             device = 'ios'
         scripts = request.POST.getlist('scripts[]')
-        others = os.path.join(settings.TOOLS_DIR,
-                              'frida_scripts',
-                              device,
-                              'others')
+        others = Path(settings.TOOLS_DIR) / 'frida_scripts' / device / 'others'
         script_ct = []
         for script in scripts:
-            script_file = os.path.join(others, script + '.js')
-            if not is_safe_path(others, script_file):
+            script_file = others / f'{script}.js'
+            if not is_safe_path(str(others), str(script_file)):
                 data = {
                     'status': 'failed',
                     'message': 'Path traversal detected.'}
                 return send_response(data, api)
-            if is_file_exists(script_file):
-                script_ct.append(Path(script_file).read_text())
+            if script_file.exists():
+                script_ct.append(script_file.read_text())
         data['content'] = '\n'.join(script_ct)
     except Exception:
         pass
@@ -98,17 +89,14 @@ def frida_logs(request, api=False):
             data['message'] = 'Invalid hash'
             return send_response(data, api)
         if stream:
-            apk_dir = os.path.join(settings.UPLD_DIR, apphash + '/')
-            frida_logs = os.path.join(apk_dir, 'mobsf_frida_out.txt')
-            if not is_file_exists(frida_logs):
+            apk_dir = Path(settings.UPLD_DIR) / apphash
+            frida_logs = apk_dir / 'mobsf_frida_out.txt'
+            if not frida_logs.exists():
                 return send_response(data, api)
-            with open(frida_logs, 'r',
-                      encoding='utf8',
-                      errors='ignore') as flip:
-                data = {
-                    'status': 'ok',
-                    'message': flip.read(),
-                }
+            data = {
+                'status': 'ok',
+                'message': frida_logs.read_text(encoding='utf8', errors='ignore'),
+            }
             return send_response(data, api)
         logger.info('Frida Logs live streaming')
         template = 'dynamic_analysis/android/frida_logs.html'

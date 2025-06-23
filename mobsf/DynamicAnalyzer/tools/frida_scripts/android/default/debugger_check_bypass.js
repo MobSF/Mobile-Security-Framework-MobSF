@@ -11,13 +11,16 @@ Java.perform(function () {
  // Following are based on: https://github.com/apkunpacker/FridaScripts
 try {
     /* Bypass Frida Detection Based On Port Number */
-    Interceptor.attach(Module.findExportByName("libc.so", "connect"), {
+    const libc = Process.getModuleByName("libc.so");
+    Interceptor.attach(libc.getExportByName("connect"), {
         onEnter: function(args) {
-            var memory = Memory.readByteArray(args[1], 64);
-            var b = new Uint8Array(memory);
-            if (b[2] == 0x69 && b[3] == 0xa2 && b[4] == 0x7f && b[5] == 0x00 && b[6] == 0x00 && b[7] == 0x01) {
-                this.frida_detection = true;
-            }
+            try{
+                var memory = Memory.readByteArray(args[1], 64);
+                var b = new Uint8Array(memory);
+                if (b[2] == 0x69 && b[3] == 0xa2 && b[4] == 0x7f && b[5] == 0x00 && b[6] == 0x00 && b[7] == 0x01) {
+                    this.frida_detection = true;
+                }
+            } catch(e){}
         },
         onLeave: function(retval) {
             if (this.frida_detection) {
@@ -28,30 +31,31 @@ try {
     });
 } catch(e){}
 try {
-    Interceptor.attach(Module.findExportByName(null, "connect"), {
+    Interceptor.attach(Module.getGlobalExportByName("connect"), {
         onEnter: function(args) {
-            var family = Memory.readU16(args[1]);
+            var family = args[1].readU16();
             if (family !== 2) {
                 return
             }
-            var port = Memory.readU16(args[1].add(2));
+            var port = args[1].add(2).readU16();
             port = ((port & 0xff) << 8) | (port >> 8);
             if (port === 27042) {
                 send('[Debugger Check] Frida Port detection bypassed');
-                Memory.writeU16(args[1].add(2), 0x0101);
+                args[1].add(2).writeU16(0x0101);
             }
         }
     });
 } catch(e){}
 try {
     /* Bypass TracerPid Detection Based On Pid Status */
-    var fgetsPtr = Module.findExportByName("libc.so", "fgets");
+    const libc = Process.getModuleByName("libc.so");
+    var fgetsPtr = libc.getExportByName("fgets");
     var fgets = new NativeFunction(fgetsPtr, 'pointer', ['pointer', 'int', 'pointer']);
     Interceptor.replace(fgetsPtr, new NativeCallback(function(buffer, size, fp) {
         var retval = fgets(buffer, size, fp);
-        var bufstr = Memory.readUtf8String(buffer);
+        var bufstr = buffer.readUtf8String();
         if (bufstr.indexOf("TracerPid:") > -1) {
-            Memory.writeUtf8String(buffer, "TracerPid:\t0");
+            buffer.writeUtf8String("TracerPid:\t0");
             send("[Debugger Check] TracerPID check bypassed");
         }
         return retval;
@@ -60,7 +64,7 @@ try {
 
 try {
     /* Bypass Ptrace Checks */
-    Interceptor.attach(Module.findExportByName(null, "ptrace"), {
+    Interceptor.attach(Module.getGlobalExportByName("ptrace"), {
         onEnter: function(args) {},
         onLeave: function(retval) {
             send("[Debugger Check] Ptrace check bypassed");
@@ -71,7 +75,7 @@ try {
 
 try {
     /* Watch Child Process Forking */
-    var fork = Module.findExportByName(null, "fork")
+    var fork = Module.getGlobalExportByName("fork")
     Interceptor.attach(fork, {
         onEnter: function(args) {},
         onLeave: function(retval) {
