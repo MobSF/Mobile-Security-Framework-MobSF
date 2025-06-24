@@ -8,29 +8,14 @@
 <link href="{% static 'adminlte/plugins/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'landing/css/recent.css' %}">
 
-<style>
-#app_icon {
-    width: 64px;
-    height: 64px;
-}
-.selected {
-    background-color: lightgreen !important;
-}
-
-.selectable_table tr:hover {
-    background-color: lightgreen !important;
-}
-
-.fa.disabled,
-.fa[disabled],
-.disabled > .fa,
-[disabled] > .fa {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-</style>
 {% endblock %}
+
 {% block content %}
+
+<script>
+  const uploadedApps = {};
+</script>
+
 <div class="content-wrapper">
   <div class="content-header">
   </div>
@@ -60,7 +45,16 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {% for e in entries %}
+                      {% for e in entries %}
+
+                      <script>
+                        function addUploadedApp(hash, data){
+                          uploadedApps[hash] = data;
+                        }
+                      
+                        addUploadedApp(`app_{{e.MD5}}`,{ appHash: `{{ e.MD5 }}`, appTimestamp: `{{ e.TIMESTAMP|date:'c' }}`, appName: `{{ e.USER_APP_NAME }}`, appVersion: `{{ e.USER_APP_VERSION }}`, appReleaseVersion: `{{ e.RELEASE }}`, appDivision: `{{ e.DIVISION }}`, appEnvironment: `{{ e.ENVIRONMENT}}`, appCountry: `{{ e.COUNTRY|default_if_none:""}}`, appDataPrivacyClassification: `{{ e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}`, appDataPrivacyAttributes: `{{ e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}`, appEmail: `{{ e.EMAIL }}` });
+                      
+                      </script>
                         <tr>
                             <td style="word-wrap: break-word; max-width: 200px;">
                                 <div>{{ e.MD5 }}</div>
@@ -118,32 +112,7 @@
                                     <div id="dataPrivacyClassification{{e.MD5}}">{{e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}</div>
                                     <div id="dataPrivacyAttributes{{e.MD5}}">{{e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}</div>
                                     <div id="email{{e.MD5}}">{{e.EMAIL}}</div>
-                                </div>
-                                <div id="editFields{{e.MD5}}" class="editFields" style="display:none">
-                                    <div><input type="text" id="userAppNameInput{{e.MD5}}" value="{{e.USER_APP_NAME}}" title="User supplied app name"/></div>
-                                    <div><input type="text" id="userAppVersionInput{{e.MD5}}" value="{{e.USER_APP_VERSION}}" title="User supplied app version"/></div>
-                                    <div><select id="divisionInput{{e.MD5}}" data="{{e.DIVISION}}" title="Division"></select></div>
-                                    <div>
-                                        <select id="environmentInput{{e.MD5}}" data="{{e.ENVIRONMENT}}" title="Environment">
-                                            <option>Production</option>
-                                            <option>Preproduction</option>
-                                            <option>Decommissioned</option>
-                                        </select>
-                                    </div>                                    
-                                    <div><input type="text" id="countryInput{{e.MD5}}" value="{{e.COUNTRY|default_if_none:''}}" title="Countries"/></div>                                    
-                                    <div>
-                                        <select id="dataPrivacyClassificationInput{{e.MD5}}" data="{{e.DATA_PRIVACY_CLASSIFICATION|default_if_none:''}}" title="Data privacy classification">
-                                            <option>Highly Restricted</option>
-                                            <option>Restricted</option>
-                                            <option>Internal Use Only</option>
-                                            <option>Public</option>
-                                            <option>Does Not Apply</option>
-                                        </select>
-                                    </div>                                    
-                                    <div><input type="text" id="dataPrivacyAttributesInput{{e.MD5}}" value="{{e.DATA_PRIVACY_ATTRIBUTES|default_if_none:''}}" title="Data privacy attributes"/></div>
-                                    <div><input type="text" id="emailInput{{e.MD5}}" value="{{e.EMAIL}}" /></div>
-                                    <div><input type="checkbox" id="releaseInput{{e.MD5}}" {% if e.RELEASE %}checked{% endif %}/><label for="releaseInput{{e.MD5}}"> Release Version</label></div>
-                                </div>                                
+                                </div>                           
                             </td>                               
                             {% endif %}
                             <td>
@@ -165,10 +134,7 @@
                                     {% endif %}
                                 </p>
                                 <p>
-                                    {% if e.COMPLETE and is_admin %}
-                                        <a class="btn btn-outline-primary btn-sm" id="adminEdit{{e.MD5}}" onclick="admin_edit('{{e.MD5}}')" href="javascript:void(0);"><i class="fas fa-pen" title="Edit Scan"></i></a>
-                                        <a class="btn btn-outline-primary btn-sm" id="adminSave{{e.MD5}}" onclick="admin_save('{{e.MD5}}')" href="javascript:void(0);" style="display:none"><i class="fas fa-save" title="Save Changes"></i></a>
-                                    {% endif %}
+                                    <a class="btn btn-outline-primary btn-sm" id="adminEdit{{e.MD5}}" data-name="{{e.MD5}}" onclick="admin_edit_modal('{{e.MD5}}')" href="javascript:void(0);"><i class="fas fa-pen" title="Edit Scan"></i></a>
                                     <a class="btn btn-outline-primary btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="javascript:void(0);"><i class="fas fa-trash" title="Delete Scan"></i></a>
                                     {% if e.COMPLETE %}                                        
                                         <a class="btn btn-outline-primary btn-sm" href="../../../pdf/{{ e.MD5 }}/"><i class="fas fa-file-pdf" title="PDF Report"></i></a>                                                                                                                  
@@ -248,12 +214,204 @@
        </div>
      </div>
     </div>
+</div
+
+<!--  Edit Scan Modal -->
+<div class="modal" id="edit_scan" tabindex="-1" role="dialog" data-backdrop="static">
+  <div class="modal-dialog modal-container">
+    <div class="modal-content">
+      
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Recent Scan</h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="close_edit_scan_modal()">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+          <div class="inner cover">
+              
+              <h5 class="box-title">
+                  <b>APP NAME:</b> <span id="user-app-name-header"></span><br />
+                  <b>HASH:</b> <span id="md5-header"></span><br />
+                  <b>DATE:</b> <span id="timestamp-header"></span><br />
+              </h5>         
+
+              <form id="edit_scan_form" novalidate enctype="multipart/form-data" method="post">
+                {% csrf_token %}
+
+                <div class="row"> <!-- first row -->
+
+                  <!-- Application Name -->
+                  <div class="col-md-5">
+                    <label for="appname">Application Name
+                      <i class="fas fa-info-circle fa-lg"
+                        title="The name of the mobile application as it appears (or will appear) in the applicable app store.">
+                      </i>
+                    </label>
+                    <input type="text" class="form-control" id="appname" placeholder="Application Name" required>
+                    <div id="err_name" class="hidden"><span class="error">Application Name Required!</span>
+                    </div>
+
+                    <!-- Hash -->
+                    <input type="hidden" id="md5-hash" value="" />
+
+                  </div>
+
+                  <!-- Version -->
+                  <div class="col-md-2">
+                    <label for="version">Version
+                      <i class="fas fa-info-circle fa-lg" title="The version of the mobile application.">
+                      </i>
+                    </label>
+                    <input type="text" class="form-control" style="width:90%" id="version" placeholder="Version"
+                      value="{{ e.USER_APP_VERSION }}" required>
+                    <div id="err_version" class="hidden"><span class="error">Version Required!</span>
+                    </div>
+                  </div>
+
+                  {% if is_admin %}
+                  <!-- Release -->
+                  <div class="col-md-4">
+                    <div style="margin-top:36px;">
+                      <input type="checkbox" id="release">
+                      <label for="release" style="font-weight:500;">Release Version
+                        <i class="fas fa-info-circle fa-lg" title="Select to mark mobile app as a release version.">
+                        </i>
+                      </label>
+                    </div>
+                  </div>
+                  {% endif %}
+
+                </div> <!-- end of first row -->
+
+                <hr class="edit_scan-form-hr">
+
+                <div class="row"> <!-- second row -->
+
+                  <!-- Environment -->
+                  <div class="col-md-3">
+                    <label for="environment">Environment
+                      <i class="fas fa-info-circle fa-lg" title="The release status of the mobile application.">
+                      </i>
+                    </label>
+                    <select class="custom-select w-100" id="environment">
+                      <option value="Production">Production</option>
+                      <option value="Preproduction">Preproduction</option>
+                      <option value="Decommissioned">Decommissioned</option>
+                    </select>
+                  </div>
+
+                  <!-- Division -->
+                  <div class="col-md-3">
+                    <label for="division">Division</label>
+                    <i class="fas fa-info-circle fa-lg"
+                      title="The organizational division applicable to the mobile application.">
+                    </i>
+                    <select class="custom-select d-block w-100" id="division">
+                      <option>Unknown</option>
+                    </select>
+                    <div id="err_division" class="hidden"><span class="error">Division Required!</span>
+                    </div>
+                  </div>
+
+                  <!-- Country -->
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="country">Country</label>
+                      <i class="fas fa-info-circle fa-lg"
+                      title="The country (or countries) where the mobile app has been (or will be) released.">
+                      </i>
+                      <select class="select2bs4" style="width: 100%" id="country" required multiple>
+                        <option>Unknown</option>
+                      </select>
+                    </div>
+                  </div>
+
+                </div> <!-- end of second row -->
+
+                <hr class="edit_scan-form-hr">
+
+                <div class="row"> <!-- third row -->
+
+                  <!-- Data Privacy -->
+                  <div class="col-md-6">
+                      <div class="form-group">
+                          <label for="data_privacy_classification">Data Privacy
+                              <i class="fas fa-info-circle fa-lg"
+                              title="The data privacy classification for the mobile application.">
+                              </i>
+                          </label>
+                          <select class="custom-select d-block w-100" id="data_privacy_classification" size="1" required>
+                              <option value="Highly Restricted" {% if e.DATA_PRIVACY_CLASSIFICATION == "Highly Restricted" %} selected {% endif %}>Highly Restricted</option>
+                              <option value="Restricted" {% if e.DATA_PRIVACY_CLASSIFICATION == "Restricted" %} selected {% endif %}>Restricted</option>
+                              <option value="Internal Use Only" {% if e.DATA_PRIVACY_CLASSIFICATION == "Internal Use Only" %} selected {% endif %}>Internal Use Only</option>
+                              <option value="Public" {% if e.DATA_PRIVACY_CLASSIFICATION == "Public" %} selected {% endif %}>Public</option>
+                              <option value="Does Not Apply" {% if e.DATA_PRIVACY_CLASSIFICATION == "Does Not Apply" %} selected {% endif %}>Does Not Apply</option>
+                          </select>
+                          <div id="err_privacy" class="hidden">
+                              <span class="error">Data Privacy Required!</span>
+                          </div>
+                      </div>
+                  </div>
+
+                  <!-- Data Privacy Attributes -->
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="data_privacy_attributes">Data Privacy Attributes
+                        <i class="fas fa-info-circle fa-lg"
+                          title="The data privacy attributes for the mobile application.">
+                        </i>
+                      </label>
+                      <select class="select2bs4" style="width: 100%" id="data_privacy_attributes" required multiple>
+                        <option>Unknown</option>
+                      </select>
+                    </div>
+                  </div>
+
+                </div> <!-- end of third row -->
+
+                <hr class="edit_scan-form-hr">
+
+                <div class="row"> <!-- fourth row -->
+
+                  {% if is_admin %}
+                  <div class="col-md-6 mb-3">
+                    <label for="override_email" class="form-label">Email Address
+                      <i class="fas fa-info-circle fa-lg"
+                        title="Email of the user(s) to receive notifications about this scan.">
+                      </i>
+                    </label>
+                    <input style="width:100%" class="form-control" type="text" id="override_email"
+                      placeholder="Email Address">
+                    <div id="err_email" class="hidden"><span class="error">Email Invalid!</span></div>
+                  </div>
+                  {% endif %}
+
+                </div> <!-- end of fourth row -->
+
+              </form>
+            </div> <!-- end of inner-cover -->
+      </div>
+
+      <div class="modal-footer submit-footer">
+        <button type="button" data-dismiss="modal" class="btn btn-secondary" onclick="close_edit_scan_modal()">Cancel</button>
+        <button type="button" id="editScanSubmitButton" class="btn btn-primary btn-lg" onclick="admin_save()">Submit</button>
+      </div>
+
+    </div>
+  </div>
 </div>
+
 {% endblock %}
 {% block extra_scripts %}
 <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script src="{% static "others/js/dayjs.min.js" %}"></script>
 <script>
+    function _(el) {
+        return document.getElementById(el);
+    }
+
     // Diff functions
     var diff_first_md5 = '';
     var diff_first_name = '';
@@ -344,10 +502,10 @@
       text: "This will permanently remove the scan results",
       type: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Yes',
-      cancelButtonText: 'No',
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#2da532',
+      confirmButtonText: 'Yes, please delete.',
+      cancelButtonText: 'No, don\'t delete.',
+      confirmButtonColor: '#2da532',
+      cancelButtonColor: '#d33',
     }).then((result) => {
         if (result.value) {
             var md5_hash = item.id;
@@ -366,7 +524,7 @@
                                         'The scan result is deleted!',
                                         'success'
                                     ).then(function () {
-                                        location.reload();
+                                        location.reload(true);
                                     })
                                 }
                                 else {
@@ -392,49 +550,68 @@
         });
     }
 
-    function admin_edit(item){
-        $("#environmentInput" + item).val($("#environmentInput" + item).attr("data"))
-        $("#dataPrivacyClassificationInput" + item).val($("#dataPrivacyClassificationInput" + item).attr("data"))
-        populateDivisions($("#divisionInput" + item));
-        //populateCountries($("#countryInput" + item));
-        //populateDataPrivacy($("#dataPrivacyAttributesInput" + item));
-        $("#viewFields" + item).css('display','none');
-        $("#editFields" + item).css('display','');
-        $("#adminEdit" + item).css('display','none');
-        $("#adminSave" + item).css('display','');
+    function admin_edit_modal(appHash){
+      $("#edit_scan").modal('show');
+      populateModalData(appHash);
     }
 
-    function admin_view(item){
-        $("#viewFields" + item).css('display','');
-        $("#editFields" + item).css('display','none');
-        $("#adminEdit" + item).css('display','');
-        $("#adminSave" + item).css('display','none');
-    }
+    function populateModalData(appHash) {
+      var modal = document.getElementById("edit_scan");
+      modal.setAttribute('data-id', appHash);
 
-    function update_labels(item){
-        $("#userAppName" + item).text($("#userAppNameInput" + item).val());
-        $("#userAppVersion" + item).text($("#userAppVersionInput" + item).val());
-        $("#division" + item).text($("#divisionInput" + item).val());
-        $("#divisionInput" + item).attr("data", $("#divisionInput" + item).val());
-        $("#environment" + item).text($("#environmentInput" + item).val());
-        $("#environmentInput" + item).attr("data", $("#environmentInput" + item).val());
-        $("#country" + item).text($("#countryInput" + item).val());
-        $("#dataPrivacyClassification" + item).text($("#dataPrivacyClassificationInput" + item).val());
-        $("#dataPrivacyClassificationInput" + item).attr("data", $("#dataPrivacyClassificationInput" + item).val());
-        $("#dataPrivacyAttributes" + item).text($("#dataPrivacyAttributesInput" + item).val());
-        $("#email" + item).text($("#emailInput" + item).val());
-        if ($("#releaseInput" + item).prop("checked")) {
-            $("#releaseBadge" + item).css('display','');
+      $("#user-app-name-header").text(uploadedApps["app_"+appHash].appName);
+      $("#md5-header").text(appHash);
+      $("#md5-hash").val(appHash);
+      $("#timestamp-header").text(dayjs(uploadedApps["app_"+appHash].appTimestamp).format("MMM D, YYYY h:mm A"));
+
+      $("#appname").val(uploadedApps["app_"+appHash].appName);
+      $("#version").val(uploadedApps["app_"+appHash].appVersion);
+
+      // Release version checkbox
+      if (uploadedApps["app_"+appHash].appReleaseVersion == "True")
+      {
+        $("#release").prop('checked', true);
+      }
+      else
+      {
+        $("#release").prop('checked', false);
+      }
+      
+      // Environment static dropdown
+      if (uploadedApps["app_"+appHash]?.appEnvironment !== undefined)
+      {
+        var environment = document.getElementById('environment');
+        var currentEnvironment = uploadedApps["app_"+appHash].appEnvironment;
+
+        for (var i = 0; i < environment.options.length; i++)
+        {
+          if (environment.options[i].value === currentEnvironment)
+          {
+            environment.options[i].selected = true;
+          }
         }
-        else {
-            $("#releaseBadge" + item).css('display','none');
-        }
+      }
+
+      // Division dynamic dropdown
+      populateDivisions(uploadedApps["app_"+appHash].appDivision);
+
+      // Countries select box      
+      populateCountries(uploadedApps["app_"+appHash].appCountry);
+
+      //Data Privacy dropdown
+      $("#data_privacy_classification").val(uploadedApps["app_"+appHash].appDataPrivacyClassification)
+
+      // Data Privacy Attributes select box
+      populateDataPrivacy(uploadedApps["app_"+appHash].appDataPrivacyAttributes);
+
+      // Email Address(es) text field
+      $("#override_email").val(uploadedApps["app_"+appHash].appEmail);
     }
 
-    function get_clean_emails(identifier){
+    function get_clean_emails(){
         var retVal = "";
-        var inputName = "#emailInput" + identifier;
-        var emails = $(inputName).val();
+        var formName = document.getElementById('edit_scan_form');
+        var emails = $(formName.querySelector('#override_email')).val();
         var updated = emails.replace(/,/gi, ";");
         var emailArray = updated.split(";");
         emailArray.forEach(clean_element);
@@ -454,20 +631,72 @@
         } 
     }    
 
-    function admin_save(item){
+    function checkRequired() {
+      if (!_('appname').value) {
+        _('err_name').classList.remove('hidden');
+        return false;
+      } 
+      else 
+      { 
+        _('err_name').classList.add('hidden'); 
+      }      
+      if (!_('version').value) {
+        _('err_version').classList.remove('hidden');
+        return false;
+      } else { _('err_version').classList.add('hidden'); }
+      if (!_('division').value) {
+        _('err_division').classList.remove('hidden');
+        return false;
+      } else { _('err_division').classList.add('hidden'); }
+      if (!_('data_privacy_classification').value) {
+        _('err_privacy').classList.remove('hidden');
+        return false;
+      } else { _('err_privacy').classList.add('hidden'); }
+      /* if (_("uploadFile").files.length === 0) {
+        _('err_file').classList.remove('hidden');
+        return false;
+      } else { _('err_file').classList.add('hidden'); } */
+
+      if ($("#override_email").length) {
+        var mailformat = /^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$/;
+        if (!_("override_email").value.match(mailformat)) {
+          _('err_email').classList.remove('hidden');
+          return false;
+        } else { _('err_email').classList.add('hidden'); }
+      }
+
+    return true;
+  }
+
+    function admin_save(){
+
+      const formData = document.getElementById('edit_scan_form');
+
+      var item = $(formData.querySelector('#md5-hash')).val();
+      var countryElements = $(formData.querySelectorAll('#country'));
+      var dataPrivacyAttributesElements = $(formData.querySelectorAll('#data_privacy_attributes'));
+
+      var countryString = countryElements.map(function() {
+        return $(this).val();
+      }).get().join(', ');
+
+      var dataPrivacyAttributesString = dataPrivacyAttributesElements.map(function() {
+        return $(this).val();
+      }).get().join(', ');
+
         Swal.fire({
             title: 'Are you sure?',
             text: "This will update the modified fields for this scan",
             type: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Yes',
-            cancelButtonText: 'No',
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#2da532',
+            confirmButtonText: 'Yes, update the modified fields.',
+            cancelButtonText: 'No, take me back to the edit panel.',
+            confirmButtonColor: '#2da532',
+            cancelButtonColor: '#d33',
         }).then((result) => {
             if (result.value) {            
-                var cleanEmails = get_clean_emails(item);
-                var release = ($("#releaseInput" + item).prop("checked") ? "True" : "False");
+                var cleanEmails = get_clean_emails();
+                var release = ($(formData.querySelector('#release')).prop("checked") ? "True" : "False");
                 $.ajax({
                         url: '../../../update_scan/',
                         type: 'POST',
@@ -475,25 +704,26 @@
                         data: {
                             csrfmiddlewaretoken: '{{csrf_token}}',
                             hash: item,
-                            user_app_name: $("#userAppNameInput" + item).val(),
-                            user_app_version: $("#userAppVersionInput" + item).val(),
-                            division: $("#divisionInput" + item).val(),
-                            environment: $("#environmentInput" + item).val(),
-                            country: $("#countryInput" + item).val(),
-                            data_privacy_classification: $("#dataPrivacyClassificationInput" + item).val(),
-                            data_privacy_attributes: $("#dataPrivacyAttributesInput" + item).val(),
+                            user_app_name: $(formData.querySelector('#appname')).val(),
+                            user_app_version: $(formData.querySelector('#version')).val(),
+                            division: $(formData.querySelector('#division')).val(),
+                            environment: $(formData.querySelector('#environment')).val(),
+                            country: countryString,
+                            data_privacy_classification: $(formData.querySelector('#data_privacy_classification')).val(),
+                            data_privacy_attributes: dataPrivacyAttributesString,
                             email: cleanEmails,
                             release: release
                         },
                         success : function(json) {
                             if (json.result === 'success') {
-                                update_labels(item);
-                                admin_view(item);  
                                 Swal.fire(
                                     'Updated!',
                                     'The scan has been successfully updated.',
                                     'success'
-                                );
+                                ).then(function () {
+                                    $('#edit_scan').modal('hide');
+                                    location.reload(true);
+                                  });
                             }
                             else {
                                 Swal.fire(
@@ -512,77 +742,105 @@
                         }
                     });
                     
-            } else {
-                admin_view(item);
             }
+        }); 
+    }
+
+    function populateDivisions(selectedDivision) {
+    var divisionsUrl = '{{tenant_static}}divisions.json';
+    fetch(divisionsUrl)
+      .then(response => response.json())
+      .then(data => {
+        var options = '<option value=""></option>';
+        for (i = 0; i < data.length; i++) {
+          options += '<option value="' + data[i].id + '"' + (data[i].name.toLowerCase() == selectedDivision ? ' selected="selected"' : '') + '>' + data[i].name + '</option>';
+        }
+        _('division').innerHTML = options;
+      });
+  }
+
+    function populateCountries(selectedCountry) {
+
+      var countryValue = splitData(selectedCountry);
+      
+      var countriesUrl = '{{tenant_static}}countries.json';
+      fetch(countriesUrl)
+        .then(response => response.json())
+        .then(data => {
+          var options = '<option value="GLOBAL"' + (countryValue == "GLOBAL" ? " selected" : "") + '>' + 'Global</option>';
+          for (i = 0; i < data.length; i++) {
+            options += '<option value="' + data[i].code + '"' + (countryValue.includes(data[i].code) ? ' selected' : '') + '>' + data[i].name + '</option>';
+          }
+          _('country').innerHTML = options;
         });
     }
 
-    function populateDivisions(item) {
-        if (!window.cyberspectDivisions) {
-            var url = '{{tenant_static}}divisions.json';
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    window.cyberspectDivisions = data;
-                    populateSelectList(item, window.cyberspectDivisions);
-                });
-        }
-        else { populateSelectList(item, window.cyberspectDivisions); }
+    function populateDataPrivacy(selectedDataPrivacyAttributes) {
+
+      var dataPrivacyAttributeValue = splitData(selectedDataPrivacyAttributes)
+
+      var privacyAttributesUrl = '{{tenant_static}}data-privacy-attributes.json';
+      fetch(privacyAttributesUrl)
+        .then(response => response.json())
+        .then(data => {
+          var options = '';
+          for (i = 0; i < data.length; i++) {
+            options += '<option value="' + data[i].id + '"' + (dataPrivacyAttributeValue.includes(data[i].id) ? ' selected' : '') + '>' + data[i].id + ": " + data[i].name + '</option>';
+          }
+          _('data_privacy_attributes').innerHTML = options;
+        });
     }
 
-    function populateCountries(item) {
-        if (!window.cyberspectCountries) {
-            var url = '{{tenant_static}}countries.json';
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    window.cyberspectCountries = data;
-                    populateSelectList(item, window.cyberspectCountries);
-                });
-        }
-        else { populateSelectList(item, window.cyberspectCountries); }
-    }
-
-    function populateDataPrivacy() {
-        if (!window.cyberspectDataPrivacy) {
-            var url = '{{tenant_static}}data-privacy-attributes.json';
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    window.cyberspectDataPrivacy = data;
-                    populateSelectList(item, window.cyberspectDataPrivacy, true);
-                });
-        }
-        else { populateSelectList(item, window.cyberspectDataPrivacy, true); }
-    }
-
-    function populateSelectList(item, data, prefix=false) {
-        var options = '';
-        for (i = 0; i < data.length; i++) {
-            if (prefix) {
-                options += '<option value="' + data[i].id + '">' + data[i].id + ": " + data[i].name + '</option>';
-            }
-            else {
-                options += '<option value="' + data[i].id + '">' + data[i].name + '</option>';
-            }
-        }        
-        item.html(options);
-        item.val(item.attr("data"));
+    function splitData(dataString) {
+      return dataString.split(',').map(data => data.trim());
     }
   
+    function close_edit_scan_modal()
+    {
+      $('#country').val([]);
+      $('#data_privacy_attributes').val([]);
+      $('#override_email').val([]);
+      $('#edit_scan').modal('hide');
+    }
+
     $(document).ready(function() {
+
         enable_diff_button(); 
 
-        if ($("span.badge.bg-warning").length > 0) {
+        /*if ($("span.badge.bg-warning").length > 0) {
             window.setTimeout(function() {
                 window.location.reload();
             }, 30000);
-        }
+        }*/
+
+        $('#country').change(function() {
+          // If GLOBAL and other options are selected in country dropdown, remove GLOBAL
+          if ($('#country').val().indexOf('GLOBAL') >= 0 && $('#country').val().length > 1) {
+            if ($('#country').val().length > 2) {
+              $('#country').val('GLOBAL');
+            } else {
+              $('#country').val($('#country').val().join(',').replace('GLOBAL,', '')); 
+            }
+            $("#country").trigger('change');
+          }
+        });
 
         $("span.scandate").each(function() {
             this.innerText = dayjs(this.innerText).format("MMM D, YYYY h:mm A")
         });
+    });
+
+    //Initialize Select2 Elements after modal is shown
+    $('#edit_scan').on('shown.bs.modal', function() {
+      
+      $('#country').select2({
+          theme: 'bootstrap4'
+      });
+      
+      $('#data_privacy_attributes').select2({
+          theme: 'bootstrap4'
+      });
+
     });
 
 </script>

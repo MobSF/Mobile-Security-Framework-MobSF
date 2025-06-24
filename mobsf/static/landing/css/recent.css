@@ -1,15 +1,150 @@
+#editScanSubmitButton {
+  padding: 10px 20px;
+}
+
+#app_icon {
+  width: 64px;
+  height: 64px;
+}
+.selected {
+  background-color: lightgreen !important;
+}
+
+.selectable_table tr:hover {
+  background-color: lightgreen !important;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.fa.disabled,
+.fa[disabled],
+.disabled > .fa,
+[disabled] > .fa {
+opacity: 0.5;
+cursor: not-allowed;
+}
+
 .editFields input[type=text], select {
   width: 200px;
   height: 30px;
 }
 
-.editFields input[type=checkbox] {
-  transform: scale(1.5);
-  margin-top: 10px;  
+.inner input[type=checkbox] {
+  transform: scale(2);
   margin-left: 5px;
   margin-right: 10px;
 }
 
+/* Override default checkbox color */ 
+input[type=checkbox] {
+  accent-color: #127AF8;
+ }
+
+.error {
+  padding-left: 6px;
+  padding-right: 6px;
+  text-shadow: none;
+  background: #F7211D;
+}
+
 .expired {
   color: red;
+}
+
+.modal-container {  
+  text-align: center;
+  margin: 0 auto; 
+  width: 700px;
+  max-width: 700px;
+}
+
+/* Adjust fields on home upload page */
+#upload-form > .form-control {
+  display:inline;
+  width: 100%;
+}
+
+/* Select2 overrides for recent scans page */
+.select2-selection__rendered {
+  list-style: none;
+  padding: 0 .375rem .375rem;
+  margin-bottom: -.375rem;
+}
+
+.select2-selection__choice {
+  background-color: #4C4E52;
+  border: 1px solid #aaa;
+  border-color: #4C4E52;
+  border-radius: 4px;
+  cursor: default;
+  float: left;
+  margin-right: 5px;
+  color: #fff;
+  padding: 0 10px;
+  margin-top: .31rem;
+}
+
+.select2-selection__choice__remove {
+  color: rgba(255,255,255,.7);
+  float: right;
+  margin-left: 5px;
+  margin-right: -2px;
+  cursor: pointer;
+  font-weight: bold;
+  list-style: none;
+}
+
+.select2-selection--multiple {
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  min-height: calc(2.25rem + 2px);
+}
+
+.select2-search--inline {
+  float: left;
+}
+
+.select2-search__field {
+  box-sizing: border-box;
+  border: none;
+  font-size: 100%;
+  margin-top: 5px;
+  padding: 0;
+  background: transparent;
+  outline: 0;
+  box-shadow: none;
+}
+
+/* adds fixed height and scrolling feature
+to the multi select dropdown boxes */
+.select2-container--bootstrap4 .select2-results>.select2-results__options {
+  max-height: 144px;
+  overflow-y: auto;
+}
+
+.box-title {
+  text-align: left;
+  padding-bottom: 15px;
+}
+
+.submit-footer {
+  text-align: center;
+  display: block;
+}
+
+.row,
+.section-title {
+  text-align: left;
+}
+
+#upload-form>.form-control {
+  display: inline;
+  width: 100%;
+}
+
+.fa-info-circle {
+  padding-left: 8px;
 }
