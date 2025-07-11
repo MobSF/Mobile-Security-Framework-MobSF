@@ -76,7 +76,6 @@ def ipa_macho_analysis(binary):
 
 
 def binary_analysis(checksum, src, tools_dir, app_dir, executable_name):
-    """Binary Analysis of IPA."""
     bin_dict = {
         'checksec': {},
         'libraries': [],
@@ -91,23 +90,29 @@ def binary_analysis(checksum, src, tools_dir, app_dir, executable_name):
         msg = 'Starting Binary Analysis'
         logger.info(msg)
         append_scan_status(checksum, msg)
-        dirs = Path(src).glob('*')
-        dot_app_dir = ''
-        bin_name = ''
-        for dir_ in dirs:
-            if dir_.suffix == '.app':
-                dot_app_dir = dir_.as_posix()
-                break
-        # Bin Dir - Dir/Payload/x.app/
-        bin_dir = Path(src) / dot_app_dir
+
+        dot_app_path = None
+        for path_obj in Path(src).glob('**/*.app'):
+            dot_app_path = path_obj
+            break
+
+        if not dot_app_path:
+            logger.warning('Could not find .app directory.')
+            return bin_dict
+
+        bin_dir = dot_app_path
+
         if not executable_name:
-            bin_name = dot_app_dir.replace('.app', '')
+            bin_name = dot_app_path.stem
         else:
             _bin = bin_dir / executable_name
             if _bin.exists():
                 bin_name = executable_name
-        # Bin Path - Dir/Payload/x.app/x
+            else:
+                bin_name = dot_app_path.stem
+
         bin_path = bin_dir / bin_name
+        
         if not (bin_path.exists() and bin_path.is_file()):
             msg = (
                 f'MobSF Cannot find binary in {bin_path.as_posix()}. '
