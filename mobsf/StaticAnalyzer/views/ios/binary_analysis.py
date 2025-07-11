@@ -76,6 +76,7 @@ def ipa_macho_analysis(binary):
 
 
 def binary_analysis(checksum, src, tools_dir, app_dir, executable_name):
+    """Binary Analysis of IPA."""
     bin_dict = {
         'checksec': {},
         'libraries': [],
