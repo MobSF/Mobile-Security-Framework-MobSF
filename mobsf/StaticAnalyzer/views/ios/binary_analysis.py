@@ -92,10 +92,7 @@ def binary_analysis(checksum, src, tools_dir, app_dir, executable_name):
         logger.info(msg)
         append_scan_status(checksum, msg)
 
-        dot_app_path = None
-        for path_obj in Path(src).glob('**/*.app'):
-            dot_app_path = path_obj
-            break
+        dot_app_path = next(Path(src).glob('**/*.app'), None)
 
         if not dot_app_path:
             logger.warning('Could not find .app directory.')
