@@ -234,9 +234,16 @@ TEMPLATES = [
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 MEDIA_URL = '/uploads/'
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'compressed_static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 # 256MB limit for file uploads
 DATA_UPLOAD_MAX_MEMORY_SIZE = 256 * 1024 * 1024
 # 400MB per file limit for uncompressed files
