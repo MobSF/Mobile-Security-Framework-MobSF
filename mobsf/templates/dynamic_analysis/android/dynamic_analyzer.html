@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="{% static "codemirror/lint.css" %}" type="text/css">
 <link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
 <style>
-     textarea {
+     #stat {
         width: 100%;
         height: {% if android_version < 5 %} 630px; {% else %} 170px; {% endif %}
         -moz-border-bottom-colors: none;
@@ -33,33 +33,43 @@
         padding: 5px 8px;
         transition: background-color 0.2s ease 0s;
     }
-    textarea:focus {
+    #stat:focus {
         background: none repeat scroll 0 0 #FFFFFF;
         outline-width: 0;
     }
     .highlight { border: solid 2px #1e6dff;}
     
-    /* Complete isolation for CodeMirror */
-    #codemirror-isolation-container {
-        zoom: 1 !important;
-        transform: scale(1.25) !important; /* Counter the 0.8 zoom */
-        transform-origin: top left !important;
-        width: 80% !important; /* Adjust for scale */
-        height: 80% !important; /* Adjust for scale */
-        position: relative !important;
-        overflow: hidden !important;
+    #code-editor{
+      transform: scale(1.25) !important;
+      transform-origin: top left;
+      width: 80%;
+      height: auto;
+      overflow: auto;
+      max-height: 600px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+      background: #f8f9fa;
+      margin-bottom: 150px;
+      position: relative;
+      z-index: 1;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* Internet Explorer 10+ */
     }
     
+    #code-editor::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
+    }
     .CodeMirror {
         height: 610px;
         font-size: 11px;
         border: 1px solid #eee;
       }
 
-      .frida-pre {
-        font-family: "courier new", courier, monospace;
-        font-size: 11px;
-      }
+    .frida-pre {
+      font-family: "courier new", courier, monospace;
+      font-size: 11px;
+    }
 
     #start_activity{
         margin-top: 5px;
@@ -364,29 +374,22 @@
               </div>
               <!-- /.card-header -->
               <div class="card-body">
-              <div class="row">
-                  <div class="col-12">
-                    <div id="codemirror-isolation-container">
+                <div id="code-editor">
 <textarea id="code-js" rows="100">
-Java.perform(function() {
-  // Use send() for logging
-});
+  Java.perform(function() {
+    // Use send() for logging
+  });
 </textarea>
-                    </div>
-                  </div>
-                  <div class="col-12">
-                    <br/>
-                    <div class="form-group">
-                      <span class="box-title">Available Scripts (Use CTRL to choose multiple)  </span>
-                      <button id="loadscript" type="submit" class="btn btn-primary btn-sm">Load</button>
-                    </div>
-                    <div class="form-group">
-                         <select id="fd_scs" size="10" multiple="" class="form-control">
-                          </select>
-                    </div>
-                  </div>
                 </div>
-                <!-- end row-->
+                <br/>
+                <div class="form-group">
+                  <span class="box-title">Available Scripts (Use CTRL to choose multiple)  </span>
+                  <button id="loadscript" type="submit" class="btn btn-primary btn-sm">Load</button>
+                </div>
+                <div class="form-group">
+                  <select id="fd_scs" size="10" multiple="" class="form-control">
+                  </select>
+                </div>
               
               </div>
               <!-- /.card-body -->
@@ -740,7 +743,9 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
 
             if (e.keyCode == 38 || e.keyCode == 40) {
                 this.value = history_[histpos_] ? history_[histpos_] : histtemp_;
-                this.value = this.value; // Sets cursor to end of input.
+                setTimeout(() => {
+                    this.setSelectionRange(this.value.length, this.value.length);
+                }, 0); // Sets cursor to end of input.
             }
         }
     }
@@ -757,15 +762,43 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
          output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
     }
 
-    // Cross-browser impl to get document's height.
-    function getDocHeight_() {
-        var d = document;
-        return Math.max(
-            Math.max(d.body.scrollHeight, d.documentElement.scrollHeight),
-            Math.max(d.body.offsetHeight, d.documentElement.offsetHeight),
-            Math.max(d.body.clientHeight, d.documentElement.clientHeight)
-        );
+    function scrollToShellBottom(){
+      // Scroll to shell bottom and ensure shell is completely visible
+      var myElement = document.getElementById('shell');
+      
+      // Scroll the shell content to the bottom
+      myElement.scrollTop = myElement.scrollHeight;
+      
+      // Ensure the shell element is visible in the viewport
+      myElement.scrollIntoView({ 
+        block: 'end', 
+        behavior: 'smooth',
+        inline: 'nearest'
+      });
+      
+      // For dynamic content, we need to continuously monitor and scroll
+      // Set up a MutationObserver to watch for content changes
+      if (!window.shellObserver) {
+        window.shellObserver = new MutationObserver(function(mutations) {
+          // When content changes, scroll to keep shell visible
+          myElement.scrollTop = myElement.scrollHeight;
+          myElement.scrollIntoView({ 
+            block: 'end', 
+            behavior: 'smooth',
+            inline: 'nearest'
+          });
+        });
+        
+        // Start observing the shell for content changes
+        window.shellObserver.observe(myElement, {
+          childList: true,
+          subtree: true,
+          characterData: true
+        });
+      }
     }
+
+
     function get_comp(comp){
       action(document.location.origin + '/get_component/', { component: comp, hash: '{{ hash }}'}, function(json) {
           if (json.status==="ok")
@@ -850,7 +883,7 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
                     else if (exec_cmd.length > 0)
                         execute_adb(exec_cmd)
             };
-            window.scrollTo(0, getDocHeight_());
+            scrollToShellBottom();
             this.value = ''; // Clear/setup line for next input.
         }
     }

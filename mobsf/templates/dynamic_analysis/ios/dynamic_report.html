@@ -298,6 +298,7 @@ pre {
                    <div align="center">
                       <p>
                       {% if frida_logs %}
+                          <a target="_blank" class="btn btn-primary" role="button" href="{% url 'ios_api_monitor' %}?checksum={{ hash }}&bundle_id={{ bundleid }}"><i class="fa fa-search"></i> API Monitor Logs</a>
                           <a target="_blank" class="btn btn-primary" role="button" href="{% url 'frida_logs' %}?hash={{ hash }}"><i class="fas fa-spider"></i> Frida Logs View</a>
                       {% endif %}
                         <a class="btn btn-success" target="_blank" role="button" href="{% url 'httptools' %}?project={{bundleid}}"><i class="fab fa-hire-a-helper"></i> Start HTTPTools</a>
@@ -1423,7 +1424,7 @@ function action(url, data, on_success){
     var code_title = document.getElementById('cat_title');
     code_title.innerText = '';
     code_block.innerText = '';
-    action('{% url 'ssh_execute' %}', {instance_id: '{{ instance_id }}', cmd:  `cat -v "${file_name}"` }, function(json) {
+    action('{% url "ssh_execute" %}', {instance_id: '{{ instance_id }}', cmd:  `cat -v "${file_name}"` }, function(json) {
       if (json.status==="ok")
         code_title.innerText = file_name;
         code_block.innerText = json.message;
@@ -1431,32 +1432,53 @@ function action(url, data, on_success){
     });
   }
 
-  // Download file
-  function download_file(path){
+   // Download file using hidden iframe
+   function download_file(path){
+    // Create a hidden iframe for the download
+    var iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.name = 'download_iframe';
+    iframe.id = 'download_iframe_' + Date.now();
+    document.body.appendChild(iframe);
+
+    // Create the form
     var form = document.createElement('form');
-    var element1 = document.createElement('input'); 
-    var element2 = document.createElement('input');
-    var element3 = document.createElement('input');  
-
     form.method = 'POST';
-    form.action = '{% url 'download_file' %}';   
+    form.action = '{% url "download_file" %}';
+    form.target = iframe.name;
 
-    element1.value = '{{ instance_id }}';
-    element1.name = 'instance_id';
-    form.appendChild(element1);
+    // Create form elements
+    var instanceIdInput = document.createElement('input');
+    instanceIdInput.type = 'hidden';
+    instanceIdInput.name = 'instance_id';
+    instanceIdInput.value = '{{ instance_id }}';
+    form.appendChild(instanceIdInput);
 
+    var fileInput = document.createElement('input');
+    fileInput.type = 'hidden';
+    fileInput.name = 'file';
+    fileInput.value = path;
+    form.appendChild(fileInput);
 
-    element2.value = path;
-    element2.name = 'file';
-    form.appendChild(element2);
+    var csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = '{{ csrf_token }}';
+    form.appendChild(csrfInput);
 
-    element3.value = '{{ csrf_token }}';
-    element3.name = 'csrf_token';
-    form.appendChild(element3);
-
+    // Append form to body, submit, and clean up
     document.body.appendChild(form);
     form.submit();
-    form.remove();
+    
+    // Clean up after a short delay
+    setTimeout(function() {
+      if (document.body.contains(form)) {
+        document.body.removeChild(form);
+      }
+      if (document.body.contains(iframe)) {
+        document.body.removeChild(iframe);
+      }
+    }, 2000);
   }
   </script>
 {% endblock %}

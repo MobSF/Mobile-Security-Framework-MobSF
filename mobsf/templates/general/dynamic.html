@@ -32,7 +32,19 @@
                         <div class="card-body">
                           <h4 class="d-flex justify-content-center">iOS Dynamic Analyzer</h4>
                           <p class="card-text">Perform Dynamic Analysis of iOS Applications.</p>
-                          <a href="{% url 'dynamic_ios' %}" class="btn btn-primary d-flex justify-content-center">iOS Dynamic Analyzer</a>
+                          <div class="dropdown d-flex justify-content-center">
+                            <button class="btn btn-primary dropdown-toggle" type="button" id="iosDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                              iOS Dynamic Analyzer
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="iosDropdown">
+                              <a class="dropdown-item" href="{% url 'dynamic_ios' %}">
+                                <i class="fa fa-microchip mr-2"></i>Corellium VM
+                              </a>
+                              <a class="dropdown-item" href="{% url 'dynamic_ios_device' %}">
+                                <i class="fas fa-mobile-alt mr-2"></i>Jailbroken Device
+                              </a>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>

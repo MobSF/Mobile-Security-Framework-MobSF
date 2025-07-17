@@ -61,7 +61,8 @@ GOOGLE_API_KEY_REGEX = re.compile(r'AIza[0-9A-Za-z-_]{35}$')
 GOOGLE_APP_ID_REGEX = re.compile(r'\d{1,2}:\d{1,50}:android:[a-f0-9]{1,50}')
 PKG_REGEX = re.compile(
     r'package\s+([a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*);')
-
+IOS_DEVICE_ID_REGEX = re.compile(r'^[a-fA-F0-9-]{20,40}$')
+SSH_DEVICE_ID_REGEX = re.compile(r'^(?:\[(?P<ipv6>[^\]]+)\]|(?P<host>[^:\[\]]+)):(?P<port>\d{1,5})$')
 
 class Color(object):
     GREEN = '\033[92m'
@@ -967,3 +968,15 @@ def set_permissions(path):
                 item.chmod(perm_file)
         except Exception:
             pass
+
+def parse_host_port(text):
+    # Match [IPv6]:port OR host:port
+    ipv6_match = re.match(r'^\[(.+)\]:(\d+)$', text)
+    if ipv6_match:
+        return ipv6_match.group(1), int(ipv6_match.group(2))
+
+    ipv4_match = re.match(r'^([^:]+):(\d+)$', text)
+    if ipv4_match:
+        return ipv4_match.group(1), int(ipv4_match.group(2))
+
+    raise ValueError("Input must be in format host:port or [IPv6]:port")
