@@ -1,33 +1,50 @@
-/* 
+/*
     Description: iOS TrustKit Certificate Pinning ByPass
-    Usage: frida -U -f XXX -l ios-trustkit-pinning-bypass.js
-    Credit: Unknown
-    Src: https://github.com/rsenet/FriList/blob/main/02_SecurityBypass/CertificatePinning/ios-trustkit-pinning-bypass.js
+    Updated for Frida 17+
 */
 
-if (ObjC.available) 
-{
-    console.log("SSLUnPinning Enabled");
+function bypassTrustKit() {
+    if (!ObjC.available) {
+        send("❌ Objective-C Runtime is not available!");
+        return;
+    }
 
-    for (var className in ObjC.classes) 
-    {
-        if (ObjC.classes.hasOwnProperty(className)) 
-        {
-            if (className == "TrustKit") 
-            {
-                console.log("Found our target class : " + className);
-                var hook = ObjC.classes.TrustKit["+ initSharedInstanceWithConfiguration:"];
+    send("🔐 SSLUnPinning Enabled");
 
-                Interceptor.replace(hook.implementation, new NativeCallback(function() 
-                {
-                    console.log("Hooking TrustKit");
+    try {
+        const classMap = ObjC.enumerateLoadedClassesSync();
+        let found = false;
+
+        for (const image in classMap) {
+            for (const className of classMap[image]) {
+                if (className === "TrustKit") {
+                    found = true;
+
+                    send("✅ Found TrustKit class in: " + image);
+
+                    const method = ObjC.classes.TrustKit["+ initSharedInstanceWithConfiguration:"];
+                    if (!method || method.implementation.isNull()) {
+                        send("❌ TrustKit method not found or invalid.");
+                        return;
+                    }
+
+                    Interceptor.replace(method.implementation, new NativeCallback(function () {
+                        send("✅ Hooked TrustKit: +initSharedInstanceWithConfiguration:");
+                        return;
+                    }, 'int', []));
+
+                    send("✅ TrustKit bypass hook installed.");
                     return;
-                }, 'int', []));
+                }
             }
         }
+
+        if (!found) {
+            send("❌ TrustKit class not found.");
+        }
+    } catch (err) {
+        send("❌ Error during TrustKit bypass: " + err.message);
     }
-} 
-else 
-{
-    console.log("Objective-C Runtime is not available!");
 }
+
+setImmediate(bypassTrustKit);

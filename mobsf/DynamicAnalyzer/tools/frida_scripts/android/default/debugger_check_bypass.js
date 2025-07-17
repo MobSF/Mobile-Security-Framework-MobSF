@@ -15,7 +15,7 @@ try {
     Interceptor.attach(libc.getExportByName("connect"), {
         onEnter: function(args) {
             try{
-                var memory = Memory.readByteArray(args[1], 64);
+                var memory = args[1].readByteArray(64);
                 var b = new Uint8Array(memory);
                 if (b[2] == 0x69 && b[3] == 0xa2 && b[4] == 0x7f && b[5] == 0x00 && b[6] == 0x00 && b[7] == 0x01) {
                     this.frida_detection = true;

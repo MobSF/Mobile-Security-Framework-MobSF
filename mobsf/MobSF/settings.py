@@ -532,6 +532,12 @@ else:
     # if VT_UPLOAD is set to True.
     # ===============================================
     # =======IOS DYNAMIC ANALYSIS SETTINGS===========
+    # Should be SSH IP:PORT, example: 192.168.1.100:22
+    # Filed also supports multiple devices, example: 192.168.1.100:22,192.168.1.101:22
+    IOS_ANALYZER_IDENTIFIERS = os.getenv('MOBSF_IOS_ANALYZER_IDENTIFIERS', '')
+    # ==============================================
+
+    # =======IOS DYNAMIC ANALYSIS CORELLIUM SETTINGS===========
     CORELLIUM_API_DOMAIN = os.getenv('MOBSF_CORELLIUM_API_DOMAIN', '')
     CORELLIUM_API_KEY = os.getenv('MOBSF_CORELLIUM_API_KEY', '')
     CORELLIUM_PROJECT_ID = os.getenv('MOBSF_CORELLIUM_PROJECT_ID', '')

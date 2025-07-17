@@ -287,8 +287,15 @@ class Frida:
                 self.container_file.write_text(self.app_container)
             except frida.InvalidOperationError:
                 pass
+            # Migrating defaults to rpc functions
+            if 'ssl_pinning' in self.defaults:
+                api.bypass_ios_ssl_pinning()
+
             if not self.extras:
                 return
+            screenshot_action = self.extras.get('screenshot_action')
+            if screenshot_action == 'capture':
+                api.get_screenshot()
             raction = self.extras.get('rclass_action')
             rclass = self.extras.get('rclass_name')
             rclass_pattern = self.extras.get('rclass_pattern')

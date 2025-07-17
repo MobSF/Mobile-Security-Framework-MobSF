@@ -55,15 +55,15 @@ def safe_paths(tar_meta):
         yield fh
 
 
-def onerror(func, path, exc_info):
-    _, exc, _ = exc_info
-    if exc.errno == errno.EACCES:  # Permission error
+def onexc(func, path, exc_info):
+    exc_type, exc_value, exc_traceback = exc_info
+    if exc_value.errno == errno.EACCES:  # Permission error
         try:
             os.chmod(path, 0o755)
             func(path)
         except Exception:
             pass
-    elif exc.errno == errno.ENOTEMPTY:  # Directory not empty
+    elif exc_value.errno == errno.ENOTEMPTY:  # Directory not empty
         try:
             func(path)
         except Exception:
@@ -81,7 +81,7 @@ def untar_files(tar_loc, untar_dir):
             return False
         if untar_dir.exists():
             # fix for permission errors
-            shutil.rmtree(untar_dir, onerror=onerror)
+            shutil.rmtree(untar_dir, onexc=onexc)
         else:
             os.makedirs(untar_dir)
         with tarfile.open(tar_loc.as_posix(), errorlevel=1) as tar:

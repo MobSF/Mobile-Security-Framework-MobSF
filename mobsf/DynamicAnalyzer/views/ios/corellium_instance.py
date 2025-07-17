@@ -788,13 +788,11 @@ def download_data(request, bundle_id, api=False):
             dwd = Path(settings.DWD_DIR)
             pcap_file = dwd / f'{checksum}-network.pcap'
             pcap_file.write_bytes(pcap)
-            data = {
-                'status': OK,
-                'message': 'Downloaded application data',
-            }
         else:
             data['message'] = 'Failed to download pcap'
-            return send_response(data, api)
+            logger.error('Failed to download pcap')
+        data['status'] = OK
+        data['message'] = 'Downloaded application data'
     except Exception as exp:
         logger.exception('Downloading application data')
         data['message'] = str(exp)
