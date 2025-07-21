@@ -69,8 +69,15 @@ where python >nul 2>&1 && (
   poetry run python manage.py makemigrations
   poetry run python manage.py makemigrations StaticAnalyzer
   poetry run python manage.py migrate
+
+  echo [INSTALL] Collect Static files
+  poetry run python manage.py collectstatic --noinput
+
+  echo [INSTALL] Creating Super User
   poetry run python manage.py createsuperuser --noinput --email ""
   poetry run python manage.py create_roles
+
+  echo [INSTALL] wkhtmltopdf is not installed
   echo Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html
   echo [INSTALL] Installation Complete
   exit /b 0
