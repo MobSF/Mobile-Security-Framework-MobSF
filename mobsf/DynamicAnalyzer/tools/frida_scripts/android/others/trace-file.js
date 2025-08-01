@@ -1,4 +1,3 @@
-
 /**
 It should be launch earlier in order to be aware of a maximun 
 quantity of file descriptors.
@@ -301,61 +300,61 @@ Java.perform(function () {
         return FileOuputStream.write[2].call(this, a0, a1, a2);
     }
 
-    // native hooks    
-    Interceptor.attach(
-        Module.findExportByName("libc.so", "read"), {
-            // fd, buff, len
-            onEnter: function (args) {
-                if (CONFIG.printLibc === true) {
-                    var bfr = args[1],
-                        sz = args[2].toInt32();
-                    var path = (TraceSysFD["fd-" + args[0].toInt32()] != null) ? TraceSysFD["fd-" + args[0].toInt32()] : "[unknow path]";
+    // Native hooks — Frida 17.x compatible
+    try {
+        const libc = Process.getModuleByName("libc.so");
 
-                    prettyLog("[Libc::read] Read FD (" + path + "," + bfr + "," + sz + ")\n" +
-                        rawPrint(path, Memory.readByteArray(bfr, sz)));
+        Interceptor.attach(libc.getExportByName("read"), {
+            onEnter: function (args) {
+                if (typeof CONFIG !== "undefined" && CONFIG.printLibc === true) {
+                    const bfr = args[1];
+                    const sz = args[2].toInt32();
+                    const fd = args[0].toInt32();
+                    const path = TraceSysFD["fd-" + fd] || "[unknown path]";
+                    let data = null;
+                    try {
+                        data = Memory.readByteArray(bfr, sz);
+                    } catch (_) {
+                        data = null;
+                    }
+                    prettyLog("[Libc::read] FD: " + path + " (" + fd + "), size: " + sz + "\n" + rawPrint(path, data));
                 }
+            }
+        });
+
+        Interceptor.attach(libc.getExportByName("open"), {
+            onEnter: function (args) {
+                this.path = args[0].isNull() ? "[null]" : args[0].readCString();
             },
             onLeave: function (ret) {
-
-            }
-        }
-    );
-
-    Interceptor.attach(
-        Module.findExportByName("libc.so", "open"), {
-            // path, flags, mode
-            onEnter: function (args) {
-                this.path = Memory.readCString(args[0]);
-            },
-            onLeave: function (ret) {
-                TraceSysFD["fd-" + ret.toInt32()] = this.path;
-                if (CONFIG.printLibc === true)
-                    prettyLog("[Libc::open] Open file '" + this.path + "' (fd: " + ret.toInt32() + ")");
-            }
-        }
-    );
-
-
-    Interceptor.attach(
-        Module.findExportByName("libc.so", "write"), {
-            // fd, buff, count
-            onEnter: function (args) {
-                if (CONFIG.printLibc === true) {
-                    var bfr = args[1],
-                        sz = args[2].toInt32();
-                    var path = (TraceSysFD["fd-" + args[0].toInt32()] != null) ? TraceSysFD["fd-" + args[0].toInt32()] : "[unknow path]";
-
-                    prettyLog("[Libc::write] Write FD (" + path + "," + bfr + "," + sz + ")\n" +
-                        rawPrint(path, Memory.readByteArray(bfr, sz)));
+                const fd = ret.toInt32();
+                TraceSysFD["fd-" + fd] = this.path;
+                if (typeof CONFIG !== "undefined" && CONFIG.printLibc === true) {
+                    prettyLog("[Libc::open] File opened: '" + this.path + "' (fd: " + fd + ")");
                 }
-            },
-            onLeave: function (ret) {
-
             }
-        }
-    );
+        });
 
-
+        Interceptor.attach(libc.getExportByName("write"), {
+            onEnter: function (args) {
+                if (typeof CONFIG !== "undefined" && CONFIG.printLibc === true) {
+                    const bfr = args[1];
+                    const sz = args[2].toInt32();
+                    const fd = args[0].toInt32();
+                    const path = TraceSysFD["fd-" + fd] || "[unknown path]";
+                    let data = null;
+                    try {
+                        data = Memory.readByteArray(bfr, sz);
+                    } catch (_) {
+                        data = null;
+                    }
+                    prettyLog("[Libc::write] FD: " + path + " (" + fd + "), size: " + sz + "\n" + rawPrint(path, data));
+                }
+            }
+        });
+    } catch (e) {
+        send("Error hooking libc.so functions: " + e);
+    }
 
     // helper functions
     function prettyLog(str) {

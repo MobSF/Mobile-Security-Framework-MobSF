@@ -1,15 +1,22 @@
 // From: https://github.com/sensepost/objection/blob/f8e78d8a29574c6dadd2b953a63207b45a19b1cf/objection/hooks/ios/keychain/dump.js
+// Modified to support Frida 17.0.0+
+
 function dumpKeyChain(){
     var NSMutableDictionary = ObjC.classes.NSMutableDictionary;
     var NSString = ObjC.classes.NSString;
     
     // Ref: http://nshipster.com/bool/
     var kCFBooleanTrue = ObjC.classes.__NSCFBoolean.numberWithBool_(true);
-    var SecItemCopyMatching = new NativeFunction(
-        ptr(Module.findExportByName('Security', 'SecItemCopyMatching')), 'pointer', ['pointer', 'pointer']);
-    var SecAccessControlGetConstraints = new NativeFunction(
-        ptr(Module.findExportByName('Security', 'SecAccessControlGetConstraints')),
-        'pointer', ['pointer']);
+    try {
+        const Security = Process.getModuleByName('Security');
+        var SecItemCopyMatching = new NativeFunction(
+            ptr(Security.getExportByName('SecItemCopyMatching')), 'pointer', ['pointer', 'pointer']);
+        var SecAccessControlGetConstraints = new NativeFunction(
+            ptr(Security.getExportByName('SecAccessControlGetConstraints')),
+            'pointer', ['pointer']);
+    } catch (e) {
+        send("Error initializing Security module: " + e);
+    }
     
     // constants
     var kSecReturnAttributes = 'r_Attributes',
@@ -305,7 +312,7 @@ function dumpKeyChain(){
     }
     send('Dumping Application Keychain')
     send(JSON.stringify({'[MBSFDUMP] keychain': keychain_items}));
-    }
+}
 
 try {
     dumpKeyChain();

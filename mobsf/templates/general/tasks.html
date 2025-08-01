@@ -1,0 +1,291 @@
+
+{% extends "base/base_layout.html" %}
+{% load static %}
+{% block sidebar_option %}
+      sidebar-collapse
+{% endblock %}
+{% block extra_css %}
+<link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
+<style>
+    /* Loader Spinner */
+    .loader {
+        border: 2px solid #f3f3f3; /* Light gray */
+        border-top: 2px solid #3498db; /* Blue */
+        border-radius: 50%;
+        width: 12px;
+        height: 12px;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+    </div>
+     <div class="container-fluid">
+          <div class="row">
+              <div class="col-lg-12">
+              <div class="card">
+                <div class="card-body">
+                   <div class="box">
+          <div class="box-header with-border">
+              <h3 class="box-title"><i class="fa fa-rocket"></i> Scan Queue</h3>
+              <p class="lead">The scan results will appear in <strong><a href="{% url 'recent' %}">Recent Scans</a></strong> once completed.</p>
+          </div>
+          <div class="box-body">
+            <div class="table-responsive">
+                <table id="tasks-table" class="table table-bordered table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>Scan Task</th>
+                            <th>Filename</th>
+                            <th>Timeline</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+<!-- /.box-body -->
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
+<script>
+   document.addEventListener("DOMContentLoaded", function () {
+    const tasksTableBody = document.querySelector("#tasks-table tbody");
+
+    // Fetch tasks using POST request
+    async function fetchTasks() {
+        const response = await fetch("{% url 'list_tasks' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}",
+            },
+        });
+
+        if (!response.ok) {
+            console.error("Failed to fetch tasks.");
+            return [];
+        }
+
+        return await response.json();
+    }
+
+    function addLoader(statusCell) {
+        const loader = document.createElement("span");
+        loader.classList.add("loader");
+        loader.style.marginLeft = "10px"; 
+        statusCell.appendChild(loader);
+    }
+
+    function addAppName(task, statusCell) {
+        if (task.app_name) {
+            const strongElement = document.createElement("strong");
+            strongElement.textContent = ` ${task.app_name}`;
+            statusCell.appendChild(document.createElement("br"));
+            statusCell.appendChild(strongElement);
+        }
+    }
+
+    function addReportLink(task, statusCell) {
+        const reportLink = document.createElement("a");
+        reportLink.href = `/search?query=${encodeURIComponent(task.checksum)}`;
+        reportLink.textContent = ' View Report';
+
+        const icon = document.createElement("i");
+        icon.classList.add("fa", "fa-eye");
+        reportLink.prepend(icon);
+
+        statusCell.appendChild(document.createElement("br"));
+        statusCell.appendChild(reportLink);
+    }
+
+    function buildTableRow(task) {
+        const row = document.createElement("tr");
+        row.setAttribute("data-task-id", task.task_id);
+
+        // Scan Task
+        const taskIdCell = document.createElement("td");
+        const taskP = document.createElement("p");
+        const checksumP = document.createElement("p");
+
+        const taskLabel = document.createElement("strong");
+        taskLabel.textContent = "Task ID: ";
+        taskP.appendChild(taskLabel);
+        taskP.appendChild(document.createTextNode(task.task_id));
+
+        const checksumLabel = document.createElement("strong");
+        checksumLabel.textContent = "Checksum: ";
+        checksumP.appendChild(checksumLabel);
+        checksumP.appendChild(document.createTextNode(task.checksum));
+
+        taskIdCell.appendChild(taskP);
+        taskIdCell.appendChild(checksumP);
+
+        // File Name
+        const fileNameCell = document.createElement("td");
+        fileNameCell.textContent = task.file_name;
+
+        // Timeline
+        const timelineCell = document.createElement("td");
+        timelineCell.setAttribute("id", `timeline-${task.task_id}`);
+
+        // Status
+        const statusCell = document.createElement("td");
+        statusCell.setAttribute("id", `status-${task.task_id}`);
+        statusCell.classList.add(task.completed_at ? "text-success" : "text-warning");
+
+        updateCellStatus(task, statusCell, timelineCell);
+
+        // Append cells to row
+        row.appendChild(taskIdCell);
+        row.appendChild(fileNameCell);
+        row.appendChild(timelineCell);
+        row.appendChild(statusCell);
+
+        return row;
+    }
+
+    function updateCellStatus(task, statusCell, timelineCell) {
+        // Update the status text
+        statusCell.textContent = task.status;
+
+        // Clear existing content in timelineCell
+        while (timelineCell.firstChild) {
+            timelineCell.removeChild(timelineCell.firstChild);
+        }
+
+        // Create and append "Queued At"
+        const queuedAtElement = document.createElement("p");
+        const queuedAtLabel = document.createElement("strong");
+        queuedAtLabel.textContent = "Queued At: ";
+        queuedAtElement.appendChild(queuedAtLabel);
+        queuedAtElement.appendChild(document.createTextNode(task.created_at ? new Date(task.created_at).toLocaleString() : "N/A"));
+        timelineCell.appendChild(queuedAtElement);
+
+        // Create and append "Started At"
+        const startedAtElement = document.createElement("p");
+        const startedAtLabel = document.createElement("strong");
+        startedAtLabel.textContent = "Started At: ";
+        startedAtElement.appendChild(startedAtLabel);
+        startedAtElement.appendChild(document.createTextNode(task.started_at ? new Date(task.started_at).toLocaleString() : "N/A"));
+        timelineCell.appendChild(startedAtElement);
+
+        // Create and append "Completed At"
+        const completedAtElement = document.createElement("p");
+        const completedAtLabel = document.createElement("strong");
+        completedAtLabel.textContent = "Completed At: ";
+        completedAtElement.appendChild(completedAtLabel);
+        completedAtElement.appendChild(document.createTextNode(task.completed_at ? new Date(task.completed_at).toLocaleString() : "N/A"));
+        timelineCell.appendChild(completedAtElement);
+
+        // Add loader or success indicators
+        if (!task.completed_at) {
+            addLoader(statusCell);
+        } else {
+            if (task.status === "Success") {
+                statusCell.classList.add("text-success");
+                statusCell.classList.remove("text-warning");
+                addReportLink(task, statusCell);
+            } else if (task.status === "Failed") {
+                statusCell.classList.add("text-danger");
+                statusCell.classList.remove("text-warning");
+            }
+        }
+
+        addAppName(task, statusCell);
+    }
+
+    async function renderTable() {
+        const tasks = await fetchTasks();
+        tasksTableBody.innerHTML = ""; // Clear existing rows
+
+        if (tasks.length === 0) {
+            const noTasksRow = document.createElement("tr");
+            const noTasksCell = document.createElement("td");
+            noTasksCell.setAttribute("colspan", "4");
+            noTasksCell.textContent = "No tasks in queue.";
+            noTasksRow.appendChild(noTasksCell);
+            tasksTableBody.appendChild(noTasksRow);
+        } else {
+            tasks.forEach((task) => {
+                const row = buildTableRow(task);
+                tasksTableBody.appendChild(row);
+            });
+        }
+    }
+
+    async function updateTaskStatuses() {
+        const tasks = await fetchTasks();
+        const existingTaskIds = Array.from(document.querySelectorAll("#tasks-table tbody tr"))
+            .map(row => row.getAttribute("data-task-id")); // Get existing task IDs from the table
+
+        tasks.forEach((task) => {
+            const statusCell = document.getElementById(`status-${task.task_id}`);
+            const timelineCell = document.getElementById(`timeline-${task.task_id}`);
+
+            if (statusCell && timelineCell) {
+                // Update existing task status and timeline
+                updateCellStatus(task, statusCell, timelineCell);
+            } else if (!existingTaskIds.includes(task.task_id)) {
+                // Add a new row if the task ID is not found, at the top of the table
+                const newRow = buildTableRow(task);
+                tasksTableBody.prepend(newRow); // Add the new row to the top
+            }
+        });
+    }
+
+
+
+    // Initial render
+    renderTable();
+
+    // Periodically update statuses
+    setInterval(updateTaskStatuses, 5000); // Update every 5 seconds
+
+    function getQueryParam(paramName) {
+        const urlParams = new URLSearchParams(window.location.search); // Get the query string
+        return urlParams.has(paramName) ? urlParams.get(paramName) : null;
+    }
+
+    const q = getQueryParam('q');
+
+    if (q && q === 'completed') {
+        Swal.fire(
+            'Scan Task Recently Completed!',
+            'The scan was recently processed.',
+            'warning'
+        )
+    } else if (q && q === 'queued') {
+        Swal.fire(
+            'Scan Task Already Added!',
+            'This scan task has already been added to the scan queue.',
+            'warning'
+        )
+    }
+});
+
+    </script>
+{% endblock %}

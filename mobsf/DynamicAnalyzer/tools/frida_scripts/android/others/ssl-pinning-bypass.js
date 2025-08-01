@@ -720,69 +720,70 @@ function dynamicPatching() {
             return null;
         }
     }
-    try {
-        var UnverifiedCertError = Java.use('javax.net.ssl.SSLPeerUnverifiedException');
-        UnverifiedCertError.$init.implementation = function(str) {
-            console.log('[!] Unexpected SSLPeerUnverifiedException occurred, trying to patch it dynamically...!');
-            try {
-                var stackTrace = Java.use('java.lang.Thread').currentThread().getStackTrace();
-                var exceptionStackIndex = stackTrace.findIndex(stack => stack.getClassName() === "javax.net.ssl.SSLPeerUnverifiedException");
-                var callingFunctionStack = stackTrace[exceptionStackIndex + 1];
-                var className = callingFunctionStack.getClassName();
-                var methodName = callingFunctionStack.getMethodName();
-                var callingClass = Java.use(className);
-                var callingMethod = callingClass[methodName];
-                console.log('[!] Attempting to bypass uncommon SSL Pinning method on: ' + className + '.' + methodName + '!');
-                if (callingMethod.implementation) {
-                    return;
-                }
-                var returnTypeName = callingMethod.returnType.type;
-                callingMethod.implementation = function() {
-                    rudimentaryFix(returnTypeName);
-                };
-            } catch (e) {
-                if (String(e).includes(".overload")) {
-                    var splittedList = String(e).split(".overload");
-                    for (let i = 2; i < splittedList.length; i++) {
-                        var extractedOverload = splittedList[i].trim().split("(")[1].slice(0, -1).replaceAll("'", "");
-                        if (extractedOverload.includes(",")) {
-                            var argList = extractedOverload.split(", ");
-                            console.log('[!] Attempting overload of ' + className + '.' + methodName + ' with arguments: ' + extractedOverload + '!');
-                            if (argList.length == 2) {
-                                callingMethod.overload(argList[0], argList[1]).implementation = function(a, b) {
-                                    rudimentaryFix(returnTypeName);
-                                }
-                            } else if (argNum == 3) {
-                                callingMethod.overload(argList[0], argList[1], argList[2]).implementation = function(a, b, c) {
-                                    rudimentaryFix(returnTypeName);
-                                }
-                            } else if (argNum == 4) {
-                                callingMethod.overload(argList[0], argList[1], argList[2], argList[3]).implementation = function(a, b, c, d) {
-                                    rudimentaryFix(returnTypeName);
-                                }
-                            } else if (argNum == 5) {
-                                callingMethod.overload(argList[0], argList[1], argList[2], argList[3], argList[4]).implementation = function(a, b, c, d, e) {
-                                    rudimentaryFix(returnTypeName);
-                                }
-                            } else if (argNum == 6) {
-                                callingMethod.overload(argList[0], argList[1], argList[2], argList[3], argList[4], argList[5]).implementation = function(a, b, c, d, e, f) {
-                                    rudimentaryFix(returnTypeName);
-                                }
-                            }
-                        } else {
-                            callingMethod.overload(extractedOverload).implementation = function(a) {
-                                rudimentaryFix(returnTypeName);
-                            }
-                        }
-                    }
-                } else {
-                    console.log('[-] Failed to dynamically patch SSLPeerUnverifiedException ' + e + '!');
-                }
-            }
-            return this.$init(str);
-        };
-    } catch (err) {}
+    // try {
+    //     var UnverifiedCertError = Java.use('javax.net.ssl.SSLPeerUnverifiedException');
+    //     UnverifiedCertError.$init.implementation = function(str) {
+    //         console.log('[!] Unexpected SSLPeerUnverifiedException occurred, trying to patch it dynamically...!');
+    //         try {
+    //             var stackTrace = Java.use('java.lang.Thread').currentThread().getStackTrace();
+    //             var exceptionStackIndex = stackTrace.findIndex(stack => stack.getClassName() === "javax.net.ssl.SSLPeerUnverifiedException");
+    //             var callingFunctionStack = stackTrace[exceptionStackIndex + 1];
+    //             var className = callingFunctionStack.getClassName();
+    //             var methodName = callingFunctionStack.getMethodName();
+    //             var callingClass = Java.use(className);
+    //             var callingMethod = callingClass[methodName];
+    //             console.log('[!] Attempting to bypass uncommon SSL Pinning method on: ' + className + '.' + methodName + '!');
+    //             if (callingMethod.implementation) {
+    //                 return;
+    //             }
+    //             var returnTypeName = callingMethod.returnType.type;
+    //             callingMethod.implementation = function() {
+    //                 rudimentaryFix(returnTypeName);
+    //             };
+    //         } catch (e) {
+    //             if (String(e).includes(".overload")) {
+    //                 var splittedList = String(e).split(".overload");
+    //                 for (let i = 2; i < splittedList.length; i++) {
+    //                     var extractedOverload = splittedList[i].trim().split("(")[1].slice(0, -1).replaceAll("'", "");
+    //                     if (extractedOverload.includes(",")) {
+    //                         var argList = extractedOverload.split(", ");
+    //                         console.log('[!] Attempting overload of ' + className + '.' + methodName + ' with arguments: ' + extractedOverload + '!');
+    //                         if (argList.length == 2) {
+    //                             callingMethod.overload(argList[0], argList[1]).implementation = function(a, b) {
+    //                                 rudimentaryFix(returnTypeName);
+    //                             }
+    //                         } else if (argNum == 3) {
+    //                             callingMethod.overload(argList[0], argList[1], argList[2]).implementation = function(a, b, c) {
+    //                                 rudimentaryFix(returnTypeName);
+    //                             }
+    //                         } else if (argNum == 4) {
+    //                             callingMethod.overload(argList[0], argList[1], argList[2], argList[3]).implementation = function(a, b, c, d) {
+    //                                 rudimentaryFix(returnTypeName);
+    //                             }
+    //                         } else if (argNum == 5) {
+    //                             callingMethod.overload(argList[0], argList[1], argList[2], argList[3], argList[4]).implementation = function(a, b, c, d, e) {
+    //                                 rudimentaryFix(returnTypeName);
+    //                             }
+    //                         } else if (argNum == 6) {
+    //                             callingMethod.overload(argList[0], argList[1], argList[2], argList[3], argList[4], argList[5]).implementation = function(a, b, c, d, e, f) {
+    //                                 rudimentaryFix(returnTypeName);
+    //                             }
+    //                         }
+    //                     } else {
+    //                         callingMethod.overload(extractedOverload).implementation = function(a) {
+    //                             rudimentaryFix(returnTypeName);
+    //                         }
+    //                     }
+    //                 }
+    //             } else {
+    //                 console.log('[-] Failed to dynamically patch SSLPeerUnverifiedException ' + e + '!');
+    //             }
+    //         }
+    //         return this.$init(str);
+    //     };
+    // } catch (err) {}
 }
+
 setTimeout(function() {
     Java.perform(function() {
         var X509TrustManager = Java.use('javax.net.ssl.X509TrustManager');

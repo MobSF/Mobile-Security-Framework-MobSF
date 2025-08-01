@@ -1,5 +1,4 @@
 # Mobile Security Framework (MobSF)
-Version: v3.9 beta
 
 ![](https://cloud.githubusercontent.com/assets/4301109/20019521/cc61f7fc-a2f2-11e6-95f3-407030d9fdde.png)
 
@@ -7,12 +6,10 @@ Mobile Security Framework (MobSF) is a security research platform for mobile app
 
 Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82e3a63c-4813-11e6-9430-6015d98aeaab.png) in India
 
-[![python](https://img.shields.io/badge/python-3.10+-blue.svg?logo=python&labelColor=yellow)](https://www.python.org/downloads/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/opensecurity/mobile-security-framework-mobsf?style=social)](https://hub.docker.com/r/opensecurity/mobile-security-framework-mobsf/) [![python](https://img.shields.io/badge/python-3.10+-blue.svg?logo=python&labelColor=yellow)](https://www.python.org/downloads/)
 [![PyPI version](https://badge.fury.io/py/mobsf.svg)](https://badge.fury.io/py/mobsf)
 [![platform](https://img.shields.io/badge/platform-osx%2Flinux%2Fwindows-green.svg)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/)
 [![License](https://img.shields.io/:license-GPL--3.0--only-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
-[![Docker Pulls](https://img.shields.io/docker/pulls/opensecurity/mobile-security-framework-mobsf?style=social)](https://hub.docker.com/r/opensecurity/mobile-security-framework-mobsf/)
-
 [![MobSF tests](https://github.com/MobSF/Mobile-Security-Framework-MobSF/workflows/MobSF%20tests/badge.svg?branch=master)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/actions)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=MobSF_Mobile-Security-Framework-MobSF&metric=alert_status)](https://sonarcloud.io/dashboard?id=MobSF_Mobile-Security-Framework-MobSF)
 ![GitHub closed issues](https://img.shields.io/github/issues-closed/MobSF/Mobile-Security-Framework-MobSF)
@@ -32,23 +29,23 @@ MobSF is also bundled with [Android Tamer](https://tamerplatform.com), [BlackArc
 
 [![Donate to MobSF](https://user-images.githubusercontent.com/4301109/117404264-7aab5480-aebe-11eb-9cbd-da82d7346bb3.png)](https://opensecurity.in/donate)
 
-If you liked MobSF and find it useful, please consider donating.
 
-*It's easy to build open source, maintaining one is a different story. Long live open source!*
+> Has MobSF made a difference for you? Show your support and help us innovate with a donation. It's easy to build open source, maintaining one is a different story. 
+
+*Long live open source!*
 
 ## Documentation
 
-Quick setup
+Quick setup with docker
 
 ```
 docker pull opensecurity/mobile-security-framework-mobsf:latest
 docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
+
+# Default username and password: mobsf/mobsf
 ```
 
 [![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70686099-3855f780-1c79-11ea-8141-899e39459da2.png)](https://mobsf.github.io/docs)
-[![See MobSF Documentation in Chinese](https://user-images.githubusercontent.com/4301109/117404947-b09d0880-aebf-11eb-9db8-3d7360f47914.png)](https://mobsf.github.io/docs/#/zh-cn/)
-[![See MobSF Documentation in Japanese](https://user-images.githubusercontent.com/4301109/148662149-7ee671b4-66a2-4232-9522-276b8e88d924.png)](https://mobsf.github.io/docs/#/ja-jp/)
-[![See MobSF Documentation in Español](https://user-images.githubusercontent.com/4301109/173221657-ac1f7221-6ae9-44d8-bf6b-8732d84bf120.png)](https://mobsf.github.io/docs/#/es/)
 
 * Try MobSF Static Analyzer Online: [mobsf.live](https://mobsf.live)
 * MobSF in CI/CD: [mobsfscan](https://github.com/MobSF/mobsfscan)
@@ -67,7 +64,7 @@ docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:la
 
 ## MobSF Support
 
-* **Free Support:** Free limited support, questions, help and discussions, join our Slack channel [![Join_MobSF_Slack](https://img.shields.io/badge/mobsf%20slack-join-green?logo=slack&labelColor=4A154B)](https://join.slack.com/t/mobsf/shared_invite/zt-153nfus2r-hMCGrwzm8Lyy3OxsihnolQ)
+* **Free Support:** Free limited support, questions, help and discussions, join our Slack channel [![Join_MobSF_Slack](https://img.shields.io/badge/mobsf%20slack-join-green?logo=slack&labelColor=4A154B)](https://join.slack.com/t/mobsf/shared_invite/zt-2umjnqlsm-sNSh9g4GFraPUBPqatwTxw)
 * **Enterprise Support:** Priority feature requests, live support & onsite training, see [![MobSF Support Packages](https://img.shields.io/badge/enterprise-support%20package-blue?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGMAAABaCAMAAACbkBjCAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAkNQTFRFAAAA////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////o1yoNQAAAMF0Uk5TAAQ1YH6IXzYFAUqq9P/1rU4CPdHWQ4X+jgOkro+hVWYR6vIajJvz+XN/z9sjLW6lrNPX+PsGHyE5TE9XWV1hW0k6LC7hs7SEhgr2sGRiFBCXJf38sgwOtmpoIiDf68vSGS+Z9yeR70RNvUEVfOa/WgdCR8XuUeeA8Du7Vporrx66SwlcqWV92g2HY+2Ki/GQJjxpM8TVcIGodjJ3ybETJOjUyiop4sxYkkVSGJ/pD6cdwlTOHNnIZ+B13bXkKL7NMOC0/xQAAAPPSURBVHic7dn5PxVRFADwY0sPN0t4Uj0vLQq9lkelRVFRKklZs+RRiiTtSbRoD9GuhdK+Ky3S9qf1Zu68bczcO5rjhz4f5yfnOud9mTszd+Y+gLH4f8PL28fXz893nP/4UQIMAYFBRIoJwSGho0CETSQeER6BLYRGGoksjFGTcIlouSDEZNRpmaJEEDIVkTApE4TEoBHmaWpG7HQsY4YaQchMJMI8S92IQ/pHZqsThMzBMeJZRgIKkcgiCJmLYcSwDQuGMY9tzMcwFrCNhQiEl5VtJCXrNxaxCUIW6zf8ecYS/UYKz1iq31jGM5brN1bwDB/9RirPQFhDuMdqpX5jFc9I0W+k8Yww/UY6z1it3zDzDLN+A9awiTUIBKxlGxkYRibbWIdhLGUbCLcrgPUTWETWegyDPSEbUAjYyDI24RjZWepE7GYcA3LUjSlIBGzJVSO2JmIZsG2UZ1wI1TUEYZ11RJ7KrFvz8Qy1S6QAkYBCZaMI0yhWNrZjGlCiRJSiElCmZJSPGWOGrtiheKFjGhW2yiVVO+XL+i6bz9pqHCB09x77B9YA1O6tcwHGffX7oYGQsnr9+2R5MeHiZx4QkmTTQSocsqUL+WHh5yNHs3UJxVHHpL87RBo5HphkbDwhvS770N9lNZ38Z6Gm2bXGmpyjLa7l1eI8cqdO/8tW7JmNHnutZ6XhtJzA1nOOx7bzbgUXLBdHKLRcKvU8iS4Lo2YL3de4cpXe1Ns8Sto7ro1A6AxMkl8KXQDXbc5tapLbuNsA0CSvumHy0gTkF96Ut9rjFtyWjRwFuDO8ruRuLVfoblLePLwH4bKRmwAFSpXW6E4WYC66rwjYw3fYY8MDgIMqxeWWh8qAobq1Uk0gJBJ6ej0GensAHqmWW1urDQoH6bE6YI82gD53pPeJvecpq+OZt5x4ztkJewEeSG+f0NTObIlL9SReDjtZZWEDd4QSoaqP2jRyX7kTr49wCPJGrKuqE5O34h0R3vGaYqvcjAxeNXlPC+k7biZNPnC7+l1EA7eYBNPKVjG5QxPuLgchH51GP79YetP/JCbxNDnOb5voIE7ya0kjvYboTSCInvsBGvocG5odGmrpkR2QsgF6vmvos0nGZw21X8TKCClrELOvGvq+UYK7SSwEnYIiKesSs0EtjXSl6dZSGi6WOr5ei3I7kTnRrd34LpYOSdmQmL1ANn6IpQlSRr+8mYpsiK9MyY672lbx4acZ2WgXKp84059C+gvZsAqVrt0ycWPsN7JhNHicrIPus6PBMJu0hPAcWOHM/giNKVr6zDAWI4i/nmw15nhs85kAAAAASUVORK5CYII=)](https://opensecurity.in/#support)
 
 
@@ -101,7 +98,7 @@ docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:la
 
 * [Dominik Schlecht](https://github.com/sn0b4ll) ![germany](https://user-images.githubusercontent.com/4301109/37564176-743238ba-2ab6-11e8-9666-5d98f0a1d127.png)
 
-## Honorable Contributors
+## Honorable Contributors & Shoutouts
 
 * Amrutha VC - For the new MobSF logo
 * Dominik Schlecht - For the awesome work on adding Windows Phone App Static Analysis to MobSF
@@ -111,9 +108,6 @@ docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:la
 * Abhinav Saxena - (@xandfury) - For Travis CI and Logging integration
 * ![netguru](https://user-images.githubusercontent.com/4301109/76340877-a3dc4f00-62d2-11ea-8631-b4cc8d9e42ed.png) [Netguru](https://www.netguru.com/) (@karolpiateknet, @mtbrzeski) - For iOS Swift support, Rule contributions and SAST refactoring.
 * Maxime Fawe - (@Arenash13) - For Matching Strategy implementation of SAST pattern matching algorithms.
-
-## Shoutouts
-
 * Abhinav Sejpal (@Abhinav_Sejpal) - For poking me with bugs, feature requests, and UI & UX suggestions
 * Anant Srivastava (@anantshri) - For Activity Tester Idea
 * Anto Joseph (@antojoseph) - For the help with SuperSU

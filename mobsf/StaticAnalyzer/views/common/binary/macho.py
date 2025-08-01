@@ -9,6 +9,11 @@ import lief
 from mobsf.StaticAnalyzer.views.common.binary.strings import (
     strings_on_binary,
 )
+from mobsf.MobSF.utils import (
+    run_with_timeout,
+)
+
+from django.conf import settings
 
 
 def objdump_is_debug_symbol_stripped(macho_file):
@@ -28,7 +33,10 @@ class MachOChecksec:
             self.macho_name = rel_path
         else:
             self.macho_name = macho.name
-        self.macho = lief.parse(self.macho_path)
+        self.macho = run_with_timeout(
+            lief.parse,
+            settings.BINARY_ANALYSIS_TIMEOUT,
+            self.macho_path)
 
     def checksec(self):
         macho_dict = {}
@@ -277,7 +285,7 @@ class MachOChecksec:
                     # stripped and unstripped binaries
                     # also ignore radr://5614542
                     continue
-                if (i.type & 0xe0) > 0 or i.type in (0x0e, 0x1e):
+                if (i.type.value & 0xe0) > 0 or i.type.value in (0x0e, 0x1e):
                     # N_STAB set or 14, 30
 
                     # N_STAB	0xe0  /* if any of these bits set,
@@ -297,6 +305,8 @@ class MachOChecksec:
 
     def get_libraries(self):
         libs = []
+        if not self.macho:
+            return libs
         for i in self.macho.libraries:
             curr = '.'.join(str(x) for x in i.current_version)
             comp = '.'.join(str(x) for x in i.compatibility_version)

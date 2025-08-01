@@ -38,6 +38,9 @@ from mobsf.StaticAnalyzer.views.ios.db_interaction import (
     get_context_from_db_entry as idb)
 from mobsf.StaticAnalyzer.views.windows.db_interaction import (
     get_context_from_db_entry as wdb)
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 logger = logging.getLogger(__name__)
 try:
@@ -50,6 +53,7 @@ logger = logging.getLogger(__name__)
 ctype = 'application/json; charset=utf-8'
 
 
+@login_required
 def pdf(request, checksum, api=False, jsonres=False):
     try:
         if not is_md5(checksum):
@@ -89,8 +93,8 @@ def pdf(request, checksum, api=False, jsonres=False):
                 settings.UPLD_DIR,
                 checksum + '/',
                 checksum + ext)
-            vt = VirusTotal.VirusTotal()
-            context['virus_total'] = vt.get_result(app_bin, checksum)
+            vt = VirusTotal.VirusTotal(checksum)
+            context['virus_total'] = vt.get_result(app_bin)
         # Get Local Base URL
         proto = 'file://'
         host_os = 'nix'

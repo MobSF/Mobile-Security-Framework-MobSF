@@ -22,12 +22,21 @@ from mobsf.MobSF.utils import (
     is_md5,
     strict_package_check,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
+from mobsf.MobSF.views.authorization import (
+    Permissions,
+    permission_required,
+)
 
 logger = logging.getLogger(__name__)
 
 # AJAX
 
 
+@login_required
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def ios_instrument(request, api=False):
     """Instrument app with frida."""
@@ -94,7 +103,7 @@ def ios_instrument(request, api=False):
             data['message'] = frida_obj.ps()
         elif action == 'get':
             # Get injected Frida script.
-            data['message'] = frida_obj.get_script()
+            data['message'] = frida_obj.get_script(nolog=True)
         if action in ('spawn', 'session'):
             if pid and pid.isdigit():
                 # Attach to a different pid/bundle id

@@ -163,7 +163,6 @@ Java.performNow(function () {
         }
     } catch (err) {
         send('[RootDetection Bypass] Error ' + className + '.' + classMethod + err);
-        return
     }
 
     try {
@@ -183,7 +182,6 @@ Java.performNow(function () {
         }
     } catch (err) {
         send('[RootDetection Bypass] Error ' + className + '.' + classMethod + err);
-        return
     }
     try {
         className = 'android.security.keystore.KeyInfo'
@@ -203,44 +201,53 @@ Java.performNow(function () {
         }
     } catch (err) {
         send('[RootDetection Bypass] Error ' + className + '.' + classMethod + err);
-        return
     }
 
     // Native Root Check Bypass
 
-    Interceptor.attach(Module.findExportByName("libc.so", "fopen"), {
-        onEnter: function (args) {
-            var path = Memory.readCString(args[0]);
-            path = path.split("/");
-            var executable = path[path.length - 1];
-            var shouldFakeReturn = (RootBinaries.indexOf(executable) > -1)
-            if (shouldFakeReturn) {
-                Memory.writeUtf8String(args[0], "/notexists");
-                send("[RootDetection Bypass] native fopen");
-            }
-        },
-        onLeave: function (retval) {
+    try {
+        const libc = Process.getModuleByName("libc.so");
+        
+        Interceptor.attach(libc.getExportByName("fopen"), {
+            onEnter: function (args) {
+                try{
+                var path = Memory.readCString(args[0]);
+                path = path.split("/");
+                var executable = path[path.length - 1];
+                var shouldFakeReturn = (RootBinaries.indexOf(executable) > -1)
+                if (shouldFakeReturn) {
+                    args[0].writeUtf8String("/notexists");
+                    send("[RootDetection Bypass] native fopen");
+                }
+                } catch(e){}
+            },
+            onLeave: function (retval) {
 
-        }
-    });
-    Interceptor.attach(Module.findExportByName("libc.so", "system"), {
-        onEnter: function (args) {
-            var cmd = Memory.readCString(args[0]);
-            send("[RootDetection Bypass] SYSTEM CMD: " + cmd);
-            if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id") {
-                send("[RootDetection Bypass] native system: " + cmd);
-                Memory.writeUtf8String(args[0], "grep");
             }
-            if (cmd == "su") {
-                send("[RootDetection Bypass] native system: " + cmd);
-                Memory.writeUtf8String(args[0], "justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled");
+        });
+        
+        Interceptor.attach(libc.getExportByName("system"), {
+            onEnter: function (args) {
+                try{
+                var cmd = Memory.readCString(args[0]);
+                send("[RootDetection Bypass] SYSTEM CMD: " + cmd);
+                if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id") {
+                    send("[RootDetection Bypass] native system: " + cmd);
+                    args[0].writeUtf8String("grep");
+                }
+                if (cmd == "su") {
+                    send("[RootDetection Bypass] native system: " + cmd);
+                    args[0].writeUtf8String("justafakecommandthatcannotexistsusingthisshouldthowanexceptionwheneversuiscalled");
+                }
+                } catch(e){}
+            },
+            onLeave: function (retval) {
+
             }
-        },
-        onLeave: function (retval) {
-
-        }
-
-    });
+        });
+    } catch (err) {
+        send('[RootDetection Bypass] Error hooking libc.so: ' + err);
+    }
     /*
 
     TO IMPLEMENT:
@@ -258,3 +265,52 @@ Java.performNow(function () {
 
     */
 });
+Java.perform(function() {
+    // Bypassing Root in React Native JailMonkey
+    // Source: https://codeshare.frida.re/@RohindhR/react-native-jail-monkey-bypass-all-checks/
+    try {
+        let toHook = Java.use('com.gantix.JailMonkey.JailMonkeyModule')['getConstants'];
+        toHook.implementation = function() {
+            var hashmap = this.getConstants();
+            hashmap.put('isJailBroken', Java.use("java.lang.Boolean").$new(false));
+            hashmap.put('hookDetected', Java.use("java.lang.Boolean").$new(false));
+            hashmap.put('canMockLocation', Java.use("java.lang.Boolean").$new(false));
+            hashmap.put('isOnExternalStorage', Java.use("java.lang.Boolean").$new(false));
+            hashmap.put('AdbEnabled', Java.use("java.lang.Boolean").$new(false));
+            return hashmap;
+        }
+    } catch (err) {}
+    try{
+        // Bypassing Rooted Check
+        let hook = Java.use('com.gantix.JailMonkey.Rooted.RootedCheck')['getResultByDetectionMethod']
+        hook.implementation = function() {
+            let map = this.getResultByDetectionMethod();
+            map.put("jailMonkey", Java.use("java.lang.Boolean").$new(false));
+            return map;
+        }
+
+    } catch (err) {}
+    try{
+        // Bypassing Root detection method's result of RootBeer library
+        var className = 'com.gantix.JailMonkey.Rooted.RootedCheck$RootBeerResults';
+        let toHook = Java.use(className)['isJailBroken'];
+        toHook.implementation = function() {
+            return false;
+        };
+
+        let toHook2 = Java.use(className)['toNativeMap']
+        toHook2.implementation = function() {
+            var map = this.toNativeMap.call(this);
+            map.put("detectRootManagementApps", Java.use("java.lang.Boolean").$new(false));
+            map.put("detectPotentiallyDangerousApps", Java.use("java.lang.Boolean").$new(false));
+            map.put("checkForSuBinary", Java.use("java.lang.Boolean").$new(false));
+            map.put("checkForDangerousProps", Java.use("java.lang.Boolean").$new(false));
+            map.put("checkForRWPaths", Java.use("java.lang.Boolean").$new(false));
+            map.put("detectTestKeys", Java.use("java.lang.Boolean").$new(false));
+            map.put("checkSuExists", Java.use("java.lang.Boolean").$new(false));
+            map.put("checkForRootNative", Java.use("java.lang.Boolean").$new(false));
+            map.put("checkForMagiskBinary", Java.use("java.lang.Boolean").$new(false));
+            return map;
+        };
+    } catch (err) {}
+})

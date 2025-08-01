@@ -7,22 +7,24 @@
  */
 //Twitter: https://twitter.com/xploresec
 //GitHub: https://github.com/interference-security
+// Modified to support Frida 17.0.0+
+
 function findClasses(pattern)
 {
     var foundClasses = [];
-    var free = new NativeFunction(Module.findExportByName(null, 'free'), 'void', ['pointer'])
-    var copyClassNamesForImage = new NativeFunction(Module.findExportByName(null, 'objc_copyClassNamesForImage'), 'pointer', ['pointer', 'pointer'])
+    var free = new NativeFunction(Module.getGlobalExportByName('free'), 'void', ['pointer'])
+    var copyClassNamesForImage = new NativeFunction(Module.getGlobalExportByName('objc_copyClassNamesForImage'), 'pointer', ['pointer', 'pointer'])
     var p = Memory.alloc(Process.pointerSize)
-    Memory.writeUInt(p, 0)
+    p.writeUInt(0)
     var path = ObjC.classes.NSBundle.mainBundle().executablePath().UTF8String()
     var pPath = Memory.allocUtf8String(path)
     var pClasses = copyClassNamesForImage(pPath, p)
-    var count = Memory.readUInt(p)
+    var count = p.readUInt()
     var classesArray = new Array(count)
     for (var i = 0; i < count; i++)
     {
-        var pClassName = Memory.readPointer(pClasses.add(i * Process.pointerSize))
-        classesArray[i] = Memory.readUtf8String(pClassName)
+        var pClassName = pClasses.add(i * Process.pointerSize).readPointer()
+        classesArray[i] = pClassName.readUtf8String()
         if (classesArray[i].match(pattern)) {
             foundClasses.push( classesArray[i]);
         }
@@ -33,22 +35,22 @@ function findClasses(pattern)
 
 
 function getMatches(){
-	var matches;
-	try{
-		var pattern = /{{PATTERN}}/i;
-		send('Class search for pattern: ' + pattern)
-		matches = findClasses(pattern);
-	}catch (err){
-		send('Class pattern match [\"Error\"] => ' + err);
-		return;
-	}
-	if (matches.length>0)
-		send('Found [' + matches.length +  '] matches')
-	else
-		send('No matches found')
-	matches.forEach(function(clz) { 
-		send('[AUXILIARY] ' + clz)
-	});
+    var matches;
+    try{
+        var pattern = /{{PATTERN}}/i;
+        send('Class search for pattern: ' + pattern)
+        matches = findClasses(pattern);
+    }catch (err){
+        send('Class pattern match [\"Error\"] => ' + err);
+        return;
+    }
+    if (matches.length>0)
+        send('Found [' + matches.length +  '] matches')
+    else
+        send('No matches found')
+    matches.forEach(function(clz) { 
+        send('[AUXILIARY] ' + clz)
+    });
 }
 
 

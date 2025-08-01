@@ -1,12 +1,15 @@
 /* Description: iOS 13 SSL Bypass based on https://codeshare.frida.re/@machoreverser/ios12-ssl-bypass/ and https://github.com/nabla-c0d3/ssl-kill-switch2
  *  Author:     @apps3c
+ * Modified to support Frida 17.0.0+
  */
 
 try {
-    Module.ensureInitialized("libboringssl.dylib");
+    // Module.ensureInitialized is deprecated and no longer needed
+    var libboringssl = Process.getModuleByName("libboringssl.dylib");
 } catch(err) {
     send("libboringssl.dylib module not loaded. Trying to manually load it.")
     Module.load("libboringssl.dylib");
+    var libboringssl = Process.getModuleByName("libboringssl.dylib");
 }
 
 var SSL_VERIFY_NONE = 0;
@@ -14,7 +17,7 @@ var ssl_set_custom_verify;
 var ssl_get_psk_identity;
 
 ssl_set_custom_verify = new NativeFunction(
-    Module.findExportByName("libboringssl.dylib", "SSL_set_custom_verify"),
+    libboringssl.getExportByName("SSL_set_custom_verify"),
     'void', ['pointer', 'int', 'pointer']
 );
 
@@ -22,7 +25,7 @@ ssl_set_custom_verify = new NativeFunction(
 * Function signature https://commondatastorage.googleapis.com/chromium-boringssl-docs/ssl.h.html#SSL_get_psk_identity
 */
 ssl_get_psk_identity = new NativeFunction(
-    Module.findExportByName("libboringssl.dylib", "SSL_get_psk_identity"),
+    libboringssl.getExportByName("SSL_get_psk_identity"),
     'pointer', ['pointer']
 );
 

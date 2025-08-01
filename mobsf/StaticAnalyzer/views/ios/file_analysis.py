@@ -1,22 +1,28 @@
 # -*- coding: utf_8 -*-
 """iOS File Analysis."""
 
-import os
 import shutil
 import logging
 from pathlib import Path
 
 from django.utils.html import escape
 
-from mobsf.StaticAnalyzer.views.ios.plist_analysis import convert_bin_xml
+from mobsf.StaticAnalyzer.views.ios.plist_analysis import (
+    convert_bin_xml,
+)
+from mobsf.MobSF.utils import (
+    append_scan_status,
+)
 
 logger = logging.getLogger(__name__)
 
 
-def ios_list_files(src, md5_hash, binary_form, mode):
+def ios_list_files(md5_hash, src, mode):
     """List iOS files."""
     try:
-        logger.info('Get Files, BIN Plist -> XML, and Normalize')
+        msg = 'iOS File Analysis and Normalization'
+        logger.info(msg)
+        append_scan_status(md5_hash, msg)
         # Multi function, Get Files, BIN Plist -> XML, normalize + to x
         filez = []
         certz = []
@@ -24,62 +30,74 @@ def ios_list_files(src, md5_hash, binary_form, mode):
         full_paths = []
         database = []
         plist = []
-        for dirname, _, files in os.walk(src):
-            for jfile in files:
-                if not jfile.endswith('.DS_Store'):
 
-                    file_path = os.path.join(src, dirname, jfile)
-                    if '__MACOSX' in file_path:
-                        continue
-                    if '+' in jfile:
-                        plus2x = os.path.join(
-                            src, dirname, jfile.replace('+', 'x'))
-                        shutil.move(file_path, plus2x)
-                        file_path = plus2x
-                    fileparam = file_path.replace(src, '')
-                    filez.append(fileparam)
-                    full_paths.append(file_path)
-                    ext = Path(jfile).suffix
-                    if ext in ('.cer', '.pem', '.cert', '.crt',
-                               '.pub', '.key', '.pfx', '.p12', '.der'):
-                        certz.append({
-                            'file_path': escape(file_path.replace(src, '')),
-                            'type': None,
-                            'hash': None,
-                        })
-                    if ext in ('.db', '.sqlitedb', '.sqlite', '.sqlite3'):
-                        database.append({
-                            'file_path': escape(fileparam),
-                            'type': mode,
-                            'hash': md5_hash,
-                        })
+        mode = 'ios' if mode == 'zip' else 'ipa'
 
-                    if jfile.endswith('.plist'):
-                        if binary_form:
-                            convert_bin_xml(file_path)
-                        plist.append({
-                            'file_path': escape(fileparam),
-                            'type': mode,
-                            'hash': md5_hash,
-                        })
+        # Walk through the directory
+        for file_path in Path(src).rglob('*'):
+            if (file_path.is_file()
+                    and not (file_path.name.endswith('.DS_Store')
+                             or '__MACOSX' in str(file_path))):
+                # Normalize '+' in file names
+                if '+' in file_path.name:
+                    normalized_path = file_path.with_name(
+                        file_path.name.replace('+', 'x'))
+                    shutil.move(file_path, normalized_path)
+                    file_path = normalized_path
 
-        if len(database) > 0:
+                # Append file details
+                relative_path = file_path.relative_to(src)
+                filez.append(str(relative_path))
+                full_paths.append(str(file_path))
+
+                ext = file_path.suffix.lower()
+
+                # Categorize files by type
+                if ext in {'.cer', '.pem', '.cert', '.crt', '.pub',
+                           '.key', '.pfx', '.p12', '.der'}:
+                    certz.append({
+                        'file_path': escape(str(relative_path)),
+                        'type': None,
+                        'hash': None,
+                    })
+                elif ext in {'.db', '.sqlitedb', '.sqlite', '.sqlite3'}:
+                    database.append({
+                        'file_path': escape(str(relative_path)),
+                        'type': mode,
+                        'hash': md5_hash,
+                    })
+                elif ext in {'.plist', '.json'}:
+                    if mode == 'ipa' and ext == '.plist':
+                        convert_bin_xml(file_path.as_posix())
+                    plist.append({
+                        'file_path': escape(str(relative_path)),
+                        'type': mode,
+                        'hash': md5_hash,
+                    })
+
+        # Group special files
+        if database:
             sfiles.append({
                 'issue': 'SQLite Files',
                 'files': database,
             })
-        if len(plist) > 0:
+        if plist:
             sfiles.append({
                 'issue': 'Plist Files',
                 'files': plist,
             })
-        if len(certz) > 0:
+        if certz:
             sfiles.append({
                 'issue': 'Certificate/Key Files Hardcoded inside the App.',
                 'files': certz,
             })
-        return {'files_short': filez,
-                'files_long': full_paths,
-                'special_files': sfiles}
-    except Exception:
-        logger.exception('iOS List Files')
+
+        return {
+            'files_short': filez,
+            'files_long': full_paths,
+            'special_files': sfiles,
+        }
+    except Exception as exp:
+        msg = 'iOS File Analysis'
+        logger.exception(msg)
+        append_scan_status(md5_hash, msg, repr(exp))

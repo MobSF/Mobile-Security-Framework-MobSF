@@ -44,6 +44,7 @@ def run_analysis(apk_dir, md5_hash, package):
                 log_line = log_line.split(clip_tag2)[1]
                 clipboard.append(log_line)
     urls, domains, emails = extract_urls_domains_emails(
+        md5_hash,
         data['traffic'].lower())
     # Tar dump and fetch files
     all_files = get_app_files(apk_dir, package)
@@ -202,7 +203,7 @@ def generate_download(apk_dir, md5_hash, download_dir, package):
         if is_file_exists(fd_logs):
             shutil.copyfile(fd_logs, dfd_logs)
         try:
-            shutil.copytree(sshot, dsshot)
+            shutil.copytree(sshot, dsshot, dirs_exist_ok=True)
         except Exception:
             pass
         if is_file_exists(web):

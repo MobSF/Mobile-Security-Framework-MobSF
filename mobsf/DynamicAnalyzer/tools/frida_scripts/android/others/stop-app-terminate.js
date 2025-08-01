@@ -133,23 +133,27 @@ Java.perform(function() {
     }
 })
 try {
-    Interceptor.attach(Module.findExportByName(null, "exit"), {
+    Interceptor.attach(Module.getGlobalExportByName("exit"), {
         onEnter: function(args) {
             console.warn("Native Exit() Called :-->:\n" + Thread.backtrace(this.context, Backtracer.ACCURATE).map(DebugSymbol.fromAddress).join("\n") + "\n");
         },
         onLeave: function(retval) {}
     });
-} catch (e) {}
+} catch (e) {
+    console.error("Error hooking exit: " + e);
+}
 try {
-    Interceptor.attach(Module.findExportByName(null, "abort"), {
+    Interceptor.attach(Module.getGlobalExportByName("abort"), {
         onEnter: function(args) {
             console.warn("Native Abort() Called :-->:\n" + Thread.backtrace(this.context, Backtracer.ACCURATE).map(DebugSymbol.fromAddress).join("\n") + "\n");
         },
         onLeave: function(retval) {}
     });
-} catch (e) {}
+} catch (e) {
+    console.error("Error hooking abort: " + e);
+}
 try {
-    var fork = Module.findExportByName(null, "fork")
+    var fork = Module.getGlobalExportByName("fork")
     Interceptor.attach(fork, {
         onEnter: function(args) {},
         onLeave: function(retval) {
@@ -157,9 +161,12 @@ try {
             console.log("Second Process PID : ", pid)
         }
     })
-} catch (e) {}
+} catch (e) {
+    console.error("Error hooking fork: " + e);
+}
 try {
-    Interceptor.attach(Module.findExportByName("libc.so", "system"), {
+    const libc = Process.getModuleByName("libc.so");
+    Interceptor.attach(libc.getExportByName("system"), {
         onEnter: function(args) {
             var cmd = Memory.readCString(args[0]);
             if (cmd.indexOf("kill") != -1) {
@@ -170,19 +177,22 @@ try {
         },
         onLeave: function(retval) {}
     });
-} catch (e) {}
+} catch (e) {
+    console.error("Error hooking system: " + e);
+}
 try {
-    var abortPtr = Module.getExportByName('libc.so', 'abort');
+    const libc = Process.getModuleByName('libc.so');
+    var abortPtr = libc.getExportByName('abort');
     var abort = new NativeFunction(abortPtr, 'int', ['int']);
-    var exitPtr = Module.getExportByName('libc.so', 'exit');
+    var exitPtr = libc.getExportByName('exit');
     var exit = new NativeFunction(exitPtr, 'int', ['int']);
-    var _exitPtr = Module.getExportByName('libc.so', '_exit');
+    var _exitPtr = libc.getExportByName('_exit');
     var _exit = new NativeFunction(_exitPtr, 'int', ['int']);
-    var killPtr = Module.getExportByName('libc.so', 'kill');
+    var killPtr = libc.getExportByName('kill');
     var kill = new NativeFunction(killPtr, 'int', ['int', 'int']);
-    var raisePtr = Module.getExportByName('libc.so', 'raise');
+    var raisePtr = libc.getExportByName('raise');
     var raise = new NativeFunction(raisePtr, 'int', ['int']);
-    var shutdownPtr = Module.getExportByName('libc.so', 'shutdown');
+    var shutdownPtr = libc.getExportByName('shutdown');
     var shutdown = new NativeFunction(shutdownPtr, 'int', ['int', 'int']);
     Interceptor.replace(abortPtr, new NativeCallback(function(status) {
         console.log('Abort Replaced');
@@ -208,4 +218,6 @@ try {
         console.log('Shutdown Replaced');
         return 0;
     }, 'int', ['int', 'int']));
-} catch (e) {}
+} catch (e) {
+    console.error("Error hooking libc functions: " + e);
+}

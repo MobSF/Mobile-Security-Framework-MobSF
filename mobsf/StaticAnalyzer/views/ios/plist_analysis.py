@@ -4,6 +4,7 @@
 import logging
 import os
 from plistlib import (
+    FMT_XML,
     dumps,
     load,
     loads,
@@ -13,17 +14,12 @@ from re import sub
 
 from openstep_parser import OpenStepDecoder
 
-from biplist import (
-    InvalidPlistException,
-    readPlist,
-    writePlistToString,
-)
-
 from mobsf.MobSF.utils import (
+    append_scan_status,
     find_key_in_dict,
     is_file_exists,
 )
-from mobsf.StaticAnalyzer.views.ios.permission_analysis import (
+from mobsf.StaticAnalyzer.views.ios.kb.permission_analysis import (
     check_permissions,
 )
 from mobsf.StaticAnalyzer.views.ios.app_transport_security import (
@@ -47,7 +43,7 @@ def get_bundle_id(pobj, src):
     Look up in Info.plist, entitlements, pbxproj
     """
     possible_ids = set()
-    skip_chars = {'$(', '${'}
+    skip_chars = ('$(', '${')
 
     # From old Info.plist
     bundle_id_og = pobj.get('CFBundleIdentifier', '')
@@ -100,17 +96,22 @@ def get_bundle_id(pobj, src):
 def convert_bin_xml(bin_xml_file):
     """Convert Binary XML to Readable XML."""
     try:
-        plist_obj = readPlist(bin_xml_file)
-        data = writePlistToString(plist_obj)
-        return data
-    except InvalidPlistException:
+        with open(bin_xml_file, 'rb') as fp:
+            plist_obj = load(fp)
+
+        # Serializing the plist object to a binary plist string
+        data = dumps(plist_obj, fmt=FMT_XML)
+        Path(bin_xml_file).write_bytes(data)
+    except Exception:
         logger.warning('Failed to convert plist')
 
 
-def plist_analysis(src, is_source):
+def plist_analysis(checksum, src, scan_type):
     """Plist Analysis."""
     try:
-        logger.info('iOS Info.plist Analysis Started')
+        msg = 'iOS Info.plist Analysis Started'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         plist_info = {
             'bin_name': '',
             'bin': '',
@@ -131,8 +132,10 @@ def plist_analysis(src, is_source):
         }
         plist_file = None
         plist_files = []
-        if is_source:
-            logger.info('Finding Info.plist in iOS Source')
+        if scan_type == 'zip':
+            msg = 'Finding Info.plist in iOS Source'
+            logger.info(msg)
+            append_scan_status(checksum, msg)
             for dirpath, _dirnames, files in os.walk(src):
                 for name in files:
                     if (not any(x in dirpath for x in SKIP_PATH)
@@ -143,7 +146,9 @@ def plist_analysis(src, is_source):
                         if name == 'Info.plist' or '-Info.plist' in name:
                             plist_file = os.path.join(dirpath, name)
         else:
-            logger.info('Finding Info.plist in iOS Binary')
+            msg = 'Finding Info.plist in iOS Binary'
+            logger.info(msg)
+            append_scan_status(checksum, msg)
             dirs = os.listdir(src)
             dot_app_dir = ''
             for dir_ in dirs:
@@ -163,11 +168,15 @@ def plist_analysis(src, is_source):
         plist_obj = {}
         with open(plist_file, 'rb') as fp:
             plist_obj = load(fp)
-        plist_info['plist_xml'] = dumps(
-            plist_obj).decode('utf-8', 'ignore')
+        try:
+            pxml = dumps(plist_obj).decode('utf-8', 'ignore')
+        except Exception:
+            logger.error('Failed to dump plist XML')
+            pxml = ''
+        plist_info['plist_xml'] = pxml
         plist_info['bin_name'] = (plist_obj.get('CFBundleDisplayName', '')
                                   or plist_obj.get('CFBundleName', ''))
-        if not plist_info['bin_name'] and not is_source:
+        if not plist_info['bin_name'] and scan_type == 'ipa':
             # For iOS IPA
             plist_info['bin_name'] = dot_app_dir.replace('.app', '')
         plist_info['bin'] = plist_obj.get('CFBundleExecutable', '')
@@ -202,8 +211,10 @@ def plist_analysis(src, is_source):
             'ats_summary': get_summary(ats),
         }
         return plist_info
-    except Exception:
-        logger.exception('Reading from Info.plist')
+    except Exception as exp:
+        msg = 'Reading from Info.plist'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
 
 
 def get_summary(ats):
@@ -223,8 +234,11 @@ def get_summary(ats):
     return summary
 
 
-def get_plist_secrets(app_dir):
+def get_plist_secrets(checksum, app_dir):
     """Get possible hardcoded secrets from plist files."""
+    msg = 'Searching for secrets in plist files'
+    logger.info(msg)
+    append_scan_status(checksum, msg)
     result_list = set()
 
     def _remove_tags(data):

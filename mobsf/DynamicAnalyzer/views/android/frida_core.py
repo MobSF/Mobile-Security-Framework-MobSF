@@ -19,6 +19,9 @@ from mobsf.DynamicAnalyzer.views.android.frida_scripts import (
 from mobsf.MobSF.utils import (
     get_device,
 )
+from mobsf.DynamicAnalyzer.views.common.frida import (
+    get_bridge_loader,
+)
 
 logger = logging.getLogger(__name__)
 _FPID = None
@@ -39,6 +42,7 @@ class Frida:
         self.frida_log = self.apk_dir / 'mobsf_frida_out.txt'
         self.deps = self.apk_dir / 'mobsf_app_deps.txt'
         self.clipboard = self.apk_dir / 'mobsf_app_clipboard.txt'
+        self.bridge_loader = get_bridge_loader()
 
     def get_scripts(self, script_type, selected_scripts):
         """Get Frida Scripts."""
@@ -78,7 +82,7 @@ class Frida:
                 scripts.append(class_trace(self.extras['class_trace']))
         return scripts
 
-    def get_script(self):
+    def get_script(self, nolog=False):
         """Get final script."""
         if not self.code:
             self.code = ''
@@ -92,6 +96,22 @@ class Frida:
         rpc = f'rpc.exports = {{ \n{rpc_script}\n }};'
         combined = '\n'.join(scripts)
         final = f'{rpc}\n setTimeout(function() {{ \n{combined}\n }}, 1000)'
+
+        # Use bridges only for Frida 17.0.0+
+        if self.bridge_loader.is_required_and_available():
+            try:
+                final = self.bridge_loader.inject_bridge_support(
+                    final, 'java')
+                if not nolog:
+                    logger.info('Frida Script injected with bridges')
+            except Exception:
+                logger.exception(
+                    'Failed to inject script with bridges '
+                    '(required for Frida 17.0.0+)')
+        else:
+            if not nolog:
+                logger.info('Frida Script injected')
+
         return final
 
     def frida_response(self, message, data):
@@ -228,6 +248,8 @@ class Frida:
         loaded_class_methods = []
         implementations = []
         try:
+            if not self.extras:
+                return
             raction = self.extras.get('rclass_action')
             rclass = self.extras.get('rclass_name')
             rclass_pattern = self.extras.get('rclass_pattern')

@@ -44,6 +44,7 @@ class FileType(object):
                 or self.is_ipa()
                 or self.is_appx()
                 or self.is_apks()
+                or self.is_aab()
                 or self.is_jar()
                 or self.is_aar()):
             return True
@@ -56,6 +57,10 @@ class FileType(object):
     def is_xapk(self):
         return (self.file_type in settings.APK_MIME
                 and self.file_name_lower.endswith('.xapk'))
+
+    def is_aab(self):
+        return (self.file_type in settings.APK_MIME
+                and self.file_name_lower.endswith('.aab'))
 
     def is_apk(self):
         return (self.file_type in settings.APK_MIME

@@ -27,12 +27,21 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
     strict_package_check,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
+from mobsf.MobSF.views.authorization import (
+    Permissions,
+    permission_required,
+)
 
 logger = logging.getLogger(__name__)
 
 # AJAX
 
 
+@login_required
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def get_runtime_dependencies(request, api=False):
     """Get App runtime dependencies."""
@@ -56,12 +65,14 @@ def get_runtime_dependencies(request, api=False):
 # AJAX
 
 
+@login_required
+@permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def instrument(request, api=False):
     """Instrument app with frida."""
     data = {
         'status': 'failed',
-        'message': 'Failed to instrument app'}
+        'message': ''}
     try:
         action = request.POST.get('frida_action', 'spawn')
         pid = request.POST.get('pid')
@@ -104,7 +115,7 @@ def instrument(request, api=False):
             data['message'] = frida_obj.ps()
         elif action == 'get':
             # Get injected Frida script.
-            data['message'] = frida_obj.get_script()
+            data['message'] = frida_obj.get_script(nolog=True)
         if action in ('spawn', 'session'):
             if pid and pid.isdigit():
                 # Attach to a different pid/bundle id
@@ -123,6 +134,7 @@ def instrument(request, api=False):
     return send_response(data, api)
 
 
+@login_required
 def live_api(request, api=False):
     try:
         if api:

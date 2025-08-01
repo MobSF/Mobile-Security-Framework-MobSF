@@ -1,9 +1,7 @@
 from django.urls import re_path
 
-from mobsf.DynamicAnalyzer.views.common import (
-    device,
-    frida,
-)
+from mobsf.DynamicAnalyzer.views.common import device
+from mobsf.DynamicAnalyzer.views.common.frida import views as frida
 from mobsf.DynamicAnalyzer.views.android import dynamic_analyzer as dz
 from mobsf.DynamicAnalyzer.views.android import (
     operations,
@@ -22,18 +20,24 @@ from mobsf.MobSF.security import (
     init_exec_hooks,
     store_exec_hashes_at_first_run,
 )
-from mobsf.MobSF.views import home
+from mobsf.MobSF.views import (
+    authentication,
+    authorization,
+    home,
+    saml2,
+)
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.MobSF.views.api import api_android_dynamic_analysis as api_dz
 from mobsf.MobSF.views.api import api_ios_dynamic_analysis as api_idz
 from mobsf.StaticAnalyzer import tests
 from mobsf.StaticAnalyzer.views.common import (
     appsec,
+    async_task,
     pdf,
     shared_func,
     suppression,
 )
-from mobsf.StaticAnalyzer.views.android import (
+from mobsf.StaticAnalyzer.views.android.views import (
     find,
     manifest_view,
     source_tree,
@@ -42,16 +46,47 @@ from mobsf.StaticAnalyzer.views.android import (
 from mobsf.StaticAnalyzer.views.windows import windows
 from mobsf.StaticAnalyzer.views.android import static_analyzer as android_sa
 from mobsf.StaticAnalyzer.views.ios import static_analyzer as ios_sa
-from mobsf.StaticAnalyzer.views.ios import view_source as io_view_source
+from mobsf.StaticAnalyzer.views.ios.views import view_source as io_view_source
 
 from . import settings
 
+bundle_id_regex = r'(?P<bundle_id>.+)$'
+checksum_regex = r'(?P<checksum>[0-9a-f]{32})'
+paginate = r'(?P<page_size>[0-9]{1,10})/(?P<page_number>[0-9]{1,10})'
 
 urlpatterns = [
+    re_path(r'^login/$',
+            authentication.login_view,
+            name='login'),
+    re_path(r'^logout$',
+            authentication.logout_view,
+            name='logout'),
+    re_path(r'^change_password/$',
+            authentication.change_password,
+            name='change_password'),
+    re_path(r'^users/$',
+            authorization.users,
+            name='users'),
+    re_path(r'^create_user/$',
+            authorization.create_user,
+            name='create_user'),
+    re_path(r'^delete_user/$',
+            authorization.delete_user,
+            name='delete_user'),
+    # SAML2
+    re_path(r'^sso/$',
+            saml2.saml_login,
+            name='saml_login'),
+    re_path(r'^sso/acs/$',
+            saml2.saml_acs,
+            name='saml_acs'),
     # REST API
     # Static Analysis
     re_path(r'^api/v1/upload$', api_sz.api_upload),
     re_path(r'^api/v1/scan$', api_sz.api_scan),
+    re_path(r'^api/v1/search$', api_sz.api_search),
+    re_path(r'^api/v1/scan_logs$', api_sz.api_scan_logs),
+    re_path(r'^api/v1/tasks$', api_sz.api_tasks),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
     re_path(r'^api/v1/download_pdf$', api_sz.api_pdf_report),
     re_path(r'^api/v1/report_json$', api_sz.api_json_report),
@@ -86,7 +121,7 @@ urlpatterns = [
     # Shared
     re_path(r'^api/v1/frida/logs$', api_dz.api_frida_logs),
     re_path(r'^api/v1/frida/list_scripts$', api_dz.api_list_frida_scripts),
-    re_path(r'^api/v1/frida/get_script$', api_dz.api_get_script),
+    re_path(r'^api/v1/frida/get_script$', api_dz.api_get_script_content),
     re_path(r'^api/v1/dynamic/view_source$', api_dz.api_dynamic_view_file),
     # iOS Specific
     re_path(r'^api/v1/ios/corellium_supported_models$',
@@ -147,8 +182,11 @@ if settings.API_ONLY == '0':
     urlpatterns.extend([
         # General
         re_path(r'^$', home.index, name='home'),
-        re_path(r'^upload/$', home.Upload.as_view),
+        re_path(r'^upload/$', home.Upload.as_view, name='upload'),
         re_path(r'^download/', home.download, name='download'),
+        re_path(fr'^download_binary/{checksum_regex}/$',
+                home.download_binary,
+                name='download_binary'),
         re_path(r'^download_scan/', home.download_apk, name='download_scan'),
         re_path(r'^generate_downloads/$',
                 home.generate_download,
@@ -157,39 +195,45 @@ if settings.API_ONLY == '0':
         re_path(r'^donate$', home.donate, name='donate'),
         re_path(r'^api_docs$', home.api_docs, name='api_docs'),
         re_path(r'^recent_scans/$', home.recent_scans, name='recent'),
+        re_path(fr'^recent_scans/{paginate}/$',
+                home.recent_scans,
+                name='scans_paginated'),
         re_path(r'^delete_scan/$', home.delete_scan, name='delete_scan'),
         re_path(r'^search$', home.search),
+        re_path(r'^status/$', home.scan_status, name='status'),
         re_path(r'^error/$', home.error, name='error'),
-        re_path(r'^not_found/$', home.not_found),
         re_path(r'^zip_format/$', home.zip_format),
+        re_path(r'^robots.txt$', home.robots_txt),
         re_path(r'^dynamic_analysis/$', home.dynamic_analysis, name='dynamic'),
-
+        re_path(r'^tasks$',
+                async_task.list_tasks,
+                name='list_tasks'),
         # Static Analysis
         # Android
-        re_path(r'^static_analyzer/(?P<checksum>[0-9a-f]{32})/$',
+        re_path(fr'^static_analyzer/{checksum_regex}/$',
                 android_sa.static_analyzer,
                 name='static_analyzer'),
         # Remove this is version 4/5
         re_path(r'^source_code/$', source_tree.run, name='tree_view'),
         re_path(r'^view_file/$', view_source.run, name='view_source'),
         re_path(r'^find/$', find.run, name='find_files'),
-        re_path(r'^manifest_view/(?P<checksum>[0-9a-f]{32})/$',
+        re_path(fr'^manifest_view/{checksum_regex}/$',
                 manifest_view.run,
                 name='manifest_view'),
         # IOS
-        re_path(r'^static_analyzer_ios/(?P<checksum>[0-9a-f]{32})/$',
+        re_path(fr'^static_analyzer_ios/{checksum_regex}/$',
                 ios_sa.static_analyzer_ios,
                 name='static_analyzer_ios'),
         re_path(r'^view_file_ios/$',
                 io_view_source.run,
                 name='view_file_ios'),
         # Windows
-        re_path(r'^static_analyzer_windows/(?P<checksum>[0-9a-f]{32})/$',
+        re_path(fr'^static_analyzer_windows/{checksum_regex}/$',
                 windows.staticanalyzer_windows,
                 name='static_analyzer_windows'),
         # Shared
-        re_path(r'^pdf/(?P<checksum>[0-9a-f]{32})/$', pdf.pdf, name='pdf'),
-        re_path(r'^appsec_dashboard/(?P<checksum>[0-9a-f]{32})/$',
+        re_path(fr'^pdf/{checksum_regex}/$', pdf.pdf, name='pdf'),
+        re_path(fr'^appsec_dashboard/{checksum_regex}/$',
                 appsec.appsec_dashboard,
                 name='appsec_dashboard'),
         # Suppression
@@ -209,21 +253,21 @@ if settings.API_ONLY == '0':
         re_path(r'^compare/(?P<hash1>[0-9a-f]{32})/(?P<hash2>[0-9a-f]{32})/$',
                 shared_func.compare_apps),
         # Relative Shared & Dynamic Library scan
-        re_path(r'^scan_library/(?P<checksum>[0-9a-f]{32})$',
+        re_path(fr'^scan_library/{checksum_regex}$',
                 shared_func.scan_library,
                 name='scan_library'),
         # Dynamic Analysis
         re_path(r'^android/dynamic_analysis/$',
                 dz.android_dynamic_analysis,
                 name='dynamic_android'),
-        re_path(r'^android_dynamic/(?P<checksum>[0-9a-f]{32})$',
+        re_path(fr'^android_dynamic/{checksum_regex}$',
                 dz.dynamic_analyzer,
                 name='dynamic_analyzer'),
         re_path(r'^httptools$',
                 dz.httptools_start,
                 name='httptools'),
         re_path(r'^logcat/$', dz.logcat),
-        re_path(r'^static_scan/(?P<checksum>[0-9a-f]{32})$',
+        re_path(fr'^static_scan/{checksum_regex}$',
                 dz.trigger_static_analysis,
                 name='static_scan'),
         # Android Operations
@@ -245,6 +289,9 @@ if settings.API_ONLY == '0':
         re_path(r'^start_activity/$',
                 tests_common.start_activity,
                 name='start_activity'),
+        re_path(r'^start_deeplink/$',
+                tests_common.start_deeplink,
+                name='start_deeplink'),
         re_path(r'^download_data/$', tests_common.download_data),
         re_path(r'^collect_logs/$', tests_common.collect_logs),
         re_path(r'^tls_tests/$', tests_common.tls_tests),
@@ -260,15 +307,15 @@ if settings.API_ONLY == '0':
                 name='frida_logs'),
         re_path(r'^get_dependencies/$', tests_frida.get_runtime_dependencies),
         # Report
-        re_path(r'^dynamic_report/(?P<checksum>[0-9a-f]{32})$',
+        re_path(fr'^dynamic_report/{checksum_regex}$',
                 report.view_report,
                 name='dynamic_report'),
         # Shared
         re_path(r'^list_frida_scripts/$',
                 frida.list_frida_scripts,
                 name='list_frida_scripts'),
-        re_path(r'^get_script/$',
-                frida.get_script,
+        re_path(r'^get_script_content/$',
+                frida.get_script_content,
                 name='get_script'),
         re_path(r'^dynamic_view_file/$',
                 device.view_file,
@@ -304,7 +351,7 @@ if settings.API_ONLY == '0':
         re_path(r'^ios/list_apps/$',
                 instance.list_apps,
                 name='list_apps'),
-        re_path(r'^ios/setup_environment/(?P<checksum>[0-9a-f]{32})$',
+        re_path(fr'^ios/setup_environment/{checksum_regex}$',
                 instance.setup_environment,
                 name='setup_environment'),
         re_path(r'^ios/dynamic_analyzer/$',
@@ -343,13 +390,13 @@ if settings.API_ONLY == '0':
         re_path(r'^ios/system_logs/$',
                 instance.system_logs,
                 name='ios_system_logs'),
-        re_path(r'^ios/download_data/(?P<bundle_id>([\w-]*\.)+[\w-]{2,155})$',
+        re_path(fr'^ios/download_data/{bundle_id_regex}',
                 instance.download_data,
                 name='ios_download_data'),
         re_path(r'^ios/instrument/$',
                 ios_tests_frida.ios_instrument,
                 name='ios_instrument'),
-        re_path(r'^ios/view_report/(?P<bundle_id>([\w-]*\.)+[\w-]{2,155})$',
+        re_path(fr'^ios/view_report/{bundle_id_regex}',
                 ios_view_report.ios_view_report,
                 name='ios_view_report'),
 

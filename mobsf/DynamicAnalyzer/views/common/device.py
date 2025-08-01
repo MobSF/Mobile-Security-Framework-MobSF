@@ -8,6 +8,9 @@ from django.conf import settings
 from django.shortcuts import render
 from django.utils.html import escape
 
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 from mobsf.MobSF.utils import (
     is_md5,
     is_path_traversal,
@@ -16,14 +19,15 @@ from mobsf.MobSF.utils import (
     read_sqlite,
 )
 
-from biplist import (
-    writePlistToString,
+from plistlib import (
+    FMT_XML,
+    dumps,
 )
-
 
 logger = logging.getLogger(__name__)
 
 
+@login_required
 def view_file(request, api=False):
     """View File in app data directory."""
     logger.info('Viewing File')
@@ -53,7 +57,7 @@ def view_file(request, api=False):
             return print_n_send_error_response(request, err, api)
         dat = sfile.read_text('ISO-8859-1')
         if fil.endswith('.plist') and dat.startswith('bplist0'):
-            dat = writePlistToString(dat).decode('utf-8', 'ignore')
+            dat = dumps(dat, fmt=FMT_XML).decode('utf-8', 'ignore')
         if fil.endswith(('.xml', '.plist')) and typ in ['xml', 'plist']:
             rtyp = 'xml'
         elif typ == 'db':

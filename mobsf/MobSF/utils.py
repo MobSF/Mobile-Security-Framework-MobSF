@@ -16,13 +16,16 @@ import signal
 import string
 import subprocess
 import stat
-import socket
 import sqlite3
 import unicodedata
 import threading
-from urllib.parse import urlparse
 from pathlib import Path
-from distutils.version import StrictVersion
+from concurrent.futures import (
+    ThreadPoolExecutor,
+    TimeoutError as ThreadPoolTimeoutError,
+)
+
+from packaging.version import Version
 
 import distro
 
@@ -31,6 +34,10 @@ import psutil
 import requests
 
 from django.shortcuts import render
+from django.utils import timezone
+
+from mobsf.StaticAnalyzer.models import RecentScansDB
+from mobsf.MobSF. init import api_key
 
 from . import settings
 
@@ -49,11 +56,16 @@ URL_REGEX = re.compile(
     ),
     re.UNICODE)
 EMAIL_REGEX = re.compile(r'[\w+.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
+USERNAME_REGEX = re.compile(r'^\w[\w\-\@\.]{1,35}$')
+GOOGLE_API_KEY_REGEX = re.compile(r'AIza[0-9A-Za-z-_]{35}$')
+GOOGLE_APP_ID_REGEX = re.compile(r'\d{1,2}:\d{1,50}:android:[a-f0-9]{1,50}')
+PKG_REGEX = re.compile(
+    r'package\s+([a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*);')
 
 
 class Color(object):
     GREEN = '\033[92m'
-    ORANGE = '\033[33m'
+    GREY = '\033[0;37m'
     RED = '\033[91m'
     BOLD = '\033[1m'
     END = '\033[0m'
@@ -84,19 +96,15 @@ def upstream_proxy(flaw_type):
     return proxies, verify
 
 
-def api_key():
-    """Print REST API Key."""
-    if os.environ.get('MOBSF_API_KEY'):
-        logger.info('\nAPI Key read from environment variable')
-        return os.environ['MOBSF_API_KEY']
-
-    secret_file = os.path.join(settings.MobSF_HOME, 'secret')
-    if is_file_exists(secret_file):
-        try:
-            _api_key = open(secret_file).read().strip()
-            return gen_sha256_hash(_api_key)
-        except Exception:
-            logger.exception('Cannot Read API Key')
+def get_system_resources():
+    """Get CPU and Memory Available."""
+    # Get number of physical cores
+    physical_cores = psutil.cpu_count(logical=False)
+    # Get number of logical processors (threads)
+    logical_processors = psutil.cpu_count(logical=True)
+    # Get total RAM
+    total_ram = psutil.virtual_memory().total / (1024 ** 3)  # Convert bytes to GB
+    return physical_cores, logical_processors, total_ram
 
 
 def print_version():
@@ -104,12 +112,16 @@ def print_version():
     logger.info(settings.BANNER)
     ver = settings.MOBSF_VER
     logger.info('Author: Ajin Abraham | opensecurity.in')
+    mobsf_api_key = api_key(settings.MOBSF_HOME)
     if platform.system() == 'Windows':
         logger.info('Mobile Security Framework %s', ver)
-        print('REST API Key: ' + api_key())
+        print(f'REST API Key: {mobsf_api_key}')
+        print('Default Credentials: mobsf/mobsf')
     else:
-        logger.info('\033[1m\033[34mMobile Security Framework %s\033[0m', ver)
-        print('REST API Key: ' + Color.BOLD + api_key() + Color.END)
+        logger.info(
+            '%sMobile Security Framework %s%s', Color.GREY, ver, Color.END)
+        print(f'REST API Key: {Color.BOLD}{mobsf_api_key}{Color.END}')
+        print(f'Default Credentials: {Color.BOLD}mobsf/mobsf{Color.END}')
     os = platform.system()
     pltfm = platform.platform()
     dist = ' '.join(distro.linux_distribution(
@@ -119,6 +131,8 @@ def print_version():
         dst_str = f' ({dist}) '
     env_str = f'OS Environment: {os}{dst_str}{pltfm}'
     logger.info(env_str)
+    cores, threads, ram = get_system_resources()
+    logger.info('CPU Cores: %s, Threads: %s, RAM: %.2f GB', cores, threads, ram)
     find_java_binary()
     check_basic_env()
     thread = threading.Thread(target=check_update, name='check_update')
@@ -141,8 +155,8 @@ def check_update():
                                  proxies=proxies, verify=verify)
         remote_version = response.next.path_url.split('v')[1]
         if remote_version:
-            sem_loc = StrictVersion(local_version)
-            sem_rem = StrictVersion(remote_version)
+            sem_loc = Version(local_version)
+            sem_rem = Version(remote_version)
             if sem_loc < sem_rem:
                 logger.warning('A new version of MobSF is available, '
                                'Please update to %s from master branch.',
@@ -181,6 +195,32 @@ def find_java_binary():
     return 'java'
 
 
+def find_aapt(tool_name):
+    """Find the specified tool (aapt or aapt2)."""
+    # Check system PATH for the tool
+    tool_path = shutil.which(tool_name)
+    if tool_path:
+        return tool_path
+
+    # Check common Android SDK locations
+    home_dir = Path.home()  # Get the user's home directory
+    sdk_paths = [
+        home_dir / 'Library' / 'Android' / 'sdk',  # macOS
+        home_dir / 'Android' / 'Sdk',              # Linux
+        home_dir / 'AppData' / 'Local' / 'Android' / 'Sdk',  # Windows
+    ]
+
+    for sdk_path in sdk_paths:
+        build_tools_path = sdk_path / 'build-tools'
+        if build_tools_path.exists():
+            for version in sorted(build_tools_path.iterdir(), reverse=True):
+                tool_path = version / tool_name
+                if tool_path.exists():
+                    return str(tool_path)
+
+    return None
+
+
 def print_n_send_error_response(request,
                                 msg,
                                 api=False,
@@ -207,6 +247,8 @@ def filename_from_path(path):
 
 
 def get_md5(data):
+    if isinstance(data, str):
+        data = data.encode('utf-8')
     return hashlib.md5(data).hexdigest()
 
 
@@ -621,7 +663,7 @@ def strict_package_check(user_input):
 
     For android package and ios bundle id
     """
-    pat = re.compile(r'^([\w-]*\.)+[\w-]{2,155}$')
+    pat = re.compile(r'^([a-zA-Z]{1}[\w.-]{1,255})$')
     resp = re.match(pat, user_input)
     if not resp or '..' in user_input:
         logger.error('Invalid package name/bundle id/class name')
@@ -662,6 +704,8 @@ def common_check(instance_id):
 
 def is_path_traversal(user_input):
     """Check for path traversal."""
+    if not user_input:
+        return False
     if (('../' in user_input)
         or ('%2e%2e' in user_input)
         or ('..' in user_input)
@@ -753,6 +797,11 @@ def replace(value, arg):
     return value.replace(what, to)
 
 
+def pathify(value):
+    """Convert to path."""
+    return value.replace('.', '/')
+
+
 def relative_path(value):
     """Show relative path to two parents."""
     sep = None
@@ -826,6 +875,7 @@ def get_android_dm_exception_msg():
 
 def get_android_src_dir(app_dir, typ):
     """Get Android source code location."""
+    src = None
     if typ == 'apk':
         src = app_dir / 'java_source'
     elif typ == 'studio':
@@ -852,39 +902,68 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 
-def valid_host(host):
-    """Check if host is valid."""
+def append_scan_status(checksum, status, exception=None):
+    """Append Scan Status to Database."""
     try:
-        prefixs = ('http://', 'https://')
-        if not host.startswith(prefixs):
-            host = f'http://{host}'
-        parsed = urlparse(host)
-        domain = parsed.netloc
-        path = parsed.path
-        if len(domain) == 0:
-            # No valid domain
-            return False
-        if len(path) > 0:
-            # Only host is allowed
-            return False
-        if ':' in domain:
-            # IPv6
-            return False
-        # Local network
-        invalid_prefix = (
-            '127.',
-            '192.',
-            '10.',
-            '172.',
-            '169',
-            '0.',
-            'localhost')
-        if domain.startswith(invalid_prefix):
-            return False
-        ip = socket.gethostbyname(domain)
-        if ip.startswith(invalid_prefix):
-            # Resolve dns to get IP
-            return False
-        return True
+        db_obj = RecentScansDB.objects.get(MD5=checksum)
+        if status == 'init':
+            db_obj.SCAN_LOGS = []
+            db_obj.save()
+            return
+        current_logs = python_dict(db_obj.SCAN_LOGS)
+        current_logs.append({
+            'timestamp': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'status': status,
+            'exception': exception})
+        db_obj.SCAN_LOGS = current_logs
+        db_obj.save()
+    except RecentScansDB.DoesNotExist:
+        # Expected to fail for iOS Dynamic Analysis Report Generation
+        # Calls MalwareScan and TrackerScan with different checksum
+        pass
     except Exception:
-        return False
+        logger.exception('Appending Scan Status to Database')
+
+
+def get_scan_logs(checksum):
+    """Get the scan logs for the given checksum."""
+    try:
+        db_entry = RecentScansDB.objects.filter(MD5=checksum)
+        if db_entry.exists():
+            return python_list(db_entry[0].SCAN_LOGS)
+    except Exception:
+        msg = 'Fetching scan logs from the DB failed.'
+        logger.exception(msg)
+    return []
+
+
+class TaskTimeoutError(Exception):
+    pass
+
+
+def run_with_timeout(func, limit, *args, **kwargs):
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(func, *args, **kwargs)
+        try:
+            return future.result(timeout=limit)
+        except ThreadPoolTimeoutError:
+            msg = f'function <{func.__name__}> timed out after {limit} seconds'
+            raise TaskTimeoutError(msg)
+
+
+def set_permissions(path):
+    base_path = Path(path)
+    # Read/Write for directories without execute
+    perm_dir = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
+    # Read/Write for files
+    perm_file = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
+
+    # Set permissions for directories and files
+    for item in base_path.rglob('*'):
+        try:
+            if item.is_dir():
+                item.chmod(perm_dir)
+            elif item.is_file():
+                item.chmod(perm_file)
+        except Exception:
+            pass

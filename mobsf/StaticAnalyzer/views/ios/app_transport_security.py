@@ -1,9 +1,3 @@
-import logging
-
-
-logger = logging.getLogger(__name__)
-
-
 def check_transport_security(p_list):
     """Check info.plist for insecure connection configurations."""
     ats = []
