@@ -31,9 +31,11 @@ from mobsf.StaticAnalyzer.views.ios.strings import (
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     ar_extract,
-    firebase_analysis,
     get_symbols,
     hash_gen,
+)
+from mobsf.StaticAnalyzer.views.common.firebase import (
+    firebase_analysis,
 )
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
     MalwareDomainCheck,
@@ -112,6 +114,8 @@ def a_analysis(request, app_dict, rescan, api):
             'bundle_supported_platforms': [],
             'bundle_version_name': '',
         }
+        app_dict['infoplist'] = infoplist_dict
+        app_dict['all_files'] = all_files
         app_dict['appstore'] = ''
         app_dict['secrets'] = []
         bin_dict = {
@@ -166,14 +170,12 @@ def a_analysis(request, app_dict, rescan, api):
         code_dict['code_anal'] = {}
         code_dict['firebase'] = firebase_analysis(
             checksum,
-            code_dict['urls_list'])
+            code_dict)
         code_dict['trackers'] = trackers
         context = save_get_ctx(
             app_dict,
-            infoplist_dict,
             code_dict,
             bin_dict,
-            all_files,
             rescan)
     context['virus_total'] = None
     if settings.VT_ENABLED:

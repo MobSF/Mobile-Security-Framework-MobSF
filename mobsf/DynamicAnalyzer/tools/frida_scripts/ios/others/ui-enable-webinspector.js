@@ -5,12 +5,13 @@
     Enable WebView debugging for all iOS apps. Before running the script, enable Web Inspector in Safari settings
     (see https://github.com/OWASP/owasp-mastg/blob/master/Document/0x06h-Testing-Platform-Interaction.md#safari-web-inspector).
     Jailbreak required.
+    Modified to support Frida 17.0.0+
 */
 
-const CFRelease = new NativeFunction(Module.findExportByName(null, 'CFRelease'), 'void', ['pointer']);
-const CFStringGetCStringPtr = new NativeFunction(Module.findExportByName(null, 'CFStringGetCStringPtr'),'pointer', ['pointer', 'uint32']);
+const CFRelease = new NativeFunction(Module.getGlobalExportByName('CFRelease'), 'void', ['pointer']);
+const CFStringGetCStringPtr = new NativeFunction(Module.getGlobalExportByName('CFStringGetCStringPtr'),'pointer', ['pointer', 'uint32']);
 const kCFStringEncodingUTF8 = 0x08000100;
-const SecTaskCopyValueForEntitlement = Module.findExportByName(null, 'SecTaskCopyValueForEntitlement');
+const SecTaskCopyValueForEntitlement = Module.getGlobalExportByName('SecTaskCopyValueForEntitlement');
 
 const entitlements = [
     'com.apple.security.get-task-allow',
@@ -24,7 +25,7 @@ Interceptor.attach(SecTaskCopyValueForEntitlement,
     onEnter: function(args) 
     {
         const pEntitlement = CFStringGetCStringPtr(args[1], kCFStringEncodingUTF8)
-        const entitlement = Memory.readUtf8String(pEntitlement)
+        const entitlement = pEntitlement.readUtf8String()
         
         if (entitlements.indexOf(entitlement) > -1) 
         {

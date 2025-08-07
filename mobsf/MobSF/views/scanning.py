@@ -8,6 +8,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
+from mobsf.MobSF.security import sanitize_filename
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,8 @@ class Scanning(object):
 
     def __init__(self, request):
         self.file = request.FILES['file']
-        self.file_name = request.FILES['file'].name
+        self.file_name = sanitize_filename(
+            request.FILES['file'].name)
         self.data = {
             'analyzer': 'static_analyzer',
             'status': 'success',

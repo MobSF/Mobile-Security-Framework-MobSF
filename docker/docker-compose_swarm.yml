@@ -1,0 +1,51 @@
+services:
+
+  postgres:
+    image: "postgres:${POSTGRES_VERSION:-17.0-bookworm}"
+    restart: always
+    volumes:
+      - $HOME/MobSF/postgresql_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD_FILE=/run/secrets/mobsfDB_password
+      - POSTGRES_DB=mobsf
+    networks:
+        - mobsf_network
+    secrets:
+      - mobsfDB_password
+
+  mobsf:
+    image: ${MOBSF_IMAGE:-opensecurity/mobile-security-framework-mobsf:latest}
+    restart: always
+    ports:
+     - "8000:8000"
+     - "1337:1337"
+    volumes:
+      - $HOME/MobSF/mobsf_data:/home/mobsf/.MobSF
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD_FILE=/run/secrets/mobsfDB_password
+      - POSTGRES_DB=mobsf
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - MOBSF_API_KEY_FILE=/run/secrets/mobsf_api_key
+    healthcheck:
+      test: curl -f http://localhost:8000/login/ || exit 1
+    depends_on:
+      - postgres
+    networks:
+      - mobsf_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    secrets:
+      - mobsfDB_password
+      - mobsf_api_key
+
+networks:
+  mobsf_network:
+
+secrets:
+  mobsfDB_password:
+    external: true
+  mobsf_api_key:
+    external: true

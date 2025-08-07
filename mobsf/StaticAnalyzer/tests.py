@@ -4,11 +4,11 @@ import logging
 import os
 import platform
 
+from mobsf.MobSF.init import api_key
+
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import Client, TestCase
-
-from mobsf.MobSF.utils import api_key
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +117,7 @@ def static_analysis_test():
             logger.info(resp.content)
             return True
 
-        # Search by MD5
+        # Search by MD5 and text
         if platform.system() in ['Darwin', 'Linux']:
             scan_md5s = ['02e7989c457ab67eb514a8328779f256',
                          '82ab8b2193b3cfb1c737e3a786be363a',
@@ -133,18 +133,23 @@ def static_analysis_test():
                          '57bb5be0ea44a755ada4a93885c3825e',
                          '8179b557433835827a70510584f3143e',
                          '7b0a23bffc80bac05739ea1af898daad']
+        # Search by text
+        queries = [
+            'diva',
+            'webview',
+        ]
         logger.info('Running Search test')
-        for scan_md5 in scan_md5s:
-            url = '/search?md5={}'.format(scan_md5)
+        for q in scan_md5s + queries:
+            url = f'/search?query={q}'
             resp = http_client.get(url, follow=True)
             assert (resp.status_code == 200)
             if resp.status_code == 200:
-                logger.info('[OK] Search by MD5 test passed for %s', scan_md5)
+                logger.info('[OK] Search by query test passed for %s', q)
             else:
-                logger.error('Search by MD5 test failed for %s', scan_md5)
+                logger.error('Search by query test failed for %s', q)
                 logger.info(resp.content)
                 return True
-        logger.info('[OK] Search by MD5 tests completed')
+        logger.info('[OK] Search by MD5 and text tests completed')
 
         # Deleting Scan Results
         logger.info('Running Delete Scan Results test')
@@ -170,7 +175,7 @@ def static_analysis_test():
 def api_test():
     """View for Handling REST API Test."""
     logger.info('\nRunning REST API Unit test')
-    auth = api_key()
+    auth = api_key(settings.MOBSF_HOME)
     try:
         uploaded = []
         logger.info('Running Test on Upload API')
@@ -256,6 +261,18 @@ def api_test():
                 logger.error('Scan Logs API test: %s', upl['hash'])
                 return True
         logger.info('[OK] Static Analysis API test completed')
+        # Search API Tests
+        logger.info('Running Search API tests')
+        for term in ['diva', 'webview', '52c50ae824e329ba8b5b7a0f523efffe']:
+            resp = http_client.post(
+                '/api/v1/search',
+                {'query': term},
+                HTTP_AUTHORIZATION=auth)
+            if resp.status_code == 200:
+                logger.info('[OK] Search API test: %s', term)
+            else:
+                logger.error('Search API test: %s', term)
+                return True
         # PDF Tests
         logger.info('Running PDF Generation API Test')
         if platform.system() in ['Darwin', 'Linux']:

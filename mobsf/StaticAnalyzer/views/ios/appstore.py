@@ -29,8 +29,11 @@ def app_search(checksum, app_id):
         det = {}
         proxies, verify = upstream_proxy('https')
         req = requests.get(
-            req_url, headers=headers,
-            proxies=proxies, verify=verify)
+            req_url,
+            timeout=5,
+            headers=headers,
+            proxies=proxies,
+            verify=verify)
         resp = req.json()
         if resp['results']:
             det = resp['results'][0]

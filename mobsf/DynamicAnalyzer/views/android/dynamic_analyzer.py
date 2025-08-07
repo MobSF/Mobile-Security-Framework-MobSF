@@ -325,16 +325,19 @@ def trigger_static_analysis(request, checksum):
             err = 'Cannot connect to Android Runtime'
             return print_n_send_error_response(request, err)
         env = Environment(identifier)
-        apk_file = env.get_apk(checksum, package)
-        if not apk_file:
+        scan_type = env.get_apk(checksum, package)
+        if not scan_type:
             err = 'Failed to download APK file'
             return print_n_send_error_response(request, err)
+        file_name = f'{package}.apk'
+        if scan_type == 'apks':
+            file_name = f'{file_name}s'
         data = {
             'analyzer': 'static_analyzer',
             'status': 'success',
             'hash': checksum,
-            'scan_type': 'apk',
-            'file_name': f'{package}.apk',
+            'scan_type': scan_type,
+            'file_name': file_name,
         }
         add_to_recent_scan(data)
         return HttpResponseRedirect(f'/static_analyzer/{checksum}/')

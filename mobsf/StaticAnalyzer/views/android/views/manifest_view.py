@@ -2,7 +2,6 @@
 """Module for manifest_view."""
 
 import logging
-import os
 from pathlib import Path
 
 from django.conf import settings
@@ -27,22 +26,19 @@ def run(request, checksum):
     """View the manifest."""
     try:
         supported = ['eclipse', 'studio', 'apk', 'aar']
-        directory = settings.BASE_DIR  # BASE DIR
         typ = request.GET['type']  # APK or SOURCE
         if is_md5(checksum) and (typ in supported):
-            app_dir = os.path.join(
-                settings.UPLD_DIR, checksum + '/')  # APP DIRECTORY
-            tools_dir = os.path.join(
-                directory, 'StaticAnalyzer/tools/')  # TOOLS DIR
-            app_path = os.path.join(app_dir, checksum + '.apk')
-            manifest_file = get_manifest_file(
-                app_dir,
-                app_path,
-                tools_dir,
-                typ)
-            mfile = Path(manifest_file)
-            if mfile.exists():
-                manifest = mfile.read_text('utf-8', 'ignore')
+            app_dir = Path(settings.UPLD_DIR) / checksum
+            app_dic = {
+                'md5': checksum,
+                'app_dir': app_dir,
+                'app_path': app_dir / f'{checksum}.apk',
+                'tools_dir': Path(settings.BASE_DIR) / 'StaticAnalyzer' / 'tools',
+                'zipped': typ,
+            }
+            manifest_file = get_manifest_file(app_dic)
+            if manifest_file and manifest_file.exists():
+                manifest = manifest_file.read_text('utf-8', 'ignore')
             else:
                 manifest = ''
             context = {

@@ -194,41 +194,56 @@ progress::-webkit-progress-value {
 /* The snackbar - position it at the bottom and in the middle of the screen */
 #snackbar {
   visibility: hidden; /* Hidden by default. Visible on click */
-  min-width: 250px; /* Set a default minimum width */
+  width: 100%; /* Make the snackbar full width */
   background-color: #333; /* Black background color */
   color: #fff; /* White text color */
   text-align: center; /* Centered text */
-  border-radius: 2px; /* Rounded borders */
+  border-radius: 0; /* Remove rounded borders for full width */
   padding: 16px; /* Padding */
   z-index: 1; /* Add a z-index if needed */
-  left: 50%; /* Center the snackbar */
+  left: 0; /* Align to the left edge of the screen */
   bottom: 30px; /* 30px from the bottom */
+  position: fixed; /* Ensure it stays at the bottom of the viewport */
 }
 
-/* Show the snackbar when clicking on a button (class added with JavaScript) */
-#snackbar.show {
-  visibility: visible; /* Show the snackbar */
-  /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
-  However, delay the fade out process for 2.5 seconds */
-  -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+/* Alert bar class */
+.alert-bar {
+  position: fixed; /* Sticks to the bottom of the screen */
+  bottom: 0; /* Aligns to the bottom */
+  left: 0; /* Aligns to the left edge */
+  width: 100%; /* Spans the full width of the screen */
+  background-color: #00000021; /* Red background (customize as needed) */
+  color: #fff; /* White text color */
+  text-align: center; /* Centered text */
+  padding: 16px; /* Padding inside the bar */
+  font-size: 16px; /* Font size for the text */
+  z-index: 9999; /* Ensure it appears above other content */
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow */
+  visibility: hidden; /* Hidden by default */
+  opacity: 0; /* Fully transparent */
+  transition: visibility 0s, opacity 0.5s ease-in-out; /* Smooth fade-in/out */
 }
 
-/* Animations to fade the snackbar in and out */
-
-
-@keyframes fadein {
-  from {bottom: 0; opacity: 0;}
-  to {bottom: 30px; opacity: 1;}
+/* Show the alert bar */
+.alert-bar.show {
+  visibility: visible; /* Make it visible */
+  opacity: 1; /* Fully opaque */
 }
 
-/* 
-@keyframes fadeout {
-  from {bottom: 30px; opacity: 1;}
-  to {bottom: 0; opacity: 0;}
-} */
+/* Optional: Keyframes for additional animation */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
 
-/* Snackbar ends */
+.alert-bar.slide-up {
+  animation: slideUp 0.5s ease-in-out;
+}
+/* Alert bar ends */
 
 /* Logo padding ^*/
 

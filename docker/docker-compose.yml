@@ -1,0 +1,91 @@
+services:
+
+  postgres:
+    image: "postgres:14"
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    volumes:
+      - $HOME/MobSF/postgresql_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mobsf
+    networks:
+      - mobsf_network
+
+  nginx:
+    image: nginx:latest
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+    ports:
+      - "80:4000"
+      - "1337:4001"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - mobsf
+    networks:
+      - mobsf_network
+
+  djangoq:
+    image: opensecurity/mobile-security-framework-mobsf:latest
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: /home/mobsf/Mobile-Security-Framework-MobSF/scripts/qcluster.sh
+    volumes:
+      - $HOME/MobSF/mobsf_data:/home/mobsf/.MobSF
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mobsf
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+    depends_on:
+      - postgres
+    networks:
+      - mobsf_network
+
+  mobsf:
+    image: opensecurity/mobile-security-framework-mobsf:latest
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: always
+    tty: true
+    volumes:
+      - $HOME/MobSF/mobsf_data:/home/mobsf/.MobSF
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mobsf
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - MOBSF_ASYNC_ANALYSIS=1
+    healthcheck:
+      test: curl -f http://localhost:8000/login/ || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    depends_on:
+      - postgres
+      - djangoq
+    networks:
+      - mobsf_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  mobsf_network:
+    driver: bridge

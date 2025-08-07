@@ -12,9 +12,11 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
-    firebase_analysis,
     get_symbols,
     hash_gen,
+)
+from mobsf.StaticAnalyzer.views.common.firebase import (
+    firebase_analysis,
 )
 from mobsf.StaticAnalyzer.views.common.binary.lib_analysis import (
     library_analysis,
@@ -58,11 +60,13 @@ def so_analysis(request, app_dic, rescan, api):
         app_dic['sha1'], app_dic['sha256'] = hash_gen(
             checksum,
             app_dic['app_path'])
+        app_dic['zipped'] = 'so'
         app_dic['files'] = []
-        app_dic['certz'] = []
+        app_dic['file_analysis'] = []
         app_dic['playstore'] = {'error': True}
         app_dic['manifest_file'] = None
-        app_dic['parsed_xml'] = ''
+        app_dic['manifest_namespace'] = None
+        app_dic['manifest_parsed_xml'] = None
         app_dic['mani'] = ''
         man_data_dic = {
             'services': [],
@@ -109,32 +113,30 @@ def so_analysis(request, app_dic, rescan, api):
             app_dic['app_dir'],
             'elf')
         # File Analysis is used to store symbols from so
-        app_dic['certz'] = get_symbols(
+        app_dic['file_analysis'] = get_symbols(
             elf_dict['elf_symbols'])
         apkid_results = {}
         code_an_dic = {
             'api': {},
+            'behaviour': {},
             'perm_mappings': {},
             'findings': {},
             'niap': {},
             'urls_list': [],
             'urls': [],
             'emails': [],
+            'sbom': {},
         }
-        quark_results = []
         # Get the strings and metadata from shared object
         get_strings_metadata(
-            checksum,
-            None,
-            None,
+            app_dic,
             elf_dict['elf_strings'],
-            None,
             None,
             code_an_dic)
         # Firebase DB Check
         code_an_dic['firebase'] = firebase_analysis(
             checksum,
-            code_an_dic['urls_list'])
+            code_an_dic)
         # Domain Extraction and Malware Check
         code_an_dic['domains'] = MalwareDomainCheck().scan(
             checksum,
@@ -146,7 +148,6 @@ def so_analysis(request, app_dic, rescan, api):
             app_dic['tools_dir'])
         trackers = trk.get_trackers_domains_or_deps(
             code_an_dic['domains'], [])
-        app_dic['zipped'] = 'so'
         context = save_get_ctx(
             app_dic,
             man_data_dic,
@@ -155,7 +156,6 @@ def so_analysis(request, app_dic, rescan, api):
             cert_dic,
             elf_dict['elf_analysis'],
             apkid_results,
-            quark_results,
             trackers,
             rescan,
         )

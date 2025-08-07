@@ -2,6 +2,7 @@
 # flake8: noqa
 """Module for android manifest analysis."""
 import logging
+from urllib.parse import urlparse
 
 import requests
 from concurrent.futures import ThreadPoolExecutor
@@ -10,8 +11,8 @@ from mobsf.MobSF.utils import (
     append_scan_status,
     is_number,
     upstream_proxy,
-    valid_host,
 )
+from mobsf.MobSF.security import valid_host
 from mobsf.StaticAnalyzer.views.android import (
     network_security,
 )
@@ -27,6 +28,8 @@ ANDROID_8_0_LEVEL = 26
 ANDROID_9_0_LEVEL = 28
 ANDROID_10_0_LEVEL = 29
 ANDROID_MANIFEST_FILE = 'AndroidManifest.xml'
+WELL_KNOWN_PATH = '/.well-known/assetlinks.json'
+
 ANDROID_API_LEVEL_MAP = {
     '1': '1.0',
     '2': '1.1',
@@ -60,6 +63,8 @@ ANDROID_API_LEVEL_MAP = {
     '32': '12L',
     '33': '13',
     '34': '14',
+    '35': '15',
+    '36': '16',
 }
 
 
@@ -79,26 +84,42 @@ def assetlinks_check(act_name, well_knowns):
 
     return findings
 
+
 def _check_url(host, w_url):
+    """Check for the presence of Assetlinks URL."""
     try:
         iden = 'sha256_cert_fingerprints'
         proxies, verify = upstream_proxy('https')
         status = False
         status_code = 0
 
-        r = requests.get(w_url,
-            allow_redirects=False,
-            proxies=proxies,
-            verify=verify,
-            timeout=5)
+        urls = {w_url}
+        if w_url.startswith('http://'):
+            # Upgrade http to https
+            urls.add(f'https://{w_url[7:]}')
 
-        status_code = r.status_code
-        if status_code == 302:
-            logger.warning('302 Redirect detected, skipping check')
-            status = False
-        if (str(status_code).startswith('2') and iden in str(r.json())):
-            status = True
+        for url in urls:
+            # Additional checks to ensure that
+            # the final path is WELL_KNOWN_PATH
+            purl = urlparse(url)
+            if (purl.path != WELL_KNOWN_PATH
+                or len(purl.query) > 0
+                    or len(purl.params) > 0):
+                logger.warning('Invalid Assetlinks URL: %s', url)
+                continue
+            r = requests.get(url,
+                             timeout=5,
+                             allow_redirects=False,
+                             proxies=proxies,
+                             verify=verify)
 
+            status_code = r.status_code
+            if (str(status_code).startswith('2') and iden in str(r.json())):
+                status = True
+                break
+        if status_code in (301, 302):
+            logger.warning('Status Code: [%d], Redirecting to '
+                           'a different URL, skipping check!', status_code)
         return {'url': w_url,
                 'host': host,
                 'status_code': status_code,
@@ -106,7 +127,7 @@ def _check_url(host, w_url):
 
     except Exception:
         logger.error(f'Well Known Assetlinks Check for URL: {w_url}')
-        return {'url': w_url, 
+        return {'url': w_url,
                 'host': host,
                 'status_code': None,
                 'status': False}
@@ -124,7 +145,6 @@ def get_browsable_activities(node, ns):
         path_prefixs = []
         path_patterns = []
         well_known = {}
-        well_known_path = '/.well-known/assetlinks.json'
         catg = node.getElementsByTagName('category')
         for cat in catg:
             if cat.getAttribute(f'{ns}:name') == 'android.intent.category.BROWSABLE':
@@ -153,17 +173,18 @@ def get_browsable_activities(node, ns):
                         path_patterns.append(path_pattern)
                     # Collect possible well-known paths
                     if (scheme
-                          and scheme in ('http', 'https')
-                          and host
-                          and host != '*'):
+                        and scheme in ('http', 'https')
+                        and host
+                            and host != '*'):
                         host = host.replace('*.', '').replace('#', '')
                         if not valid_host(host):
+                            logger.warning('Invalid Host: %s', host)
                             continue
                         shost = f'{scheme}://{host}'
                         if port and is_number(port):
-                            c_url = f'{shost}:{port}{well_known_path}'
+                            c_url = f'{shost}:{port}{WELL_KNOWN_PATH}'
                         else:
-                            c_url = f'{shost}{well_known_path}'
+                            c_url = f'{shost}{WELL_KNOWN_PATH}'
                         well_known[c_url] = shost
         schemes = [scheme + '://' for scheme in schemes]
         browse_dic['schemes'] = schemes
@@ -180,9 +201,14 @@ def get_browsable_activities(node, ns):
         logger.exception('Getting Browsable Activities')
 
 
-def manifest_analysis(checksum, mfxml, ns, man_data_dic, src_type, app_dir):
+def manifest_analysis(app_dic, man_data_dic):
     """Analyse manifest file."""
     # pylint: disable=C0301
+    checksum = app_dic['md5']
+    mfxml = app_dic['manifest_parsed_xml']
+    ns = app_dic['manifest_namespace']
+    src_type = app_dic['zipped']
+    app_dir = app_dic['app_dir']
     try:
         msg = 'Manifest Analysis Started'
         logger.info(msg)
@@ -753,12 +779,18 @@ def manifest_analysis(checksum, mfxml, ns, man_data_dic, src_type, app_dir):
                 dataport = data.getAttribute(f'{ns}:port')
                 ret_list.append(('sms_receiver_port_found', (dataport,), ()))
         # INTENTS
+        processed_priorities = {}
         for intent in intents:
             if intent.getAttribute(f'{ns}:priority').isdigit():
                 value = intent.getAttribute(f'{ns}:priority')
                 if int(value) > 100:
-                    ret_list.append(
-                        ('high_intent_priority_found', (value,), ()))
+                    if value not in processed_priorities:
+                        processed_priorities[value] = 1
+                    else:
+                        processed_priorities[value] += 1
+        for priority, count in processed_priorities.items():
+            ret_list.append(
+                ('high_intent_priority_found', (priority, count,), ()))
         # ACTIONS
         for action in actions:
             if action.getAttribute(f'{ns}:priority').isdigit():

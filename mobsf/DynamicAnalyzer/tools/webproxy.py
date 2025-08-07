@@ -27,8 +27,11 @@ def stop_httptools(url):
         http_proxy = url.replace('https://', 'http://')
         headers = {'httptools': 'kill'}
         url = 'http://127.0.0.1'
-        requests.get(url, headers=headers, proxies={
-                     'http': http_proxy})
+        requests.get(
+            url,
+            timeout=5,
+            headers=headers,
+            proxies={'http': http_proxy})
         logger.info('Killing httptools Proxy')
     except Exception:
         pass
@@ -66,8 +69,8 @@ def create_ca():
 
 def get_ca_file():
     """Get CA Dir."""
-    from mitmproxy import ctx
-    ca_dir = Path(ctx.mitmproxy.options.CONF_DIR).expanduser()
+    from mitmproxy import options
+    ca_dir = Path(options.CONF_DIR).expanduser()
     ca_file = ca_dir / 'mitmproxy-ca-cert.pem'
     if not ca_file.exists():
         create_ca()

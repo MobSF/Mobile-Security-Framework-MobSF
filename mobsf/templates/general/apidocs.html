@@ -30,7 +30,9 @@
               <li><code>api/v1/upload</code> - <a href="#upload-file-api">Upload a File</a></li>
               <li><code>api/v1/scan</code> - <a href="#scan-file-api">Scan a File</a></li>
               <li><code>api/v1/scan_logs</code> - <a href="#scan-logs-api">Display Live Scan Logs</a></li>
+              <li><code>api/v1/search</code> - <a href="#search-api">Search a Scan</a></li>
               <li><code>api/v1/scans</code> - <a href="#recent-scans-api">Display Recent Scans</a></li>
+              <li><code>api/v1/tasks</code> - <a href="#tasks-api">Display Scan Tasks</a></li>
               <li><code>api/v1/delete_scan</code> - <a href="#delete-scan-api">Delete a Scan</a></li>
               <li><code>api/v1/scorecard</code> - <a href="#scorecard-api">App Scorecard</a></li>
               <li><code>api/v1/download_pdf</code> - <a href="#generate-pdf-report-api">Download PDF Report</a></li>
@@ -358,6 +360,87 @@
               </li>
             </ul>
             <hr />
+            <h2><a id="search-api"></a><strong>Search API</strong></h2>
+            <p>API for querying scan results. You can search using an MD5 checksum, app name, package name, or file name. The API returns the closest match based on your search term.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/search</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization: &lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key: &lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>query</td>
+                  <td>hash of the scan or text</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>JSON Contents</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>404 Not Found</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code><br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;You can search by MD5, app name, package name, or file name.&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code><br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/search --data &quot;query=com.foo.bar&quot; -H &quot;Authorization: {{ api_key}}&quot;
+                  </code></pre>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/search --data &quot;query=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+            <hr />
+
             <h2><a id="delete-scan-api"></a><strong>Delete Scan API</strong></h2>
             <p>API to delete scan results.</p>
             <ul>
@@ -879,6 +962,68 @@
             </ul>
 
             <hr />
+            <h2><a id="tasks-api"></a><strong>Scan Tasks API</strong></h2>
+            <p>Displays the scan tasks queue, accessible only when the asynchronous scan queue is enabled.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/tasks</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization: &lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key: &lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>JSON Contents</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code><br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code><br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/tasks -H &quot;Authorization: {{ api_key}}&quot;
+                  </code></pre>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/tasks -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+            <hr />
+
             <h2><a id="compare-api"></a><strong>Compare Apps API</strong></h2>
             <p>API to Compare scan results.</p>
             <ul>

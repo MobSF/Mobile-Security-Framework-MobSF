@@ -38,9 +38,21 @@
         outline-width: 0;
     }
     .highlight { border: solid 2px #1e6dff;}
+    
+    /* Complete isolation for CodeMirror */
+    #codemirror-isolation-container {
+        zoom: 1 !important;
+        transform: scale(1.25) !important; /* Counter the 0.8 zoom */
+        transform-origin: top left !important;
+        width: 80% !important; /* Adjust for scale */
+        height: 80% !important; /* Adjust for scale */
+        position: relative !important;
+        overflow: hidden !important;
+    }
+    
     .CodeMirror {
         height: 610px;
-        font-size: 13px;
+        font-size: 11px;
         border: 1px solid #eee;
       }
 
@@ -68,7 +80,7 @@
   <div class="content-header">
     <div class="container-fluid">
       <div class="row mb-2">
-        <div id="mobsf_header">
+        <div id="mobsf_header" align="center" style="padding-left: 20px;">
             <h2><strong>Dynamic Analyzer </strong>- {{ package }}</h2>
         </div>
       </div>
@@ -255,7 +267,7 @@
                         {% if activities or exported_activities %}
                         <label class="box-title" for="activities">Activities</label>
                         <div class="form-group form-inline" id="start_activity_form">
-                          <select style="width: 15rem" class="form-select form-control form-group mb-2" name="activities" id="activities">
+                          <select style="width: 15rem" class="form-select form-control form-group mb-2 mr-3" name="activities" id="activities">
                             <optgroup label="Exported Activities">
                               {% for activity in exported_activities %}
                             <option value="{{ activity }}">{{ activity }}</option>
@@ -272,31 +284,29 @@
                         {% endif %}
             
                         {% if deeplinks %}
-                        <label class="box-title" for="deeplinks">Deep Links</label>
-                        <div class="form-group form-inline">
-                          <!--Schemes-->
-                          <select class="form-select form-control form-group mb-2" name="schemes" id="schemes">
-                          {% for activity, intent in deeplinks.items %}
-                            <optgroup label="{{ activity }} - Schemes">
-                              {% for scheme in intent.schemes %}
-                                <option value="{{ scheme }}">{{ scheme }}</option>
-                              {% endfor %}
-                            </optgroup>
-                          {% endfor %}
-                          </select>
-                          <!--Hosts-->
-                          <select class="form-select form-control form-group mb-2" name="hosts" id="hosts">
+                        <div class="mt-3">
+                          <label class="box-title" for="deeplinks">Deep Links</label>
+                          <div class="form-group form-inline">
+                            <select class="form-select form-control form-group mb-2 mr-2" name="schemes" id="schemes">
                             {% for activity, intent in deeplinks.items %}
-                              <optgroup label="{{ activity }} - Hosts">
-                                {% for host in intent.hosts %}
-                                  <option value="{{ host }}">{{ host }}</option>
+                              <optgroup label="{{ activity }} - Schemes">
+                                {% for scheme in intent.schemes %}
+                                  <option value="{{ scheme }}">{{ scheme }}</option>
                                 {% endfor %}
-                                <option value=""></option>
                               </optgroup>
                             {% endfor %}
                             </select>
-                            <!--Path Prefixs/Paths-->
-                            <select class="form-select form-control form-group mb-2" name="paths" id="paths">
+                            <select class="form-select form-control form-group mb-2 mr-2" name="hosts" id="hosts">
+                              {% for activity, intent in deeplinks.items %}
+                                <optgroup label="{{ activity }} - Hosts">
+                                  {% for host in intent.hosts %}
+                                    <option value="{{ host }}">{{ host }}</option>
+                                  {% endfor %}
+                                  <option value=""></option>
+                                </optgroup>
+                              {% endfor %}
+                            </select>
+                            <select class="form-select form-control form-group mb-2 mr-2" name="paths" id="paths">
                               {% for activity, intent in deeplinks.items %}
                                 <optgroup label="{{ activity }} - Paths/PathPrefixes">
                                   {% for path in intent.paths %}
@@ -308,10 +318,10 @@
                                   <option value=""></option>
                                 </optgroup>
                               {% endfor %}
-                              </select>
-                            <!--Query-->
-                            <input type="text" class="form-control form-group mb-2" id="query" placeholder="/foo?bar=">
+                            </select>
+                            <input type="text" class="form-control form-group mb-2 mr-2" id="query" placeholder="/foo?bar=">
                             <button id="start_deeplink" type="submit" class="btn btn-primary btn-sm form-group mb-2">▶ Deeplink</button>
+                          </div>
                         </div>
                         {% endif %}
                         
@@ -356,11 +366,13 @@
               <div class="card-body">
               <div class="row">
                   <div class="col-12">
+                    <div id="codemirror-isolation-container">
 <textarea id="code-js" rows="100">
 Java.perform(function() {
   // Use send() for logging
 });
 </textarea>
+                    </div>
                   </div>
                   <div class="col-12">
                     <br/>
@@ -647,9 +659,11 @@ var editor = CodeMirror.fromTextArea(document.getElementById("code-js"), {
     mode: "javascript",
     gutters: ["CodeMirror-lint-markers"],
     lint: true,
-    lineWrapping: true,
-    onLoad: restore(),
+    lineWrapping: true
   });
+
+// Restore saved content
+restore();
 
 //Restore Code
 function restore(){

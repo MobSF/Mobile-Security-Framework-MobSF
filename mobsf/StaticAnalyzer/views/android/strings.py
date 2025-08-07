@@ -12,6 +12,8 @@ from mobsf.StaticAnalyzer.views.common.entropy import (
     get_entropies,
 )
 from mobsf.MobSF.utils import (
+    GOOGLE_API_KEY_REGEX,
+    GOOGLE_APP_ID_REGEX,
     append_scan_status,
     get_android_src_dir,
 )
@@ -48,45 +50,70 @@ def strings_from_so(checksum, elf_strings):
     return sos
 
 
-def strings_from_apk(checksum, apk):
+def strings_from_apk(checksum, app_dic):
     """Extract Strings from an APK."""
-    dat = []
-    secrets = []
-    urls = []
-    urls_nf = []
-    emails_nf = []
+    results = {
+        'strings': [],
+        'urls_list': [],
+        'urls_nf': [],
+        'emails_nf': [],
+        'secrets': [],
+        'firebase_creds': {},
+    }
     try:
         msg = 'Extracting String data from APK'
         logger.info(msg)
         append_scan_status(checksum, msg)
-        rsrc = apk.get_android_resources()
+
+        rsrc = app_dic.get('androguard_apk_resources')
         if rsrc:
             pkg = rsrc.get_packages_names()[0]
             rsrc.get_strings_resources()
-            for i in rsrc.values[pkg].keys():
-                res_string = rsrc.values[pkg][i].get('string')
+
+            # Iterate over resource strings
+            for _res_key, res_value in rsrc.values.get(pkg, {}).items():
+                res_string = res_value.get('string')
                 if not res_string:
                     continue
-                for duo in res_string:
-                    cap_str = '"' + duo[0] + '" : "' + duo[1] + '"'
-                    # Extract possible secret holding keys
-                    if is_secret_key(duo[0] + '"') and ' ' not in duo[1]:
-                        secrets.append(cap_str)
-                    dat.append(cap_str)
-            # Extract URLs and Emails from Android String Resources
-            urls, urls_nf, emails_nf = url_n_email_extract(
-                ''.join(dat), 'Android String Resource')
+
+                for key, value in res_string:
+                    if not value:
+                        continue
+
+                    # Extract Firebase credentials
+                    if key == 'google_api_key' and GOOGLE_API_KEY_REGEX.match(value):
+                        results['firebase_creds']['google_api_key'] = value
+                    elif key == 'google_app_id' and GOOGLE_APP_ID_REGEX.match(value):
+                        results['firebase_creds']['google_app_id'] = value
+
+                    # Format and collect strings
+                    formatted_str = f'"{key}" : "{value}"'
+                    results['strings'].append(formatted_str)
+
+                    # Check for possible secrets
+                    if is_secret_key(key) and ' ' not in value:
+                        results['secrets'].append(formatted_str)
+        elif app_dic.get('apk_strings'):
+            # No secret key check for APK strings
+            results['strings'] = app_dic['apk_strings']
+        else:
+            msg = 'Failed to extract String data from APK'
+            logger.warning(msg)
+            append_scan_status(checksum, msg)
+            return results
+
+        # Extract URLs and Emails from collected strings
+        results['strings'] = list(set(results['strings']))
+        ul, u_nf, e_nf = url_n_email_extract(
+            ''.join(results['strings']), 'Android String Resource')
+        results['urls_list'], results['urls_nf'], results['emails_nf'] = ul, u_nf, e_nf
+
     except Exception as exp:
         msg = 'Failed to extract String data from APK'
         logger.exception(msg)
         append_scan_status(checksum, msg, repr(exp))
-    return {
-        'strings': list(set(dat)),
-        'urls_list': urls,
-        'urls_nf': urls_nf,
-        'emails_nf': emails_nf,
-        'secrets': secrets,
-    }
+
+    return results
 
 
 def strings_from_code(checksum, src_dir, typ, exts):
@@ -108,9 +135,11 @@ def strings_from_code(checksum, src_dir, typ, exts):
     return data
 
 
-def get_strings_metadata(
-        checksum, apk, app_dir, elf_strings, typ, exts, code_dic):
+def get_strings_metadata(app_dic, elf_strings, exts, code_dic):
     """Get Strings, secrets, entropies, URLs, emails."""
+    checksum = app_dic['md5']
+    typ = app_dic['zipped']
+    app_dir = app_dic['app_dir']
     strings = {
         'strings_apk_res': {},
         'strings_so': [],
@@ -120,9 +149,10 @@ def get_strings_metadata(
     urls_n_files = []
     emails_n_files = []
     secrets = []
-    if apk:
+    if app_dic.get('androguard_string_resources') or app_dic.get('apk_strings'):
         # APK
-        apk_res = strings_from_apk(checksum, apk)
+        apk_res = strings_from_apk(checksum, app_dic)
+        code_dic['firebase_creds'] = apk_res['firebase_creds']
         strings['strings_apk_res'] = apk_res['strings']
         urls_list.extend(apk_res['urls_list'])
         urls_n_files.extend(apk_res['urls_nf'])

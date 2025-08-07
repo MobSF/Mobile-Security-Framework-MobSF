@@ -72,7 +72,7 @@ def instrument(request, api=False):
     """Instrument app with frida."""
     data = {
         'status': 'failed',
-        'message': 'Failed to instrument app'}
+        'message': ''}
     try:
         action = request.POST.get('frida_action', 'spawn')
         pid = request.POST.get('pid')
@@ -115,7 +115,7 @@ def instrument(request, api=False):
             data['message'] = frida_obj.ps()
         elif action == 'get':
             # Get injected Frida script.
-            data['message'] = frida_obj.get_script()
+            data['message'] = frida_obj.get_script(nolog=True)
         if action in ('spawn', 'session'):
             if pid and pid.isdigit():
                 # Attach to a different pid/bundle id

@@ -13,10 +13,10 @@ where python >nul 2>&1 && (
   ) else (
     exit /b
   )
-  echo %var%|findstr /R "[3].[1011]" >nul
+  echo %var%|findstr /R "[3].[101112]" >nul
   if errorlevel 1 (
       if "%var%"=="" goto redo
-      echo [ERROR] MobSF dependencies require Python 3.10-3.11. Your python points to %var%
+      echo [ERROR] MobSF dependencies require Python 3.10-3.12. Your python points to %var%
       exit /b
   ) else (
       echo [INSTALL] Found %var%
@@ -56,7 +56,7 @@ where python >nul 2>&1 && (
   set INCLUDE=C:\Program Files\OpenSSL-Win64\include;%INCLUDE%
 
   echo [INSTALL] Installing Requirements
-  python -m pip install --no-cache-dir wheel poetry==1.6.1
+  python -m pip install --no-cache-dir wheel poetry==1.8.4
   python -m poetry lock
   python -m poetry install --only main --no-root --no-interaction --no-ansi || python -m poetry install --only main --no-root --no-interaction --no-ansi || python -m poetry install --only main --no-root --no-interaction --no-ansi
  

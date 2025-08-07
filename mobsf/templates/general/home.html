@@ -40,7 +40,7 @@
             {% endif %}
             <a class="nav-link">
                 <form action="/search" method="GET">
-                    <input name="md5" type="text" class="form-control form-control-sm" placeholder="Search MD5">
+                    <input name="query" type="text" class="form-control form-control-sm" placeholder="Search">
                 </form>
             </a>
         </nav>
@@ -81,7 +81,7 @@
                 </br>
                 <p>&copy; {% now "Y" %}  Mobile Security Framework - MobSF {{ version }}</p>
             </div>
-            <div id="snackbar">Analysis started! Please wait to be redirected or check recent scans after sometime.</div>
+            <div id="alert" class="alert-bar">Analysis started! Please wait to be redirected or check recent scans after sometime.</div>
         </footer>
     </div>
 
@@ -99,17 +99,17 @@
             // Result View
             function load_result(url){
                 hide_loader();
-                var xhr = new XMLHttpRequest()
-                xhr.open('GET', url, true)
-                xhr.addEventListener("loadstart", function(evt){
-                    var x = document.getElementById("snackbar");
-                    x.className = "show";
-                    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 10000);
-                })
-                xhr.addEventListener("load", function (evt) {
-                    window.location.href = window.location.href + url;
-                }, false);
-                xhr.send();
+                // Display alert notification
+                var x = document.getElementById("alert");
+                x.className = "alert-bar show slide-up";
+                setTimeout(function () {
+                    x.className = x.className.replace("show", "");
+                }, 10000);
+
+                // Redirect after showing alertbar
+                setTimeout(function () {
+                    window.location.href = url;
+                }, 1000); // Adjust delay as needed
             }
 
             //Download and scan APK

@@ -22,8 +22,23 @@
   <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
   <!-- Google Font: Source Sans Pro -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
-  {% block extra_css %}
+  <style>
+    body {
+      zoom: 0.8; 
+    }
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1040; /* Ensure it is above most elements but below modal */
+      background-color: rgba(0, 0, 0, 0.5); /* Default backdrop color */
+    }
 
+  </style>
+  {% block extra_css %}
+ 
   {% endblock %}
 </head>
 <body class="hold-transition {% block sidebar_option %} {% endblock %} layout-fixed layout-navbar-fixed">

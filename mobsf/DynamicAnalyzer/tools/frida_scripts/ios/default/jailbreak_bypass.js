@@ -1,3 +1,5 @@
+// Modified to support Frida 17.0.0+
+
 var paths = [
     "/Applications/blackra1n.app",
     "/Applications/Cydia.app",
@@ -85,12 +87,13 @@ var paths = [
 
 function bypassJailbreakDetection(){
     try {
-
-        var f = Module.findExportByName("libSystem.B.dylib", "stat64");
+        const libSystem = Process.getModuleByName("libSystem.B.dylib");
+        
+        var f = libSystem.getExportByName("stat64");
         Interceptor.attach(f, {
             onEnter: function(args) {
                 this.is_common_path = false;
-                var arg = Memory.readUtf8String(args[0]);
+                var arg = args[0].readUtf8String();
                 for (var path in paths) {
                     if (arg.indexOf(paths[path]) > -1) {
                         send('[Jailbreak Detection Bypass] Hooking native function stat64: ' + arg);
@@ -106,11 +109,11 @@ function bypassJailbreakDetection(){
                 }
             }
         });
-        var f = Module.findExportByName("libSystem.B.dylib", "stat");
+        var f = libSystem.getExportByName("stat");
         Interceptor.attach(f, {
             onEnter: function(args) {
                 this.is_common_path = false;
-                var arg = Memory.readUtf8String(args[0]);
+                var arg = args[0].readUtf8String();
                 for (var path in paths) {
                     if (arg.indexOf(paths[path]) > -1) {
                         send('[Jailbreak Detection Bypass] Hooking native function stat: ' + arg);

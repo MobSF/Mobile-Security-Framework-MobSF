@@ -1,8 +1,9 @@
 # -*- coding: utf_8 -*-
 """Module for network security analysis."""
 import logging
-from xml.dom import minidom
 from pathlib import Path
+
+from defusedxml.minidom import parseString
 
 from mobsf.MobSF.utils import (
     append_scan_status,
@@ -23,7 +24,7 @@ def read_netsec_config(checksum, app_dir, config, src_type):
         config_file = None
         config = config.replace('@xml/', '', 1)
         base = Path(app_dir)
-        if src_type:
+        if src_type == 'studio':
             # Support only android studio source files
             xml_dir = base / 'app' / 'src' / 'main' / 'res' / 'xml'
         else:
@@ -73,7 +74,7 @@ def analysis(checksum, app_dir, config, is_debuggable, src_type):
         msg = 'Parsing Network Security config'
         logger.info(msg)
         append_scan_status(checksum, msg)
-        parsed = minidom.parseString(netsec_conf)
+        parsed = parseString(netsec_conf)
         finds = []
         summary = {HIGH: 0, WARNING: 0, INFO: 0, SECURE: 0}
         # Base Config

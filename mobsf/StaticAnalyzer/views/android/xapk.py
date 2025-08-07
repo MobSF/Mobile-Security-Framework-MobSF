@@ -62,7 +62,10 @@ def handle_split_apk(app_dic):
     for apk in unzip(checksum, apks.as_posix(), app_dic['app_dir']):
         full_path = app_dic['app_dir'] / apk
         safe_path = is_safe_path(app_dic['app_dir'], full_path)
-        if (not apk.startswith('config.')
+        if apk.endswith('base.apk') and safe_path:
+            move(full_path, apks)
+            return True
+        if ('config.' not in apk.lower()
                 and apk.endswith('.apk')
                 and safe_path):
             move(full_path, apks)
@@ -90,7 +93,7 @@ def handle_aab(app_dic):
                 and is_file_exists(settings.BUNDLE_TOOL)):
             bundletool = settings.BUNDLE_TOOL
         else:
-            bundletool = Path(tools_dir) / 'bundletool-all-1.16.0.jar'
+            bundletool = Path(tools_dir) / 'bundletool-all-1.17.2.jar'
             bundletool = bundletool.as_posix()
         args = [
             find_java_binary(),
@@ -104,8 +107,6 @@ def handle_aab(app_dic):
         if not apks.exists() and aab_path.exists():
             # Convert AAB to APKS
             subprocess.run(args, timeout=300)
-            # Remove AAB
-            aab_path.unlink()
         # Extract APK from APKS
         for apk_file in unzip(checksum, apks.as_posix(), app_dic['app_dir']):
             full_path = app_dic['app_dir'] / apk_file

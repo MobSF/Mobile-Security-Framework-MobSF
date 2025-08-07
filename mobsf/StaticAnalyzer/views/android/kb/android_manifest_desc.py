@@ -64,7 +64,7 @@ MANIFEST_DESC = {
     },
     'vulnerable_os_version': {
         'title': ('App can be installed on a vulnerable '
-                  'upatched Android version<br>Android %s, [minSdk=%s]'),
+                  'unpatched Android version<br>Android %s, [minSdk=%s]'),
         'level': 'high',
         'description': ('This application can be installed on an older version'
                         ' of android that has multiple unfixed '
@@ -73,7 +73,7 @@ MANIFEST_DESC = {
                         'Support an Android version => 10, API 29 '
                         'to receive reasonable security updates.'),
         'name': ('App can be installed on a vulnerable '
-                 'upatched Android version %s, [minSdk=%s]'),
+                 'unpatched Android version %s, [minSdk=%s]'),
     },
     'vulnerable_os_version2': {
         'title': ('App can be installed on a vulnerable Android version'
@@ -219,12 +219,12 @@ MANIFEST_DESC = {
         'name': 'Data SMS Receiver Set on Port: %s Found. [android:port]',
     },
     'high_intent_priority_found': {
-        'title': 'High Intent Priority (%s)<br>[android:priority]',
+        'title': 'High Intent Priority (%s) - {%s} Hit(s)<br>[android:priority]',
         'level': 'warning',
         'description': ('By setting an intent priority higher than another'
                         ' intent, the app effectively overrides '
                         'other requests.'),
-        'name': 'High Intent Priority (%s). [android:priority]',
+        'name': 'High Intent Priority (%s) - {%s} Hit(s) [android:priority]',
     },
     'high_action_priority_found': {
         'title': 'High Action Priority (%s)<br>[android:priority] ',

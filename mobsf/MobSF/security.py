@@ -2,13 +2,18 @@
 import subprocess
 import functools
 import logging
+import re
+import socket
+import ipaddress
 import sys
 from shutil import which
 from pathlib import Path
+from platform import system
+from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor
 
-
 from mobsf.MobSF.utils import (
+    find_aapt,
     find_java_binary,
     gen_sha256_hash,
     get_adb,
@@ -63,15 +68,29 @@ def generate_hashes(dirlocs):
 def get_executable_hashes():
     # Internal Binaries shipped with MobSF
     base = Path(settings.BASE_DIR)
+    downloaded_tools = Path(settings.DOWNLOADED_TOOLS_DIR)
     manage_py = base.parent / 'manage.py'
     exec_loc = [
         base / 'DynamicAnalyzer' / 'tools',
         base / 'StaticAnalyzer' / 'tools',
+        downloaded_tools,
         manage_py,
     ]
+    aapt = 'aapt'
+    aapt2 = 'aapt2'
+    if system() == 'Windows':
+        aapt = 'aapt.exe'
+        aapt2 = 'aapt2.exe'
+    aapts = [find_aapt(aapt), find_aapt(aapt2)]
+    exec_loc.extend(Path(a) for a in aapts if a)
     # External binaries used directly by MobSF
     system_bins = [
+        'aapt',
+        'aapt.exe',
+        'aapt2',
+        'aapt2.exe',
         'adb',
+        'adb.exe',
         'which',
         'wkhtmltopdf',
         'httptools',
@@ -107,6 +126,8 @@ def get_executable_hashes():
         settings.CLASSDUMP_BINARY,
         settings.CLASSDUMP_SWIFT_BINARY,
         getattr(settings, 'BUNDLE_TOOL', ''),
+        getattr(settings, 'AAPT2_BINARY', ''),
+        getattr(settings, 'AAPT_BINARY', ''),
     ]
     for ubin in user_defined_bins:
         if ubin:
@@ -127,8 +148,8 @@ def get_executable_hashes():
 
 def store_exec_hashes_at_first_run():
     """Store executable hashes at first run."""
+    global EXECUTABLE_HASH_MAP
     try:
-        global EXECUTABLE_HASH_MAP
         hashes, signature = get_executable_hashes()
         hashes['signature'] = signature
         EXECUTABLE_HASH_MAP = hashes
@@ -139,7 +160,6 @@ def store_exec_hashes_at_first_run():
 
 
 def subprocess_hook(oldfunc, *args, **kwargs):
-    global EXECUTABLE_HASH_MAP
     if isinstance(args[0], str):
         # arg is a string
         agmtz = args[0].split()
@@ -207,3 +227,138 @@ def sanitize_redirect(url):
     elif url.startswith('/'):
         return url
     return root
+
+
+def sanitize_filename(filename):
+    """Sanitize Filename."""
+    # Remove any characters
+    # that are not alphanumeric, hyphens, underscores, or dots
+    safe_filename = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
+    # Merge multiple underscores into one
+    safe_filename = re.sub(r'__+', '_', safe_filename)
+    # Remove leading and trailing underscores
+    safe_filename = safe_filename.strip('_')
+    return safe_filename
+
+
+def sanitize_for_logging(filename: str, max_length: int = 255) -> str:
+    """Sanitize a filename to prevent log injection."""
+    # Remove newline, carriage return, and other risky characters
+    filename = filename.replace('\n', '_').replace('\r', '_').replace('\t', '_')
+
+    # Allow only safe characters (alphanumeric, underscore, dash, and period)
+    filename = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
+
+    # Truncate filename to the maximum allowed length
+    return filename[:max_length]
+
+
+def valid_host(host):
+    """Check if host is valid, run SSRF checks."""
+    default_timeout = socket.getdefaulttimeout()
+    try:
+        if len(host) > 2083:  # Standard URL length limit
+            return False
+
+        prefixs = ('http://', 'https://')
+        if not host.startswith(prefixs):
+            host = f'http://{host}'
+        parsed = urlparse(host)
+        scheme = parsed.scheme
+        domain = parsed.netloc
+        hostname = parsed.hostname
+        path = parsed.path
+        query = parsed.query
+        params = parsed.params
+        port = parsed.port
+
+        # Allow only http and https schemes
+        if scheme not in ('http', 'https'):
+            return False
+
+        # Check for hostname
+        if not hostname:
+            return False
+
+        # Validate port - only allow 80 and 443
+        if port and port not in (80, 443):
+            return False
+
+        # Check for URL credentials
+        if '@' in domain:
+            return False
+
+        # Detect parser escapes, only host is allowed
+        if len(path) > 0 or len(query) > 0 or len(params) > 0:
+            return False
+
+        # Resolve dns to get ipv4 or ipv6 address
+        socket.setdefaulttimeout(5)  # 5 second timeout
+        ip_addresses = socket.getaddrinfo(hostname, None)
+        for ip in ip_addresses:
+            ip_obj = ipaddress.ip_address(ip[4][0])
+            if (ip_obj.is_private
+                or ip_obj.is_loopback
+                or ip_obj.is_link_local
+                or ip_obj.is_reserved
+                or ip_obj.is_multicast
+                    or ip_obj.is_unspecified):
+                return False
+
+            # Additional checks for specific IPv4 ranges
+            if isinstance(ip_obj, ipaddress.IPv4Address):
+                problematic_networks = [
+                    '127.0.0.0/8',
+                    '169.254.0.0/16',
+                    '172.16.0.0/12',
+                    '192.168.0.0/16',
+                    '10.0.0.0/8',
+                ]
+                for network in problematic_networks:
+                    if ip_obj in ipaddress.IPv4Network(network):
+                        return False
+
+        # If all checks pass, return True
+        return True
+    except Exception:
+        return False
+    finally:
+        # Restore default socket timeout
+        socket.setdefaulttimeout(default_timeout)
+
+
+def sanitize_svg(svg_content):
+    """Sanitize SVG content to prevent XSS attacks."""
+    logger.info('Sanitizing SVG contents')
+    import bleach
+    # Allow standard SVG tags and attributes, but remove scripts and event handlers
+    safe_tags = [
+        'svg', 'g', 'path', 'rect', 'circle', 'ellipse',
+        'line', 'polyline', 'polygon', 'text', 'tspan',
+        'defs', 'use', 'image', 'mask', 'clipPath',
+        'filter', 'linearGradient', 'radialGradient', 'stop',
+    ]
+    safe_attrs = {
+        '*': ['id', 'class', 'transform', 'fill', 'stroke', 'stroke-width', 'opacity'],
+        'svg': ['width', 'height', 'viewBox', 'xmlns', 'version'],
+        'path': ['d'],
+        'rect': ['x', 'y', 'width', 'height', 'rx', 'ry'],
+        'circle': ['cx', 'cy', 'r'],
+        'ellipse': ['cx', 'cy', 'rx', 'ry'],
+        'line': ['x1', 'y1', 'x2', 'y2'],
+        'polyline': ['points'],
+        'polygon': ['points'],
+        'text': ['x', 'y', 'font-family', 'font-size'],
+        'image': ['x', 'y', 'width', 'height', 'href'],
+        'use': ['x', 'y', 'width', 'height', 'href'],
+        'filter': ['x', 'y', 'width', 'height', 'href'],
+        'linearGradient': ['x1', 'y1', 'x2', 'y2'],
+        'radialGradient': ['cx', 'cy', 'r', 'fx', 'fy'],
+        'stop': ['offset', 'stop-color', 'stop-opacity'],
+    }
+    return bleach.clean(
+        svg_content,
+        tags=safe_tags,
+        attributes=safe_attrs,
+        strip=True,
+    )

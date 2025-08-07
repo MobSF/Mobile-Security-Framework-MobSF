@@ -7,30 +7,31 @@ from django.shortcuts import render
 
 import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
-from mobsf.MalwareAnalyzer.views.android import permissions
+from mobsf.MalwareAnalyzer.views.android import (
+    permissions,
+)
 from mobsf.MobSF.utils import (
     append_scan_status,
     file_size,
     print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
-    firebase_analysis,
     get_avg_cvss,
     hash_gen,
     unzip,
 )
+from mobsf.StaticAnalyzer.views.common.firebase import (
+    firebase_analysis,
+)
 from mobsf.StaticAnalyzer.views.common.appsec import (
     get_android_dashboard,
-)
-from mobsf.StaticAnalyzer.views.android.app import (
-    parse_apk,
 )
 from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
     manifest_analysis,
 )
 from mobsf.StaticAnalyzer.views.android.manifest_utils import (
-    get_manifest,
-    manifest_data,
+    extract_manifest_data,
+    get_parsed_manifest,
 )
 from mobsf.StaticAnalyzer.views.android.strings import (
     get_strings_metadata,
@@ -59,6 +60,7 @@ from mobsf.MobSF.views.authorization import (
     has_permission,
 )
 
+APK_TYPE = 'apk'
 logger = logging.getLogger(__name__)
 
 
@@ -82,6 +84,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
         app_dic['sha1'], app_dic['sha256'] = hash_gen(
             checksum,
             app_dic['app_path'])
+        app_dic['zipped'] = analysis_type
         app_dic['files'] = unzip(
             checksum,
             app_dic['app_path'],
@@ -92,52 +95,24 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
                 request,
                 f'{analysis_type.upper()} file is invalid or corrupt',
                 api)
-        app_dic['certz'] = get_hardcoded_cert_keystore(
-            checksum,
-            app_dic['files'])
+        get_hardcoded_cert_keystore(app_dic)
         app_dic['playstore'] = {'error': True}
-        # Parse APK with Androguard
-        apk = parse_apk(
-            checksum,
-            app_dic['app_path'])
         if analysis_type == 'aar':
             # AAR has manifest and sometimes certificate
-            mani_file, ns, mani_xml = get_manifest(
-                checksum,
-                app_dic['app_path'],
-                app_dic['app_dir'],
-                app_dic['tools_dir'],
-                'aar',
-            )
-            app_dic['manifest_file'] = mani_file
-            app_dic['ns'] = ns
-            app_dic['parsed_xml'] = mani_xml
-            man_data_dic = manifest_data(
-                checksum,
-                app_dic['parsed_xml'],
-                ns)
-            man_an_dic = manifest_analysis(
-                checksum,
-                app_dic['parsed_xml'],
-                ns,
-                man_data_dic,
-                '',
-                app_dic['app_dir'],
-            )
-
+            get_parsed_manifest(app_dic)
+            man_data_dic = extract_manifest_data(app_dic)
+            man_an_dic = manifest_analysis(app_dic, man_data_dic)
             # Malware Permission check
             mal_perms = permissions.check_malware_permission(
                 checksum,
                 man_data_dic['perm'])
             man_an_dic['malware_permissions'] = mal_perms
 
-            cert_dic = cert_info(
-                apk,
-                app_dic,
-                man_data_dic)
+            cert_dic = cert_info(app_dic, man_data_dic)
         else:
             app_dic['manifest_file'] = None
-            app_dic['parsed_xml'] = ''
+            app_dic['manifest_parsed_xml'] = None
+            app_dic['manifest_namespace'] = None
             man_data_dic = {
                 'services': [],
                 'activities': [],
@@ -191,37 +166,32 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             checksum,
             app_dic['app_path'],
             app_dic['app_dir'],
-            app_dic['tools_dir'])
+            settings.DOWNLOADED_TOOLS_DIR)
         code_an_dic = code_analysis(
             checksum,
             app_dic['app_dir'],
-            'apk',
+            APK_TYPE,
             app_dic['manifest_file'],
             man_data_dic['perm'])
         obfuscated_check(
             checksum,
             app_dic['app_dir'],
             code_an_dic)
-        quark_results = []
         # Get the strings and metadata
         get_strings_metadata(
-            checksum,
-            apk,
-            app_dic['app_dir'],
+            app_dic,
             elf_dict['elf_strings'],
-            'apk',
             ['.java'],
             code_an_dic)
         # Firebase DB Check
         code_an_dic['firebase'] = firebase_analysis(
             checksum,
-            code_an_dic['urls_list'])
+            code_an_dic)
         # Domain Extraction and Malware Check
         code_an_dic['domains'] = MalwareDomainCheck().scan(
             checksum,
             code_an_dic['urls_list'])
 
-        app_dic['zipped'] = analysis_type
         context = save_get_ctx(
             app_dic,
             man_data_dic,
@@ -230,7 +200,6 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             cert_dic,
             elf_dict['elf_analysis'],
             {},
-            quark_results,
             tracker_res,
             rescan,
         )

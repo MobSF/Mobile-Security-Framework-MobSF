@@ -1,9 +1,7 @@
 from django.urls import re_path
 
-from mobsf.DynamicAnalyzer.views.common import (
-    device,
-    frida,
-)
+from mobsf.DynamicAnalyzer.views.common import device
+from mobsf.DynamicAnalyzer.views.common.frida import views as frida
 from mobsf.DynamicAnalyzer.views.android import dynamic_analyzer as dz
 from mobsf.DynamicAnalyzer.views.android import (
     operations,
@@ -34,6 +32,7 @@ from mobsf.MobSF.views.api import api_ios_dynamic_analysis as api_idz
 from mobsf.StaticAnalyzer import tests
 from mobsf.StaticAnalyzer.views.common import (
     appsec,
+    async_task,
     pdf,
     shared_func,
     suppression,
@@ -51,7 +50,7 @@ from mobsf.StaticAnalyzer.views.ios.views import view_source as io_view_source
 
 from . import settings
 
-bundle_id_regex = r'(?P<bundle_id>([a-zA-Z]{1}[\w.-]{1,255}))$'
+bundle_id_regex = r'(?P<bundle_id>.+)$'
 checksum_regex = r'(?P<checksum>[0-9a-f]{32})'
 paginate = r'(?P<page_size>[0-9]{1,10})/(?P<page_number>[0-9]{1,10})'
 
@@ -85,7 +84,9 @@ urlpatterns = [
     # Static Analysis
     re_path(r'^api/v1/upload$', api_sz.api_upload),
     re_path(r'^api/v1/scan$', api_sz.api_scan),
+    re_path(r'^api/v1/search$', api_sz.api_search),
     re_path(r'^api/v1/scan_logs$', api_sz.api_scan_logs),
+    re_path(r'^api/v1/tasks$', api_sz.api_tasks),
     re_path(r'^api/v1/delete_scan$', api_sz.api_delete_scan),
     re_path(r'^api/v1/download_pdf$', api_sz.api_pdf_report),
     re_path(r'^api/v1/report_json$', api_sz.api_json_report),
@@ -120,7 +121,7 @@ urlpatterns = [
     # Shared
     re_path(r'^api/v1/frida/logs$', api_dz.api_frida_logs),
     re_path(r'^api/v1/frida/list_scripts$', api_dz.api_list_frida_scripts),
-    re_path(r'^api/v1/frida/get_script$', api_dz.api_get_script),
+    re_path(r'^api/v1/frida/get_script$', api_dz.api_get_script_content),
     re_path(r'^api/v1/dynamic/view_source$', api_dz.api_dynamic_view_file),
     # iOS Specific
     re_path(r'^api/v1/ios/corellium_supported_models$',
@@ -183,6 +184,9 @@ if settings.API_ONLY == '0':
         re_path(r'^$', home.index, name='home'),
         re_path(r'^upload/$', home.Upload.as_view, name='upload'),
         re_path(r'^download/', home.download, name='download'),
+        re_path(fr'^download_binary/{checksum_regex}/$',
+                home.download_binary,
+                name='download_binary'),
         re_path(r'^download_scan/', home.download_apk, name='download_scan'),
         re_path(r'^generate_downloads/$',
                 home.generate_download,
@@ -198,10 +202,12 @@ if settings.API_ONLY == '0':
         re_path(r'^search$', home.search),
         re_path(r'^status/$', home.scan_status, name='status'),
         re_path(r'^error/$', home.error, name='error'),
-        re_path(r'^not_found/$', home.not_found),
         re_path(r'^zip_format/$', home.zip_format),
+        re_path(r'^robots.txt$', home.robots_txt),
         re_path(r'^dynamic_analysis/$', home.dynamic_analysis, name='dynamic'),
-
+        re_path(r'^tasks$',
+                async_task.list_tasks,
+                name='list_tasks'),
         # Static Analysis
         # Android
         re_path(fr'^static_analyzer/{checksum_regex}/$',
@@ -308,8 +314,8 @@ if settings.API_ONLY == '0':
         re_path(r'^list_frida_scripts/$',
                 frida.list_frida_scripts,
                 name='list_frida_scripts'),
-        re_path(r'^get_script/$',
-                frida.get_script,
+        re_path(r'^get_script_content/$',
+                frida.get_script_content,
                 name='get_script'),
         re_path(r'^dynamic_view_file/$',
                 device.view_file,

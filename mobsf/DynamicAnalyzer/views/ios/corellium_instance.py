@@ -763,6 +763,8 @@ def download_data(request, bundle_id, api=False):
         if failed:
             return send_response(failed, api)
         if not strict_package_check(bundle_id):
+            # Check bundle_id during call, as the check
+            # is not done in REST API/URL repath.
             data['message'] = 'Invalid iOS Bundle id'
             return send_response(data, api)
         ci = CorelliumInstanceAPI(instance_id)

@@ -35,6 +35,9 @@
                  <div class="box">
         <div class="box-header with-border">
             <h3 class="box-title"><i class="fa fa-rocket"></i> Recent Scans</h3>
+            {% if async_scans %}
+            <p class="lead">View scan progress in the <strong><a href="{% url 'list_tasks' %}">Scan Queue</a></strong></p>
+            {% endif %}
         </div>
 
         <div class="box-body">
@@ -102,6 +105,7 @@
                             <td><p>
                                    <a class="btn btn-outline-primary btn-sm" href="{% url "pdf" checksum=e.MD5%}"><i class="fas fa-file-pdf"></i></a>
                                    <a class="btn btn-outline-info btn-sm" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/?rescan=1"><i class="fas fa-sync-alt"></i></a>
+                                   <a class="btn btn-outline-secondary btn-sm" href="{% url "download_binary" checksum=e.MD5%}"><i class="fas fa-download"></i></a>
                                 </p>
                             {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:" or '.aab' == e.FILE_NAME|slice:"-4:"%}
                                 <p><a class="diffButton btn btn-warning btn-sm" id="{{ e.MD5 }}_{{ e.FILE_NAME }}"><i class="fas fa-not-equal"></i> Diff or Compare</a>
@@ -180,6 +184,18 @@
 {% block extra_scripts %}
 <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script>
+
+    // Escape HTML
+    function escapeHtml(unsafe)
+    {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     // Diff functions
     var diff_first_md5 = '';
     var diff_first_name = '';
@@ -227,7 +243,7 @@
     }
 
     function diff_cleanup() {
-        first_td_id = diff_first_md5 + '_' + diff_first_name;
+        first_td_id = diff_first_md5 + '_' + escapeHtml(diff_first_name);
         $('[id="' + first_td_id + '"]').closest("tr").removeClass("selected");
         $('[id="' + first_td_id + '"]').closest("tbody").removeClass("selectable_table");
         diff_first_md5 = "";
@@ -250,8 +266,8 @@
             title: '<strong>Diff confirmation</strong>',
             type: 'info',
             html:
-                '<strong>Do you want to diff - </strong><br />' + diff_first_name +
-                '<br /> <strong>with - <br /> </strong>' + diff_second_name + ' <br /> <strong>?</strong>',
+                '<strong>Do you want to diff - </strong><br />' + escapeHtml(diff_first_name) +
+                '<br /> <strong>with - <br /> </strong>' + escapeHtml(diff_second_name) + ' <br /> <strong>?</strong>',
 
             showCancelButton: true,
             cancelButtonText: 'Cancel',
@@ -287,7 +303,7 @@
                                 md5: md5_hash,
                                 },
                             success : function(json) {
-                                if (json.deleted==='yes'){
+                                if (json.deleted ==='yes'){
                                     Swal.fire(
                                         'Deleted!',
                                         'The scan result is deleted!',
@@ -299,7 +315,7 @@
                                 else {
                                     Swal.fire(
                                     'Delete Failed',
-                                    'Cannot delete the scan result!',
+                                    json.deleted,
                                     'error'
                                     )
                                 }
