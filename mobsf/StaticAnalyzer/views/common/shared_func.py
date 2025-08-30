@@ -510,7 +510,7 @@ def scan_library(request, checksum):
         lib_dir = Path(settings.UPLD_DIR) / checksum
 
         sfile = lib_dir / relative_path
-        if not is_safe_path(lib_dir.as_posix(), sfile.as_posix()):
+        if not is_safe_path(lib_dir.as_posix(), sfile.as_posix(), relative_path):
             msg = 'Path Traversal Detected!'
             return print_n_send_error_response(request, msg)
         ext = sfile.suffix

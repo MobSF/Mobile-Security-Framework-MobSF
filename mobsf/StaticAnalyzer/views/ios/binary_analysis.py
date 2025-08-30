@@ -110,7 +110,7 @@ def binary_analysis(checksum, src, tools_dir, app_dir, executable_name):
                 bin_name = dot_app_path.stem
 
         bin_path = bin_dir / bin_name
-        
+
         if not (bin_path.exists() and bin_path.is_file()):
             msg = (
                 f'MobSF Cannot find binary in {bin_path.as_posix()}. '
