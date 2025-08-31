@@ -168,7 +168,7 @@ try {
     const libc = Process.getModuleByName("libc.so");
     Interceptor.attach(libc.getExportByName("system"), {
         onEnter: function(args) {
-            var cmd = Memory.readCString(args[0]);
+            var cmd = args[0].readCString();
             if (cmd.indexOf("kill") != -1) {
                 console.log("Bypass native system: " + cmd);
                 var NewKill = args[0].writeUtf8String("bypassed");

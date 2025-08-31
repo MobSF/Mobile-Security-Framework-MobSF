@@ -3,7 +3,6 @@
 import logging
 import os
 from pathlib import Path
-from threading import Thread
 
 from django.conf import settings
 from django.shortcuts import render
@@ -12,25 +11,19 @@ from mobsf.MobSF.utils import (
     common_check,
     get_md5,
     print_n_send_error_response,
-    python_dict,
     strict_package_check,
 )
-from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
 from mobsf.DynamicAnalyzer.forms import UploadFileForm
+from mobsf.DynamicAnalyzer.views.ios.helpers import (
+    get_local_ipa_list,
+    configure_proxy,
+)
 from mobsf.DynamicAnalyzer.views.ios.corellium_ssh import (
     generate_keypair_if_not_exists,
-)
-from mobsf.DynamicAnalyzer.tools.webproxy import (
-    get_http_tools_url,
-    start_proxy,
-    stop_httptools,
 )
 from mobsf.DynamicAnalyzer.views.ios.corellium_apis import (
     CorelliumAPI,
     CorelliumInstanceAPI,
-)
-from mobsf.DynamicAnalyzer.views.ios.corellium_ssh import (
-    ssh_jumphost_reverse_port_forward,
 )
 from mobsf.MobSF.views.authentication import (
     login_required,
@@ -48,30 +41,7 @@ logger = logging.getLogger(__name__)
 def dynamic_analysis(request, api=False):
     """The iOS Dynamic Analysis Entry point."""
     try:
-        scan_apps = []
-        ipas = StaticAnalyzerIOS.objects.filter(
-            FILE_NAME__endswith='.ipa')
-        for ipa in reversed(ipas):
-            bundle_hash = get_md5(ipa.BUNDLE_ID.encode('utf-8'))
-            frida_dump = Path(
-                settings.UPLD_DIR) / bundle_hash / 'mobsf_dump_file.txt'
-            macho = python_dict(ipa.MACHO_ANALYSIS)
-            encrypted = False
-            if (macho
-                    and macho.get('encrypted')
-                    and macho.get('encrypted').get('is_encrypted')):
-                encrypted = macho['encrypted']['is_encrypted']
-            temp_dict = {
-                'MD5': ipa.MD5,
-                'APP_NAME': ipa.APP_NAME,
-                'APP_VERSION': ipa.APP_VERSION,
-                'FILE_NAME': ipa.FILE_NAME,
-                'BUNDLE_ID': ipa.BUNDLE_ID,
-                'BUNDLE_HASH': bundle_hash,
-                'ENCRYPTED': encrypted,
-                'DYNAMIC_REPORT_EXISTS': frida_dump.exists(),
-            }
-            scan_apps.append(temp_dict)
+        scan_apps = get_local_ipa_list()
         # Corellium
         instances = []
         project_id = None
@@ -103,17 +73,17 @@ def dynamic_analyzer(request, api=False):
     try:
         if api:
             bundleid = request.POST.get('bundle_id')
+            instance_id = request.POST.get('instance_id')
+            form = None
         else:
-            bundleid = request.GET.get('bundleid')
+            bundleid = request.GET.get('bundle_id')
+            instance_id = request.GET.get('instance_id')
+            form = UploadFileForm()
         if not bundleid or not strict_package_check(bundleid):
             return print_n_send_error_response(
                 request,
                 'Invalid iOS Bundle id',
                 api)
-        if api:
-            instance_id = request.POST.get('instance_id')
-        else:
-            instance_id = request.GET.get('instance_id')
         failed = common_check(instance_id)
         if failed:
             return print_n_send_error_response(
@@ -126,12 +96,8 @@ def dynamic_analyzer(request, api=False):
             app_dir.mkdir()
         ci = CorelliumInstanceAPI(instance_id)
         configure_proxy(request, bundleid, ci)
-        if api:
-            form = None
-        else:
-            form = UploadFileForm()
         context = {
-            'hash': bundle_hash,
+            'checksum': bundle_hash,
             'instance_id': instance_id,
             'bundle_id': bundleid,
             'version': settings.MOBSF_VER,
@@ -185,16 +151,3 @@ def setup_ssh_keys(c):
             logger.error('Failed to add SSH Key to Corellium project')
             return
         logger.info('Added SSH Key to Corellium project')
-
-
-def configure_proxy(request, project, ci):
-    """Configure HTTPS Proxy."""
-    proxy_port = settings.PROXY_PORT
-    logger.info('Starting HTTPS Proxy on %s', proxy_port)
-    stop_httptools(get_http_tools_url(request))
-    start_proxy(proxy_port, project)
-    # Remote Port forward for HTTPS Proxy
-    logger.info('Starting Remote Port Forward over SSH')
-    Thread(target=ssh_jumphost_reverse_port_forward,
-           args=(ci.get_ssh_connection_string(),),
-           daemon=True).start()

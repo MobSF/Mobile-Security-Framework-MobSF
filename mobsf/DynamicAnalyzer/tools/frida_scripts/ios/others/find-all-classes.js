@@ -1,30 +1,32 @@
-/* Description: Dump all classes used by the app
- * Mode: S+A
- * Version: 1.0
- * Credit: https://github.com/interference-security/frida-scripts/blob/master/iOS
- * Author: @interference-security
- */
-//Twitter: https://twitter.com/xploresec
-//GitHub: https://github.com/interference-security
-function run_show_classes_of_app()
-{
-    send("Enumerating Classes")
-    var count = 0
-    for (var className in ObjC.classes)
-    {
-        if (ObjC.classes.hasOwnProperty(className))
-        {
-            send("[AUXILIARY] " + className);
-            count = count + 1
+function run_show_classes_of_app() {
+    send("Enumerating Classes");
+
+    try {
+        const classesByImage = ObjC.enumerateLoadedClassesSync();
+        let count = 0;
+
+        // Filter to only app-specific modules (e.g., containing ".app")
+        for (const imageName in classesByImage) {
+            if (!imageName.includes(".app")) continue;
+
+            const classList = classesByImage[imageName];
+
+            for (const className of classList) {
+                send("[AUXILIARY] " + className);
+                count++;
+            }
         }
+
+        send("[AUXILIARY] \n  Classes found: " + count);
+    } catch (err) {
+        send("❌ Error during class enumeration: " + err.message);
     }
-    send("[AUXILIARY] \n  Classes found: " + count);
-    send("Completed Enumerating Classes")
+
+    send("Completed Enumerating Classes");
 }
 
-function show_classes_of_app()
-{
-	setImmediate(run_show_classes_of_app)
+function show_classes_of_app() {
+    setImmediate(run_show_classes_of_app);
 }
 
-show_classes_of_app()
+show_classes_of_app();
