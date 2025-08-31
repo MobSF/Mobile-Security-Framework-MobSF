@@ -1,4 +1,4 @@
-### v4.3.2 Changelog
+### v4.4.1 Changelog
 
 - Features or Enhancements
    - Frida 17+ support and script updates
@@ -11,7 +11,7 @@
    - Updated CodeQL action
  
 - Security
-   -  [Zip bomb Denial of Service (DoS) via Resource Exhaustion (Disk Space)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-c5vg-26p8-q8cr)
+   - [Zip bomb Denial of Service (DoS) via Resource Exhaustion (Disk Space)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-c5vg-26p8-q8cr)
    - [Stored Cross Site Scripting (XSS) via malicious SVG app icon](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-mwfg-948f-2cc5)
    - [Arbitrary File Write (AR-Slip) via Absolute Path in .a Extraction](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-9gh8-9r95-3fc3)
    - [Path Traversal in GET /download/<filename> using absolute filenames in MobSF data directory](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-ccc3-fvfx-mw3v)
@@ -22,6 +22,23 @@
   - Fix Frida Code Editor code alignment issues
   - Fix Google Play Scrapper timeout issues behind proxy
   - Correctly resolve executable path in .app bundles during iOS IPA SCA
+
+### v4.3.2 Changelog
+
+- Features or Enhancements
+   - Added support for user defined SSO Maintainer or Viewer role mapping
+   - Dependency updates
+ 
+- Security
+   - Fixed Partial Denial of Service due to strict regex check in iOS report view URL
+   - Fixed Local Privilege escalation due to leaked REST API key in web UI
+   - Fixed Stored Cross-Site Scripting in iOS dynamic_analysis view via `bundle` id
+   - Improved anti-SSRF checks and added extra checks in firebase and asset link check
+   
+- Bug Fixes
+  - Bug fix in docker build poetry cache clean
+  - Fix CI builds on mac
+  - Fix frida server download proxy SSL verify configuration
 
 ### v4.3.0 Changelog
 
