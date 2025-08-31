@@ -287,7 +287,7 @@ def ar_os(src, dst):
         out = subprocess.check_output(
             [shutil.which('ar'), 'x', src],
             stderr=subprocess.STDOUT)
-    except ValueError as exp:
+    except ValueError:
         out = b''
     except Exception as exp:
         out = exp.output
