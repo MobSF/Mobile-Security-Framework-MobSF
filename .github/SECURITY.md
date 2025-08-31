@@ -10,6 +10,8 @@ Please report all security issues [here](https://github.com/MobSF/Mobile-Securit
 
 | Vulnerability | Affected Versions |
 | ------- | ------------------ |
+| [Arbitrary File Write (AR-Slip) via Absolute Path in .a Extraction](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-9gh8-9r95-3fc3) | `<=4.4.0` |
+| [Path Traversal in GET /download/`<filename>` using absolute filenames in MobSF data directory)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-ccc3-fvfx-mw3v) | `<=4.4.0` |
 | [Zip bomb Denial of Service (DoS) via Resource Exhaustion (Disk Space)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-c5vg-26p8-q8cr) | `<=4.3.2` |
 | [Stored Cross Site Scripting (XSS) via malicious SVG app icon](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-mwfg-948f-2cc5) | `<=4.3.2` |
 | [SSRF on assetlinks_check with DNS Rebinding](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-fcfq-m8p6-gw56) | `<=4.3.1` |

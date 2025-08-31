@@ -45,7 +45,7 @@ def handle_xapk(app_dic):
     for a in apks:
         if a['id'] == 'base':
             base_apk = app_dic['app_dir'] / a['file']
-            if is_safe_path(app_dic['app_dir'], base_apk):
+            if is_safe_path(app_dic['app_dir'], base_apk, a['file']):
                 move(base_apk, apk)
                 return True
     return None
@@ -61,7 +61,7 @@ def handle_split_apk(app_dic):
         return True
     for apk in unzip(checksum, apks.as_posix(), app_dic['app_dir']):
         full_path = app_dic['app_dir'] / apk
-        safe_path = is_safe_path(app_dic['app_dir'], full_path)
+        safe_path = is_safe_path(app_dic['app_dir'], full_path, apk)
         if apk.endswith('base.apk') and safe_path:
             move(full_path, apks)
             return True
@@ -110,7 +110,7 @@ def handle_aab(app_dic):
         # Extract APK from APKS
         for apk_file in unzip(checksum, apks.as_posix(), app_dic['app_dir']):
             full_path = app_dic['app_dir'] / apk_file
-            safe_path = is_safe_path(app_dic['app_dir'], full_path)
+            safe_path = is_safe_path(app_dic['app_dir'], full_path, apk_file)
             if apk_file == 'universal.apk' and safe_path:
                 move(full_path, apk)
                 apks.unlink()

@@ -59,7 +59,7 @@ def get_script_content(request, api=False):
         script_ct = []
         for script in scripts:
             script_file = others / f'{script}.js'
-            if not is_safe_path(str(others), str(script_file)):
+            if not is_safe_path(str(others), str(script_file), script):
                 data = {
                     'status': 'failed',
                     'message': 'Path traversal detected.'}

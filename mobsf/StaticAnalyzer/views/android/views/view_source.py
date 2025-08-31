@@ -76,7 +76,7 @@ def run(request, api=False):
                 return send_error(request, msg, api_mode, json_resp)
 
         sfile = src / fil
-        if not is_safe_path(src, sfile.as_posix()):
+        if not is_safe_path(src, sfile.as_posix(), fil):
             msg = 'Path Traversal Detected!'
             return send_error(request, msg, api_mode, json_resp)
         context = {

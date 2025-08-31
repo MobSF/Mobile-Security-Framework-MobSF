@@ -475,7 +475,7 @@ def download(request):
     dwd_file = Path(root) / filename
 
     # Security Checks
-    if '../' in filename or not is_safe_path(root, dwd_file):
+    if not is_safe_path(root, dwd_file, filename):
         msg = 'Path Traversal Attack Detected'
         return print_n_send_error_response(request, msg)
 
