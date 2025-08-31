@@ -19,6 +19,7 @@ import stat
 import sqlite3
 import unicodedata
 import threading
+from urllib.parse import unquote
 from pathlib import Path
 from concurrent.futures import (
     ThreadPoolExecutor,
@@ -603,8 +604,10 @@ def get_proxy_ip(identifier):
     return proxy_ip
 
 
-def is_safe_path(safe_root, check_path):
+def is_safe_path(safe_root, check_path, raw_file):
     """Detect Path Traversal."""
+    if is_path_traversal(raw_file):
+        return False
     safe_root = os.path.realpath(os.path.normpath(safe_root))
     check_path = os.path.realpath(os.path.normpath(check_path))
     return os.path.commonprefix([check_path, safe_root]) == safe_root
@@ -707,11 +710,37 @@ def is_path_traversal(user_input):
     """Check for path traversal."""
     if not user_input:
         return False
-    if (('../' in user_input)
-        or ('%2e%2e' in user_input)
-        or ('..' in user_input)
-            or ('%252e' in user_input)):
-        logger.error('Path traversal attack detected')
+
+    # Disallow absolute paths and windows paths and backslashes
+    if os.path.isabs(user_input) or user_input.startswith(('\\', '//')):
+        logger.error('Path traversal attack detected with absolute path')
+        return True
+
+    # Normalize and decode URL-encoded characters
+    try:
+        # Handle URL decoding (e.g., %2e -> .)
+        decoded = unquote(user_input)
+        # Handle double URL decoding (e.g., %252e -> %2e -> .)
+        double_decoded = unquote(decoded)
+    except Exception:
+        logger.error('Path traversal attack detected with invalid URL encoding')
+        return True
+
+    # Check for path traversal in both original and decoded versions
+    dangerous_patterns = ['..', '../', '..\\', '..\\\\']
+
+    # Check original filename
+    if any(pattern in user_input for pattern in dangerous_patterns):
+        logger.error('Path traversal attack detected with invalid path')
+        return True
+
+    # Check decoded versions
+    if any(pattern in decoded for pattern in dangerous_patterns):
+        logger.error('Path traversal attack detected with invalid path')
+        return True
+
+    if any(pattern in double_decoded for pattern in dangerous_patterns):
+        logger.error('Path traversal attack detected with invalid path')
         return True
     return False
 

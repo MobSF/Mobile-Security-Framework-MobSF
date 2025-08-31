@@ -13,7 +13,6 @@ from mobsf.MobSF.views.authentication import (
 )
 from mobsf.MobSF.utils import (
     is_md5,
-    is_path_traversal,
     is_safe_path,
     print_n_send_error_response,
     read_sqlite,
@@ -52,7 +51,7 @@ def view_file(request, api=False):
         src = Path(settings.UPLD_DIR) / md5_hash / 'DYNAMIC_DeviceData'
         sfile = src / fil
         src = src.as_posix()
-        if not is_safe_path(src, sfile.as_posix()) or is_path_traversal(fil):
+        if not is_safe_path(src, sfile.as_posix(), fil):
             err = 'Path Traversal Attack Detected'
             return print_n_send_error_response(request, err, api)
         # Check if it's a binary plist first

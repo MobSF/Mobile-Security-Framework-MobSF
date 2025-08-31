@@ -216,6 +216,7 @@ def os_unzip(checksum, app_path, ext_path):
             logger.warning(msg)
             append_scan_status(checksum, msg)
             return []
+        # OS Unzip utility does handle path traversal and absolute paths
         subprocess.call(
             [unzip_b, '-o', '-q', app_path, '-d', ext_path])
         # Set permissions, packed files
@@ -270,14 +271,24 @@ def lipo_thin(checksum, src, dst):
 
 
 def ar_os(src, dst):
-    out = ''
     """Extract AR using OS utility."""
+    out = b''
     cur = os.getcwd()
     try:
         os.chdir(dst)
+        files = subprocess.check_output(
+            [shutil.which('ar'), 't', src],
+            stderr=subprocess.STDOUT)
+        for raw_file in files.decode('utf-8').split('\n'):
+            if is_path_traversal(raw_file):
+                msg = f'AR slip detected in AR file {src} at {raw_file}'
+                logger.error(msg)
+                raise ValueError(msg)
         out = subprocess.check_output(
             [shutil.which('ar'), 'x', src],
             stderr=subprocess.STDOUT)
+    except ValueError:
+        out = b''
     except Exception as exp:
         out = exp.output
     finally:
@@ -510,7 +521,7 @@ def scan_library(request, checksum):
         lib_dir = Path(settings.UPLD_DIR) / checksum
 
         sfile = lib_dir / relative_path
-        if not is_safe_path(lib_dir.as_posix(), sfile.as_posix()):
+        if not is_safe_path(lib_dir.as_posix(), sfile.as_posix(), relative_path):
             msg = 'Path Traversal Detected!'
             return print_n_send_error_response(request, msg)
         ext = sfile.suffix
