@@ -132,6 +132,8 @@ def print_version():
         dst_str = f' ({dist}) '
     env_str = f'OS Environment: {os}{dst_str}{pltfm}'
     logger.info(env_str)
+    python_version = sys.version.split(' ')[0]
+    logger.info('Python Version: %s', python_version)
     cores, threads, ram = get_system_resources()
     logger.info('CPU Cores: %s, Threads: %s, RAM: %.2f GB', cores, threads, ram)
     find_java_binary()
