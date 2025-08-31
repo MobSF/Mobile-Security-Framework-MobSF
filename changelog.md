@@ -1,3 +1,28 @@
+### v4.3.2 Changelog
+
+- Features or Enhancements
+   - Frida 17+ support and script updates
+   - **Breaking change:** Corellium iOS device must install Frida server version >=17
+   - Updated Frida scripts for logging, ssl/cert pinning bypass
+   - Added bridges support to frida
+   - Dependency updates
+   - Apply MobSF proxy settings to standalone tools_download.py
+   - Strict user email validation
+   - Updated CodeQL action
+ 
+- Security
+   -  [Zip bomb Denial of Service (DoS) via Resource Exhaustion (Disk Space)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-c5vg-26p8-q8cr)
+   - [Stored Cross Site Scripting (XSS) via malicious SVG app icon](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-mwfg-948f-2cc5)
+   - [Arbitrary File Write (AR-Slip) via Absolute Path in .a Extraction](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-9gh8-9r95-3fc3)
+   - [Path Traversal in GET /download/<filename> using absolute filenames in MobSF data directory](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-ccc3-fvfx-mw3v)
+   
+- Bug Fixes
+  - Bug fix in CVSS calculation
+  - Typo fixes
+  - Fix Frida Code Editor code alignment issues
+  - Fix Google Play Scrapper timeout issues behind proxy
+  - Correctly resolve executable path in .app bundles during iOS IPA SCA
+
 ### v4.3.0 Changelog
 
 - Features or Enhancements
