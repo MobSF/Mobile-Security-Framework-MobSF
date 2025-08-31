@@ -1,3 +1,13 @@
+### v4.4.2 Changelog
+
+- Features or Enhancements
+   - Python 3.13 support
+   - Remove pinned dependencies like xmlsec, lxml
+   - Bump mitmproxy, httptools, apkid
+   - Address older vulnerable packages in docker image
+   - Android Permission list update
+   - Updated Signatures
+
 ### v4.4.1 Changelog
 
 - Features or Enhancements
