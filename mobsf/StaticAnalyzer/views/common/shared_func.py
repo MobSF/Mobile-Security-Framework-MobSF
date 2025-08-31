@@ -271,8 +271,8 @@ def lipo_thin(checksum, src, dst):
 
 
 def ar_os(src, dst):
-    out = b''
     """Extract AR using OS utility."""
+    out = b''
     cur = os.getcwd()
     try:
         os.chdir(dst)
