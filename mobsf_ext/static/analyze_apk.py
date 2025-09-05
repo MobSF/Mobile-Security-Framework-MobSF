@@ -64,7 +64,10 @@ def main():
     if result["checks"]["yara_matches"]:
         flags.append("YARA 매치 있음")
 
-    result["summary"] = " / ".join(flags) if flags else "특이징 미검출(정적 1차 패스)"
+    result["summary"] = " / ".join(flags) if flags else "특이점 미검출(정적 1차 패스)"
+    out_file = Path("outputs") / (apk_path.stem + ".json")
+    out_file.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"[+] 결과 저장 완료: {out_file}")
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 if __name__ == "__main__":

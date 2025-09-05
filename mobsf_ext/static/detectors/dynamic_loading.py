@@ -27,3 +27,12 @@ def detect_dynamic_loading_markers(apk_path: Path):
                 if any(m in data for m in MARKERS):
                     suspects.append(name)
     return sorted(set(suspects))
+
+def find_native_libs(apk_path: Path):
+    import zipfile
+    libs = []
+    with zipfile.ZipFile(apk_path, "r") as z:
+        for name in z.namelist():
+            if name.lower().startswith("lib/") and name.lower().endswith(".so"):
+                libs.append(name)
+    return sorted(libs)
