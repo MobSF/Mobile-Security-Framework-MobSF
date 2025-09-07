@@ -24,8 +24,8 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
     start_proxy,
     stop_httptools,
 )
-from mobsf.DynamicAnalyzer.views.android import (
-    frida_server_download as fserver,
+from mobsf.DynamicAnalyzer.views.common.frida.server_update import (
+    FridaServerUpdater,
 )
 from mobsf.MobSF.utils import (
     get_adb,
@@ -699,7 +699,8 @@ class Environment:
                          ' instance is running')
             return
         frida_bin = f'frida-server-{frida_version}-android-{frida_arch}'
-        stat = fserver.update_frida_server(frida_arch, frida_version)
+        stat = FridaServerUpdater(
+            'android', frida_version).update_frida_server(frida_arch)
         if not stat:
             msg = ('Cannot download frida-server binary. You will need'
                    f' {frida_bin} in {settings.DWD_DIR} for '
