@@ -550,7 +550,7 @@
     }
 
     function admin_edit_modal(appHash){
-      window.clearTimeout();
+      window.clearTimeout(timeoutId);
       $("#edit_scan").modal('show');
       populate_modal_data(appHash);
     }
@@ -807,10 +807,14 @@
       refresh_page();
     }
 
+    var timeoutId = 0;
     function refresh_page()
     {
       if ($("span.badge.bg-warning").length > 0 && ($("#edit_scan").is(":hidden"))) {
-          window.setTimeout(function() {
+          if (timeoutId > 0) {
+            window.clearTimeout(timeoutId);
+          }
+          timeoutId = window.setTimeout(function() {
               window.location.reload();
           }, 30000);
       }
