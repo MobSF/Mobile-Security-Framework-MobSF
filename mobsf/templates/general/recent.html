@@ -550,11 +550,12 @@
     }
 
     function admin_edit_modal(appHash){
+      window.clearTimeout();
       $("#edit_scan").modal('show');
-      populateModalData(appHash);
+      populate_modal_data(appHash);
     }
 
-    function populateModalData(appHash) {
+    function populate_modal_data(appHash) {
       var modal = document.getElementById("edit_scan");
       modal.setAttribute('data-id', appHash);
 
@@ -592,16 +593,16 @@
       }
 
       // Division dynamic dropdown
-      populateDivisions(uploadedApps["app_"+appHash].appDivision);
+      populate_divisions(uploadedApps["app_"+appHash].appDivision);      
 
       // Countries select box      
-      populateCountries(uploadedApps["app_"+appHash].appCountry);
+      populate_countries(uploadedApps["app_"+appHash].appCountry);
 
       //Data Privacy dropdown
       $("#data_privacy_classification").val(uploadedApps["app_"+appHash].appDataPrivacyClassification)
 
       // Data Privacy Attributes select box
-      populateDataPrivacy(uploadedApps["app_"+appHash].appDataPrivacyAttributes);
+      populate_data_privacy(uploadedApps["app_"+appHash].appDataPrivacyAttributes);
 
       // Email Address(es) text field
       $("#override_email").val(uploadedApps["app_"+appHash].appEmail);
@@ -630,7 +631,7 @@
         } 
     }    
 
-    function checkRequired() {
+    function check_required() {
       if (!_('appname').value) {
         _('err_name').classList.remove('hidden');
         return false;
@@ -668,7 +669,6 @@
   }
 
     function admin_save(){
-
       const formData = document.getElementById('edit_scan_form');
 
       var item = $(formData.querySelector('#md5-hash')).val();
@@ -683,84 +683,85 @@
         return $(this).val();
       }).get().join(', ');
 
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "This will update the modified fields for this scan",
-            type: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, update the modified fields.',
-            cancelButtonText: 'No, take me back to the edit panel.',
-            confirmButtonColor: '#2da532',
-            cancelButtonColor: '#d33',
-        }).then((result) => {
-            if (result.value) {            
-                var cleanEmails = get_clean_emails();
-                var release = ($(formData.querySelector('#release')).prop("checked") ? "True" : "False");
-                $.ajax({
-                        url: '../../../update_scan/',
-                        type: 'POST',
-                        dataType: 'json',
-                        data: {
-                            csrfmiddlewaretoken: '{{csrf_token}}',
-                            hash: item,
-                            user_app_name: $(formData.querySelector('#appname')).val(),
-                            user_app_version: $(formData.querySelector('#version')).val(),
-                            division: $(formData.querySelector('#division')).val(),
-                            environment: $(formData.querySelector('#environment')).val(),
-                            country: countryString,
-                            data_privacy_classification: $(formData.querySelector('#data_privacy_classification')).val(),
-                            data_privacy_attributes: dataPrivacyAttributesString,
-                            email: cleanEmails,
-                            release: release
-                        },
-                        success : function(json) {
-                            if (json.result === 'success') {
-                                Swal.fire(
-                                    'Updated!',
-                                    'The scan has been successfully updated.',
-                                    'success'
-                                ).then(function () {
-                                    $('#edit_scan').modal('hide');
-                                    location.reload(true);
-                                  });
-                            }
-                            else {
-                                Swal.fire(
-                                'Scan Update Failed',
-                                'Cannot update the scan!',
-                                'error'
-                                )
-                            }
-                        },
-                        error : function(xhr,errmsg,err) {
-                            Swal.fire(
-                                'Updating Scan Failed',
-                                errmsg,
-                                'error'
-                                )
-                        }
-                    });
-                    
-            }
-        }); 
+      Swal.fire({
+          title: 'Are you sure?',
+          text: "This will update the modified fields for this scan",
+          type: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, update the modified fields.',
+          cancelButtonText: 'No, take me back to the edit panel.',
+          confirmButtonColor: '#2da532',
+          cancelButtonColor: '#d33',
+      }).then((result) => {
+          if (result.value) {            
+              var cleanEmails = get_clean_emails();
+              var release = ($(formData.querySelector('#release')).prop("checked") ? "True" : "False");
+              $.ajax({
+                      url: '../../../update_scan/',
+                      type: 'POST',
+                      dataType: 'json',
+                      data: {
+                          csrfmiddlewaretoken: '{{csrf_token}}',
+                          hash: item,
+                          user_app_name: $(formData.querySelector('#appname')).val(),
+                          user_app_version: $(formData.querySelector('#version')).val(),
+                          division: $(formData.querySelector('#division')).val(),
+                          environment: $(formData.querySelector('#environment')).val(),
+                          country: countryString,
+                          data_privacy_classification: $(formData.querySelector('#data_privacy_classification')).val(),
+                          data_privacy_attributes: dataPrivacyAttributesString,
+                          email: cleanEmails,
+                          release: release
+                      },
+                      success : function(json) {
+                          if (json.result === 'success') {
+                              Swal.fire(
+                                  'Updated!',
+                                  'The scan has been successfully updated.',
+                                  'success'
+                              ).then(function () {
+                                  $('#edit_scan').modal('hide');
+                                  location.reload();
+                                });
+                          }
+                          else {
+                              Swal.fire(
+                              'Scan Update Failed',
+                              'Cannot update the scan!',
+                              'error'
+                              )
+                          }
+                      },
+                      error : function(xhr,errmsg,err) {
+                          Swal.fire(
+                              'Updating Scan Failed',
+                              errmsg,
+                              'error'
+                              )
+                      }
+                  });
+                  
+          }
+      }); 
     }
 
-    function populateDivisions(selectedDivision) {
-    var divisionsUrl = '{{tenant_static}}divisions.json';
-    fetch(divisionsUrl)
-      .then(response => response.json())
-      .then(data => {
-        var options = '<option value=""></option>';
-        for (i = 0; i < data.length; i++) {
-          options += '<option value="' + data[i].id + '"' + (data[i].name.toLowerCase() == selectedDivision ? ' selected="selected"' : '') + '>' + data[i].name + '</option>';
-        }
-        _('division').innerHTML = options;
-      });
-  }
+    function populate_divisions(selectedDivision) {
+      var divisionsUrl = '{{tenant_static}}divisions.json';
+      fetch(divisionsUrl)
+        .then(response => response.json())
+        .then(data => {
+          var options = '<option value=""></option>';
+          for (i = 0; i < data.length; i++) {
+            options += '<option value="' + data[i].id + '">' + data[i].name + '</option>';
+          }
+          _('division').innerHTML = options;
+          $("#division").val(selectedDivision);
+          console.log('selected division: ' + selectedDivision);
+        });
+    }
 
-    function populateCountries(selectedCountry) {
-
-      var countryValue = splitData(selectedCountry);
+    function populate_countries(selectedCountry) {
+      var countryValue = split_data(selectedCountry);
       
       var countriesUrl = '{{tenant_static}}countries.json';
       fetch(countriesUrl)
@@ -774,9 +775,8 @@
         });
     }
 
-    function populateDataPrivacy(selectedDataPrivacyAttributes) {
-
-      var dataPrivacyAttributeValue = splitData(selectedDataPrivacyAttributes)
+    function populate_data_privacy(selectedDataPrivacyAttributes) {
+      var dataPrivacyAttributeValue = split_data(selectedDataPrivacyAttributes)
 
       var privacyAttributesUrl = '{{tenant_static}}data-privacy-attributes.json';
       fetch(privacyAttributesUrl)
@@ -790,7 +790,7 @@
         });
     }
 
-    function splitData(dataString) {
+    function split_data(dataString) {
       return dataString.split(',').map(data => data.trim());
     }
   
@@ -800,18 +800,23 @@
       $('#data_privacy_attributes').val([]);
       $('#override_email').val([]);
       $('#edit_scan').modal('hide');
+      refresh_page();
+    }
+
+    function refresh_page()
+    {
+      if ($("span.badge.bg-warning").length > 0 && ($("#edit_scan").is(":hidden"))) {
+          window.setTimeout(function() {
+              window.location.reload();
+          }, 30000);
+      }
     }
 
     $(document).ready(function() {
 
         enable_diff_button(); 
-
-        if ($("span.badge.bg-warning").length > 0 && (!$("#edit_scan").is(":hidden"))) {
-            window.setTimeout(function() {
-                window.location.reload();
-            }, 30000);
-        }
-
+        refresh_page();
+        
         $('#country').change(function() {
           // If GLOBAL and other options are selected in country dropdown, remove GLOBAL
           if ($('#country').val().indexOf('GLOBAL') >= 0 && $('#country').val().length > 1) {
