@@ -568,12 +568,17 @@
       $("#version").val(uploadedApps["app_"+appHash].appVersion);
 
       // Release version checkbox
+      $("#release").prop('disabled', false);
       if (uploadedApps["app_"+appHash].appReleaseVersion == "True")
       {
         $("#release").prop('checked', true);
       }
       else
       {
+        var diffInDays = Math.ceil((Date.now() - Date.parse(uploadedApps["app_"+appHash].appTimestamp)) / (1000 * 3600 * 24));
+        if (diffInDays > 365) {
+          $("#release").prop('disabled', true);
+        }
         $("#release").prop('checked', false);
       }
       
@@ -756,7 +761,6 @@
           }
           _('division').innerHTML = options;
           $("#division").val(selectedDivision);
-          console.log('selected division: ' + selectedDivision);
         });
     }
 

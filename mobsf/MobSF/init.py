@@ -10,7 +10,7 @@ from mobsf.install.windows.setup import windows_config_local
 
 logger = logging.getLogger(__name__)
 
-VERSION = '2025.08'
+VERSION = '2025.09'
 BANNER = """
   __  __       _    ____  _____       _____ ___  
  |  \/  | ___ | |__/ ___||  ___|_   _|___ // _ \ 
