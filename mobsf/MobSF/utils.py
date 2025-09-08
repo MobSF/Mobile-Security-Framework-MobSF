@@ -55,7 +55,7 @@ URL_REGEX = re.compile(
         r'file://|javascript:|data:|www\d{0,3}[.])'
         r'[\w().=/;,#:@?&~*+!$%\'{}-]+)'
     ),
-    re.UNICODE)
+    re.UNICODE | re.IGNORECASE)
 EMAIL_REGEX = re.compile(r'[\w+.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
 USERNAME_REGEX = re.compile(r'^\w[\w\-\@\.]{1,35}$')
 GOOGLE_API_KEY_REGEX = re.compile(r'AIza[0-9A-Za-z-_]{35}$')
