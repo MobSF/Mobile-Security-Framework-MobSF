@@ -27,7 +27,7 @@ if [[ "$VAL" =~ ^[yY]$ ]]; then
     echo 'Cleaning up MobSF directories and files...'
 
     # Remove files from key directories
-    rm -rf ./mobsf/{uploads,downloads,StaticAnalyzer/migrations,DynamicAnalyzer/migrations,MobSF/migrations}/*
+    rm -rf ./mobsf/{uploads,downloads,staticfiles,StaticAnalyzer/migrations,DynamicAnalyzer/migrations,MobSF/migrations}/*
     
     echo 'Removing Python bytecode and cache files'
     find ./ -type f -name "*.pyc" -o -name "*.pyo" -delete
