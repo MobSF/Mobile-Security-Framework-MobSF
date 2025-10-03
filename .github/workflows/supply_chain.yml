@@ -1,0 +1,25 @@
+name: Socket Supply Chain Firewall
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  job-id:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: socketdev/action@v1
+        with:
+          mode: firewall
+
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v3
+      - name: Generate Requirements
+        run: |
+          python -m ensurepip --upgrade
+          python -m pip install pip poetry==1.8.4
+          python -m pip install poetry-plugin-export
+          poetry export --without-hashes --format=requirements.txt > requirements.txt
+      - name: Socket Firewall Scan
+        run: sfw pip install -r requirements.txt
