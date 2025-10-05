@@ -393,7 +393,7 @@ function list_apps(){
                               else
                                 order = 'last';
 
-                              var url = `{% url 'dynamic_analyzer_ios'%}?bundleid=${escapeHtml(bundle)}&instance_id=${$('#ios_dynamic').val()}`;
+                              var url = `{% url 'dynamic_analyzer_ios'%}?bundle_id=${escapeHtml(bundle)}&instance_id=${$('#ios_dynamic').val()}`;
                               $('#in_device > tbody:' + order + '-child').append(
                                 `<tr><td align="center">
                                   <img id="app_icon" src="data:image/png;base64,${escapeHtml(iconb64)}"/><br/>

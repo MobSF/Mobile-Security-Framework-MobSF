@@ -15,6 +15,12 @@ from mobsf.DynamicAnalyzer.views.ios import (
     report as ios_view_report,
     tests_frida as ios_tests_frida,
 )
+from mobsf.DynamicAnalyzer.views.ios.device import (
+    dynamic_analyzer as ios_device,
+)
+from mobsf.DynamicAnalyzer.views.ios.device import (
+    report as device_report,
+)
 from mobsf.MobSF import utils
 from mobsf.MobSF.security import (
     init_exec_hooks,
@@ -123,7 +129,7 @@ urlpatterns = [
     re_path(r'^api/v1/frida/list_scripts$', api_dz.api_list_frida_scripts),
     re_path(r'^api/v1/frida/get_script$', api_dz.api_get_script_content),
     re_path(r'^api/v1/dynamic/view_source$', api_dz.api_dynamic_view_file),
-    # iOS Specific
+    # iOS Corellium
     re_path(r'^api/v1/ios/corellium_supported_models$',
             api_idz.api_corellium_get_supported_models),
     re_path(r'^api/v1/ios/corellium_ios_versions$',
@@ -399,7 +405,46 @@ if settings.API_ONLY == '0':
         re_path(fr'^ios/view_report/{bundle_id_regex}',
                 ios_view_report.ios_view_report,
                 name='ios_view_report'),
-
+        # iOS Device
+        re_path(r'^ios/dynamic_analysis_device/$',
+                ios_device.dynamic_analysis_device,
+                name='dynamic_ios_device'),
+        re_path(r'^ios/ios_device/$',
+                ios_device.get_ios_device,
+                name='get_ios_device'),
+        re_path(r'^ios/install_ipa_device/$',
+                ios_device.install_ipa_device,
+                name='install_ipa_device'),
+        re_path(r'^ios/dynamic_analyzer_device/$',
+                ios_device.dynamic_analyzer_device,
+                name='dynamic_analyzer_device'),
+        re_path(r'^ios/upload_file_device/$',
+                ios_device.upload_file_device,
+                name='upload_file_device'),
+        re_path(r'^ios/ssh_execute_device/$',
+                ios_device.ssh_execute_device,
+                name='ssh_execute_device'),
+        re_path(r'^ios/instrument_device/$',
+                ios_device.ios_instrument_device,
+                name='ios_instrument_device'),
+        re_path(r'^ios/system_logs_device/$',
+                ios_device.system_logs_device,
+                name='system_logs_device'),
+        re_path(r'^ios/ps_device/$',
+                ios_device.ps_device,
+                name='ps_device'),
+        re_path(r'^ios/download_file_device/$',
+                device_report.download_file_device,
+                name='download_file_device'),
+        re_path(r'^ios/api_monitor/$',
+                device_report.ios_api_monitor,
+                name='ios_api_monitor'),
+        re_path(fr'^ios/download_data_device/{bundle_id_regex}',
+                device_report.download_data_device,
+                name='download_data_device'),
+        re_path(fr'^ios/view_report_device/{bundle_id_regex}',
+                device_report.view_report_device,
+                name='view_report_device'),
         # Test
         re_path(r'^tests/$', tests.start_test),
     ])

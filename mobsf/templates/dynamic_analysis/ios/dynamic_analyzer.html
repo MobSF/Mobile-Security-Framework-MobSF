@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
 <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
 <style>
-     textarea {
+     #stat {
         width: 100%;
         height: 170px;
         -moz-border-bottom-colors: none;
@@ -34,27 +34,43 @@
         padding: 5px 8px;
         transition: background-color 0.2s ease 0s;
     }
-    textarea:focus {
+    #stat:focus {
         background: none repeat scroll 0 0 #FFFFFF;
         outline-width: 0;
     }
     .highlight { border: solid 2px #1e6dff;}
-    /* Complete isolation for CodeMirror */
-    #codemirror-isolation-container {
-        zoom: 1 !important;
-        transform: scale(1.25) !important; /* Counter the 0.8 zoom */
-        transform-origin: top left !important;
-        width: 80% !important; /* Adjust for scale */
-        height: 80% !important; /* Adjust for scale */
-        position: relative !important;
-        overflow: hidden !important;
+    #code-editor{
+      transform: scale(1.25) !important;
+      transform-origin: top left;
+      width: 80%;
+      height: auto;
+      overflow: auto;
+      max-height: 600px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+      background: #f8f9fa;
+      margin-bottom: 150px;
+      position: relative;
+      z-index: 1;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* Internet Explorer 10+ */
     }
-    
+
+    #code-editor::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
+    }
+
     .CodeMirror {
         height: 610px;
         font-size: 11px;
         border: 1px solid #eee;
       }
+    .form-group {
+        position: relative;
+        z-index: 2;
+        margin-top: 20px;
+    }
     .frida-pre {
       font-family: "courier new", courier, monospace;
       font-size: 11px;
@@ -97,6 +113,7 @@
                   <a href="{% url 'ios_live_pcap_download' %}?instance_id={{instance_id}}" id="pcap" class="btn btn-primary" role="button"><i class="fas fa-globe"></i> Download Live Packet Capture</a>
                   <a href="#" id="ss" class="btn btn-primary" role="button"><i class="fa fa-camera"></i> Take a Screenshot</a>
                   <a href="{% url 'ios_system_logs' %}?instance_id={{instance_id}}" target="_blank" id="system_logs" class="btn btn-primary"><i class="fa fa-water"></i> System Logs</a>
+                  <a href="{% url 'ios_api_monitor' %}?checksum={{ checksum }}&bundle_id={{ bundle_id }}" id="apimon" target="_blank" class="btn btn-primary" style='display: none'><i class="fa fa-search"></i> Live API Monitor</a>
                   <a href="#" id="report" class="btn btn-info disabled" role="button"><i class="fa fa-file-alt"></i> Generate Report</a>
                 </div>
               </div>
@@ -183,6 +200,9 @@
                               Jailbreak Detection Bypass 
                             </label>
                             <label>
+                              <input name="default_hooks" type="checkbox" value="ssl_pinning" checked>
+                              SSL Pinning Bypass
+                            </label>
                         </div>
                         <hr/>
                           <div class="form-group">
@@ -325,27 +345,20 @@
               </div>
               <!-- /.card-header -->
               <div class="card-body">
-              <div class="row">
-                  <div class="col-12" id="code-editor">
-                    <div id="codemirror-isolation-container">
+                <div id="code-editor">
 <textarea id="code-js" rows="100">
   // Use send() for logging
 </textarea>
-                    </div>
-                  </div>
-                  <div class="col-12">
-                    <br/>
-                    <div class="form-group">
-                      <span class="box-title">Available Scripts (Use CTRL to choose multiple)  </span>
-                      <button id="loadscript" type="submit" class="btn btn-primary btn-sm">Load</button>
-                    </div>
-                    <div class="form-group">
-                         <select id="fd_scs" size="10" multiple="" class="form-control">
-                          </select>
-                    </div>
-                  </div>
                 </div>
-                <!-- end row-->
+                <br/>
+                <div class="form-group">
+                  <span class="box-title">Available Scripts (Use CTRL to choose multiple)  </span>
+                  <button id="loadscript" type="submit" class="btn btn-primary btn-sm">Load</button>
+                </div>
+                <div class="form-group">
+                  <select id="fd_scs" size="10" multiple="" class="form-control">
+                  </select>
+                </div>
               
               </div>
               <!-- /.card-body -->
@@ -476,12 +489,10 @@
 var appContainerPath;
 // Loading Spinner
 function dynamic_loader(){
-    document.getElementById("code-editor").style.visibility = "hidden";
     var loadingOverlay = document.querySelector('.loading');
     loadingOverlay.classList.remove('hidden');
 }
 function stop_loader(){
-    document.getElementById("code-editor").style.visibility = "visible";
     var loadingOverlay = document.querySelector('.loading');
     loadingOverlay.classList.add('hidden');
 }
@@ -634,7 +645,9 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
 
             if (e.keyCode == 38 || e.keyCode == 40) {
                 this.value = history_[histpos_] ? history_[histpos_] : histtemp_;
-                this.value = this.value; // Sets cursor to end of input.
+                setTimeout(() => {
+                    this.setSelectionRange(this.value.length, this.value.length);
+                }, 0); // Sets cursor to end of input.
             }
         }
     }
@@ -651,11 +664,41 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
     }
 
     function scrollToShellBottom(){
-      // Scroll to shell bottom
+      // Scroll to shell bottom and ensure shell is completely visible
       var myElement = document.getElementById('shell');
+      
+      // Scroll the shell content to the bottom
       myElement.scrollTop = myElement.scrollHeight;
-      myElement.scrollIntoView({ block: 'end' });
+      
+      // Ensure the shell element is visible in the viewport
+      myElement.scrollIntoView({ 
+        block: 'end', 
+        behavior: 'smooth',
+        inline: 'nearest'
+      });
+      
+      // For dynamic content, we need to continuously monitor and scroll
+      // Set up a MutationObserver to watch for content changes
+      if (!window.shellObserver) {
+        window.shellObserver = new MutationObserver(function(mutations) {
+          // When content changes, scroll to keep shell visible
+          myElement.scrollTop = myElement.scrollHeight;
+          myElement.scrollIntoView({ 
+            block: 'end', 
+            behavior: 'smooth',
+            inline: 'nearest'
+          });
+        });
+        
+        // Start observing the shell for content changes
+        window.shellObserver.observe(myElement, {
+          childList: true,
+          subtree: true,
+          characterData: true
+        });
+      }
     }
+
   
     var pwd = '/private/var/root';
     var cd = '';
@@ -789,7 +832,7 @@ print_status("Environment is ready for Dynamic Analysis.");
 // Frida Logs Tab
 setInterval( function () {
   $.ajax({
-      url : '{% url 'frida_logs' %}?hash={{ hash }}&stream=1', 
+      url : '{% url 'frida_logs' %}?hash={{ checksum }}&stream=1', 
       type : "GET",
       dataType: "json", 
       success : function(json){ 
@@ -817,7 +860,7 @@ function getContainerPath(){
 // Screenshot
 $("#ss").click(function() {
   print_status("Taking a screenshot.");
-  action('{% url 'take_screenshot' %}', {instance_id: '{{ instance_id }}', save: '1', checksum: '{{ hash }}'}, function(json) {
+  action('{% url 'take_screenshot' %}', {instance_id: '{{ instance_id }}', save: '1', checksum: '{{ checksum }}'}, function(json) {
     if (json.status==="ok"){
         print_status("Screenshot taken!");
         console.log(json.message)
@@ -1033,17 +1076,10 @@ $("#network").click(function() {
   return false;  
 }); 
 
-// Logcat Stream
-$("#logstream").click(function() {
-    print_status("Logcat Steaming started.");
-    setTimeout(function(){ window.open(document.location.origin + '/logcat/?package=', '_blank');}, 500);   
-    return false;  
-}); 
-
 // App Run
 
 $("#run").click(function() {
-  action('{% url 'run_app' %}', {instance_id: '{{ instance_id }}', bundle_id: '{{ bundle_id }}',}, function(json) {
+  action('{% url "run_app" %}', {instance_id: '{{ instance_id }}', bundle_id: '{{ bundle_id }}',}, function(json) {
     if (json.status==="ok"){
         print_status('Runnning application');
     } else {
@@ -1090,6 +1126,10 @@ function frida_instrument(frida_action, pid=null, new_bundle_id=null){
     $.each($("input[name='dump_hooks']:checked"), function(){            
         dump_hooks.push($(this).val());
     });
+    if(dump_hooks.length > 0)
+      $('#apimon').show();
+    else
+      $('#apimon').hide();
     var auxiliary_hooks = [];
     $.each($("input[name='auxiliary']:checked"), function(){            
         auxiliary_hooks.push($(this).val());
@@ -1107,11 +1147,11 @@ function frida_instrument(frida_action, pid=null, new_bundle_id=null){
     } else if (frida_action == 'get'){
       print_status("Getting injected frida script.");
     }
-    action('{% url 'ios_instrument' %}', {
+    action('{% url "ios_instrument" %}', {
       frida_action,
       pid, // attach pid
       new_bundle_id, // attach bundle id
-      hash: '{{ hash }}',
+      hash: '{{ checksum }}',
       bundle_id: '{{ bundle_id }}',
       instance_id: '{{ instance_id}}',
       default_hooks: default_hooks.join(","),
