@@ -53,9 +53,15 @@ export DJANGO_SUPERUSER_PASSWORD=mobsf
 python3 -m poetry run python manage.py makemigrations
 python3 -m poetry run python manage.py makemigrations StaticAnalyzer
 python3 -m poetry run python manage.py migrate
+
+echo '[INSTALL] Collect Static files'
+python3 -m poetry run python manage.py collectstatic --noinput
+
+echo '[INSTALL] Creating Superuser'
 python3 -m poetry run python manage.py createsuperuser --noinput --email ""
 python3 -m poetry run python manage.py create_roles
 
+echo '[INSTALL] Checking wkhtmltopdf'
 # Check for wkhtmltopdf
 if ! command -v wkhtmltopdf &>/dev/null; then
     echo 'Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html'
