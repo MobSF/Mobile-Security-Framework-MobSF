@@ -45,6 +45,23 @@ docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:la
 # Default username and password: mobsf/mobsf
 ```
 
+Quick local setup
+
+```
+git clone https://github.com/MobSF/Mobile-Security-Framework-MobSF
+
+cd ./Mobile-Security-Framework-MobSF
+
+pipenv install
+pipenv shell
+
+./setup.sh # for Linux/MacOS
+./setup.bat # for Windows
+
+./run.sh # for Linux/MacOS
+./run.bat # for Windows
+```
+
 [![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70686099-3855f780-1c79-11ea-8141-899e39459da2.png)](https://mobsf.github.io/docs)
 
 * Try MobSF Static Analyzer Online: [mobsf.live](https://mobsf.live)
