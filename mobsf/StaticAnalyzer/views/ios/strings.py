@@ -9,18 +9,23 @@ from mobsf.StaticAnalyzer.views.common.entropy import (
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     url_n_email_extract,
 )
+from mobsf.MobSF.utils import (
+    append_scan_status,
+)
 
 
 logger = logging.getLogger(__name__)
 
 
-def extract_urls_n_email(src, all_files, strings):
+def extract_urls_n_email(checksum, src, all_files, strings):
     """IPA URL and Email Extraction."""
     email_n_file = []
     url_n_file = []
     url_list = []
     try:
-        logger.info('Starting IPA URL and Email Extraction')
+        msg = 'Extracting URL and Email from IPA'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         all_files.append({'data': strings, 'name': 'IPA Strings Dump'})
         for file in all_files:
             if isinstance(file, dict):
@@ -47,8 +52,10 @@ def extract_urls_n_email(src, all_files, strings):
             url_list.extend(urls)
             url_n_file.extend(urls_nf)
             email_n_file.extend(emails_nf)
-    except Exception:
-        logger.exception('IPA URL and Email Extraction')
+    except Exception as exp:
+        msg = 'Failed to extract URL and Email from IPA'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
     return {
         'urls_list': list(set(url_list)),
         'urlnfile': url_n_file,
@@ -58,6 +65,9 @@ def extract_urls_n_email(src, all_files, strings):
 
 def get_strings_metadata(app_dict, bin_dict, all_files, dy_list):
     """Merge strings metadata."""
+    msg = 'Extracting String Metadata'
+    logger.info(msg)
+    append_scan_status(app_dict['md5_hash'], msg)
     # app_dict has secrets from plist secret analysis
     # bin_dict has strings from binary analysis
     urls_list = []
@@ -67,6 +77,7 @@ def get_strings_metadata(app_dict, bin_dict, all_files, dy_list):
 
     # IPA URL and Email Extract
     str_meta = extract_urls_n_email(
+        app_dict['md5_hash'],
         app_dict['bin_dir'],
         all_files['files_long'],
         bin_dict['strings'])

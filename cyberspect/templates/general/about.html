@@ -1,0 +1,29 @@
+{% extends "base/base_layout.html" %}
+{% block sidebar_option %}
+sidebar-collapse
+{% endblock %}
+{% block content %}
+<div class="content-wrapper">
+  <div class="content-header">
+  </div>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <h1>About Cyberspect</h1>
+
+            <p class="lead">
+              Cyberspect uses the open-source Mobile Security Framework (MobSF): an automated, all-in-one mobile
+              application security assessment framework. MobSF supports mobile app binaries (APK, XAPK, IPA & APPX) along
+              with zipped source code and provides REST APIs for seamless integration with your CI/CD or DevSecOps
+              pipeline.
+            </p>
+            <p><a href="https://mobsf.github.io/docs/" target="_blank">MobSF Documentation</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

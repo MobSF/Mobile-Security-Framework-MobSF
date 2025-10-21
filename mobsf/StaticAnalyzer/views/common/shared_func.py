@@ -28,7 +28,9 @@ from mobsf.MobSF.utils import (
     EMAIL_REGEX,
     STRINGS_REGEX,
     URL_REGEX,
+    append_scan_status,
     is_md5,
+    is_path_traversal,
     is_safe_path,
     print_n_send_error_response,
     upstream_proxy,
@@ -44,15 +46,24 @@ from mobsf.StaticAnalyzer.views.comparer import (
 from mobsf.StaticAnalyzer.views.common.entropy import (
     get_entropies,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
+from mobsf.MobSF.views.authorization import (
+    Permissions,
+    permission_required,
+)
 
 
 logger = logging.getLogger(__name__)
 
 
-def hash_gen(app_path) -> tuple:
+def hash_gen(checksum, app_path) -> tuple:
     """Generate and return sha1 and sha256 as a tuple."""
     try:
-        logger.info('Generating Hashes')
+        msg = 'Generating Hashes'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         sha1 = hashlib.sha1()
         sha256 = hashlib.sha256()
         block_size = 65536
@@ -65,12 +76,16 @@ def hash_gen(app_path) -> tuple:
         sha1val = sha1.hexdigest()
         sha256val = sha256.hexdigest()
         return sha1val, sha256val
-    except Exception:
-        logger.exception('Generating Hashes')
+    except Exception as exp:
+        msg = 'Failed to generate Hashes'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
 
 
-def unzip(app_path, ext_path):
-    logger.info('Unzipping')
+def unzip(checksum, app_path, ext_path):
+    msg = 'Unzipping'
+    logger.info(msg)
+    append_scan_status(checksum, msg)
     try:
         files = []
         with zipfile.ZipFile(app_path, 'r') as zipptr:
@@ -82,12 +97,18 @@ def unzip(app_path, ext_path):
                 files.append(filename)
                 zipptr.extract(filename, ext_path)
         return files
-    except Exception:
-        logger.exception('Unzipping Error')
+    except Exception as exp:
+        msg = 'Unzipping Error'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
         if platform.system() == 'Windows':
-            logger.info('Not yet Implemented.')
+            msg = 'Unzipping Error. Not yet implemented in Windows'
+            logger.warning(msg)
+            append_scan_status(checksum, msg)
         else:
-            logger.info('Using the Default OS Unzip Utility.')
+            msg = 'Unzipping Error. Trying with OS unzip utility'
+            logger.info(msg)
+            append_scan_status(checksum, msg)
             try:
                 unzip_b = shutil.which('unzip')
                 subprocess.call(
@@ -97,15 +118,19 @@ def unzip(app_path, ext_path):
                 files_det = ['Length   Date   Time   Name']
                 files_det = files_det + dat
                 return files_det
-            except Exception:
-                logger.exception('Unzipping Error')
+            except Exception as exp:
+                msg = 'Unzipping Error with OS unzip utility'
+                logger.exception(msg)
+                append_scan_status(checksum, msg, repr(exp))
 
 
-def lipo_thin(src, dst):
+def lipo_thin(checksum, src, dst):
     """Thin Fat binary."""
     new_src = None
     try:
-        logger.info('Thinning Fat binary')
+        msg = 'Thinning Fat binary'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         lipo = shutil.which('lipo')
         out = Path(dst) / (Path(src).stem + '_thin.a')
         new_src = out.as_posix()
@@ -128,8 +153,10 @@ def lipo_thin(src, dst):
                 stderr=subprocess.STDOUT)
             if out.returncode == 0:
                 break
-    except Exception:
-        logger.warning('lipo Fat binary thinning failed')
+    except Exception as exp:
+        msg = 'lipo Fat binary thinning failed'
+        logger.warning(msg)
+        append_scan_status(checksum, msg, repr(exp))
     return new_src
 
 
@@ -149,77 +176,89 @@ def ar_os(src, dst):
     return out
 
 
-def ar_extract(src, dst):
+def ar_extract(checksum, src, dst):
     """Extract AR archive."""
     msg = 'Extracting static library archive'
     logger.info(msg)
+    append_scan_status(checksum, msg)
     try:
         ar = arpy.Archive(src)
         ar.read_all_headers()
         for a, val in ar.archived_files.items():
             # Handle archive slip attacks
-            filtered = a.decode(
-                'utf-8', 'ignore').replace(
-                '../', '').replace('..\\', '')
+            filtered = a.decode('utf-8', 'ignore')
+            if is_path_traversal(filtered):
+                msg = f'Zip slip detected. skipped extracting {filtered}'
+                logger.warning(msg)
+                append_scan_status(checksum, msg)
+                continue
             out = Path(dst) / filtered
             out.write_bytes(val.read())
     except Exception:
         # Possibly dealing with Fat binary, needs Mac host
-        logger.warning('Failed to extract .a archive')
+        msg = 'Failed to extract .a archive'
+        logger.warning(msg)
+        append_scan_status(checksum, msg)
         # Use os ar utility
         plat = platform.system()
         os_err = 'Possibly a Fat binary. Requires MacOS for Analysis'
         if plat == 'Windows':
             logger.warning(os_err)
+            append_scan_status(checksum, os_err)
             return
-        logger.info('Using OS ar utility to handle archive')
+        msg = 'Using OS ar utility to handle archive'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         exp = ar_os(src, dst)
         if len(exp) > 3 and plat == 'Linux':
             # Can't convert FAT binary in Linux
             logger.warning(os_err)
+            append_scan_status(checksum, os_err)
             return
         if b'lipo(1)' in exp:
-            logger.info('Fat binary archive identified')
+            msg = 'Fat binary archive identified'
+            logger.info(msg)
+            append_scan_status(checksum, msg)
             # Fat binary archive
             try:
-                nw_src = lipo_thin(src, dst)
+                nw_src = lipo_thin(checksum, src, dst)
                 if nw_src:
                     ar_os(nw_src, dst)
-            except Exception:
-                logger.exception('Failed to thin fat archive.')
+            except Exception as exp:
+                msg = 'Failed to thin fat archive'
+                logger.exception(msg)
+                append_scan_status(checksum, msg, repr(exp))
 
 
 def url_n_email_extract(dat, relative_path):
     """Extract URLs and Emails from Source Code."""
-    urls = []
-    emails = []
+    urls = set()
+    emails = set()
     urllist = []
     url_n_file = []
     email_n_file = []
     # URL Extraction
     urllist = URL_REGEX.findall(dat.lower())
-    uflag = 0
     for url in urllist:
-        if url not in urls:
-            urls.append(url)
-            uflag = 1
-    if uflag == 1:
-        url_n_file.append(
-            {'urls': urls, 'path': escape(relative_path)})
+        urls.add(url)
+    if urls:
+        url_n_file.append({
+            'urls': list(urls),
+            'path': escape(relative_path)})
 
     # Email Extraction
-    eflag = 0
     for email in EMAIL_REGEX.findall(dat.lower()):
-        if (email not in emails) and (not email.startswith('//')):
-            emails.append(email)
-            eflag = 1
-    if eflag == 1:
-        email_n_file.append(
-            {'emails': emails, 'path': escape(relative_path)})
+        if not email.startswith('//'):
+            emails.add(email)
+    if emails:
+        email_n_file.append({
+            'emails': list(emails),
+            'path': escape(relative_path)})
     return urllist, url_n_file, email_n_file
 
 
 # This is just the first sanity check that triggers generic_compare
+@login_required
 def compare_apps(request, hash1: str, hash2: str, api=False):
     if hash1 == hash2:
         error_msg = 'Results with same hash cannot be compared'
@@ -252,13 +291,17 @@ def get_avg_cvss(findings):
     return avg_cvss
 
 
-def open_firebase(url):
+def open_firebase(checksum, url):
     # Detect Open Firebase Database
     try:
+        invalid = 'Invalid Firebase URL'
         if not valid_host(url):
-            logger.warning('Invalid Firebase URL')
+            logger.warning(invalid)
             return url, False
         purl = urlparse(url)
+        if not purl.netloc.endswith('firebaseio.com'):
+            logger.warning(invalid)
+            return url, False
         base_url = '{}://{}/.json'.format(purl.scheme, purl.netloc)
         proxies, verify = upstream_proxy('https')
         headers = {
@@ -266,24 +309,28 @@ def open_firebase(url):
                            ' AppleWebKit/537.36 (KHTML, like Gecko) '
                            'Chrome/39.0.2171.95 Safari/537.36')}
         resp = requests.get(base_url, headers=headers,
-                            proxies=proxies, verify=verify)
+                            proxies=proxies, verify=verify,
+                            allow_redirects=False)
         if resp.status_code == 200:
             return base_url, True
-    except Exception:
-        logger.warning('Open Firebase DB detection failed.')
+    except Exception as exp:
+        msg = 'Open Firebase DB detection failed'
+        logger.warning(msg)
+        append_scan_status(checksum, msg, repr(exp))
     return url, False
 
 
-def firebase_analysis(urls):
+def firebase_analysis(checksum, urls):
     # Detect Firebase URL
     firebase_db = []
     logger.info('Detecting Firebase URL(s)')
     for url in urls:
-        if 'firebaseio.com' in url:
-            returl, is_open = open_firebase(url)
-            fbdic = {'url': returl, 'open': is_open}
-            if fbdic not in firebase_db:
-                firebase_db.append(fbdic)
+        if 'firebaseio.com' not in url:
+            continue
+        returl, is_open = open_firebase(checksum, url)
+        fbdic = {'url': returl, 'open': is_open}
+        if fbdic not in firebase_db:
+            firebase_db.append(fbdic)
     return firebase_db
 
 
@@ -327,9 +374,11 @@ def is_secret_key(inp):
     return any(i in inp for i in iden) and not not_str
 
 
-def strings_and_entropies(src, exts):
+def strings_and_entropies(checksum, src, exts):
     """Get Strings and Entropies."""
-    logger.info('Extracting Data from Source Code')
+    msg = 'Extracting String values and entropies from Code'
+    logger.info(msg)
+    append_scan_status(checksum, msg)
     data = {
         'strings': set(),
         'secrets': set(),
@@ -358,8 +407,10 @@ def strings_and_entropies(src, exts):
                 data['strings'].add(string)
         if data['strings']:
             data['secrets'] = get_entropies(data['strings'])
-    except Exception:
-        logger.exception('Extracting Data from Code')
+    except Exception as exp:
+        msg = 'Failed to extract String values and entropies from Code'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
     return data
 
 
@@ -371,6 +422,8 @@ def get_symbols(symbols):
     return list(set(all_symbols))
 
 
+@login_required
+@permission_required(Permissions.SCAN)
 def scan_library(request, checksum):
     """Scan a shared library or framework from path name."""
     try:
@@ -394,13 +447,13 @@ def scan_library(request, checksum):
             msg = 'Library File not found'
             return print_n_send_error_response(request, msg)
         with open(sfile, 'rb') as f:
-            libchecksum = handle_uploaded_file(f, ext, None)
-        if ext in ('.ipa', '.dylib', '.a'):
+            libchecksum = handle_uploaded_file(f, ext)
+        if ext in [f'.{i}' for i in settings.IOS_EXTS]:
             static_analyzer = 'static_analyzer_ios'
         elif ext == '.appx':
             # Not applicable, but still set it
             static_analyzer = 'windows_static_analyzer'
-        elif ext in ('.zip', '.so', '.jar', '.aar', '.apk', '.xapk'):
+        elif ext in [f'.{i}' for i in settings.ANDROID_EXTS]:
             static_analyzer = 'static_analyzer'
         else:
             msg = 'Extension not supported'

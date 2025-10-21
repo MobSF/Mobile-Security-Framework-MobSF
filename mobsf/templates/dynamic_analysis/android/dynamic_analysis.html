@@ -88,13 +88,13 @@ textarea:focus {
                      <div class="col-md-9">
                         <h4>MobSF Dynamic Analyzer Supports</h4>
                         <h5>
-                          <strong>• Genymotion Android VM</strong> version 4.1 - 11.0 (x86, upto API 30)<br/>
+                          <strong>• Genymotion Android VM</strong> version 4.1 - 11.0 (arm64, x86, upto API 30)<br/>
                           <strong>• Android Emulator AVD</strong> (non production) version 5.0 - 9.0 (arm, arm64, x86, and x86_64 upto API 28)<br/>
                           <strong>• Corellium Android VM</strong> (userdebug builds) version 7.1.2 - 11.0 (arm64 upto API 30)
                         </h5>
                         <p>
                           {% if android_version %}
-                            Recommended Android version is <strong>9.0</strong><br/>
+                            Android version >= <strong>9.0</strong> recommended<br/>
                             Detected Android Version: <strong>{{android_version}}</strong>, SDK: <strong>{{ android_sdk }}</strong> <br/>
                             {% if android_sdk|floatformat > android_supported|floatformat %}
                               <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>

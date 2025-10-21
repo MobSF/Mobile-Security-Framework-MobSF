@@ -1,0 +1,56 @@
+<div id="messages"></div>
+<button id="tgl" onclick="toggle()">Stop Streaming</button>
+<script type="text/javascript">
+var source = new EventSource('/logcat/?app_package={{package}}');
+var i = 0;
+var stream = true;
+var div = document.getElementById("messages");
+source.onmessage = function(message) {
+    if (stream) {
+        // Grep package name
+        if (!message.data.includes('{{package}}'))
+            return;
+        i = i + 1;
+        // Display only last 500 lines
+        if (i < 500){
+            div.innerHTML = div.innerHTML + html_safe(message.data) + "<br>" ;
+        } else {
+            div.innerHTML = html_safe(message.data) + "<br>";
+            i=0;
+        }
+        window.scrollTo(0,document.body.scrollHeight);
+    }
+};
+
+function toggle(){
+    var btn =  document.getElementById("tgl");
+    if (stream){
+        stream = false;
+        btn.textContent = "Continue Streaming";
+    }
+    else {
+        stream = true;
+        btn.textContent = "Stop Streaming";
+    }
+}
+
+function html_safe(data){
+      data = data.replace('b\'', '').
+                  replace(/\\r\\n\'/g, '').
+                  replace('b"', '').
+                  replace(/\\r\\n"/g, '')
+      return data
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#x27;")
+          .replace(/`/g, "&#x60;")
+          .replace(/\(/g, "&#x28;")
+          .replace(/\)/g, "&#x29;")
+          .replace(/{/g, "&#x7B;")
+          .replace(/}/g, "&#x7D;")
+          .replace(/-/g, "&#x2D;")
+          .replace(/\+/g, "&#x2B;");
+}
+
+</script>

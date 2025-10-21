@@ -123,7 +123,7 @@ sidebar-collapse
         <div class="row mb-2">
           <div class="col-sm-12">
             <div class="sameline">
-           <h1><!--<img src="{% static "img/mobsf_icon.png" %}" id="mobsf" alt="MobSF">--> Security Scorecard
+           <h1><img src="{% static "img/mobsf_icon.png" %}" id="mobsf" alt="MobSF"> MobSF Application Security Scorecard
            <img id="app_icon" src="/download/{{ hash }}-icon.png" onerror="this.src='{% static 'img/no_icon.png' %}'"/>
            - {% if app_name %}  {{ app_name }}  {% else %} {{ file_name }} {% endif %} {{ version_name }}
         
@@ -473,9 +473,9 @@ sidebar-collapse
         <div class="row">
             <div class="col-12 mt-3 text-center">
                 <p class="lead">
-                  <h5> Security Scorecard generated for 
+                  <h5> MobSF Application Security Scorecard generated for 
                     <img id="app_icon2" src="/download/{{ hash }}-icon.png" onerror="this.src='{% static 'img/no_icon.png' %}'"/>
-                    ({% if app_name %}{{ app_name }}{% else %}{{ file_name }}{% endif %} {{ version_name }})
+                    ({% if app_name %}  {{ app_name }}  {% else %} {{ file_name }} {% endif %} {{ version_name }})
                      {% if '.apk' == file_name|slice:"-4:"%}<i class="fab fa-android"></i>
                      {% elif '.xapk' == file_name|slice:"-5:"%}<i class="fab fa-android"></i>
                      {% elif '.apks' == file_name|slice:"-5:"%}<i class="fab fa-android"></i>

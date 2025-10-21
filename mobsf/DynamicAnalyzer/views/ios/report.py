@@ -23,6 +23,9 @@ from mobsf.MobSF.utils import (
     replace,
     strict_package_check,
 )
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -32,6 +35,7 @@ register.filter('pretty_json', pretty_json)
 register.filter('base64_decode', base64_decode)
 
 
+@login_required
 def ios_view_report(request, bundle_id, api=False):
     """Dynamic Analysis Report Generation."""
     logger.info('iOS Dynamic Analysis Report Generation')
@@ -63,13 +67,14 @@ def ios_view_report(request, bundle_id, api=False):
             return print_n_send_error_response(request, msg, api)
         api_analysis = ios_api_analysis(app_dir)
         dump_analaysis = run_analysis(app_dir, bundle_id, checksum)
-        trk = Trackers.Trackers(app_dir, tools_dir)
+        trk = Trackers.Trackers(checksum, app_dir, tools_dir)
         trackers = trk.get_trackers_domains_or_deps(
             dump_analaysis['domains'], None)
         screenshots = get_screenshots(checksum, download_dir)
         context = {
             'hash': checksum,
             'version': settings.MOBSF_VER,
+            'cversion': settings.CYBERSPECT_VER,
             'title': 'iOS Dynamic Analysis Report',
             'instance_id': dev,
             'bundleid': bundle_id,

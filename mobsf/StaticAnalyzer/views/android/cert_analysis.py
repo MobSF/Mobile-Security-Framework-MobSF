@@ -21,6 +21,7 @@ from cryptography.hazmat.primitives.asymmetric import (
 from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
+    append_scan_status,
     find_java_binary,
     gen_sha256_hash,
 )
@@ -41,10 +42,12 @@ HASH_FUNCS = {
 }
 
 
-def get_hardcoded_cert_keystore(files):
+def get_hardcoded_cert_keystore(checksum, files):
     """Returns the hardcoded certificate keystore."""
     try:
-        logger.info('Getting Hardcoded Certificates/Keystores')
+        msg = 'Getting Hardcoded Certificates/Keystores'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         findings = []
         certz = []
         key_store = []
@@ -64,8 +67,10 @@ def get_hardcoded_cert_keystore(files):
             desc = 'Hardcoded Keystore found.'
             findings.append({'finding': desc, 'files': key_store})
         return findings
-    except Exception:
-        logger.exception('Getting Hardcoded Certificates/Keystores')
+    except Exception as exp:
+        msg = 'Getting Hardcoded Certificates/Keystores'
+        append_scan_status(checksum, msg, repr(exp))
+        logger.exception(msg)
 
 
 def get_cert_details(data):
@@ -123,7 +128,7 @@ def get_pub_key_details(data):
     return certlist
 
 
-def get_signature_versions(app_path, tools_dir, signed):
+def get_signature_versions(checksum, app_path, tools_dir, signed):
     """Get signature versions using apksigner."""
     v1, v2, v3, v4 = False, False, False, False
     try:
@@ -146,12 +151,14 @@ def get_signature_versions(app_path, tools_dir, signed):
             v3 = True
         if re.findall(r'\(APK Signature Scheme v4\): true', out):
             v4 = True
-    except Exception:
-        logger.exception('Failed to get signature versions')
+    except Exception as exp:
+        msg = 'Failed to get signature versions'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
     return v1, v2, v3, v4
 
 
-def apksigtool_cert(apk_path, tools_dir):
+def apksigtool_cert(checksum, apk_path, tools_dir):
     """Get Human readable certificate with apksigtool."""
     certlist = []
     certs = []
@@ -188,7 +195,11 @@ def apksigtool_cert(apk_path, tools_dir):
             certlist.append('Binary is signed')
         else:
             certlist.append('Binary is not signed')
-        v1, v2, v3, v4 = get_signature_versions(apk_path, tools_dir, signed)
+        v1, v2, v3, v4 = get_signature_versions(
+            checksum,
+            apk_path,
+            tools_dir,
+            signed)
         certlist.append(f'v1 signature: {v1}')
         certlist.append(f'v2 signature: {v2}')
         certlist.append(f'v3 signature: {v3}')
@@ -196,8 +207,10 @@ def apksigtool_cert(apk_path, tools_dir):
         certlist.extend(certs)
         certlist.extend(pub_keys)
         certlist.append(f'Found {certs_no} unique certificates')
-    except Exception:
-        logger.exception('Failed to parse code signing certificate')
+    except Exception as exp:
+        msg = 'Failed to parse code signing certificate'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
         certlist.append('Missing certificate')
     return {
         'cert_data': '\n'.join(certlist),
@@ -210,7 +223,7 @@ def apksigtool_cert(apk_path, tools_dir):
     }
 
 
-def get_cert_data(a, app_path, tools_dir):
+def get_cert_data(checksum, a, app_path, tools_dir):
     """Get Human readable certificate."""
     certlist = []
     signed = False
@@ -220,7 +233,11 @@ def get_cert_data(a, app_path, tools_dir):
     else:
         certlist.append('Binary is not signed')
         certlist.append('Missing certificate')
-    v1, v2, v3, v4 = get_signature_versions(app_path, tools_dir, signed)
+    v1, v2, v3, v4 = get_signature_versions(
+        checksum,
+        app_path,
+        tools_dir,
+        signed)
     certlist.append(f'v1 signature: {v1}')
     certlist.append(f'v2 signature: {v2}')
     certlist.append(f'v3 signature: {v3}')
@@ -254,7 +271,9 @@ def get_cert_data(a, app_path, tools_dir):
 def cert_info(a, app_dic, man_dict):
     """Return certificate information."""
     try:
-        logger.info('Reading Code Signing Certificate')
+        msg = 'Reading Code Signing Certificate'
+        logger.info(msg)
+        append_scan_status(app_dic['md5'], msg)
         manifestfile = None
         manidat = ''
         files = []
@@ -262,12 +281,16 @@ def cert_info(a, app_dic, man_dict):
 
         if a:
             cert_data = get_cert_data(
-                a, app_dic['app_path'], app_dic['tools_dir'])
+                app_dic['md5'],
+                a, app_dic['app_path'],
+                app_dic['tools_dir'])
         else:
             logger.warning('androguard certificate parsing failed,'
                            ' switching to apksigtool')
             cert_data = apksigtool_cert(
-                app_dic['app_path'], app_dic['tools_dir'])
+                app_dic['md5'],
+                app_dic['app_path'],
+                app_dic['tools_dir'])
 
         cert_path = os.path.join(app_dic['app_dir'], 'META-INF/')
         if os.path.exists(cert_path):
@@ -359,6 +382,8 @@ def cert_info(a, app_dic, man_dict):
             'certificate_findings': findings,
             'certificate_summary': summary,
         }
-    except Exception:
-        logger.exception('Reading Code Signing Certificate')
+    except Exception as exp:
+        msg = 'Reading Code Signing Certificate'
+        logger.exception(msg)
+        append_scan_status(app_dic['md5'], msg, repr(exp))
         return {}

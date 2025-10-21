@@ -14,6 +14,7 @@ from lxml import etree
 from django.conf import settings
 
 from mobsf.MobSF.utils import (
+    append_scan_status,
     find_java_binary,
     is_file_exists,
     is_path_traversal,
@@ -86,7 +87,10 @@ def get_icon_from_src(app_dic, icon_from_mfst):
     if not res_path:
         return
 
-    icon_file = find_icon_path_zip(res_path, icon_from_mfst)
+    icon_file = find_icon_path_zip(
+        app_dic['md5'],
+        res_path,
+        icon_from_mfst)
     if icon_file and Path(icon_file).exists():
         dwd = Path(settings.DWD_DIR)
         out = dwd / (app_dic['md5'] + '-icon' + Path(icon_file).suffix)
@@ -94,7 +98,7 @@ def get_icon_from_src(app_dic, icon_from_mfst):
         app_dic['icon_path'] = out.name
 
 
-def find_icon_path_zip(res_dir, icon_paths_from_manifest):
+def find_icon_path_zip(checksum, res_dir, icon_paths_from_manifest):
     """
     Find icon.
 
@@ -103,7 +107,9 @@ def find_icon_path_zip(res_dir, icon_paths_from_manifest):
     returns an empty string on fail or a full path
     """
     try:
-        logger.info('Guessing icon path')
+        msg = 'Guessing icon path'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         for icon_path in icon_paths_from_manifest:
             if icon_path.startswith('@'):
                 path_array = icon_path.strip('@').split(os.sep)
@@ -134,8 +140,10 @@ def find_icon_path_zip(res_dir, icon_paths_from_manifest):
         # If didn't find, try the default name.. returns empty if not find
         return guess_icon_path(res_dir)
 
-    except Exception:
-        logger.exception('Guessing icon path')
+    except Exception as exp:
+        msg = 'Failed to find icon path'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
 # PNG icon lookup functions above ^
 # SVG/XML icon lookup functions below
 
@@ -147,14 +155,16 @@ def get_icon_src(a, app_dic, res_dir):
     path is a full path (not relative to resource folder)
     """
     try:
-        logger.info('Fetching icon path')
+        msg = 'Fetching icon path'
+        logger.info(msg)
+        append_scan_status(app_dic['md5'], msg)
         icon_src = ''
         app_dir = Path(app_dic['app_dir'])
         icon_resolution = 0xFFFE - 1
         icon_name = None
         if a:
             icon_name = a.get_app_icon(max_dpi=icon_resolution)
-            if is_path_traversal(icon_name):
+            if icon_name and is_path_traversal(icon_name):
                 icon_name = None
         if not icon_name:
             # androguard cannot find icon file.
@@ -203,8 +213,10 @@ def get_icon_src(a, app_dic, res_dir):
             logger.warning('Cannot find icon file')
             icon_src = ''
         return icon_src
-    except Exception:
-        logger.exception('Fetching icon function')
+    except Exception as exp:
+        msg = 'Failed to fetch icon path'
+        logger.exception(msg)
+        append_scan_status(app_dic['md5'], msg, repr(exp))
 
 
 def get_icon_apk(apk, app_dic):

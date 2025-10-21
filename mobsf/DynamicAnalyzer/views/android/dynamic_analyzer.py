@@ -34,15 +34,25 @@ from mobsf.MobSF.utils import (
     get_proxy_ip,
     is_md5,
     print_n_send_error_response,
+    python_dict,
     python_list,
     strict_package_check,
 )
 from mobsf.MobSF.views.scanning import add_to_recent_scan
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
+from mobsf.MobSF.views.authorization import (
+    Permissions,
+    permission_required,
+)
 
 logger = logging.getLogger(__name__)
 
 
+@login_required
+@permission_required(Permissions.SCAN)
 def android_dynamic_analysis(request, api=False):
     """Android Dynamic Analysis Entry point."""
     try:
@@ -104,11 +114,14 @@ def android_dynamic_analysis(request, api=False):
         return print_n_send_error_response(request, exp, api)
 
 
+@login_required
+@permission_required(Permissions.SCAN)
 def dynamic_analyzer(request, checksum, api=False):
     """Android Dynamic Analyzer Environment."""
     try:
         identifier = None
         activities = None
+        deeplinks = None
         exported_activities = None
         if api:
             reinstall = request.POST.get('re_install', '1')
@@ -144,9 +157,11 @@ def dynamic_analyzer(request, checksum, api=False):
                 static_android_db.EXPORTED_ACTIVITIES)
             activities = python_list(
                 static_android_db.ACTIVITIES)
+            deeplinks = python_dict(
+                static_android_db.BROWSABLE_ACTIVITIES)
         except ObjectDoesNotExist:
             logger.warning(
-                'Failed to get Activities. '
+                'Failed to get Activities/Deeplinks. '
                 'Static Analysis not completed for the app.')
         env = Environment(identifier)
         if not env.connect_n_mount():
@@ -205,8 +220,10 @@ def dynamic_analyzer(request, checksum, api=False):
                    'hash': checksum,
                    'android_version': version,
                    'version': settings.MOBSF_VER,
+                   'cversion': settings.CYBERSPECT_VER,
                    'activities': activities,
                    'exported_activities': exported_activities,
+                   'deeplinks': deeplinks,
                    'title': 'Dynamic Analyzer'}
         template = 'dynamic_analysis/android/dynamic_analyzer.html'
         if api:
@@ -220,6 +237,8 @@ def dynamic_analyzer(request, checksum, api=False):
             api)
 
 
+@login_required
+@permission_required(Permissions.SCAN)
 def httptools_start(request):
     """Start httprools UI."""
     logger.info('Starting httptools Web UI')
@@ -241,6 +260,8 @@ def httptools_start(request):
         return print_n_send_error_response(request, err)
 
 
+@login_required
+@permission_required(Permissions.SCAN)
 def logcat(request, api=False):
     logger.info('Starting Logcat streaming')
     try:
@@ -284,6 +305,8 @@ def logcat(request, api=False):
         return print_n_send_error_response(request, err, api)
 
 
+@login_required
+@permission_required(Permissions.SCAN)
 def trigger_static_analysis(request, checksum):
     """On device APK Static Analysis."""
     try:

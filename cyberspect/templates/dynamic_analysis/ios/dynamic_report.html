@@ -1,0 +1,1462 @@
+{% extends "base/base_layout.html" %}
+   {% load static %}
+     {% block sidebar_option %}
+      sidebar-mini
+     {% endblock %}
+    {% block extra_css %}
+    <!-- DataTables -->
+    <link href="{% static "datatables/css/datatables.combined.min.css" %}" rel="stylesheet">
+    <style type="text/css" media="print">
+        @page { size: landscape; }
+        @media print {
+          .btn, #scan_options  {
+            display: none;
+          }
+        }
+    </style>
+
+<link rel="stylesheet" href="{% static "enlighterjs/enlighterjs.min.css" %}" />
+<style>
+pre {
+  white-space: pre-wrap;       /* css-3 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  }
+
+  /* custom yellow line highlight */
+  .enlighter-t-enlighter div.enlighter>div.enlighter-special {
+    background-color: #fff8bb;
+  }
+
+</style>
+    {% endblock %}
+
+    {% block sidebar %}
+    <!-- Main Sidebar Container -->
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- Sidebar user panel (optional) -->
+      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="info">
+          <a href="#" class="d-block">Dynamic Analyzer</a>
+        </div>
+      </div>
+
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu" data-accordion="false">
+          
+          <li class="nav-item">
+            <a href="#information" class="nav-link">
+              <i class="nav-icon fas fa-info-circle"></i>
+              <p>
+                Information
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#userdefaults" class="nav-link">
+              <i class="nav-icon fas fa-shapes"></i>
+              <p>
+                UserDefaults Data
+              </p>
+            </a>
+          </li>
+           <li class="nav-item">
+            <a href="#keychain" class="nav-link">
+              <i class="nav-icon fas fa-key"></i>
+              <p>
+                Keychain Data
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#fileaccess" class="nav-link">
+              <i class="nav-icon fas fa-file-signature"></i>
+              <p>
+                File Access
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#appdata" class="nav-link">
+              <i class="nav-icon fas fa-folder-open"></i>
+              <p>
+                App Data Directory
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#network" class="nav-link">
+              <i class="nav-icon fas fa-project-diagram"></i>
+              <p>
+                URLs Invoked
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#jsondata" class="nav-link">
+              <i class="nav-icon fas fa-code"></i>
+              <p>
+                JSON Data
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#logs" class="nav-link">
+              <i class="nav-icon fas fa-sticky-note"></i>
+              <p>
+                App Logs
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#textinput" class="nav-link">
+              <i class="nav-icon far fa-keyboard"></i>
+              <p>
+                Text Inputs
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#pasteboard" class="nav-link">
+              <i class="nav-icon fas fa-clipboard-list"></i>
+              <p>
+                Pasteboard
+              </p>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a href="#cookies" class="nav-link">
+              <i class="nav-icon fas fa-cookie"></i>
+              <p>
+                App Cookies
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#crypto" class="nav-link">
+              <i class="nav-icon fas fa-lock"></i>
+              <p>
+                Crypto Operations
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#credentials" class="nav-link">
+              <i class="nav-icon fas fa-asterisk"></i>
+              <p>
+                Credential Storage
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#sql" class="nav-link">
+              <i class="nav-icon fas fa-database"></i>
+              <p>
+                SQLite Queries
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#screenshots" class="nav-link">
+              <i class="nav-icon fas fa-images"></i>
+              <p>
+                Screenshots
+              </p>
+            </a>
+          </li>
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fa fa-bug"></i>
+              <p>
+                Malware Analysis
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="#serverlocations" class="nav-link">
+                  <i class="fas fa-globe-asia nav-icon"></i>
+                  <p>Server Locations</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#malware_check" class="nav-link">
+                  <i class="fab fa-searchengin nav-icon"></i>
+                  <p>Domain Malware Check</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+           <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fa fa-plus"></i>
+              <p>
+                Reconnaissance
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="#urls" class="nav-link">
+                  <i class="fas fa-globe nav-icon"></i>
+                  <p>URLs</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#emails" class="nav-link">
+                  <i class="fas fa-envelope nav-icon"></i>
+                  <p>Emails</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#trackers" class="nav-link">
+                  <i class="fas fa-user-secret nav-icon"></i>
+                  <p>Trackers</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon far fa-copy"></i>
+              <p>
+                File Analysis
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="#sqlitedb" class="nav-link">
+                  <i class="fas fa-database nav-icon"></i>
+                  <p>SQLite Database</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#plistfiles" class="nav-link">
+                  <i class="fas fa-file-code nav-icon"></i>
+                  <p>Plist Files</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#other_files" class="nav-link">
+                  <i class="fas fa-file-contract nav-icon"></i>
+                  <p>Other Files</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="javascript:window.print()" class="nav-link">
+            <i class="nav-icon fas fa-print"></i>
+            <p>
+              Download / Print Report
+            </p>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+{% endblock %}
+{% block content %}
+  <!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+  
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-lg-12">
+        <div id="mobsf_header" align="center">
+          <h2>Dynamic Analysis Report - <strong>{{ bundleid }}</strong></h2>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /.content-header -->
+
+
+ <!-- Main content -->
+<a id="information" class="anchor"></a>
+<section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title"></h5>
+                <div class="row">
+                <div class="col-12">
+                  <p><strong><i class="fas fa-info-circle"></i> INFORMATION</strong></p>
+                   <div align="center">
+                      <p>
+                      {% if frida_logs %}
+                          <a target="_blank" class="btn btn-primary" role="button" href="{% url 'frida_logs' %}?hash={{ hash }}"><i class="fas fa-spider"></i> Frida Logs View</a>
+                      {% endif %}
+                        <a class="btn btn-success" target="_blank" role="button" href="{% url 'httptools' %}?project={{bundleid}}"><i class="fab fa-hire-a-helper"></i> Start HTTPTools</a>
+                      </p>
+                      <p><h6><strong>Raw Logs</strong></h6></p>
+                      <p>
+                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="{% url 'download' %}{{ hash }}-web_traffic.txt"><i class="fas fa-water"></i> HTTP(S) Traffic</a>
+                      <a target="_blank" class="btn btn-primary btn-sm" role="button" href="{% url 'download' %}{{ hash }}-network.pcap"><i class="fas fa-water"></i> Network Pcap</a>
+                      <a class="btn btn-primary btn-sm" role="button" href="{% url 'download' %}{{ hash }}-app_data.tar"><i class="fas fa-download"></i> Application Data</a>
+                    </p>
+                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+      </div>
+      <!-- /.col -->
+      <!-- row and container-->
+      </div>
+  </div>
+  </section>
+<!-- =========================end information==================================== -->
+
+ <a id="userdefaults" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-shapes"></i> USERDEFAULTS DATA</strong>
+             </p>
+              <div class="table-responsive">
+              {% if userdefaults %}
+               <table id="table_userdefaults" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>KEY</th> 
+                    <th>VALUE</th>
+                  </tr>
+                </thead>
+               <tbody>
+                {% for k, v in userdefaults.items %}
+                <tr>
+                  <td>
+                    {{k}}
+                  </td>
+                  <td>
+                    {{v | base64_decode }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+             {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end userdefaults ================================== -->
+
+ <a id="keychain" class="anchor"></a>
+ <section class="content">
+   <div class="container-fluid">
+     <div class="row">
+         <div class="col-lg-12">
+         <div class="card">
+           <div class="card-body">
+              <p>
+              <strong><i class="fas fa-key"></i> KEYCHAIN DATA</strong>
+              </p>
+               <div class="table-responsive">
+               {% if keychain %}
+                <table id="table_keychain" class="table table-bordered table-hover table-striped">
+                 <thead>
+                   <tr>
+                     <th>ITEM</th>
+                     <th>DATA</th>
+                     <th>CREATE DATE</th>
+                     <th>MODIFICATION DATE</th>
+                     
+                   </tr>
+                 </thead>
+                <tbody>
+                 {% for item in keychain %}
+                 <tr>
+                   <td>
+                    <strong>Entitlement Group:</strong> {{item.entitlement_group}} </br>
+                    <strong>Item Class:</strong> {{item.item_class}} </br>
+                    <strong>Accessible Attribute:</strong> {{item.accessible_attribute}} </br>
+                    <strong>Generic:</strong> {{item.generic}} </br>
+                    <strong>Service:</strong> {{item.service}} </br>
+                    <strong>Account:</strong> {{item.account}} </br>
+                    <hr>
+                    <strong>Protected:</strong>  {{item.protected}} </br>
+                    <strong>Label:</strong> {{item.label}} </br>
+                    <strong>Access Control:</strong> {{item.access_control}} </br>
+                    <strong>Description:</strong> {{item.description}} </br>
+                    <strong>Comment:</strong> {{item.comment}} </br>
+                    <strong>Creator:</strong>  {{item.creator}} </br>
+                    <strong>Type:</strong> {{item.type}} </br>
+                    <strong>Script Code:</strong>  {{item.script_code}} </br>
+                    <strong>Alias:</strong>  {{item.alias}} </br>
+                    <strong>Invisible:</strong> {{item.invisible}} </br>
+                    <strong>Negative:</strong>  {{item.negative}} </br>
+                    <strong>Custom Icon:</strong> {{item.custom_icon}} </br>
+                   </td>
+                   <td>
+                    <pre>{{item.data | pretty_json | base64_decode}}</pre>
+                   </td>
+                  <td>
+                    {{item.create_date}}
+                  </td>
+                  <td>
+                    {{item.modification_date}}
+                  </td>
+                 </tr>
+                 {% endfor %}
+               </tbody>
+             </table>
+              {% endif %}
+             </div>
+           </div>
+         </div><!-- /.card -->
+         </div>
+         <!-- end row -->
+         </div>
+     </div>
+ </section>
+  <!-- ===========================end keychain ================================== -->
+
+<a id="fileaccess" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-file-signature"></i> FILE ACCESS</strong>
+             </p>
+              <div class="table-responsive">
+              {% if files %}
+               <table id="table_fileaccess" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>FILE PATH</th>
+                    <th>DOWNLOAD</th>
+                  </tr>
+                </thead>
+               <tbody>
+                {% for item in files %}
+                <tr>
+                  <td>
+                    <a href="javascript:cat_file('{{ item }}')">{{item}}</a>
+                  </td>
+                  <td>
+                    <a class="btn btn-info btn-sm"  href="javascript:download_file('{{ item }}')"><i class="fa fa-solid fa-download"></i></a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+             {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+
+ <!-- ===========================end files ================================== -->
+
+<a id="appdata" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-folder-open"></i> APP DATA DIRECTORY</strong>
+             </p>
+              <div class="table-responsive">
+              {% if datadir %}
+               <table id="table_files" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>FILE PATH</th>
+                    <th>DOWNLOAD</th>
+                    <th>FILE PROTECTION</th>
+                  </tr>
+                </thead>
+               <tbody>
+                {% for item in datadir %}
+                <tr>
+                  <td>
+                    <a href="javascript:cat_file('{{ item.path }}')">{{ item.path | replace:"/private/var/mobile/Containers/Data/Application/|" }}</a>
+                  </td>
+                  <td>
+                    <a class="btn btn-info btn-sm"  href="javascript:download_file('{{ item.path }}')"><i class="fa fa-solid fa-download"></i></a>
+                  </td>
+                  <td>
+                    {{ item.fileProtectionKey }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+             {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end data dir ================================== -->
+
+ <a id="network" class="anchor"></a>
+ <section class="content">
+   <div class="container-fluid">
+     <div class="row">
+         <div class="col-lg-12">
+         <div class="card">
+           <div class="card-body">
+              <p>
+              <strong><i class="fas fa-project-diagram"></i> URLS INVOKED</strong>
+              </p>
+               <div class="table-responsive">
+               {% if network %}
+                <table id="table_network" class="table table-bordered table-hover table-striped">
+                 <thead>
+                   <tr>
+                     <th>SOURCE</th> 
+                     <th>URL</th>
+                   </tr>
+                 </thead>
+                <tbody>
+                 {% for item in network %}
+                 <tr>
+                   <td>
+                     {{item.source}}
+                   </td>
+                   <td>
+                     {{item.url}}
+                   </td>
+                 </tr>
+                 {% endfor %}
+               </tbody>
+             </table>
+              {% endif %}
+             </div>
+           </div>
+         </div><!-- /.card -->
+         </div>
+         <!-- end row -->
+         </div>
+     </div>
+ </section>
+  <!-- ===========================end network calls ================================== -->
+  <a id="jsondata" class="anchor"></a>
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+          <div class="col-lg-12">
+          <div class="card">
+            <div class="card-body">
+               <p>
+               <strong><i class="fas fa-code"></i> JSON DATA</strong>
+               </p>
+                <div class="table-responsive">
+                {% if json %}
+                 <table id="table_jsondata" class="table table-bordered table-hover table-striped">
+                  <thead>
+                    <tr>
+                      <th>JSON</th>
+                    </tr>
+                  </thead>
+                 <tbody>
+                  {% for item in json %}
+                  <tr>
+                    <td>
+                      <pre>{{item | pretty_json}}</pre>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+               {% endif %}
+              </div>
+            </div>
+          </div><!-- /.card -->
+          </div>
+          <!-- end row -->
+          </div>
+      </div>
+  </section>
+  
+   <!-- ===========================end jsondata ================================== -->
+  
+ <a id="logs" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-sticky-note"></i> APP LOGS</strong>
+             </p>
+              <div class="table-responsive">
+              {% if logs %}
+               <table id="table_logs" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>LOGS</th>
+                  </tr>
+                </thead>
+               <tbody>
+                {% for item in logs %}
+                <tr>
+                  <td>
+                    {{item}}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+             {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end files ================================== -->
+<a id="textinput" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="far fa-keyboard"></i> TEXT INPUTS</strong>
+             </p>
+              <div class="table-responsive">
+              {% if textinputs %}
+               <table id="table_textinput" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>KEYSTROKES</th>
+                  </tr>
+                </thead>
+               <tbody>
+                {% for item in textinputs %}
+                <tr>
+                  <td>
+                    {{item}}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+             {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+
+ <!-- ===========================end textinputs ================================== -->
+ <a id="pasteboard" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-clipboard-list"></i> PASTEBOARD</strong>
+             </p>
+              <div class="table-responsive">
+              {% if pasteboard %}
+               <table id="table_textinput" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>ITEMS IN PASTEBOARD</th>
+                  </tr>
+                </thead>
+               <tbody>
+                {% for item in pasteboard %}
+                <tr>
+                  <td>
+                    {{item}}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+             {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+
+ <!-- ===========================end pasteboard ================================== -->
+ <a id="cookies" class="anchor"></a>
+ <section class="content">
+   <div class="container-fluid">
+     <div class="row">
+         <div class="col-lg-12">
+         <div class="card">
+           <div class="card-body">
+              <p>
+              <strong><i class="fas fa-cookie"></i> APP COOKIES</strong>
+              </p>
+               <div class="table-responsive">
+               {% if cookies %}
+                <table id="table_cookies" class="table table-bordered table-hover table-striped">
+                 <thead>
+                   <tr>
+                     <th>NAME</th>
+                     <th>VALUE</th>
+                     <th>DOMAIN</th>
+                     <th>PATH</th>
+                     <th>EXPIRY</th>
+                     <th>HTTPONLY</th>
+                     <th>SECURE</th>
+                     <th>VERSION</th>
+                   </tr>
+                 </thead>
+                <tbody>
+                 {% for item in cookies %}
+                 <tr>
+                   <td>
+                     {{item.name}}
+                  </td>
+                  <td>
+                    {{item.value}}
+                  </td>
+                  <td>
+                    {{item.domain}}
+                  </td>
+                  <td>
+                      {{item.path}}
+                  </td>
+                  <td>
+                    {{item.expiry}}
+                 </td>
+                 <td>
+                   {{item.httponly}}
+                 </td>
+                 <td>
+                   {{item.secure}}
+                 </td>
+                 <td>
+                     {{item.version}}
+                 </td>
+
+                 </tr>
+                 {% endfor %}
+               </tbody>
+             </table>
+              {% endif %}
+             </div>
+           </div>
+         </div><!-- /.card -->
+         </div>
+         <!-- end row -->
+         </div>
+     </div>
+ </section>
+  <!-- ===========================end cookies ================================== -->
+ 
+  <a id="crypto" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-lock"></i> CRYPTO OPERATIONS</strong>
+             </p>
+              <div class="table-responsive">
+              {% if crypto %}
+               <table id="table_files" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                  </tr>
+                </thead>
+               <tbody>
+              {% for item in crypto %}
+                <tr>
+                {% for k, v in item.items %}
+                  {% if v %}
+                    <td>
+                      <strong>{{ k }}: </strong><code><pre> {{ v | base64_decode | pretty_json}}</pre></code>
+                    </td>
+                  {% endif %}
+                {% endfor %}
+                </tr>
+              {% endfor %}
+
+              </tbody>
+            </table>
+             {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end crypto ================================== -->
+
+  <a id="credentials" class="anchor"></a>
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+          <div class="col-lg-12">
+          <div class="card">
+            <div class="card-body">
+               <p>
+               <strong><i class="fas fa-asterisk"></i> CREDENTIAL STORAGE</strong>
+               </p>
+                <div class="table-responsive">
+                {% if credentials %}
+                 <table id="table_credentials" class="table table-bordered table-hover table-striped">
+                  <thead>
+                    <tr>
+                      <th>HOST</th>
+                      <th>AUTHENTICATION METHOD</th>
+                      <th>PROTOCOL</th>
+                      <th>PORT</th>
+                      <th>USER</th>
+                      <th>PASSWORD</th>
+                    </tr>
+                  </thead>
+                 <tbody>
+                  {% for item in credentials %}
+                  <tr>
+                    <td>
+                      {{item.host}}
+                   </td>
+                   <td>
+                     {{item.authenticationMethod}}
+                   </td>
+                   <td>
+                     {{item.protocol}}
+                   </td>
+                   <td>
+                      {{item.port}}
+                   </td>
+                   <td>
+                     {{item.user}}
+                  </td>
+                  <td>
+                    {{item.password}}
+                  </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+               {% endif %}
+              </div>
+            </div>
+          </div><!-- /.card -->
+          </div>
+          <!-- end row -->
+          </div>
+      </div>
+  </section>
+   <!-- ===========================end credentials ================================== -->
+
+<a id="sql" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-database"></i> SQLITE QUERIES</strong>
+             </p>
+              <div class="table-responsive">
+              {% if sql %}
+               <table id="table_sql" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>QUERIES</th>
+                  </tr>
+                </thead>
+               <tbody>
+                {% for item in sql %}
+                <tr>
+                  <td>
+                    {{item}}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+             {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+
+ <!-- ===========================end textinputs ================================== -->
+
+<a id="screenshots" class="anchor"></a>
+ <section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+              <p>
+             <strong><i class="fas fa-images"></i> SCREENSHOTS</strong>
+             </p>
+               <div >
+                {% for i in screenshots %}
+                  <img alt="Screenshot" src="{% url 'download' %}{{ i }}" class="img-thumbnail" height="300" width="175">
+                {% endfor %}
+              </div>
+              
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end screenshots ================================== -->
+
+ <style>
+  #chartdiv {
+  width: 100%;
+  height: 500px;
+  overflow: hidden;
+}
+</style>
+ <a id="serverlocations" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p>
+             <strong><i class="fas fa-globe-asia"></i> SERVER LOCATIONS</strong>
+             </p>
+              <div class="table-responsive">
+                <div id="chartdiv"></div>
+            </div>
+
+            <div class="table-responsive">
+              {% if domains %}
+              <p></br>This app may communicate with the following OFAC sanctioned list of countries.</p>
+             <table id="table_ofac" class="table table-bordered table-hover table-striped">
+                  <thead>
+                  <tr>
+                     <th>DOMAIN</th>
+                     <th>COUNTRY/REGION</th>
+                  </tr>
+                 </thead>
+                 <tbody>
+                 {% for domain, details in domains.items %}
+                 {% if details|key:"ofac" == True %}
+                  <tr><td>{{domain}}</td>
+                  <td>
+                    <strong>IP: </strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
+                    <strong>Country: </strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
+                    <strong>Region: </strong>{{details|key:"geolocation"|key:"region"}} <br/>
+                    <strong>City: </strong>{{details|key:"geolocation"|key:"city"}} <br/>
+                  </td>
+                  </tr>
+                  {% endif %}
+                  {% endfor %}
+                </tbody>
+            </table>
+             {% endif %}
+            </div>
+  
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end server locations ================================== -->
+ <a id="malware_check" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fab fa-searchengin"></i> DOMAIN MALWARE CHECK</strong>
+             </p>
+              <div class="table-responsive">
+              {% if domains %} 
+                <table id="table_malware" class="table table-bordered table-hover table-striped">
+                  <thead>
+                  <tr>
+                     <th>DOMAIN</th>
+                     <th>STATUS</th>
+                     <th>GEOLOCATION</th>
+                  </tr>
+                 </thead>
+                 <tbody>
+                 {% for domain, details in domains.items %}
+                  <tr><td>{{domain}}</td><td> 
+
+                    {% if details|key:"bad" == "yes" %}
+                    <span class="badge bg-danger">malware</span><br/>
+                      <pre>
+                      <strong>URL: </strong>{{details|key:"domain_or_url"}}
+                      <strong>IP: </strong><span class="badge bg-danger">{{details|key:"ip"}}</span>
+                      <strong>Description: </strong>{{details|key:"desc"}}
+                      </pre>
+                  {% else %}
+                    <span class="badge bg-success">good</span><br/>
+                  {% endif %}
+                  </td>
+                  <td>
+                    {% if details|key:"geolocation" %}
+                      <strong>IP: </strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
+                      <strong>Country: </strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
+                      <strong>Region: </strong>{{details|key:"geolocation"|key:"region"}} <br/>
+                      <strong>City: </strong>{{details|key:"geolocation"|key:"city"}} <br/>
+                      <strong>Latitude: </strong>{{details|key:"geolocation"|key:"latitude"}} <br/>
+                      <strong>Longitude: </strong>{{details|key:"geolocation"|key:"longitude"}} <br/>
+                      <strong>View: <a target="_blank" href="http://maps.google.com/maps?q={{details|key:"geolocation"|key:"latitude"}},{{details|key:"geolocation"|key:"longitude"}}">Google Map</a>
+
+                    {% else %}
+                    No Geolocation information available.
+                    {% endif %}
+                  </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+            </table>    
+             {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end domain malware check ================================== -->
+ <a id="urls" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-globe"></i> URLS</strong>
+             </p>
+                {% if urls %} 
+                <div class="list-group">
+                  {% for f in urls %}
+                        {{ f}} <br>
+                  {% endfor %}
+
+              {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+    </div>
+</section>
+ <!-- ===========================end urls ================================== -->
+<a id="emails" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-envelope"></i> EMAILS</strong>
+             </p>
+                 {% if emails %} 
+                <div class="list-group">
+                  {% for f in emails %}
+                        {{ f}} <br>
+                  {% endfor %}
+
+              {% endif %}
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end emails ================================== -->
+ <a id="trackers" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-user-secret"></i> TRACKERS</strong>
+             </p>
+              <div class="table-responsive">
+              {% if trackers %}
+               <table id="table_trackers" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>TRACKER NAME</th>
+                    <th>CATEGORIES</th>
+                    <th>URL</th>
+                  </tr>
+                </thead>
+               <tbody>
+                {% for trk in trackers|key:"trackers" %}
+                <tr>
+                  <td>
+                    {{trk.name}}
+                  </td>
+                  <td>
+                    {{trk.categories}}
+                  </td>
+                  <td>
+                    <a target="_blank" href="{{trk.url}}" rel="noopener noreferrer">{{trk.url}}</a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+             {% endif %}
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end trackers ================================== -->
+ <a id="sqlitedb" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-database"></i> SQLITE DATABASE</strong>
+             </p>
+              <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped">
+                      <thead>
+                        <tr>
+                          <th>FILES</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                     {% for file in sqlite %}
+                     <tr><td><a href="{% url 'dynamic_view_file' %}?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td></tr>
+                    {% endfor %}
+                     </tbody>
+                    </table>
+              </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end sqlite ================================== -->
+ <a id="plistfiles" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-file-code"></i> PLIST FILES</strong>
+             </p>
+               <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped">
+                      <thead>
+                        <tr>
+                          <th>FILES</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                     {% for file in plist %}
+                     <tr><td><a href="{% url 'dynamic_view_file' %}?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td></tr>
+                    {% endfor %}
+                     </tbody>
+                    </table>
+              </div>
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+</section>
+ <!-- ===========================end plist files ================================== -->
+ <a id="other_files" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+             <p>
+             <strong><i class="fas fa-file-contract"></i> OTHER FILES</strong>
+             </p>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped">
+                      <thead>
+                        <tr>
+                          <th>FILES</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                     {% for file in others %}
+                     <tr><td><a href="{% url 'dynamic_view_file' %}?file={{file|key:"file"}}&amp;hash={{hash}}&amp;type={{file|key:"type"}}">{{file|key:"file"}}</a></td></tr>
+                    {% endfor %}
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+</section>
+ <!-- ===========================end other files ================================== -->
+
+
+<!-- end of contents -->
+</div>
+
+
+<!-- Modal -->
+
+<div class="modal fade" id="cat" tabindex="-1" role="dialog" aria-labelledby="catlabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+        <div class="content-header">
+        </div>
+         <div class="container-fluid">
+              <div class="row">
+                  <div class="col-lg-12">
+                  <div class="card">
+                    <div class="card-body">
+                       <div class="box box-default">
+                         <div class="box-body">
+                            <h3 id="cat_title"> </h3>
+                            <br />
+                              <pre id="code_block"></pre>
+                              </div>
+                              <!-- /.box-body -->
+                            </div>
+                </div>
+              </div>
+             </div>
+      </div>
+
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+<!--end new UI-->
+{% block extra_scripts %}
+<!-- DataTables -->
+<script src="{% static "datatables/js/pdfmake.min.js" %}"></script>
+<script src="{% static "datatables/js/vfs_fonts.js" %}"></script>
+<script src="{% static "datatables/js/datatables.combined.min.js" %}"></script>
+<script src="{% static "others/js/datatables_init.js" %}"></script>
+<script src="{% static "amcharts/core.js" %}"></script>
+<script src="{% static "amcharts/maps.js" %}"></script>
+<script src="{% static "amcharts/worldIndiaLow.js" %}"></script>
+<script src="{% static "amcharts/animated.js" %}"></script>
+<script type="text/javascript" src="{% static "enlighterjs/enlighterjs.min.js" %}"></script>
+<script>
+  // Navbar Active
+    $(".nav-link").on("click", function() {
+    $(".nav-link").removeClass("active");
+    $(this).addClass("active");
+  });
+</script>
+<script>
+  // Themes begin
+  am4core.useTheme(am4themes_animated);
+  // Themes end
+  
+  // Create map instance
+  var chart = am4core.create("chartdiv", am4maps.MapChart);
+  
+  // Set map definition
+  chart.geodata = am4geodata_worldIndiaLow;
+  
+  // Set projection
+  chart.projection = new am4maps.projections.Miller();
+  
+  // Create map polygon series
+  var polygonSeries = chart.series.push(new am4maps.MapPolygonSeries());
+  
+  // Exclude Antartica
+  polygonSeries.exclude = ["AQ"];
+  
+  // Make map load polygon (like country names) data from GeoJSON
+  polygonSeries.useGeodata = true;
+  
+  // Configure series
+  var polygonTemplate = polygonSeries.mapPolygons.template;
+  polygonTemplate.tooltipText = "{name}";
+  polygonTemplate.polygon.fillOpacity = 0.6;
+  
+  // Create hover state and set alternative fill color
+  var hs = polygonTemplate.states.create("hover");
+  hs.properties.fill = chart.colors.getIndex(0);
+  
+  // Add image series
+  var imageSeries = chart.series.push(new am4maps.MapImageSeries());
+  imageSeries.mapImages.template.propertyFields.longitude = "longitude";
+  imageSeries.mapImages.template.propertyFields.latitude = "latitude";
+  imageSeries.mapImages.template.tooltipText = "{title}";
+  imageSeries.mapImages.template.propertyFields.url = "url";
+  
+  var circle = imageSeries.mapImages.template.createChild(am4core.Circle);
+  circle.radius = 3;
+  circle.propertyFields.fill = "color";
+  
+  var circle2 = imageSeries.mapImages.template.createChild(am4core.Circle);
+  circle2.radius = 3;
+  circle2.propertyFields.fill = "color";
+  
+  
+  circle2.events.on("inited", function(event){
+    animateBullet(event.target);
+  })
+  
+  function animateBullet(circle) {
+      var animation = circle.animate([{ property: "scale", from: 1, to: 5 }, { property: "opacity", from: 1, to: 0 }], 1000, am4core.ease.circleOut);
+      animation.events.on("animationended", function(event){
+        animateBullet(event.target.object);
+      })
+  }
+  
+  var colorSet = new am4core.ColorSet();
+  imageSeries.data = [
+  {% if domains %}
+    {% for domain, details in domains.items %}
+      {% if details|key:"geolocation" %}
+      {
+        'title': '{{details|key:"geolocation"|key:"country_long"}}/{{details|key:"geolocation"|key:"region"}}',
+        'latitude': {{details|key:"geolocation"|key:"latitude"}},
+        'longitude': {{details|key:"geolocation"|key:"longitude"}},
+        'color':colorSet.next()
+      },
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+  ];
+
+
+//For All Ajax
+function action(url, data, on_success){
+  //Add CSRF
+  data.csrfmiddlewaretoken ='{{ csrf_token }}';
+  $.ajax({
+    url : url, 
+    type : "POST",
+    dataType: "json", 
+    data : data,
+    success : function(json){ on_success(json) },
+    error : function(xhr, ajaxOptions, thrownError) {
+     console.log(xhr.responseText);
+    }
+  });
+}
+
+  // Cat file
+  function cat_file(file_name){
+    var code_block = document.getElementById('code_block');
+    var code_title = document.getElementById('cat_title');
+    code_title.innerText = '';
+    code_block.innerText = '';
+    action('{% url 'ssh_execute' %}', {instance_id: '{{ instance_id }}', cmd:  `cat -v "${file_name}"` }, function(json) {
+      if (json.status==="ok")
+        code_title.innerText = file_name;
+        code_block.innerText = json.message;
+        $('#cat').modal('toggle');
+    });
+  }
+
+  // Download file
+  function download_file(path){
+    var form = document.createElement('form');
+    var element1 = document.createElement('input'); 
+    var element2 = document.createElement('input');
+    var element3 = document.createElement('input');  
+
+    form.method = 'POST';
+    form.action = '{% url 'download_file' %}';   
+
+    element1.value = '{{ instance_id }}';
+    element1.name = 'instance_id';
+    form.appendChild(element1);
+
+
+    element2.value = path;
+    element2.name = 'file';
+    form.appendChild(element2);
+
+    element3.value = '{{ csrf_token }}';
+    element3.name = 'csrf_token';
+    form.appendChild(element3);
+
+    document.body.appendChild(form);
+    form.submit();
+    form.remove();
+  }
+  </script>
+{% endblock %}

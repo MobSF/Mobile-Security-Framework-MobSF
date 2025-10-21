@@ -415,12 +415,12 @@ class AXMLParser:
             logger.warning("Header size is 28024! Are you trying to parse a plain XML file?")
 
         if axml_header.header_size != 8:
-            logger.warning("This does not look like an AXML file. header size does not equal 8! header size = {}".format(axml_header.header_size))
+            logger.error("This does not look like an AXML file. header size does not equal 8! header size = {}".format(axml_header.header_size))
             self._valid = False
             return
 
         if self.filesize > self.buff_size:
-            logger.warning("This does not look like an AXML file. Declared filesize does not match real size: {} vs {}".format(self.filesize, self.buff_size))
+            logger.error("This does not look like an AXML file. Declared filesize does not match real size: {} vs {}".format(self.filesize, self.buff_size))
             self._valid = False
             return
 

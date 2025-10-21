@@ -8,16 +8,23 @@ from pathlib import Path
 from mobsf.StaticAnalyzer.tools.androguard4 import (
     apk,
 )
+from mobsf.MobSF.utils import (
+    append_scan_status,
+)
 
 logger = logging.getLogger(__name__)
 
 
-def parse_apk(app_path):
+def parse_apk(checksum, app_path):
     """Androguard APK."""
     try:
-        logger.info('Parsing APK with androguard')
+        msg = 'Parsing APK with androguard'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         return apk.APK(app_path)
-    except Exception:
+    except Exception as exp:
+        msg = 'Failed to parse APK with androguard'
+        append_scan_status(checksum, msg, repr(exp))
         return None
 
 

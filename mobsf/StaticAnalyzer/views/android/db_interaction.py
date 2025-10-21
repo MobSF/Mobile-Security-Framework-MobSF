@@ -3,15 +3,20 @@ import logging
 
 from django.conf import settings
 from django.db.models import QuerySet
-from django.utils import timezone
 
-from mobsf.MobSF.utils import python_dict, python_list
+from mobsf.MobSF.utils import (
+    append_scan_status,
+    get_scan_logs,
+    python_dict,
+    python_list,
+)
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression,
     process_suppression_manifest,
 )
+from mobsf.MobSF.cyberspect_utils import update_scan_timestamp
 
 """Module holding the functions for the db."""
 
@@ -22,7 +27,8 @@ logger = logging.getLogger(__name__)
 def get_context_from_db_entry(db_entry: QuerySet) -> dict:
     """Return the context for APK/ZIP from DB."""
     try:
-        logger.info('Analysis is already Done. Fetching data from the DB...')
+        msg = 'Analysis is already Done. Fetching data from the DB...'
+        logger.info(msg)
         package = db_entry[0].PACKAGE_NAME
         code = process_suppression(
             python_dict(db_entry[0].CODE_ANALYSIS),
@@ -32,6 +38,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             package)
         context = {
             'version': settings.MOBSF_VER,
+            'cversion': settings.CYBERSPECT_VER,
             'title': 'Static Analysis',
             'file_name': db_entry[0].FILE_NAME,
             'app_name': db_entry[0].APP_NAME,
@@ -81,10 +88,12 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'trackers': python_dict(db_entry[0].TRACKERS),
             'playstore_details': python_dict(db_entry[0].PLAYSTORE_DETAILS),
             'secrets': python_list(db_entry[0].SECRETS),
+            'logs': get_scan_logs(db_entry[0].MD5),
         }
         return context
     except Exception:
-        logger.exception('Fetching from DB')
+        msg = 'Fetching data from the DB failed.'
+        logger.exception(msg)
 
 
 def get_context_from_analysis(app_dic,
@@ -108,6 +117,7 @@ def get_context_from_analysis(app_dic,
         context = {
             'title': 'Static Analysis',
             'version': settings.MOBSF_VER,
+            'cversion': settings.CYBERSPECT_VER,
             'file_name': app_dic['app_name'],
             'app_name': app_dic['real_name'],
             'app_type': app_dic['zipped'],
@@ -153,10 +163,13 @@ def get_context_from_analysis(app_dic,
             'trackers': trackers,
             'playstore_details': app_dic['playstore'],
             'secrets': code_an_dic['secrets'],
+            'logs': get_scan_logs(app_dic['md5']),
         }
         return context
-    except Exception:
-        logger.exception('Rendering to Template')
+    except Exception as exp:
+        msg = 'Rendering to Template failed.'
+        logger.exception(msg)
+        append_scan_status(app_dic['md5'], msg, repr(exp))
 
 
 def save_or_update(update_type,
@@ -226,8 +239,10 @@ def save_or_update(update_type,
         else:
             StaticAnalyzerAndroid.objects.filter(
                 MD5=app_dic['md5']).update(**values)
-    except Exception:
-        logger.exception('Updating DB')
+    except Exception as exp:
+        msg = 'Failed to Save/Update Database'
+        logger.exception(msg)
+        append_scan_status(app_dic['md5'], msg, repr(exp))
     try:
         values = {
             'APP_NAME': app_dic['real_name'],
@@ -236,18 +251,24 @@ def save_or_update(update_type,
         }
         RecentScansDB.objects.filter(
             MD5=app_dic['md5']).update(**values)
-    except Exception:
-        logger.exception('Updating RecentScansDB')
+    except Exception as exp:
+        msg = 'Updating RecentScansDB table failed'
+        logger.exception(msg)
+        append_scan_status(app_dic['md5'], msg, repr(exp))
 
 
 def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, quark, trk, rscn):
     # SAVE TO DB
     if rscn:
-        logger.info('Updating Database...')
+        msg = 'Updating Database...'
+        logger.info(msg)
+        append_scan_status(app['md5'], msg)
         action = 'update'
         update_scan_timestamp(app['md5'])
     else:
-        logger.info('Saving to Database')
+        msg = 'Saving to Database'
+        logger.info(msg)
+        append_scan_status(app['md5'], msg)
         action = 'save'
     save_or_update(
         action,
@@ -272,9 +293,3 @@ def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, quark, trk, rscn):
         quark,
         trk,
     )
-
-
-def update_scan_timestamp(scan_hash):
-    # Update the last scan time.
-    tms = timezone.now()
-    RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)

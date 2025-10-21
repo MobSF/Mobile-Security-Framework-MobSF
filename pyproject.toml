@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mobsf"
-version = "3.9.7"
+version = "4.0.7"
 description = "Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis."
 keywords = ["mobsf", "mobile security framework", "mobile security", "security tool", "static analysis", "dynamic analysis", "malware analysis"]
 authors = ["Ajin Abraham <ajin@opensecurity.in>"]
@@ -10,7 +10,7 @@ repository = "https://github.com/MobSF/Mobile-Security-Framework-MobSF"
 documentation = "https://mobsf.github.io/docs/"
 packages = [{ include = "mobsf", format = ["sdist", "wheel"]}]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Topic :: Security",
     "Topic :: Software Development :: Quality Assurance",
@@ -40,7 +40,7 @@ shelljob = ">=0.6.2"
 asn1crypto = ">=1.4.0"
 distro = ">=1.5.0"
 ip2location = "8.10.0"
-lief = "0.12.3"
+lief = "0.13.2"
 http-tools = ">=4.0.0"
 pdfkit = ">=0.6.1"
 google-play-scraper = ">=0.1.2"
@@ -61,6 +61,12 @@ PyJWT = ">=2.8.0"
 siphash = ">=0.0.1"
 django4-background-tasks = ">=1.2.10"
 djangorestframework = ">=3.15.0"
+django-brake = "^1.6.0"
+python3-saml = "^1.16.0"
+bcrypt = "4.0.1"
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "^7.3.0"
 
 [build-system]
 requires = ["poetry-core"]

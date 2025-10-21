@@ -7,14 +7,14 @@ import os
 from django.conf import settings
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
-from mobsf.MobSF.utils import (
+from mobsf.MobSF.views.helpers import FileType
+from mobsf.MobSF.cyberspect_utils import (
     get_siphash,
     get_usergroups,
     is_admin,
     sso_email,
     utcnow,
 )
-from mobsf.MobSF.views.helpers import FileType
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +24,10 @@ def add_to_recent_scan(data):
     try:
         db_obj = RecentScansDB.objects.filter(MD5=data['hash'])
         if not db_obj.exists():
+            # Cyberspect mods
             classification = data.get('data_privacy_classification', '')
             attributes = data.get('data_privacy_attributes', '')
+            # End Cyberspect mods
             new_db_obj = RecentScansDB(
                 ANALYZER=data['analyzer'],
                 SCAN_TYPE=data['scan_type'],
@@ -34,7 +36,7 @@ def add_to_recent_scan(data):
                 PACKAGE_NAME='',
                 VERSION_NAME='',
                 MD5=data['hash'],
-                TIMESTAMP=utcnow(),
+                TIMESTAMP=utcnow(),  # Begin Cyberspect mods
                 USER_APP_NAME=data.get('user_app_name', ''),
                 USER_APP_VERSION=data.get('user_app_version', ''),
                 DIVISION=data.get('division', ''),
@@ -44,9 +46,9 @@ def add_to_recent_scan(data):
                 USER_GROUPS=data.get('user_groups', ''),
                 RELEASE=data.get('release', False),
                 DATA_PRIVACY_CLASSIFICATION=classification,
-                DATA_PRIVACY_ATTRIBUTES=attributes)
-
+                DATA_PRIVACY_ATTRIBUTES=attributes)  # End Cyberspect mods
             new_db_obj.save()
+        # Cyberspect mods
         else:
             scan = db_obj.first()
             if (not data['email'] in scan.EMAIL):
@@ -67,12 +69,15 @@ def add_to_recent_scan(data):
             scan.DATA_PRIVACY_ATTRIBUTES = \
                 data.get('data_privacy_attributes', '')
             scan.save()
+    # End Cyberspect mods
     except Exception as ex:
         logger.exception('Adding Scan URL to Database')
+        # Cyberspect mod
         raise ex
+        # End Cyberspect mod
 
 
-def handle_uploaded_file(content, extension, source_content):
+def handle_uploaded_file(content, extension, source_content=None):
     """Write Uploaded File."""
     md5 = hashlib.md5()
     bfr = isinstance(content, io.BufferedReader)
@@ -96,6 +101,7 @@ def handle_uploaded_file(content, extension, source_content):
         else:
             for chunk in content.chunks():
                 destination.write(chunk)
+    # Cyberspect mods
     if (source_content):
         bfr = isinstance(source_content, io.BufferedReader)
         with open(f'{anal_dir}{md5sum}{extension}' + '.src', 'wb+') as f:
@@ -106,12 +112,14 @@ def handle_uploaded_file(content, extension, source_content):
             else:
                 for chunk in source_content.chunks():
                     f.write(chunk)
+    # End Cyberspect mods
     return md5sum
 
 
 class Scanning(object):
 
     def __init__(self, request):
+        # Cyberspect mods
         if ('file' in request.FILES):
             self.file = request.FILES['file']
             self.file_name = self.file.name
@@ -151,100 +159,129 @@ class Scanning(object):
         self.md5 = ''
         self.short_hash = ''
         self.scan_type = ''
+        # Cyberspect mods end
+        self.data = {
+            'analyzer': 'static_analyzer',
+            'status': 'success',
+            'hash': '',
+            'scan_type': '',
+            'file_name': self.file_name,
+        }
 
     def scan_apk(self):
         """Android APK."""
-        self.scan_type = 'apk'
-        data = self.populate_data_dict()
-        add_to_recent_scan(data)
-        logger.info('Performing Static Analysis of Android APK')
-        return data
+        md5 = handle_uploaded_file(self.file, '.apk')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'apk'
+        add_to_recent_scan(self.data)
+        logger.info('Android APK uploaded')
+        return self.data
 
     def scan_xapk(self):
         """Android XAPK."""
-        self.scan_type = 'xapk'
-        data = self.populate_data_dict()
-        add_to_recent_scan(data)
-        logger.info('Performing Static Analysis of Android XAPK base APK')
-        return data
+        md5 = handle_uploaded_file(self.file, '.xapk')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'xapk'
+        add_to_recent_scan(self.data)
+        logger.info('Android XAPK uploaded')
+        return self.data
 
     def scan_apks(self):
         """Android Split APK."""
-        self.scan_type = 'apks'
-        data = self.populate_data_dict()
-        add_to_recent_scan(data)
-        logger.info('Performing Static Analysis of Android Split APK')
-        return data
+        md5 = handle_uploaded_file(self.file, '.apk')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'apks'
+        add_to_recent_scan(self.data)
+        logger.info('Android Split APK uploaded')
+        return self.data
+
+    def scan_aab(self):
+        """Android App Bundle."""
+        md5 = handle_uploaded_file(self.file, '.aab')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'aab'
+        add_to_recent_scan(self.data)
+        logger.info('Android App Bundle uploaded')
+        return self.data
 
     def scan_jar(self):
         """Java JAR file."""
-        self.scan_type = 'jar'
-        data = self.populate_data_dict()
-        add_to_recent_scan(data)
-        logger.info('Performing Static Analysis of Java JAR')
-        return data
+        md5 = handle_uploaded_file(self.file, '.jar')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'jar'
+        add_to_recent_scan(self.data)
+        logger.info('Java JAR uploaded')
+        return self.data
 
     def scan_aar(self):
         """Android AAR file."""
-        self.scan_type = 'aar'
-        data = self.populate_data_dict()
-        add_to_recent_scan(data)
-        logger.info('Performing Static Analysis of Android AAR')
-        return data
+        md5 = handle_uploaded_file(self.file, '.aar')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'aar'
+        add_to_recent_scan(self.data)
+        logger.info('Android AAR uploaded')
+        return self.data
 
     def scan_so(self):
         """Shared object file."""
-        self.scan_type = 'so'
-        data = self.populate_data_dict()
-        add_to_recent_scan(data)
-        logger.info('Performing Static Analysis of Shared Object')
-        return data
+        md5 = handle_uploaded_file(self.file, '.so')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'so'
+        add_to_recent_scan(self.data)
+        logger.info('Shared Object Library uploaded')
+        return self.data
 
     def scan_zip(self):
         """Android /iOS Zipped Source."""
-        self.scan_type = 'zip'
-        data = self.populate_data_dict()
-        add_to_recent_scan(data)
-        logger.info('Performing Static Analysis of Android/iOS Source Code')
-        return data
+        md5 = handle_uploaded_file(self.file, '.zip')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'zip'
+        add_to_recent_scan(self.data)
+        logger.info('Android/iOS Source code ZIP uploaded')
+        return self.data
 
     def scan_ipa(self):
         """IOS Binary."""
-        self.scan_type = 'ipa'
-        data = self.populate_data_dict()
-        data['analyzer'] = 'static_analyzer_ios'
-        add_to_recent_scan(data)
-        logger.info('Performing Static Analysis of iOS IPA')
-        return data
+        md5 = handle_uploaded_file(self.file, '.ipa')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'ipa'
+        self.data['analyzer'] = 'static_analyzer_ios'
+        add_to_recent_scan(self.data)
+        logger.info('iOS IPA uploaded')
+        return self.data
 
     def scan_dylib(self):
         """IOS Dylib."""
-        self.scan_type = 'dylib'
-        data = self.populate_data_dict()
-        data['analyzer'] = 'static_analyzer_ios'
-        add_to_recent_scan(data)
-        logger.info('Performing Static Analysis of iOS IPA')
-        return data
+        md5 = handle_uploaded_file(self.file, '.dylib')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'dylib'
+        self.data['analyzer'] = 'static_analyzer_ios'
+        add_to_recent_scan(self.data)
+        logger.info('iOS dylib uploaded')
+        return self.data
 
     def scan_a(self):
         """Scan static library."""
-        self.scan_type = 'a'
-        data = self.populate_data_dict()
-        data['analyzer'] = 'static_analyzer_ios'
-        add_to_recent_scan(data)
-        logger.info('Performing Static Analysis of Static Library')
-        return data
+        md5 = handle_uploaded_file(self.file, '.a')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'a'
+        self.data['analyzer'] = 'static_analyzer_ios'
+        add_to_recent_scan(self.data)
+        logger.info('Static Library uploaded')
+        return self.data
 
     def scan_appx(self):
         """Windows appx."""
-        self.scan_type = 'appx'
-        data = self.populate_data_dict()
-        data['analyzer'] = 'static_analyzer_windows'
-        add_to_recent_scan(data)
-        logger.info('Performing Static Analysis of Windows APP')
-        return data
+        md5 = handle_uploaded_file(self.file, '.appx')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'appx'
+        self.data['analyzer'] = 'static_analyzer_windows'
+        add_to_recent_scan(self.data)
+        logger.info('Windows APPX uploaded')
+        return self.data
 
     def populate_data_dict(self):
+        """Cyberspect specific function: Populates the data dictionary."""
         self.md5 = handle_uploaded_file(self.file, '.' + self.scan_type,
                                         self.source_file)
         self.short_hash = get_siphash(self.md5)

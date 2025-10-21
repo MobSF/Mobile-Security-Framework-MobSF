@@ -1,7 +1,6 @@
 """Common Utils."""
 import ast
 import base64
-import datetime
 import hashlib
 import io
 import json
@@ -31,12 +30,10 @@ import psutil
 
 import requests
 
-import siphash
-
-from django.core.handlers.wsgi import WSGIRequest
-from django.forms.models import model_to_dict
-from django.http import JsonResponse
 from django.shortcuts import render
+from django.utils import timezone
+
+from mobsf.StaticAnalyzer.models import RecentScansDB
 
 from . import settings
 
@@ -55,11 +52,12 @@ URL_REGEX = re.compile(
     ),
     re.UNICODE)
 EMAIL_REGEX = re.compile(r'[\w+.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
+USERNAME_REGEX = re.compile(r'^\w[\w\-\@\.]{1,35}$')
 
 
 class Color(object):
     GREEN = '\033[92m'
-    ORANGE = '\033[33m'
+    GREY = '\033[0;37m'
     RED = '\033[91m'
     BOLD = '\033[1m'
     END = '\033[0m'
@@ -93,6 +91,7 @@ def upstream_proxy(flaw_type):
 def api_key():
     """Print REST API Key."""
     if os.environ.get('MOBSF_API_KEY'):
+        logger.info('\nAPI Key read from environment variable')
         return os.environ['MOBSF_API_KEY']
 
     secret_file = os.path.join(settings.MobSF_HOME, 'secret')
@@ -104,15 +103,6 @@ def api_key():
             logger.exception('Cannot Read API Key')
 
 
-def make_api_response(data, status=200):
-    """Make API response."""
-    resp = JsonResponse(
-        data=data,  # lgtm [py/stack-trace-exposure]
-        status=status)
-    resp['Content-Type'] = 'application/json; charset=utf-8'
-    return resp
-
-
 def print_version():
     """Print MobSF Version."""
     logger.info(settings.BANNER)
@@ -121,9 +111,12 @@ def print_version():
     if platform.system() == 'Windows':
         logger.info('Mobile Security Framework %s', ver)
         print('REST API Key: ' + api_key())
+        print('Default Credentials: mobsf/mobsf')
     else:
-        logger.info('\033[1m\033[34mMobile Security Framework %s\033[0m', ver)
-        print('REST API Key: ' + Color.BOLD + api_key() + Color.END)
+        logger.info(
+            '%sMobile Security Framework %s%s', Color.GREY, ver, Color.END)
+        print(f'REST API Key: {Color.BOLD}{api_key()}{Color.END}')
+        print(f'Default Credentials: {Color.BOLD}mobsf/mobsf{Color.END}')
     os = platform.system()
     pltfm = platform.platform()
     dist = ' '.join(distro.linux_distribution(
@@ -133,8 +126,10 @@ def print_version():
         dst_str = f' ({dist}) '
     env_str = f'OS Environment: {os}{dst_str}{pltfm}'
     logger.info(env_str)
+    # Cyberspect addition
     logger.info('File storage: %s', settings.MobSF_HOME)
     logger.info('Administrators: %s', settings.ADMIN_USERS)
+    # End Cyberspect addition
     find_java_binary()
     check_basic_env()
     thread = threading.Thread(target=check_update, name='check_update')
@@ -212,7 +207,7 @@ def print_n_send_error_response(request,
             'exp': exp,
             'doc': msg,
             'version': settings.MOBSF_VER,
-            'is_admin': is_admin(request),
+            'cversion': settings.CYBERSPECT_VER,
         }
         template = 'general/error.html'
         return render(request, template, context, status=500)
@@ -640,7 +635,7 @@ def strict_package_check(user_input):
 
     For android package and ios bundle id
     """
-    pat = re.compile(r'^([\w-]*\.)+[\w-]{2,155}$')
+    pat = re.compile(r'^([a-zA-Z]{1}[\w.-]{1,255})$')
     resp = re.match(pat, user_input)
     if not resp or '..' in user_input:
         logger.error('Invalid package name/bundle id/class name')
@@ -891,13 +886,27 @@ def valid_host(host):
             return False
         # Local network
         invalid_prefix = (
+            '100.64.',
             '127.',
             '192.',
+            '198.',
             '10.',
             '172.',
-            '169',
+            '169.',
             '0.',
-            'localhost')
+            '203.0.',
+            '224.0.',
+            '240.0',
+            '255.255.',
+            'localhost',
+            '::1',
+            '64::ff9b::',
+            '100::',
+            '2001::',
+            '2002::',
+            'fc00::',
+            'fe80::',
+            'ff00::')
         if domain.startswith(invalid_prefix):
             return False
         ip = socket.gethostbyname(domain)
@@ -909,58 +918,36 @@ def valid_host(host):
         return False
 
 
-def is_admin(request):
-    if (not isinstance(request, WSGIRequest)):
-        return False
-    if ('role' in request.META and request.META['role'] == 'FULL_ACCESS'):
-        return True
-    if (not settings.ADMIN_USERS):
-        return False
-    if ('email' not in request.META):
-        return False
-    email = request.META['email']
-    if (email and email in settings.ADMIN_USERS.split(',')):
-        return True
-    return False
+def append_scan_status(checksum, status, exception=None):
+    """Append Scan Status to Database."""
+    try:
+        db_obj = RecentScansDB.objects.get(MD5=checksum)
+        if status == 'init':
+            db_obj.SCAN_LOGS = []
+            db_obj.save()
+            return
+        current_logs = python_dict(db_obj.SCAN_LOGS)
+        current_logs.append({
+            'timestamp': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'status': status,
+            'exception': exception})
+        db_obj.SCAN_LOGS = current_logs
+        db_obj.save()
+    except RecentScansDB.DoesNotExist:
+        # Expected to fail for iOS Dynamic Analysis Report Generation
+        # Calls MalwareScan and TrackerScan with different checksum
+        pass
+    except Exception:
+        logger.exception('Appending Scan Status to Database')
 
 
-def sso_email(request):
-    if ('email' in request.META) and (request.META['email']):
-        return request.META['email']
-    else:
-        return None
-
-
-def get_siphash(data):
-    data_bytes = bytes.fromhex(data)
-    tenant_id = os.getenv('TENANT_ID', 'df73ea3d2b91442a903b6043399b1353')
-    sip = siphash.SipHash_2_4(bytes.fromhex(tenant_id), data_bytes)
-    response = base64.b64encode(sip.digest()).decode('utf8').replace('=', '')
-    return response
-
-
-def get_usergroups(request):
-    if (is_admin(request)):
-        return settings.ADMIN_GROUP
-    else:
-        return settings.GENERAL_GROUP
-
-
-def model_to_dict_str(instance):
-    result = model_to_dict(instance)
-    for key, value in result.items():
-        result[key] = str(value)
-    return result
-
-
-def tz(value):
-    if isinstance(value, datetime.datetime):
-        return value.replace(tzinfo=datetime.timezone.utc)
-    # Parse string into time zone aware datetime
-    value = str(value).replace('T', ' ').replace('Z', '').replace('+00:00', '')
-    unware_time = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
-    return unware_time.replace(tzinfo=datetime.timezone.utc)
-
-
-def utcnow():
-    return datetime.datetime.now(datetime.timezone.utc)
+def get_scan_logs(checksum):
+    """Get the scan logs for the given checksum."""
+    try:
+        db_entry = RecentScansDB.objects.filter(MD5=checksum)
+        if db_entry.exists():
+            return python_list(db_entry[0].SCAN_LOGS)
+    except Exception:
+        msg = 'Fetching scan logs from the DB failed.'
+        logger.exception(msg)
+    return []

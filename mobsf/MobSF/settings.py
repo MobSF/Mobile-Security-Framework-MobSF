@@ -19,13 +19,17 @@ logger = logging.getLogger(__name__)
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF CONFIGURATION
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-BANNER, VERSION, MOBSF_VER = get_mobsf_version()
+BANNER, VERSION, MOBSF_VER, CYBERSPECT_VER = get_mobsf_version()
 USE_HOME = True
 # True : All Uploads/Downloads will be stored in user's home directory
 # False : All Uploads/Downloads will be stored under MobSF root directory
 
 # MobSF Data Directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Cyberspect addition
+# need to determine the base directory for Cyberspect relted files
+CYBERSPECT_BASE_DIR = os.path.dirname(BASE_DIR)
+# Cyberspect addition end
 MobSF_HOME = get_mobsf_home(USE_HOME, BASE_DIR)
 # Download Directory
 DWD_DIR = os.path.join(MobSF_HOME, 'downloads/')
@@ -73,6 +77,7 @@ APK_MIME = [
     'application/x-zip-compressed',
     'binary/octet-stream',
     'application/java-archive',
+    'application/x-authorware-bin',
 ]
 IPA_MIME = [
     'application/iphone',
@@ -94,7 +99,13 @@ APPX_MIME = [
     'application/vns.ms-appx',
     'application/x-zip-compressed',
 ]
-
+# Supported File Extensions
+ANDROID_EXTS = (
+    'apk', 'xapk', 'apks', 'zip',
+    'aab', 'so', 'jar', 'aar',
+)
+IOS_EXTS = ('ipa', 'dylib', 'a')
+WINDOWS_EXTS = ('appx',)
 # REST API only mode
 # Set MOBSF_API_ONLY to 1 to enable REST API only mode
 # In this mode, web UI related urls are disabled.
@@ -150,8 +161,9 @@ DATABASES = {
 
 # ===============================================
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
-DEBUG = False
+DEBUG = bool(os.getenv('MOBSF_DEBUG', '0') == '1')
 DJANGO_LOG_LEVEL = DEBUG
+TEMPLATE_DEBUG = DEBUG
 ALLOWED_HOSTS = ['127.0.0.1', 'mobsf', '*']
 # Application definition
 INSTALLED_APPS = (
@@ -182,9 +194,11 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.RemoteUserBackend',
 )
 MIDDLEWARE = (
-    'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
+    'cyberspect.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
     'mobsf.MobSF.views.aws_sso_middleware.alb_idp_auth_middleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
 )
 ROOT_URLCONF = 'mobsf.MobSF.urls'
 WSGI_APPLICATION = 'mobsf.MobSF.wsgi.application'
@@ -199,11 +213,22 @@ TEMPLATES = [
         'APP_DIRS': True,
         'DIRS':
             [
+                # Cyberspect addition
+                # when Django looks for a template (e.g., index.html), it will
+                # find and use the version in cyberspect/templates/ before it
+                # looks in the original templates/ directory
+                os.path.join(CYBERSPECT_BASE_DIR, 'cyberspect/templates'),
                 os.path.join(BASE_DIR, 'templates'),
             ],
         'OPTIONS':
             {
-                'debug': True,
+                'debug': TEMPLATE_DEBUG,
+                'context_processors': [
+                    'django.template.context_processors.debug',
+                    'django.template.context_processors.request',
+                    'django.contrib.auth.context_processors.auth',
+                    'django.contrib.messages.context_processors.messages',
+                ],
             },
     },
 ]
@@ -214,6 +239,29 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 # 256MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 268435456
+LOGIN_URL = 'login'
+LOGOUT_REDIRECT_URL = '/'
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': ('django.contrib.auth.password_validation.'
+                 'UserAttributeSimilarityValidator'),
+    },
+    {
+        'NAME': ('django.contrib.auth.password_validation.'
+                 'MinimumLengthValidator'),
+        'OPTIONS': {
+            'min_length': 6,
+        },
+    },
+    {
+        'NAME': ('django.contrib.auth.password_validation.'
+                 'CommonPasswordValidator'),
+    },
+    {
+        'NAME': ('django.contrib.auth.password_validation.'
+                 'NumericPasswordValidator'),
+    },
+]
 # Better logging
 LOGGING = {
     'version': 1,
@@ -285,10 +333,28 @@ LOGGING = {
     },
 }
 JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1800))
+DISABLE_AUTHENTICATION = os.getenv('MOBSF_DISABLE_AUTHENTICATION')
+RATELIMIT = os.getenv('MOBSF_RATELIMIT', '7/1m')
+USE_X_FORWARDED_HOST = bool(
+    os.getenv('MOBSF_USE_X_FORWARDED_HOST', '1') == '1')
+USE_X_FORWARDED_PORT = bool(
+    os.getenv('MOBSF_USE_X_FORWARDED_PORT', '1') == '1')
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # ===========================
 # ENTERPRISE FEATURE REQUESTS
 # ===========================
 EFR_01 = os.getenv('EFR_01', '0')
+# SAML SSO
+# IdP Configuration
+IDP_METADATA_URL = os.getenv('MOBSF_IDP_METADATA_URL')
+IDP_ENTITY_ID = os.getenv('MOBSF_IDP_ENTITY_ID')
+IDP_SSO_URL = os.getenv('MOBSF_IDP_SSO_URL')
+IDP_X509CERT = os.getenv('MOBSF_IDP_X509CERT')
+IDP_IS_ADFS = os.getenv('MOBSF_IDP_IS_ADFS', '0')
+# SP Configuration
+SP_HOST = os.getenv('MOBSF_SP_HOST')
+SP_ALLOW_PASSWORD = os.getenv('MOBSF_SP_ALLOW_PASSWORD', '0')
+# ===================
 # USER CONFIGURATION
 # ===================
 if not CONFIG_HOME:
@@ -325,7 +391,7 @@ if not CONFIG_HOME:
     # Disable CVSSV2 Score by default
     CVSS_SCORE_ENABLED = bool(os.getenv('MOBSF_CVSS_SCORE_ENABLED', ''))
     # NIAP Scan
-    NIAP_ENABLED = os.getenv('MOBSF_NIAP_ENABLED', '1')
+    NIAP_ENABLED = os.getenv('MOBSF_NIAP_ENABLED', '')
     # Permission to Code Mapping
     PERM_MAPPING_ENABLED = os.getenv('MOBSF_PERM_MAPPING_ENABLED', '1')
     # Dex 2 Smali Conversion
@@ -361,6 +427,7 @@ if not CONFIG_HOME:
     """
 
     # Android 3P Tools
+    BUNDLE_TOOL = os.getenv('MOBSF_BUNDLE_TOOL', '')
     JADX_BINARY = os.getenv('MOBSF_JADX_BINARY', '')
     BACKSMALI_BINARY = os.getenv('MOBSF_BACKSMALI_BINARY', '')
     VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')

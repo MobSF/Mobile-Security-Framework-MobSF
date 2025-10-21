@@ -11,6 +11,9 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
     url_n_email_extract,
 )
 from mobsf.StaticAnalyzer.views.sast_engine import scan
+from mobsf.MobSF.utils import (
+    append_scan_status,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +38,7 @@ def merge_findings(swift, objc):
     return code_analysis
 
 
-def ios_source_analysis(src):
+def ios_source_analysis(checksum, src):
     """IOS Objective-C and Swift Code Analysis."""
     try:
         logger.info('Starting iOS Source Code and PLIST Analysis')
@@ -54,6 +57,7 @@ def ios_source_analysis(src):
 
         # Code and API Analysis
         objc_findings = scan(
+            checksum,
             objective_c_rules.as_posix(),
             {'.m'},
             [src],
@@ -61,6 +65,7 @@ def ios_source_analysis(src):
         if objc_findings:
             source_types.add(_SourceType.objc)
         swift_findings = scan(
+            checksum,
             swift_rules.as_posix(),
             {'.swift'},
             [src],
@@ -70,6 +75,7 @@ def ios_source_analysis(src):
         code_findings = merge_findings(swift_findings, objc_findings)
         # API Analysis
         api_findings = scan(
+            checksum,
             api_rules.as_posix(),
             {'.m', '.swift'},
             [src],
@@ -100,9 +106,12 @@ def ios_source_analysis(src):
 
         urls_list = list(set(url_list))
         # Domain Extraction and Malware Check
-        logger.info('Performing Malware Check on extracted Domains')
-        domains = MalwareDomainCheck().scan(urls_list)
-        logger.info('Finished Code Analysis, Email and URL Extraction')
+        domains = MalwareDomainCheck().scan(
+            checksum,
+            urls_list)
+        msg = 'Finished Code Analysis, Email and URL Extraction'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         code_analysis_dict = {
             'api': api_findings,
             'code_anal': code_findings,
@@ -113,6 +122,7 @@ def ios_source_analysis(src):
             'source_type': source_type,
         }
         return code_analysis_dict
-
-    except Exception:
-        logger.exception('iOS Source Code Analysis')
+    except Exception as exp:
+        msg = 'iOS Source Analysis Failed'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))

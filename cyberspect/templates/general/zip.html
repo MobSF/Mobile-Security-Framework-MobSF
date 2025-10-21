@@ -1,0 +1,31 @@
+{% extends "base/base_layout.html" %}
+ {% block sidebar_option %}
+      sidebar-collapse
+{% endblock %}
+{% block content %}
+<div class="content-wrapper">
+  <div class="content-header">
+  </div>
+   <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                  <h1>Zipped Source Code Instruction</h1>
+                      <p class="lead">Mobile Security Framework supports iOS and Android (eclipse and Android Studio) project files.</p>  
+                      <p>
+                        <strong>Eclipse Project:</strong> The file AndroidManifest.xml and the directory 'src' must exist in the root directory of ZIPPED Source files for eclipse projects.
+                      </p>
+                      <p>
+                        <strong> Android Studio Project:</strong> AndroidManifest.xml must be located at 'app/src/main/AndroidManifest.xml' and the directory 'app/src/main/java/' must exist for Android Studio projects. 
+                      </p>
+                      <p>
+                        <strong>iOS Project:</strong> For iOS projects, the .xcodeproj file must exist in the root directory of the ZIPPED Source files.
+                      </p>
+          </div>
+        </div>
+       </div>
+     </div>
+    </div>
+</div>
+{% endblock %}

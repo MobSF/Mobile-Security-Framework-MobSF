@@ -53,9 +53,13 @@ echo '[INSTALL] Clean Up'
 bash scripts/clean.sh y
 
 echo '[INSTALL] Migrating Database'
+export DJANGO_SUPERUSER_USERNAME=mobsf
+export DJANGO_SUPERUSER_PASSWORD=mobsf
 python3 -m poetry run python manage.py makemigrations
 python3 -m poetry run python manage.py makemigrations StaticAnalyzer
 python3 -m poetry run python manage.py migrate
+python3 -m poetry run python manage.py createsuperuser --noinput --email ""
+python3 -m poetry run python manage.py create_roles
 wkhtmltopdf -V
 if ! [ $? -eq 0 ]; then
     echo 'Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html'

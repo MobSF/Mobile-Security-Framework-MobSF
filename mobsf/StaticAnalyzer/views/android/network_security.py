@@ -5,6 +5,7 @@ from xml.dom import minidom
 from pathlib import Path
 
 from mobsf.MobSF.utils import (
+    append_scan_status,
     is_path_traversal,
 )
 
@@ -15,7 +16,7 @@ INFO = 'info'
 SECURE = 'secure'
 
 
-def read_netsec_config(app_dir, config, src_type):
+def read_netsec_config(checksum, app_dir, config, src_type):
     """Read the manifest file."""
     msg = 'Reading Network Security config'
     try:
@@ -31,7 +32,9 @@ def read_netsec_config(app_dir, config, src_type):
         if not is_path_traversal(config):
             netsec_file = xml_dir / f'{config}.xml'
             if netsec_file.exists():
-                logger.info('%s from %s.xml', msg, config)
+                desc = f'{msg} from {config}.xml'
+                logger.info(desc)
+                append_scan_status(checksum, desc)
                 return netsec_file.read_text('utf8', 'ignore')
         # Couldn't find the file defined in manifest
         xmls = Path(xml_dir).glob('*.xml')
@@ -41,14 +44,17 @@ def read_netsec_config(app_dir, config, src_type):
                 break
         if not config_file:
             return None
-        logger.info('%s from %s', msg, config_file.name)
+        desc = f'{msg} from {config_file.name}'
+        logger.info(desc)
+        append_scan_status(checksum, desc)
         return config_file.read_text('utf8', 'ignore')
-    except Exception:
+    except Exception as exp:
         logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
     return None
 
 
-def analysis(app_dir, config, is_debuggable, src_type):
+def analysis(checksum, app_dir, config, is_debuggable, src_type):
     """Perform Network Security Analysis."""
     try:
         netsec = {
@@ -57,10 +63,16 @@ def analysis(app_dir, config, is_debuggable, src_type):
         }
         if not config:
             return netsec
-        netsec_conf = read_netsec_config(app_dir, config, src_type)
+        netsec_conf = read_netsec_config(
+            checksum,
+            app_dir,
+            config,
+            src_type)
         if not netsec_conf:
             return netsec
-        logger.info('Parsing Network Security config')
+        msg = 'Parsing Network Security config'
+        logger.info(msg)
+        append_scan_status(checksum, msg)
         parsed = minidom.parseString(netsec_conf)
         finds = []
         summary = {HIGH: 0, WARNING: 0, INFO: 0, SECURE: 0}
@@ -275,6 +287,8 @@ def analysis(app_dir, config, is_debuggable, src_type):
                         summary[HIGH] += 1
         netsec['network_findings'] = finds
         netsec['network_summary'] = summary
-    except Exception:
-        logger.exception('Performing Network Security Analysis')
+    except Exception as exp:
+        msg = 'Performing Network Security Analysis'
+        logger.exception(msg)
+        append_scan_status(checksum, msg, repr(exp))
     return netsec

@@ -375,7 +375,7 @@ class APK:
             ap = AXMLPrinter(manifest_data)
 
             if not ap.is_valid():
-                logger.warning("Error while parsing AndroidManifest.xml - is the file valid?")
+                logger.error("Error while parsing AndroidManifest.xml - is the file valid?")
                 return
 
             self.axml[i] = ap
@@ -386,7 +386,7 @@ class APK:
 
             if self.xml[i] is not None:
                 if self.xml[i].tag != "manifest":
-                    logger.warning("AndroidManifest.xml does not start with a <manifest> tag! Is this a valid APK?")
+                    logger.error("AndroidManifest.xml does not start with a <manifest> tag! Is this a valid APK?")
                     return
 
                 self.package = self.get_attribute_value("manifest", "package")

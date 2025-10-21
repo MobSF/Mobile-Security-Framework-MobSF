@@ -1,0 +1,911 @@
+{% extends "base/base_layout.html" %}
+   {% load static %}
+     {% block sidebar_option %}
+      sidebar-mini
+     {% endblock %}
+    {% block extra_css %}
+    <style>
+          #app_icon{
+            width: 64px;
+            height: 64px;
+          }
+    </style>
+    {% endblock %}
+    {% block sidebar %}
+    <!-- Main Sidebar Container -->
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu" data-accordion="false">
+          
+          <li class="nav-item">
+            <a href="#information" class="nav-link">
+              <i class="nav-icon fas fa-info-circle"></i>
+              <p>
+                Information
+              </p>
+            </a>
+          </li>
+           <li class="nav-item">
+            <a href="#components" class="nav-link">
+              <i class="nav-icon fas fa-th-large"></i>
+              <p>
+                Components
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#permissions" class="nav-link">
+              <i class="nav-icon fas fa-list"></i>
+              <p>
+                Permissions
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#android_api" class="nav-link">
+              <i class="nav-icon fab fa-java"></i>
+              <p>
+                Android API
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#apkid" class="nav-link">
+              <i class="nav-icon fas fa-bug"></i>
+              <p>
+                APKiD
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#browsable" class="nav-link">
+              <i class="nav-icon fas fa-clone"></i>
+              <p>
+                Browsable Activities
+              </p>
+            </a>
+          </li>
+           <li class="nav-item">
+              <a href="#urls" class="nav-link">
+                <i class="nav-icon fas fa-globe"></i>
+                <p>URLs</p>
+                </a>
+            </li>
+        </ul>
+      </nav>
+      <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+{% endblock %}
+{% block content %}
+  <!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col" align="center">
+         <h2 class="page-header">Comparing {{ first_app.name_ver }} and {{ second_app.name_ver }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /.content-header -->
+
+<a id="information" class="anchor"></a>
+<section class="content">
+      <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-8">
+            <div class="card">
+              <div class="card-body">
+               <p>
+                <strong><i class="fas fa-info-circle"></i> APP INFORMATION</strong>
+                </p>
+                     <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>{{ first_app.name_ver }} </th>
+                                            <th>{{ second_app.name_ver }} </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td><span class="badge bg-primary">File name</span></td>
+                                            <td>{{ first_app.file_name }}</td>
+                                            <td>{{ second_app.file_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">MD5</span></td>
+                                            <td>{{ first_app.md5 }}</td>
+                                            <td>{{ second_app.md5 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Size</span></td>
+                                            <td>{{ first_app.size }}</td>
+                                            <td>{{ second_app.size }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-primary">Certificate</span></td>
+                                            <td>{{ first_app.cert_subject }}</td>
+                                            <td>{{ second_app.cert_subject }}</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div> <!-- dic table -->
+              </div>
+            </div><!-- /.card -->
+            </div>
+            <div class="col-lg-4">
+              <div class="card">
+                <div class="card-body">
+                    <p>
+                <strong><i class="fas fa-icons"></i> ICON</strong>
+                 <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th>{{ first_app.name_ver }} </th>
+                                            <th>{{ second_app.name_ver }} </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td>
+                                                <img id="app_icon" src="
+                                        {% if first_app.icon_path %}
+                                            /download/{{ first_app.icon_path }}
+                                        {% else %}
+                                            {% static 'img/no_icon.png' %}
+                                        {% endif %}
+                                        "/><br/>
+                                            </td>
+                                            <td>
+                                                <img id="app_icon" src="
+                                        {% if second_app.icon_path %}
+                                            /download/{{ second_app.icon_path }}
+                                        {% else %}
+                                            {% static 'img/no_icon.png' %}
+                                        {% endif %}
+                                        "/><br/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                        </tbody>
+                                    </table>
+                                </div> <!-- dic table -->
+                </p>
+                </div>
+              </div>
+            </div>
+            <!-- end row -->
+            </div>
+        </div>
+</section>
+
+<a id="components" class="anchor"></a>
+<section class="content">
+      <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+               <p>
+                <strong><i class="fas fa-th-large"></i> COMPONENTS</strong>
+                </p>
+                     <div class="table-responsive">
+                             <table class="table table-bordered table-hover table-striped">
+                                        <tr>
+                                            <th></th>
+                                            <th>ACTIVITIES</th>
+                                            <th>EXPORTED ACTIVITIES</th>
+                                            <th>SERVICES</th>
+                                            <th>EXPORTED SERVICES</th>
+                                            <th>RECEIVERS</th>
+                                            <th>EXPORTED RECEIVERS</th>
+                                            <th>PROVIDERS</th>
+                                            <th>EXPORTED PROVIDERS</th>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>{{ first_app.name_ver }}</strong></td>
+                                            <td>{{ first_app.activities | length }}</td>
+                                            <td>{{ first_app.exported_count.exported_activities }}</td>
+                                            <td>{{ first_app.services | length }}</td>
+                                            <td>{{ first_app.exported_count.exported_services }}</td>
+                                            <td>{{ first_app.receivers | length }}</td>
+                                            <td>{{ first_app.exported_count.exported_receivers }}</td>
+                                            <td>{{ first_app.providers | length }}</td>
+                                            <td>{{ first_app.exported_count.exported_providers }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>{{ second_app.name_ver }}</strong></td>
+                                            <td>{{ second_app.activities | length }}</td>
+                                            <td>{{ second_app.exported_count.exported_activities }}</td>
+                                            <td>{{ second_app.services | length }}</td>
+                                            <td>{{ second_app.exported_count.exported_services }}</td>
+                                            <td>{{ second_app.receivers | length }}</td>
+                                            <td>{{ second_app.exported_count.exported_receivers }}</td>
+                                            <td>{{ second_app.providers | length }}</td>
+                                            <td>{{ second_app.exported_count.exported_providers }}</td>
+                                        </tr>
+                                    </table>           
+                     </div> <!-- dic table -->
+              </div>
+            </div><!-- /.card -->
+            </div>
+      
+            <!-- end row -->
+            </div>
+        </div>
+</section>
+
+
+<a id="permissions" class="anchor"></a>
+<section class="content">
+      <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-8">
+            <div class="card">
+              <div class="card-body">
+               <p>
+                <strong><i class="fas fa-list"></i> PERMISSIONS</strong>
+                </p>
+                 <h4 class="box-title">Common</h4>
+                     <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                                <thead>
+                                <tr>
+                                    <th>PERMISSION</th>
+                                    <th>STATUS</th>
+                                    <th>INFO</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for perm, desc in permissions.common %}
+                                    <tr>
+                                        <td>{{ perm }}</td>
+                                        <td>
+                                            {% if desc.status == 'dangerous' %}
+                                                <span class="badge bg-danger">dangerous</span>
+                                            {% elif desc.status == 'normal' %}
+                                                <span class="badge bg-info">normal</span>
+                                            {% elif desc.status == 'signatureOrSystem' %}
+                                                <span class="badge bg-warning">SignatureOrSystem</span>
+                                            {% elif desc.status == 'signature' %}
+                                                <span class="badge bg-success">signature</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ desc.info }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>         
+                     </div> <!-- dic table -->
+
+                      <h4 class="box-title">Only in {{ first_app.name_ver }}</h4>
+                      <div class="table-responsive">
+                                        <table class="table table-bordered table-hover table-striped">
+                                            <thead>
+                                            <tr>
+                                                <th>PERMISSION</th>
+                                                <th>STATUS</th>
+                                                <th>INFO</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for perm, desc in permissions.only_first %}
+                                                <tr>
+                                                    <td>{{ perm }}</td>
+                                                    <td>
+                                                        {% if desc.status == 'dangerous' %}
+                                                            <span class="badge bg-danger">dangerous</span>
+                                                        {% elif desc.status == 'normal' %}
+                                                            <span class="badge bg-info">normal</span>
+                                                        {% elif desc.status == 'signatureOrSystem' %}
+                                                            <span class="badge bg-warning">SignatureOrSystem</span>
+                                                        {% elif desc.status == 'signature' %}
+                                                            <span class="badge bg-success">signature</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ desc.info }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div> <!-- dic table -->
+                    <h4 class="box-title">Only in {{ second_app.name_ver }}</h4>
+                     <div class="table-responsive">
+                                        <table class="table table-bordered table-hover table-striped">
+                                            <thead>
+                                            <tr>
+                                                <th>PERMISSION</th>
+                                                <th>STATUS</th>
+                                                <th>INFO</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for perm, desc in permissions.only_second %}
+                                                <tr>
+                                                    <td>{{ perm }}</td>
+                                                    <td>
+                                                        {% if desc.status == 'dangerous' %}
+                                                            <span class="badge bg-danger">dangerous</span>
+                                                        {% elif desc.status == 'normal' %}
+                                                            <span class="badge bg-info">normal</span>
+                                                        {% elif desc.status == 'signatureOrSystem' %}
+                                                            <span class="badge bg-warning">SignatureOrSystem</span>
+                                                        {% elif desc.status == 'signature' %}
+                                                            <span class="badge bg-success">signature</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ desc.info }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div> <!-- dic table -->
+              </div>
+            </div><!-- /.card -->
+            </div>
+            <div class="col-lg-4">
+              <div class="card">
+                <div class="card-body">
+                    <p>
+                <strong><i class="fas fa-less-than-equal"></i> PERMISSION SUMMARY</strong>
+                  <div class="list-group">
+                    <p>
+                        <span class="badge bg-primary">Total Common</span>
+                        {{ permissions.common | length }}
+                    </p>
+                    <p>
+                        <span class="badge bg-primary">Only in {{ first_app.name_ver }}</span>
+                        {{ permissions.only_first | length }}
+                    </p>
+                    <p>
+                        <span class="badge bg-primary">Only in {{ second_app.name_ver }}</span>
+                        {{ permissions.only_second | length }}
+                    </p>
+                </div>
+                </p>
+                </div>
+              </div>
+            </div>
+            <!-- end row -->
+            </div>
+        </div>
+</section>
+
+<a id="android_api" class="anchor"></a>
+<section class="content">
+      <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+               <p>
+                <strong><i class="fab fa-java"></i> ANDROID API</strong>
+                </p>
+                     <div class="table-responsive">
+                             <table class="table table-bordered table-hover table-striped">
+                                        <tr>
+                                            <th>Common</th>
+                                            <th>Only in {{ first_app.name_ver }}</th>
+                                            <th>Only in {{ second_app.name_ver }}</th>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                {% for id, info in android_api.common %}
+                                                    {{ info.metadata.description }} <br/>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for id, info in android_api.only_first %}
+                                                    {{ info.metadata.description  }} <br/>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for id, info in android_api.only_second %}
+                                                    {{ info.metadata.description  }} <br/>
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                     </div> <!-- dic table -->
+              </div>
+            </div><!-- /.card -->
+            </div>
+      
+            <!-- end row -->
+            </div>
+        </div>
+</section>
+
+
+<a id="apkid" class="anchor"></a>
+<section class="content">
+      <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+               <p>
+                <strong><i class="fas fa-bug"></i> APKiD</strong>
+                </p>
+
+                    {% if not apkid_error %}
+                     <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th></th>
+                                                <th>ANTI-VM</th>
+                                                <th>COMPILER</th>
+                                                <th>OBFUSCATOR</th>
+                                                <th>PACKER</th>
+                                                <th>DROPPER</th>
+                                                <th>MANIPULATOR</th>
+                                                <th>ANTI-ASSEMBLY</th>
+                                                <th>ANTI-DEBUG</th>
+                                                <th>ABNORMAL PATTERN</th>
+                                            </tr>
+                                        </thead>
+                                           <tr>
+                                            <td>
+                                             <strong>Common</strong>
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"anti_vm" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"compiler" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in apkid.common|key:"obfuscator" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"packer" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in apkid.common|key:"dropper" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                             <td>
+                                              {% for cmp in apkid.common|key:"manipulator" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"anti_disassembly" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"anti_debug" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.common|key:"abnormal" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                          </tr>
+                                           <tr>
+                                            <td>
+                                              <strong>{{ first_app.name_ver }}</strong>
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"anti_vm" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"compiler" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"obfuscator" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"packer" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"dropper" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                             <td>
+                                              {% for cmp in apkid.only_first|key:"manipulator" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"anti_disassembly" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"anti_debug" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_first|key:"abnormal" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                          </tr>
+                                            <tr>
+                                            <td>
+                                              <strong>{{ second_app.name_ver }}</strong>
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"anti_vm" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"compiler" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"obfuscator" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"packer" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"dropper" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                             <td>
+                                              {% for cmp in apkid.only_second|key:"manipulator" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"anti_disassembly" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"anti_debug" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                            <td>
+                                              {% for cmp in apkid.only_second|key:"abnormal" %}
+                                               {{cmp}}<br/>
+                                              {% endfor %}
+                                            </td>
+                                          </tr>
+                                        </tbody>
+                                        </table>
+                     </div> <!-- dic table -->
+                    {% else %}
+                        <p align="center"><strong>Error/ No APKiD result for one of the apps</strong></p>
+                    {% endif %}
+              </div>
+            </div><!-- /.card -->
+            </div>
+      
+            <!-- end row -->
+            </div>
+        </div>
+</section>
+
+<a id="browsable" class="anchor"></a>
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <p>
+                            <strong><i class="fas fa-clone"></i> BROWSABLE ACTIVITIES</strong>
+                        </p>
+                        {% if browsable_activities %}
+                        <div class="table-responsive">
+                            <table id="table_browsable" class="table table-bordered table-hover table-striped">
+                                <tr>
+                                    <th>Common</th>
+                                    <th>Only in {{ first_app.name_ver }}</th>
+                                    <th>Only in {{ second_app.name_ver }}</th>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        {% if browsable_activities.common %}
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>ACTIVITY</th>
+                                                    <th>INTENT</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for activity,intent_details in browsable_activities.common %}
+                                                <tr>
+                                                    <td>{{activity}}</td>
+                                                    <td>
+                                                        {% if intent_details|key:"schemes" %}
+                                                        <strong>Schemes</strong>:
+                                                        {% for scheme in intent_details|key:"schemes" %}
+                                                        {{scheme}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"hosts" %}
+                                                        <strong>Hosts:</strong> {% for host in intent_details|key:"hosts" %}
+                                                        {{host}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"ports" %}
+                                                        <strong>Ports:</strong> {% for port in intent_details|key:"ports" %}
+                                                        {{port}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"mime_types" %}
+                                                        <strong>Mime Types:</strong> {% for mime in intent_details|key:"mime_types" %}
+                                                        {{mime}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"paths" %}
+                                                        <strong>Paths:</strong> {% for path in intent_details|key:"paths" %}
+                                                        {{path}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"path_prefixs" %}
+                                                        <strong>Path Prefixes:</strong> {% for prefix in intent_details|key:"path_prefixs" %}
+                                                        {{prefix}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"path_patterns" %}
+                                                        <strong>Path Patterns:</strong> {% for pattern in intent_details|key:"path_patterns" %}
+                                                        {{pattern}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% endfor %}
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if browsable_activities.only_first %}
+                                        
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>ACTIVITY</th>
+                                                    <th>INTENT</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for activity,intent_details in browsable_activities.only_first %}
+                                                <tr>
+                                                    <td>{{activity}}</td>
+                                                    <td>
+                                                        {% if intent_details|key:"schemes" %}
+                                                        <strong>Schemes</strong>:
+                                                        {% for scheme in intent_details|key:"schemes" %}
+                                                        {{scheme}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"hosts" %}
+                                                        <strong>Hosts:</strong> {% for host in intent_details|key:"hosts" %}
+                                                        {{host}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"ports" %}
+                                                        <strong>Ports:</strong> {% for port in intent_details|key:"ports" %}
+                                                        {{port}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"mime_types" %}
+                                                        <strong>Mime Types:</strong> {% for mime in intent_details|key:"mime_types" %}
+                                                        {{mime}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"paths" %}
+                                                        <strong>Paths:</strong> {% for path in intent_details|key:"paths" %}
+                                                        {{path}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"path_prefixs" %}
+                                                        <strong>Path Prefixes:</strong> {% for prefix in intent_details|key:"path_prefixs" %}
+                                                        {{prefix}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"path_patterns" %}
+                                                        <strong>Path Patterns:</strong> {% for pattern in intent_details|key:"path_patterns" %}
+                                                        {{pattern}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% endfor %}
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if browsable_activities.only_second %}
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>ACTIVITY</th>
+                                                    <th>INTENT</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for activity,intent_details in browsable_activities.only_second %}
+                                                <tr>
+                                                    <td>{{activity}}</td>
+                                                    <td>
+                                                        {% if intent_details|key:"schemes" %}
+                                                        <strong>Schemes</strong>:
+                                                        {% for scheme in intent_details|key:"schemes" %}
+                                                        {{scheme}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"hosts" %}
+                                                        <strong>Hosts:</strong> {% for host in intent_details|key:"hosts" %}
+                                                        {{host}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"ports" %}
+                                                        <strong>Ports:</strong> {% for port in intent_details|key:"ports" %}
+                                                        {{port}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"mime_types" %}
+                                                        <strong>Mime Types:</strong> {% for mime in intent_details|key:"mime_types" %}
+                                                        {{mime}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"paths" %}
+                                                        <strong>Paths:</strong> {% for path in intent_details|key:"paths" %}
+                                                        {{path}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"path_prefixs" %}
+                                                        <strong>Path Prefixes:</strong> {% for prefix in intent_details|key:"path_prefixs" %}
+                                                        {{prefix}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% if intent_details|key:"path_patterns" %}
+                                                        <strong>Path Patterns:</strong> {% for pattern in intent_details|key:"path_patterns" %}
+                                                        {{pattern}},
+                                                        {% endfor %}
+                                                        <br/>
+                                                        {% endif %}
+                                                        {% endfor %}
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                            </table>
+                        </div>
+                        {% else %}
+                            <p align="center"><strong>Error/ No browsable activities</strong></p>
+                        {% endif %}
+                    </div>
+                </div><!-- /.card -->
+            </div>
+            <!-- end row -->
+        </div>
+    </div>
+</section>
+
+<a id="urls" class="anchor"></a>
+<section class="content">
+      <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+               <p>
+                <strong><i class="fas fa-globe"></i> URLs</strong>
+                </p>
+                     <div class="table-responsive">
+                              <table class="table table-bordered table-hover table-striped">
+                                        <tr>
+                                            <th>Common</th>
+                                            <th>Only in {{ first_app.name_ver }}</th>
+                                            <th>Only in {{ second_app.name_ver }}</th>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                {% for url in urls.common %}
+                                                    {{ url | safe}} <br/>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for url in urls.only_first %}
+                                                    {{ url | safe }} <br/>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for url in urls.only_second %}
+                                                    {{ url | safe}} <br/>
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                     </div> <!-- dic table -->
+              </div>
+            </div><!-- /.card -->
+            </div>
+      
+            <!-- end row -->
+            </div>
+        </div>
+</section>
+<!-- end of contents -->
+</div>
+{% endblock %}
+<!--end new UI-->
+{% block extra_scripts %}
+<script>
+  // Navbar Active
+    $(".nav-link").on("click", function() {
+    $(".nav-link").removeClass("active");
+    $(this).addClass("active");
+  });
+</script>
+{% endblock %}

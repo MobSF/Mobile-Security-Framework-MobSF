@@ -29,12 +29,15 @@ from mobsf.MobSF.utils import (
     key,
     print_n_send_error_response,
 )
-
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
 
 logger = logging.getLogger(__name__)
 register.filter('key', key)
 
 
+@login_required
 def view_report(request, checksum, api=False):
     """Dynamic Analysis Report Generation."""
     logger.info('Dynamic Analysis Report Generation')
@@ -69,7 +72,7 @@ def view_report(request, checksum, api=False):
         deps = dependency_analysis(package, app_dir)
         analysis_result = run_analysis(app_dir, checksum, package)
         domains = analysis_result['domains']
-        trk = Trackers.Trackers(app_dir, tools_dir)
+        trk = Trackers.Trackers(checksum, app_dir, tools_dir)
         trackers = trk.get_trackers_domains_or_deps(domains, deps)
         generate_download(app_dir, checksum, download_dir, package)
         images = get_screenshots(checksum, download_dir)
@@ -93,6 +96,7 @@ def view_report(request, checksum, api=False):
                    'runtime_dependencies': list(deps),
                    'package': package,
                    'version': settings.MOBSF_VER,
+                   'cversion': settings.CYBERSPECT_VER,
                    'title': 'Dynamic Analysis'}
         template = 'dynamic_analysis/android/dynamic_report.html'
         if api:

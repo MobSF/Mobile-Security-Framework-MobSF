@@ -13,14 +13,16 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse
 
-from mobsf.StaticAnalyzer.models import ApiKeys
-from mobsf.MobSF.utils import (
+from mobsf.MobSF.cyberspect_utils import (
     is_admin,
-    print_n_send_error_response,
     sso_email,
     tz,
     utcnow,
 )
+from mobsf.MobSF.utils import (
+    print_n_send_error_response,
+)
+from mobsf.StaticAnalyzer.cyberspect_models import ApiKeys
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +99,7 @@ def admin_view(request):
         'max_date': max_exp_date.strftime('%Y-%m-%d'),
         'default_exp_date': default_exp_date.strftime('%Y-%m-%d'),
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
         'is_admin': is_admin(request),
     }
     template = 'general/admin.html'
@@ -123,8 +126,8 @@ def create_api_key_post(request):
             payload = {'msg': 'Missing parameter: description'}
             return HttpResponse(json.dumps(payload),
                                 content_type='application/json', status=200)
-        regx = ('^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*'
-                '([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$')
+        regx = (r'^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*'
+                r'([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$')
         if not re.search(regx, email):
             payload = {'msg': 'Invalid email address was entered.'}
             return HttpResponse(json.dumps(payload),
@@ -204,8 +207,8 @@ def edit_api_key_post(request):
             payload = {'msg': 'Missing parameter: description'}
             return HttpResponse(json.dumps(payload),
                                 content_type='application/json', status=200)
-        regx = ('^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*'
-                '([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$')
+        regx = (r'^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*'
+                r'([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$')
         if not re.search(regx, email):
             payload = {'msg': 'Invalid email address was entered.'}
             return HttpResponse(json.dumps(payload),

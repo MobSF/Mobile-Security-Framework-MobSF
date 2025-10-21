@@ -36,7 +36,7 @@
         <!-- Sidebar user panel (optional) -->
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
         <div class="info">
-          <a href="#" class="d-block">Scan Details</a>
+          <a href="#" class="d-block">Static Analyzer</a>
         </div>
       </div>
 
@@ -248,7 +248,7 @@
           </li>
           {% endif %}
             <li class="nav-item">
-              <a href="{% url "pdf" checksum=md5 %}" class="nav-link" target="_blank">
+              <a href="{% url "pdf" checksum=md5 %}" class="nav-link">
               <i class="nav-icon fas fa-file-pdf"></i>
               <p>
                 PDF Report
@@ -320,7 +320,7 @@
                   {% endif %}
                 </p>
                 {% if app_type not in 'Dylib,A' %}
-                  <p> <a href="{% url 'appsec_dashboard' checksum=md5 %}" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> Security Scorecard</a></p>
+                  <p> <a href="{% url 'appsec_dashboard' checksum=md5 %}" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
                 {% endif %}
                 </div>
                 <div class="col-4">
@@ -442,10 +442,11 @@
             <div class="card">
               <div class="card-body">
                 <p>
-                  <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
+                <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
                 </p>
-                 <!--<a role="button" class="btn btn-info" href="{% url 'static_analyzer_ios' checksum=md5 %}?rescan=1" ><i class="fa fa-sync"></i> Rescan</a>-->
-                 <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-list"></i> Manage Suppressions</a>
+                 <a role="button" class="btn btn-info" href="{% url 'static_analyzer_ios' checksum=md5 %}?rescan=1" ><i class="fa fa-sync"></i> Rescan</a>
+                 <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-table"></i> Manage Suppressions</a>
+                 <button type="button" class="btn btn-warning" data-toggle="modal" data-target=".scan-logs-mdl"><i class="fa fa-list" aria-hidden="true"></i> Scan Logs</button>
                 </p>
               </div>
             </div><!-- /.card -->
@@ -1862,4 +1863,37 @@
   {% endif %}
   ];
   </script>
+{% endblock %}
+{% block scan_logs %}
+<table id="scan_logs" class="table table-bordered table-hover table-striped">
+    <tr>
+        <th>Timestamp</th>
+        <th>Event</th>
+        <th>Error</th>
+    </tr>
+<tbody>
+  {% for log in logs %}
+  <tr>
+    <td>
+      {{log.timestamp}}
+    </td>
+    <td>
+      {{log.status}}
+    </td>
+    <td>
+      {% if not log.exception %}
+      <p class="text-success">
+        OK
+      </p>
+      {% else %}
+      <p class="text-danger">
+      {{log.exception}}
+       </p>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+</table>
+
 {% endblock %}

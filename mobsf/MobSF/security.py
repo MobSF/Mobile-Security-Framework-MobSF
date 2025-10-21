@@ -86,6 +86,8 @@ def get_executable_hashes():
         'BinSkim.exe',
         'BinScope.exe',
         'nuget.exe',
+        'where.exe',
+        'wkhtmltopdf.exe',
     ]
     for sbin in system_bins:
         bin_path = which(sbin)
@@ -104,6 +106,7 @@ def get_executable_hashes():
         settings.JTOOL_BINARY,
         settings.CLASSDUMP_BINARY,
         settings.CLASSDUMP_SWIFT_BINARY,
+        getattr(settings, 'BUNDLE_TOOL', ''),
     ]
     for ubin in user_defined_bins:
         if ubin:
@@ -130,9 +133,9 @@ def store_exec_hashes_at_first_run():
         hashes['signature'] = signature
         EXECUTABLE_HASH_MAP = hashes
     except Exception:
-        logger.warning('Cannot calculate executable hashes, '
-                       'disabling runtime executable '
-                       'tampering detection')
+        logger.exception('Cannot calculate executable hashes, '
+                         'disabling runtime executable '
+                         'tampering detection')
 
 
 def subprocess_hook(oldfunc, *args, **kwargs):
@@ -148,6 +151,7 @@ def subprocess_hook(oldfunc, *args, **kwargs):
     for arg in agmtz:
         if arg.endswith('.jar'):
             exec2 = Path(arg).as_posix()
+            break
     if '/' in exec1 or '\\' in exec1:
         exec1 = Path(exec1).as_posix()
     else:
@@ -161,7 +165,7 @@ def subprocess_hook(oldfunc, *args, **kwargs):
                 ' has been modified during runtime')
             logger.error(msg)
             raise Exception(msg)
-    if exec2 in EXECUTABLE_HASH_MAP and exec1 in EXECUTABLE_HASH_MAP:
+    if exec2 and exec2 in EXECUTABLE_HASH_MAP:
         executable_in_hash_map = True
         if EXECUTABLE_HASH_MAP[exec2] != sha256(exec2):
             msg = (
@@ -192,3 +196,13 @@ def wrap_function(oldfunction, newfunction):
     def run(*args, **kwargs):
         return newfunction(oldfunction, *args, **kwargs)
     return run
+
+
+def sanitize_redirect(url):
+    """Sanitize Redirect URL."""
+    root = '/'
+    if url.startswith('//'):
+        return root
+    elif url.startswith('/'):
+        return url
+    return root

@@ -13,12 +13,14 @@ from django.conf import settings
 from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
-    is_admin,
     print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.views.android.db_interaction import (
     get_context_from_db_entry,
+)
+from mobsf.MobSF.cyberspect_utils import (
+    is_admin,
 )
 
 
@@ -113,6 +115,7 @@ def generic_compare(request,
     context = {
         'title': 'Compare report',
         'version': settings.MOBSF_VER,
+        'cversion': settings.CYBERSPECT_VER,
         'first_app': {},
         'second_app': {},
         'urls': {},

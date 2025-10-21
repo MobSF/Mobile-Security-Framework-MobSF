@@ -10,7 +10,6 @@ from django.shortcuts import render
 
 from mobsf.MobSF import settings
 from mobsf.MobSF.utils import (
-    is_admin,
     is_md5,
     print_n_send_error_response,
 )
@@ -22,6 +21,12 @@ from mobsf.StaticAnalyzer.views.android.db_interaction import (
     get_context_from_db_entry as adb)
 from mobsf.StaticAnalyzer.views.ios.db_interaction import (
     get_context_from_db_entry as idb)
+from mobsf.MobSF.views.authentication import (
+    login_required,
+)
+from mobsf.MobSF.cyberspect_utils import (
+    is_admin,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -348,6 +353,7 @@ def get_ios_dashboard(context, from_ctx=False):
     return findings
 
 
+@login_required
 def appsec_dashboard(request, checksum, api=False):
     """Provide data for appsec dashboard."""
     try:

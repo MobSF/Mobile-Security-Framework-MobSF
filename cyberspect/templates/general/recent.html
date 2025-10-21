@@ -1,0 +1,860 @@
+
+{% extends "base/base_layout.html" %}
+{% load static %}
+ {% block sidebar_option %}
+      sidebar-collapse
+{% endblock %}
+ {% block extra_css %}
+<link href="{% static 'adminlte/plugins/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'landing/css/recent.css' %}">
+
+{% endblock %}
+
+{% block content %}
+
+<script>
+  const uploadedApps = {};
+</script>
+
+<div class="content-wrapper">
+  <div class="content-header">
+  </div>
+   <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                
+
+                 <div class="box">
+        <div class="box-header with-border">
+            <h3 class="box-title">Scanned Apps{% if filter %} [{{filter}}]{% endif %}</h3>
+        </div>
+
+        <div class="box-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>HASH / DATE</th>
+                        <th>APPLICATION</th>
+                        <th>FILE</th>
+                        <th>TYPE</th>
+                        {% if is_admin %}<th>DETAILS</th>{% endif %}
+                        <th style="width: 15%">ACTIONS</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                      {% for e in entries %}
+
+                      <script>
+                        function addUploadedApp(hash, data){
+                          uploadedApps[hash] = data;
+                        }
+                      
+                        addUploadedApp(`app_{{e.MD5}}`,{ appHash: `{{ e.MD5 }}`, appTimestamp: `{{ e.TIMESTAMP|date:'c' }}`, appName: `{{ e.USER_APP_NAME }}`, appVersion: `{{ e.USER_APP_VERSION }}`, appReleaseVersion: `{{ e.RELEASE }}`, appDivision: `{{ e.DIVISION }}`, appEnvironment: `{{ e.ENVIRONMENT}}`, appCountry: `{{ e.COUNTRY|default_if_none:""}}`, appDataPrivacyClassification: `{{ e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}`, appDataPrivacyAttributes: `{{ e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}`, appEmail: `{{ e.EMAIL }}` });
+                      
+                      </script>
+                        <tr>
+                            <td style="word-wrap: break-word; max-width: 200px;">
+                                <div>{{ e.MD5 }}</div>
+                                <div><span class="scandate">{{ e.TIMESTAMP|date:'c' }}</span></div>
+                                <div>
+                                {% if not e.COMPLETE %}
+                                    {% if e.ERROR %}
+                                        <span class="badge bg-danger" title="{{e.ERROR}}">scan error</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">scan in progress</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-primary" id="releaseBadge{{e.MD5}}" {% if not e.RELEASE %}style="display:none"{% endif %}>RELEASE</span>                                    
+                                {% endif %}
+                                </div>
+                            </td>
+                            <td align="center" style="word-wrap: break-word; max-width: 200px;">
+                                <strong>{{e.USER_APP_NAME}} - {{e.USER_APP_VERSION}}</strong></br>
+                                <img id="app_icon" src="{% if e.ICON_PATH %}/download/{{ e.ICON_PATH }}{% else %}{% static 'img/no_icon.png' %}{% endif %}">
+                                {% if e.COMPLETE %}
+                                  <br/>{{ e.APP_NAME }} {% if e.VERSION_NAME %} - {{ e.VERSION_NAME }} {% endif %}
+                                  <br/>{{ e.PACKAGE_NAME }}                                 
+                                {% endif %}                                
+                            </td>
+                            <td>
+                                {{ e.FILE_NAME }}
+                            </td>
+                            <td align="center" style="word-wrap: break-word; max-width: 200px;">
+                                {% if '.apk' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-android fa-3x"></i>
+                                {% elif '.xapk' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-android fa-3x"></i>
+                                {% elif '.apks' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-android fa-3x"></i>
+                                {% elif '.jar' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-java fa-3x"></i>
+                                {% elif '.aar' == e.FILE_NAME|slice:"-4:"%}<i class="fas fa-table fa-3x"></i>
+                                {% elif '.so' == e.FILE_NAME|slice:"-3:"%}<i class="fa fa-th-large fa-3x"></i>
+                                {% elif '.jar' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-java fa-3x"></i>
+                                {% elif '.aar' == e.FILE_NAME|slice:"-4:"%}<i class="fas fa-table fa-3x"></i>
+                                {% elif '.so' == e.FILE_NAME|slice:"-3:"%}<i class="fa fa-th-large fa-3x"></i>
+                                {% elif '.ipa' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-apple fa-3x"></i>
+                                {% elif '.dylib' == e.FILE_NAME|slice:"-6:"%}<i class="fa fa-th-large fa-3x"></i>
+                                {% elif '.a' == e.FILE_NAME|slice:"-2:"%}<i class="fa fa-th-large fa-3x"></i>
+                                {% elif '.dylib' == e.FILE_NAME|slice:"-6:"%}<i class="fa fa-th-large fa-3x"></i>
+                                {% elif '.a' == e.FILE_NAME|slice:"-2:"%}<i class="fa fa-th-large fa-3x"></i>
+                                {% elif '.zip' == e.FILE_NAME|slice:"-4:"%}<i class="fas fa-file-archive fa-3x"></i>
+                                {% elif '.appx' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-windows fa-3x"></i>
+                                {% endif %}
+                            </td>                            
+                            {% if is_admin %}
+                            <td style="word-wrap: break-word; max-width: 200px;">           
+                                <div id="viewFields{{e.MD5}}">
+                                    <div id="userAppName{{e.MD5}}">{{e.USER_APP_NAME}}</div>
+                                    <div id="userAppVersion{{e.MD5}}">{{e.USER_APP_VERSION}}</div>
+                                    <div id="division{{e.MD5}}">{{e.DIVISION}}</div>
+                                    <div id="environment{{e.MD5}}">{{e.ENVIRONMENT}}</div>
+                                    <div id="country{{e.MD5}}">{{e.COUNTRY|default_if_none:""}}</div>
+                                    <div id="dataPrivacyClassification{{e.MD5}}">{{e.DATA_PRIVACY_CLASSIFICATION|default_if_none:""}}</div>
+                                    <div id="dataPrivacyAttributes{{e.MD5}}">{{e.DATA_PRIVACY_ATTRIBUTES|default_if_none:""}}</div>
+                                    <div id="email{{e.MD5}}">{{e.EMAIL}}</div>
+                                </div>                           
+                            </td>                               
+                            {% endif %}
+                            <td>
+                                <p>                                    
+                                    {% if e.COMPLETE %}
+                                    <a class="btn btn-primary btn-sm" style="margin-bottom: 3px; width: 125px;" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/"><i class="fas fa-eye" title="View static analysis scan details"></i> Scan Details</a><br/>
+                                        {% if e.FILE_NAME|slice:"-6:" != '.dylib' %}
+                                            {% if e.FILE_NAME|slice:"-3:" != '.so' %}
+                                                {% if e.FILE_NAME|slice:"-2:" != '.a' %}
+                                                <a class="btn btn-primary btn-warning btn-sm" style="margin-bottom: 3px;  width: 125px;" href="../../../appsec_dashboard/{{ e.MD5 }}/"><i class="fas fa-user-shield" title="View security scorecard"></i> Scorecard</a><br/>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endif %}
+                                        {% if e.DT_PROJECT_ID %}
+                                        <a class="btn btn-primary btn-sm" style="width: 125px;" href="{{dependency_track_url}}/projects/{{ e.DT_PROJECT_ID }}/components"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
+                                        {% else %}
+                                        <a class="btn btn-secondary btn-sm disabled" style="width: 125px;" href="#"><i class="fas fa-link" title="View third party dependency details"></i> Dependencies</a><br/>
+                                        {% endif %}
+                                    {% endif %}
+                                </p>
+                                <p>
+                                    <a class="btn btn-outline-primary btn-sm" id="adminEdit{{e.MD5}}" data-name="{{e.MD5}}" onclick="admin_edit_modal('{{e.MD5}}')" href="javascript:void(0);"><i class="fas fa-pen" title="Edit Scan"></i></a>                                    
+                                    {% if e.COMPLETE %}                                        
+                                        <a class="btn btn-outline-primary btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="javascript:void(0);"><i class="fas fa-trash" title="Delete Scan"></i></a>
+                                        <a class="btn btn-outline-primary btn-sm" href="../../../pdf/{{ e.MD5 }}/"><i class="fas fa-file-pdf" title="PDF Report"></i></a>                                                                                                                  
+                                    {% endif %}                                    
+                                </p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!--pagination-->
+            <nav aria-label="Pagination">
+                <ul class="pagination justify-content-center">
+                  {% if page_obj.has_previous %}
+                  <li class="page-item previous">
+                    <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.previous_page_number %}">Previous</a>
+                  </li>   
+                  {% else %}
+                  <li class="page-item previous disabled">
+                    <a class="page-link">Previous</a>
+                  </li>
+                  {% endif %}
+      
+                  {% for i in paginator_range %}
+                  {% if page_obj.number == i %}
+                  <li class="page-item active">
+                      <a class="page-link" href="#">{{ i }} </a>
+                  </li>
+                  {% else %} 
+                    {% if i == page_obj.paginator.ELLIPSIS %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">{{ page_obj.paginator.ELLIPSIS }} </a>
+                    </li>
+                    {% else %}         
+                    <li class="page-item">
+                        <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=i %}">{{ i }}</a>
+                    </li>
+                    {% endif %}
+                  {% endif %}
+                  {% endfor %}
+      
+                  {% if page_obj.has_next %}
+                  <li class="page-item next">
+                    <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.next_page_number %}">Next</a>
+                  </li>
+                  {% else %}
+                  <li class="page-item next disabled">
+                    <a class="page-link">Next</a>
+                  </li>
+                  {% endif %}
+                  <li class="page-item">
+                    <div class="dropdown">
+                        <button class="page-link dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          Items per page
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=5 page_number=page_obj.number %}">5</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=10 page_number=page_obj.number %}">10</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=20 page_number=page_obj.number %}">20</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=50 page_number=page_obj.number %}">50</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=100 page_number=page_obj.number %}">100</a>
+                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=250 page_number=page_obj.number %}">250</a>
+                        </div>
+                      </div>
+                    </div>
+                </li>
+              </nav>
+            <!--end pagination-->
+        </div>
+        <!-- /.box-body -->
+    </div>
+
+
+          </div>
+        </div>
+       </div>
+     </div>
+    </div>
+</div
+
+<!--  Edit Scan Modal -->
+<div class="modal" id="edit_scan" tabindex="-1" role="dialog" data-backdrop="static">
+  <div class="modal-dialog modal-container">
+    <div class="modal-content">
+      
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Scan</h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="close_edit_scan_modal()">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+          <div class="inner cover">
+              
+              <h5 class="box-title">
+                  <b>APP NAME:</b> <span id="user-app-name-header"></span><br />
+                  <b>HASH:</b> <span id="md5-header"></span><br />
+                  <b>DATE:</b> <span id="timestamp-header"></span><br />
+              </h5>         
+
+              <form id="edit_scan_form" novalidate enctype="multipart/form-data" method="post">
+                {% csrf_token %}
+
+                <div class="row"> <!-- first row -->
+
+                  <!-- Application Name -->
+                  <div class="col-md-5">
+                    <label for="appname">Application Name
+                      <i class="fas fa-info-circle fa-lg"
+                        title="The name of the mobile application as it appears (or will appear) in the applicable app store.">
+                      </i>
+                    </label>
+                    <input type="text" class="form-control" id="appname" placeholder="Application Name" required>
+                    <div id="err_name" class="hidden"><span class="error">Application Name Required!</span>
+                    </div>
+
+                    <!-- Hash -->
+                    <input type="hidden" id="md5-hash" value="" />
+
+                  </div>
+
+                  <!-- Version -->
+                  <div class="col-md-2">
+                    <label for="version">Version
+                      <i class="fas fa-info-circle fa-lg" title="The version of the mobile application.">
+                      </i>
+                    </label>
+                    <input type="text" class="form-control" style="width:90%" id="version" placeholder="Version" required>
+                    <div id="err_version" class="hidden"><span class="error">Version Required!</span>
+                    </div>
+                  </div>
+
+                  {% if is_admin %}
+                  <!-- Release -->
+                  <div class="col-md-4">
+                    <div style="margin-top:36px;">
+                      <input type="checkbox" id="release">
+                      <label for="release" style="font-weight:500;">Release Version
+                        <i class="fas fa-info-circle fa-lg" title="Select to mark mobile app as a release version.">
+                        </i>
+                      </label>
+                    </div>
+                  </div>
+                  {% endif %}
+
+                </div> <!-- end of first row -->
+
+                <hr class="edit_scan-form-hr">
+
+                <div class="row"> <!-- second row -->
+
+                  <!-- Environment -->
+                  <div class="col-md-3">
+                    <label for="environment">Environment
+                      <i class="fas fa-info-circle fa-lg" title="The release status of the mobile application.">
+                      </i>
+                    </label>
+                    <select class="custom-select w-100" id="environment">
+                      <option value="Production">Production</option>
+                      <option value="Preproduction">Preproduction</option>
+                      <option value="Decommissioned">Decommissioned</option>
+                    </select>
+                  </div>
+
+                  <!-- Division -->
+                  <div class="col-md-3">
+                    <label for="division">Division</label>
+                    <i class="fas fa-info-circle fa-lg"
+                      title="The organizational division applicable to the mobile application.">
+                    </i>
+                    <select class="custom-select d-block w-100" id="division">
+                      <option>Unknown</option>
+                    </select>
+                    <div id="err_division" class="hidden"><span class="error">Division Required!</span>
+                    </div>
+                  </div>
+
+                  <!-- Country -->
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="country">Country</label>
+                      <i class="fas fa-info-circle fa-lg"
+                      title="The country (or countries) where the mobile app has been (or will be) released.">
+                      </i>
+                      <select class="select2bs4" style="width: 100%" id="country" required multiple>
+                        <option>Unknown</option>
+                      </select>
+                    </div>
+                  </div>
+
+                </div> <!-- end of second row -->
+
+                <hr class="edit_scan-form-hr">
+
+                <div class="row"> <!-- third row -->
+
+                  <!-- Data Privacy -->
+                  <div class="col-md-6">
+                      <div class="form-group">
+                          <label for="data_privacy_classification">Data Privacy
+                              <i class="fas fa-info-circle fa-lg"
+                              title="The data privacy classification for the mobile application.">
+                              </i>
+                          </label>
+                          <select class="custom-select d-block w-100" id="data_privacy_classification" size="1" required>
+                              <option value="Highly Restricted">Highly Restricted</option>
+                              <option value="Restricted">Restricted</option>
+                              <option value="Internal Use Only">Internal Use Only</option>
+                              <option value="Public">Public</option>
+                              <option value="Does Not Apply">Does Not Apply</option>
+                          </select>
+                          <div id="err_privacy" class="hidden">
+                              <span class="error">Data Privacy Required!</span>
+                          </div>
+                      </div>
+                  </div>
+
+                  <!-- Data Privacy Attributes -->
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="data_privacy_attributes">Data Privacy Attributes
+                        <i class="fas fa-info-circle fa-lg"
+                          title="The data privacy attributes for the mobile application.">
+                        </i>
+                      </label>
+                      <select class="select2bs4" style="width: 100%" id="data_privacy_attributes" required multiple>
+                        <option>Unknown</option>
+                      </select>
+                    </div>
+                  </div>
+
+                </div> <!-- end of third row -->
+
+                <hr class="edit_scan-form-hr">
+
+                <div class="row"> <!-- fourth row -->
+
+                  {% if is_admin %}
+                  <div class="col-md-6 mb-3">
+                    <label for="override_email" class="form-label">Email Address
+                      <i class="fas fa-info-circle fa-lg"
+                        title="Email of the user(s) to receive notifications about this scan.">
+                      </i>
+                    </label>
+                    <input style="width:100%" class="form-control" type="text" id="override_email"
+                      placeholder="Email Address">
+                    <div id="err_email" class="hidden"><span class="error">Email Invalid!</span></div>
+                  </div>
+                  {% endif %}
+
+                </div> <!-- end of fourth row -->
+
+              </form>
+            </div> <!-- end of inner-cover -->
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" data-dismiss="modal" class="btn btn-secondary" onclick="close_edit_scan_modal()">Cancel</button>
+        <button type="button" id="editScanSubmitButton" class="btn btn-primary" onclick="admin_save()">Submit</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block extra_scripts %}
+<script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
+<script src="{% static "others/js/dayjs.min.js" %}"></script>
+<script>
+    function _(el) {
+        return document.getElementById(el);
+    }
+
+    // Diff functions
+    var diff_first_md5 = '';
+    var diff_first_name = '';
+
+    // When a row is clicked, we check if we already have first scan, if so, ask for confirmation
+    function enable_partner_select() {
+        $('table tr').on('click', function (e) {
+            e.preventDefault();
+            if (diff_first_md5 == '') {
+                return;
+            }
+            diff_confirmation($(this));
+        })
+    }
+
+    function enable_diff_button(){
+        $(".diffButton").on('click', function(e){
+            e.stopPropagation();
+            diff_select($(this));
+        });
+    }
+
+    function disable_diff_button() {
+        $('.diffButton').off('click');
+    }
+
+    // First pop up only saves the first scan to diff and tells the user to select a partner
+    function diff_select(item) {
+
+        Swal.fire({
+            title: '<strong>Select App to Compare</strong>',
+            type: 'info',
+            text: 'Please select the second scan result for comparison',
+            timer: 10000
+        });
+        diff_first_md5 = item.attr('id').slice(0, 32);
+        diff_first_name = item.attr('id').slice(33);
+        item.closest("tr").addClass("selected");
+        item.closest("tbody").addClass("selectable_table");
+
+        // Enable the second partner selection
+        enable_partner_select();
+        disable_diff_button();
+    }
+
+    function diff_cleanup() {
+        first_td_id = diff_first_md5 + '_' + diff_first_name;
+        $('[id="' + first_td_id + '"]').closest("tr").removeClass("selected");
+        $('[id="' + first_td_id + '"]').closest("tbody").removeClass("selectable_table");
+        diff_first_md5 = "";
+        diff_first_name = "";
+        enable_diff_button();
+    }
+
+    // Here we get jquery row
+    function diff_confirmation(item) {
+        // First we need the id which has the md5 and name
+        rows_tds = item.find('td');
+        selected_md5 = rows_tds[3].innerText;
+        if (diff_first_md5 == selected_md5) {
+            return;
+        }
+        diff_second_md5 = selected_md5;
+        diff_second_name = rows_tds[1].innerText;
+
+        Swal.fire({
+            title: '<strong>Diff confirmation</strong>',
+            type: 'info',
+            html:
+                '<strong>Do you want to diff - </strong><br />' + diff_first_name +
+                '<br /> <strong>with - <br /> </strong>' + diff_second_name + ' <br /> <strong>?</strong>',
+
+            showCancelButton: true,
+            cancelButtonText: 'Cancel',
+            confirmButtonText: 'Start Diffing!',
+        }).then((result) => {
+            if (result.value) {
+                window.location = '/compare/' + diff_first_md5 + '/' + diff_second_md5 + '/';
+            } else {
+                 diff_cleanup();
+            }
+        })
+    }
+
+    function delete_scan(item){
+      Swal.fire({
+      title: 'Are you sure?',
+      text: "This will permanently remove the scan results",
+      type: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, please delete.',
+      cancelButtonText: 'No, don\'t delete.',
+      confirmButtonColor: '#2da532',
+      cancelButtonColor: '#d33',
+    }).then((result) => {
+        if (result.value) {
+            var md5_hash = item.id;
+            $.ajax({
+                    url: '{% url "delete_scan" %}',
+                        type : 'POST',
+                    dataType: 'json',
+                        data : {
+                                csrfmiddlewaretoken: '{{ csrf_token }}',
+                                md5: md5_hash,
+                                },
+                            success : function(json) {
+                                if (json.deleted==='yes'){
+                                    Swal.fire(
+                                        'Deleted!',
+                                        'The scan result is deleted!',
+                                        'success'
+                                    ).then(function () {
+                                        location.reload(true);
+                                    })
+                                }
+                                else {
+                                    Swal.fire(
+                                    'Delete Failed',
+                                    'Cannot delete the scan result!',
+                                    'error'
+                                    )
+                                }
+                            },
+                            error : function(xhr,errmsg,err) {
+                                Swal.fire(
+                                    'Delete Failed',
+                                    errmsg,
+                                    'error'
+                                    )
+                            }
+                });
+               
+        } else {
+                diff_cleanup();
+        }
+        });
+    }
+
+    function admin_edit_modal(appHash){
+      window.clearTimeout(timeoutId);
+      $("#edit_scan").modal('show');
+      populate_modal_data(appHash);
+    }
+
+    function populate_modal_data(appHash) {
+      var modal = document.getElementById("edit_scan");
+      modal.setAttribute('data-id', appHash);
+
+      $("#user-app-name-header").text(uploadedApps["app_"+appHash].appName);
+      $("#md5-header").text(appHash);
+      $("#md5-hash").val(appHash);
+      $("#timestamp-header").text(dayjs(uploadedApps["app_"+appHash].appTimestamp).format("MMM D, YYYY h:mm A"));
+
+      $("#appname").val(uploadedApps["app_"+appHash].appName);
+      $("#version").val(uploadedApps["app_"+appHash].appVersion);
+
+      // Release version checkbox
+      $("#release").prop('disabled', false);
+      if (uploadedApps["app_"+appHash].appReleaseVersion == "True")
+      {
+        $("#release").prop('checked', true);
+      }
+      else
+      {
+        var diffInDays = Math.ceil((Date.now() - Date.parse(uploadedApps["app_"+appHash].appTimestamp)) / (1000 * 3600 * 24));
+        if (diffInDays > 365) {
+          $("#release").prop('disabled', true);
+        }
+        $("#release").prop('checked', false);
+      }
+      
+      // Environment static dropdown
+      if (uploadedApps["app_"+appHash]?.appEnvironment !== undefined)
+      {
+        var environment = document.getElementById('environment');
+        var currentEnvironment = uploadedApps["app_"+appHash].appEnvironment;
+
+        for (var i = 0; i < environment.options.length; i++)
+        {
+          if (environment.options[i].value === currentEnvironment)
+          {
+            environment.options[i].selected = true;
+          }
+        }
+      }
+
+      // Division dynamic dropdown
+      populate_divisions(uploadedApps["app_"+appHash].appDivision);      
+
+      // Countries select box      
+      populate_countries(uploadedApps["app_"+appHash].appCountry);
+
+      //Data Privacy dropdown
+      $("#data_privacy_classification").val(uploadedApps["app_"+appHash].appDataPrivacyClassification)
+
+      // Data Privacy Attributes select box
+      populate_data_privacy(uploadedApps["app_"+appHash].appDataPrivacyAttributes);
+
+      // Email Address(es) text field
+      $("#override_email").val(uploadedApps["app_"+appHash].appEmail);
+    }
+
+    function get_clean_emails(){
+        var retVal = "";
+        var formName = document.getElementById('edit_scan_form');
+        var emails = $(formName.querySelector('#override_email')).val();
+        var updated = emails.replace(/,/gi, ";");
+        var emailArray = updated.split(";");
+        emailArray.forEach(clean_element);
+        for(var i = 0; i < emailArray.length; i++){
+            if(i < emailArray.length - 1){
+                retVal += emailArray[i] + ",";
+            } else {
+                retVal += emailArray[i];
+            }
+        }
+        return retVal;
+    }
+
+    function clean_element(item, index, arr){
+        if(item.indexOf("<") != -1 && item.indexOf(">") != -1){
+            arr[index] = item.substring(item.indexOf("<")+1, item.indexOf(">"));
+        } 
+    }    
+
+    function check_required() {
+      if (!_('appname').value) {
+        _('err_name').classList.remove('hidden');
+        return false;
+      } 
+      else 
+      { 
+        _('err_name').classList.add('hidden'); 
+      }      
+      if (!_('version').value) {
+        _('err_version').classList.remove('hidden');
+        return false;
+      } else { _('err_version').classList.add('hidden'); }
+      if (!_('division').value) {
+        _('err_division').classList.remove('hidden');
+        return false;
+      } else { _('err_division').classList.add('hidden'); }
+      if (!_('data_privacy_classification').value) {
+        _('err_privacy').classList.remove('hidden');
+        return false;
+      } else { _('err_privacy').classList.add('hidden'); }
+      /* if (_("uploadFile").files.length === 0) {
+        _('err_file').classList.remove('hidden');
+        return false;
+      } else { _('err_file').classList.add('hidden'); } */
+
+      if ($("#override_email").length) {
+        var mailformat = /^[\W]*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4}[\W]*,{1}[\W]*)*([\w+\-.%]+@[\w\-.]+\.[A-Za-z]{2,4})[\W]*$/;
+        if (!_("override_email").value.match(mailformat)) {
+          _('err_email').classList.remove('hidden');
+          return false;
+        } else { _('err_email').classList.add('hidden'); }
+      }
+
+    return true;
+  }
+
+    function admin_save(){
+      const formData = document.getElementById('edit_scan_form');
+
+      var item = $(formData.querySelector('#md5-hash')).val();
+      var countryElements = $(formData.querySelectorAll('#country'));
+      var dataPrivacyAttributesElements = $(formData.querySelectorAll('#data_privacy_attributes'));
+
+      var countryString = countryElements.map(function() {
+        return $(this).val();
+      }).get().join(', ');
+
+      var dataPrivacyAttributesString = dataPrivacyAttributesElements.map(function() {
+        return $(this).val();
+      }).get().join(', ');
+
+      Swal.fire({
+          title: 'Are you sure?',
+          text: "This will update the modified fields for this scan",
+          type: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, update the modified fields.',
+          cancelButtonText: 'No, take me back to the edit panel.',
+          confirmButtonColor: '#2da532',
+          cancelButtonColor: '#d33',
+      }).then((result) => {
+          if (result.value) {            
+              var cleanEmails = get_clean_emails();
+              var release = ($(formData.querySelector('#release')).prop("checked") ? "True" : "False");
+              $.ajax({
+                      url: '../../../update_scan/',
+                      type: 'POST',
+                      dataType: 'json',
+                      data: {
+                          csrfmiddlewaretoken: '{{csrf_token}}',
+                          hash: item,
+                          user_app_name: $(formData.querySelector('#appname')).val(),
+                          user_app_version: $(formData.querySelector('#version')).val(),
+                          division: $(formData.querySelector('#division')).val(),
+                          environment: $(formData.querySelector('#environment')).val(),
+                          country: countryString,
+                          data_privacy_classification: $(formData.querySelector('#data_privacy_classification')).val(),
+                          data_privacy_attributes: dataPrivacyAttributesString,
+                          email: cleanEmails,
+                          release: release
+                      },
+                      success : function(json) {
+                          if (json.result === 'success') {
+                              Swal.fire(
+                                  'Updated!',
+                                  'The scan has been successfully updated.',
+                                  'success'
+                              ).then(function () {
+                                  $('#edit_scan').modal('hide');
+                                  location.reload();
+                                });
+                          }
+                          else {
+                              Swal.fire(
+                              'Scan Update Failed',
+                              'Cannot update the scan!',
+                              'error'
+                              )
+                          }
+                      },
+                      error : function(xhr,errmsg,err) {
+                          Swal.fire(
+                              'Updating Scan Failed',
+                              errmsg,
+                              'error'
+                              )
+                      }
+                  });
+                  
+          }
+      }); 
+    }
+
+    function populate_divisions(selectedDivision) {
+      var divisionsUrl = '{{tenant_static}}divisions.json';
+      fetch(divisionsUrl)
+        .then(response => response.json())
+        .then(data => {
+          var options = '<option value=""></option>';
+          for (i = 0; i < data.length; i++) {
+            options += '<option value="' + data[i].id + '">' + data[i].name + '</option>';
+          }
+          _('division').innerHTML = options;
+          $("#division").val(selectedDivision);
+        });
+    }
+
+    function populate_countries(selectedCountry) {
+      var countryValue = split_data(selectedCountry);
+      
+      var countriesUrl = '{{tenant_static}}countries.json';
+      fetch(countriesUrl)
+        .then(response => response.json())
+        .then(data => {
+          var options = '<option value="GLOBAL"' + (countryValue == "GLOBAL" ? " selected" : "") + '>' + 'Global</option>';
+          for (i = 0; i < data.length; i++) {
+            options += '<option value="' + data[i].code + '"' + (countryValue.includes(data[i].code) ? ' selected' : '') + '>' + data[i].name + '</option>';
+          }
+          _('country').innerHTML = options;
+        });
+    }
+
+    function populate_data_privacy(selectedDataPrivacyAttributes) {
+      var dataPrivacyAttributeValue = split_data(selectedDataPrivacyAttributes)
+
+      var privacyAttributesUrl = '{{tenant_static}}data-privacy-attributes.json';
+      fetch(privacyAttributesUrl)
+        .then(response => response.json())
+        .then(data => {
+          var options = '';
+          for (i = 0; i < data.length; i++) {
+            options += '<option value="' + data[i].id + '"' + (dataPrivacyAttributeValue.includes(data[i].id) ? ' selected' : '') + '>' + data[i].id + ": " + data[i].name + '</option>';
+          }
+          _('data_privacy_attributes').innerHTML = options;
+        });
+    }
+
+    function split_data(dataString) {
+      return dataString.split(',').map(data => data.trim());
+    }
+  
+    function close_edit_scan_modal()
+    {
+      $('#country').val([]);
+      $('#data_privacy_attributes').val([]);
+      $('#override_email').val([]);
+      $('#edit_scan').modal('hide');
+      refresh_page();
+    }
+
+    var timeoutId = 0;
+    function refresh_page()
+    {
+      if ($("span.badge.bg-warning").length > 0 && ($("#edit_scan").is(":hidden"))) {
+          if (timeoutId > 0) {
+            window.clearTimeout(timeoutId);
+          }
+          timeoutId = window.setTimeout(function() {
+              window.location.reload();
+          }, 30000);
+      }
+    }
+
+    $(document).ready(function() {
+
+        enable_diff_button(); 
+        refresh_page();
+        
+        $('#country').change(function() {
+          // If GLOBAL and other options are selected in country dropdown, remove GLOBAL
+          if ($('#country').val().indexOf('GLOBAL') >= 0 && $('#country').val().length > 1) {
+            if ($('#country').val().length > 2) {
+              $('#country').val('GLOBAL');
+            } else {
+              $('#country').val($('#country').val().join(',').replace('GLOBAL,', '')); 
+            }
+            $("#country").trigger('change');
+          }
+        });
+
+        $("span.scandate").each(function() {
+            this.innerText = dayjs(this.innerText).format("MMM D, YYYY h:mm A")
+        });
+    });
+
+    //Initialize Select2 Elements after modal is shown
+    $('#edit_scan').on('shown.bs.modal', function() {
+      
+      $('#country').select2({
+          theme: 'bootstrap4'
+      });
+      
+      $('#data_privacy_attributes').select2({
+          theme: 'bootstrap4'
+      });
+
+    });
+
+</script>
+
+{% endblock %}
