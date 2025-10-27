@@ -67,7 +67,7 @@ COPY pyproject.toml .
 RUN poetry config virtualenvs.create false && \
   poetry lock && \
   poetry install --only main --no-root --no-interaction --no-ansi && \
-  poetry cache clear . --all && \
+  poetry cache clear . --all --no-interaction && \
   rm -rf /root/.cache/
 
 # Cleanup
@@ -96,12 +96,6 @@ RUN groupadd --gid $USER_ID $MOBSF_USER && \
     chown -R $MOBSF_USER:$MOBSF_USER /home/mobsf
 
 # Switch to mobsf user
-USER $MOBSF_USER
-
-# Create mobsf user
-RUN groupadd --gid $USER_ID $MOBSF_USER && \
-    useradd $MOBSF_USER --uid $USER_ID --gid $MOBSF_USER --shell /bin/false && \
-    chown -R $MOBSF_USER:$MOBSF_USER /home/mobsf
 USER $MOBSF_USER
 
 # Run MobSF
