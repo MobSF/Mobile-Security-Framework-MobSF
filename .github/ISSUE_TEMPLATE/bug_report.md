@@ -26,7 +26,6 @@ MobSF Version:
 ```
 What happens, under which versions, under what conditions, when, and what were you expecting instead.
 ```
-<!-- If you see errors while running setup/run scripts, join MobSF Slack channel: https://bit.ly/3mCMNOx to get limited support. -->
 <!-- If you see errors while running setup/run scripts, join MobSF Slack channel: https://join.slack.com/t/mobsf/shared_invite/zt-2huaz2nj9-ifViLV7g7w1xthx5D6rGhw to get limited support. -->
 
 ## STEPS TO REPRODUCE THE ISSUE

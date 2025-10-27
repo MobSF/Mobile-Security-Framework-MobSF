@@ -66,8 +66,8 @@ def create_ca():
 
 def get_ca_file():
     """Get CA Dir."""
-    from mitmproxy import ctx
-    ca_dir = Path(ctx.mitmproxy.options.CONF_DIR).expanduser()
+    from mitmproxy import options
+    ca_dir = Path(options.CONF_DIR).expanduser()
     ca_file = ca_dir / 'mitmproxy-ca-cert.pem'
     if not ca_file.exists():
         create_ca()

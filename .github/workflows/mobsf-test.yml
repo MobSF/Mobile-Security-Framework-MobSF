@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, macos-latest, windows-latest]
-        python-version: ['3.10', '3.11']
+        python-version: ['3.12']
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -66,9 +66,15 @@ jobs:
         poetry run python manage.py makemigrations StaticAnalyzer
         poetry run python manage.py migrate
         poetry run python manage.py create_roles
-
+  
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+  
     - name: Unit Tests on Ubuntu, macOS and Windows
       run: |
+        java -version
         git submodule update --init --recursive
         poetry run python manage.py test mobsf
 

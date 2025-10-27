@@ -63,10 +63,12 @@ def generate_hashes(dirlocs):
 def get_executable_hashes():
     # Internal Binaries shipped with MobSF
     base = Path(settings.BASE_DIR)
+    downloaded_tools = Path(settings.DOWNLOADED_TOOLS_DIR)
     manage_py = base.parent / 'manage.py'
     exec_loc = [
         base / 'DynamicAnalyzer' / 'tools',
         base / 'StaticAnalyzer' / 'tools',
+        downloaded_tools,
         manage_py,
     ]
     # External binaries used directly by MobSF
@@ -139,6 +141,7 @@ def store_exec_hashes_at_first_run():
 
 
 def subprocess_hook(oldfunc, *args, **kwargs):
+    global EXECUTABLE_HASH_MAP  # noqa: F824
     if isinstance(args[0], str):
         # arg is a string
         agmtz = args[0].split()

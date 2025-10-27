@@ -18,6 +18,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.http import require_http_methods
+from django.utils import timezone
 from django.shortcuts import (
     redirect,
     render,
@@ -27,6 +28,7 @@ from django.forms.models import model_to_dict
 
 from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
+    MD5_REGEX,
     api_key,
     get_md5,
     is_dir_exists,
@@ -55,7 +57,7 @@ from mobsf.StaticAnalyzer.models import (
 from mobsf.StaticAnalyzer.cyberspect_models import (
     CyberspectScans,
 )
-from mobsf.StaticAnalyzer.views.common import appsec
+from mobsf.StaticAnalyzer.views.common import appsec  # Cyberspect import
 from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
     send_response,
@@ -325,16 +327,6 @@ def zip_format(request):
     return render(request, template, context)
 
 
-def not_found(request, *args):
-    """Not Found Route."""
-    context = {
-        'title': 'Not Found',
-        'version': settings.MOBSF_VER,
-    }
-    template = 'general/not_found.html'
-    return render(request, template, context)
-
-
 @login_required
 def dynamic_analysis(request):
     """Dynamic Analysis Landing."""
@@ -389,12 +381,14 @@ def recent_scans(request, page_size=20, page_number=1):
         icon_mapping[item.MD5] = item.ICON_PATH
     for item in ios:
         icon_mapping[item.MD5] = item.ICON_PATH
+
     for entry in page_obj:
         if entry['MD5'] in package_mapping.keys():
             entry['PACKAGE'] = package_mapping[entry['MD5']]
         else:
             entry['PACKAGE'] = ''
         entry['ICON_PATH'] = icon_mapping.get(entry['MD5'], '')
+
         if entry['FILE_NAME'].endswith('.ipa'):
             entry['BUNDLE_HASH'] = get_md5(
                 entry['PACKAGE_NAME'].encode('utf-8'))
@@ -428,12 +422,12 @@ def recent_scans(request, page_size=20, page_number=1):
         'title': 'Scanned Apps',
         'entries': entries,
         'version': settings.MOBSF_VER,
+        'page_obj': page_obj,
         'cversion': settings.CYBERSPECT_VER,
         'is_admin': isadmin,
         'dependency_track_url': settings.DEPENDENCY_TRACK_URL,
         'filter': filter,
         'tenant_static': settings.TENANT_STATIC_URL,
-        'page_obj': page_obj,
         'paginator_range': paginator_range,
     }
     template = 'general/recent.html'
@@ -611,62 +605,45 @@ def download_apk(request):
 
 
 @login_required
-def search(request):
-    """Search Scan by MD5 Route."""
-    md5 = request.GET['md5']
-    if re.match('[0-9a-f]{32}', md5):
-        db_obj = RecentScansDB.objects.filter(MD5=md5)
-        if db_obj.exists():
-            e = db_obj[0]
-            url = f'/{e.ANALYZER}/{e.MD5}/'
-            return HttpResponseRedirect(url)
-        else:
-            return HttpResponseRedirect('/not_found/')
-    return print_n_send_error_response(
-        request,
-        'The Scan ID provided is invalid. Please provide a'
-        + ' valid 32 character alphanumeric value.')
+def search(request, api=False):
+    """Search scan by checksum or text."""
+    if request.method == 'POST':
+        query = request.POST['query']
+    else:
+        query = request.GET['query']
 
+    if not query:
+        msg = 'No search query provided.'
+        return print_n_send_error_response(request, msg, api)
+
+    checksum = query if re.match(MD5_REGEX, query) else find_checksum(query)
+
+    if checksum and re.match(MD5_REGEX, checksum):
+        db_obj = RecentScansDB.objects.filter(MD5=checksum).first()
+        if db_obj:
+            url = f'/{db_obj.ANALYZER}/{db_obj.MD5}/'
+            if api:
+                return {'checksum': db_obj.MD5}
+            else:
+                return HttpResponseRedirect(url)
+
+    msg = 'You can search by MD5, app name, package name, or file name.'
+    return print_n_send_error_response(request, msg, api, 'Scan not found')
+
+
+def find_checksum(query):
+    """Get the first matching checksum from the database."""
+    search_fields = ['FILE_NAME', 'PACKAGE_NAME', 'APP_NAME']
+
+    for field in search_fields:
+        result = RecentScansDB.objects.filter(
+            **{f'{field}__icontains': query}).first()
+        if result:
+            return result.MD5
+
+    return None
 
 # AJAX
-@require_http_methods(['GET'])
-def app_info(request):
-    """Get mobile app info by user supplied name."""
-    appname = request.GET['name']
-    db_obj = RecentScansDB.objects \
-        .filter(Q(APP_NAME__icontains=appname)
-                | Q(USER_APP_NAME__icontains=appname)) \
-        .order_by('-TIMESTAMP')
-    user = sso_email(request)
-    if db_obj.exists():
-        e = db_obj[0]
-        if user == e.EMAIL or is_admin(request):
-            context = {
-                'found': True,
-                'version': e.USER_APP_VERSION,
-                'division': e.DIVISION,
-                'country': e.COUNTRY,
-                'environment': e.ENVIRONMENT,
-                'data_privacy_classification': e.DATA_PRIVACY_CLASSIFICATION,
-                'data_privacy_attributes': e.DATA_PRIVACY_ATTRIBUTES,
-                'release': e.RELEASE,
-                'email': e.EMAIL,
-            }
-            logger.info('Found existing mobile app information for %s',
-                        appname)
-            return HttpResponse(json.dumps(context),
-                                content_type='application/json', status=200)
-        else:
-            logger.info('User is not authorized for %s.', appname)
-            payload = {'found': False}
-            return HttpResponse(json.dumps(payload),
-                                content_type='application/json', status=200)
-    else:
-        logger.info('Unable to find mobile app information for %s',
-                    appname)
-        payload = {'found': False}
-        return HttpResponse(json.dumps(payload),
-                            content_type='application/json', status=200)
 
 
 @login_required
@@ -714,6 +691,46 @@ def download(request):
     return HttpResponse(status=404)
 
 
+@require_http_methods(['GET'])
+def app_info(request):
+    """Get mobile app info by user supplied name."""
+    appname = request.GET['name']
+    db_obj = RecentScansDB.objects \
+        .filter(Q(APP_NAME__icontains=appname)
+                | Q(USER_APP_NAME__icontains=appname)) \
+        .order_by('-TIMESTAMP')
+    user = sso_email(request)
+    if db_obj.exists():
+        e = db_obj[0]
+        if user == e.EMAIL or is_admin(request):
+            context = {
+                'found': True,
+                'version': e.USER_APP_VERSION,
+                'division': e.DIVISION,
+                'country': e.COUNTRY,
+                'environment': e.ENVIRONMENT,
+                'data_privacy_classification': e.DATA_PRIVACY_CLASSIFICATION,
+                'data_privacy_attributes': e.DATA_PRIVACY_ATTRIBUTES,
+                'release': e.RELEASE,
+                'email': e.EMAIL,
+            }
+            logger.info('Found existing mobile app information for %s',
+                        appname)
+            return HttpResponse(json.dumps(context),
+                                content_type='application/json', status=200)
+        else:
+            logger.info('User is not authorized for %s.', appname)
+            payload = {'found': False}
+            return HttpResponse(json.dumps(payload),
+                                content_type='application/json', status=200)
+    else:
+        logger.info('Unable to find mobile app information for %s',
+                    appname)
+        payload = {'found': False}
+        return HttpResponse(json.dumps(payload),
+                            content_type='application/json', status=200)
+
+
 @login_required
 def generate_download(request, api=False):
     """Generate downloads for uploaded binaries/source."""
@@ -747,6 +764,12 @@ def generate_download(request, api=False):
             shutil.make_archive(
                 dwd_file.as_posix(), 'zip', directory.as_posix())
             file_name = f'{md5}-smali.zip'
+        elif file_type == 'binary':
+            # Binaries
+            file_name = f'{md5}.{file_type}'
+            src = app_dir / file_name
+            dst = dwd_dir / file_name
+            shutil.copy2(src.as_posix(), dst.as_posix())
         else:
             src_file_name = f'{md5}.{file_type}'
             src = app_dir / src_file_name
@@ -762,6 +785,8 @@ def generate_download(request, api=False):
         return print_n_send_error_response(request, str(exp), api)
 
 
+@login_required
+@permission_required(Permissions.DELETE)
 def delete_scan(request, api=False):
     """Delete Scan from DB and remove the scan related files."""
     try:
@@ -771,7 +796,7 @@ def delete_scan(request, api=False):
             else:
                 md5_hash = request.POST['md5']
             data = {'deleted': 'scan hash not found'}
-            if re.match('[0-9a-f]{32}', md5_hash):
+            if re.match(MD5_REGEX, md5_hash):
                 # Delete DB Entries
                 scan = RecentScansDB.objects.filter(MD5=md5_hash)
                 if scan.exists():
@@ -803,10 +828,7 @@ def delete_scan(request, api=False):
     except Exception as exp:
         msg = str(exp)
         exp_doc = exp.__doc__
-        if api:
-            return print_n_send_error_response(request, msg, True, exp_doc)
-        else:
-            return print_n_send_error_response(request, msg, False, exp_doc)
+        return print_n_send_error_response(request, msg, api, exp_doc)
 
 
 def cyberspect_rescan(apphash, scheduled, sso_user):
@@ -1015,3 +1037,9 @@ class RecentScans(object):
             logger.error(exmsg)
             data = {'error': str(exp)}
         return data
+
+
+def update_scan_timestamp(scan_hash):
+    # Update the last scan time.
+    tms = timezone.now()
+    RecentScansDB.objects.filter(MD5=scan_hash).update(TIMESTAMP=tms)

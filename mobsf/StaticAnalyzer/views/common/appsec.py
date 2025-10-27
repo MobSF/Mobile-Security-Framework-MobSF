@@ -126,15 +126,11 @@ def common_fields(findings, data):
             })
     # Firebase
     for fb in data['firebase_urls']:
-        if fb['open']:
-            fdb = fb['url']
-            findings['high'].append({
-                'title': 'Firebase DB is exposed publicly.',
-                'description': (
-                    f'The Firebase database at {fdb} is exposed'
-                    ' to internet without any authentication'),
-                'section': 'firebase',
-            })
+        findings[fb['severity']].append({
+            'title': fb['title'],
+            'description': fb['description'],
+            'section': 'firebase',
+        })
     # Trackers
     if 'trackers' in data['trackers']:
         findings['total_trackers'] = data['trackers']['total_trackers']

@@ -5,21 +5,27 @@ import random
 import subprocess
 import sys
 import shutil
+import threading
+from importlib import (
+    machinery,
+    util,
+)
 
+from mobsf.MobSF.tools_download import install_jadx
 from mobsf.install.windows.setup import windows_config_local
 
 logger = logging.getLogger(__name__)
 
-VERSION = '4.0.7'
+VERSION = '4.1.3'
 # Cyberspect version - a non-emmpty string below will display the
 # Cyberspect version number in the footer and VERSION as the MobSF version
 CYBERSPECT_VERSION = '2025.10'
 BANNER = r"""
-  __  __       _    ____  _____       _  _    ___  
- |  \/  | ___ | |__/ ___||  ___|_   _| || |  / _ \ 
- | |\/| |/ _ \| '_ \___ \| |_  \ \ / / || |_| | | |
- | |  | | (_) | |_) |__) |  _|  \ V /|__   _| |_| |
- |_|  |_|\___/|_.__/____/|_|     \_/    |_|(_)___/ 
+  __  __       _    ____  _____       _  _    _ 
+ |  \/  | ___ | |__/ ___||  ___|_   _| || |  / |
+ | |\/| |/ _ \| '_ \___ \| |_  \ \ / / || |_ | |
+ | |  | | (_) | |_) |__) |  _|  \ V /|__   _|| |
+ |_|  |_|\___/|_.__/____/|_|     \_/    |_|(_)_|
 """  # noqa: W291
 # ASCII Font: Standard
 
@@ -41,6 +47,12 @@ def first_run(secret_file, base_dir, mobsf_home):
         # Run Once
         make_migrations(base_dir)
         migrate(base_dir)
+        # Install JADX
+        thread = threading.Thread(
+            target=install_jadx,
+            name='install_jadx',
+            args=(mobsf_home,))
+        thread.start()
         # Windows Setup
         windows_config_local(mobsf_home)
     return secret_key
@@ -130,12 +142,16 @@ def get_mobsf_home(use_home, base_dir):
         upload_dir = os.path.join(mobsf_home, 'uploads/')
         if not os.path.exists(upload_dir):
             os.makedirs(upload_dir)
+        # Downloaded tools
+        downloaded_tools_dir = os.path.join(mobsf_home, 'tools/')
+        if not os.path.exists(downloaded_tools_dir):
+            os.makedirs(downloaded_tools_dir)
         # Signature Directory
         sig_dir = os.path.join(mobsf_home, 'signatures/')
         if use_home:
             src = os.path.join(base_dir, 'signatures/')
             try:
-                shutil.copytree(src, sig_dir)
+                shutil.copytree(src, sig_dir, dirs_exist_ok=True)
             except Exception:
                 pass
         elif not os.path.exists(sig_dir):
@@ -147,3 +163,11 @@ def get_mobsf_home(use_home, base_dir):
 
 def get_mobsf_version():
     return BANNER, VERSION, f'v{VERSION}', CYBERSPECT_VERSION
+
+
+def load_source(modname, filename):
+    loader = machinery.SourceFileLoader(modname, filename)
+    spec = util.spec_from_file_location(modname, filename, loader=loader)
+    module = util.module_from_spec(spec)
+    loader.exec_module(module)
+    return module

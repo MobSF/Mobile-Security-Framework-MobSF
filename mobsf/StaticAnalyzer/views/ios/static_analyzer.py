@@ -50,11 +50,13 @@ from mobsf.StaticAnalyzer.views.common.a import (
     a_analysis,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
-    firebase_analysis,
     get_avg_cvss,
     hash_gen,
     strings_and_entropies,
     unzip,
+)
+from mobsf.StaticAnalyzer.views.common.firebase import (
+    firebase_analysis,
 )
 from mobsf.StaticAnalyzer.views.common.appsec import (
     get_ios_dashboard,
@@ -74,8 +76,6 @@ from mobsf.MobSF.cyberspect_utils import (
 )
 
 logger = logging.getLogger(__name__)
-register.filter('relative_path', relative_path)
-
 register.filter('relative_path', relative_path)
 
 ##############################################################
@@ -230,7 +230,7 @@ def static_analyzer_ios(request, checksum, api=False):
                 code_dict['code_anal'] = {}
                 code_dict['firebase'] = firebase_analysis(
                     checksum,
-                    code_dict['urls_list'])
+                    code_dict)
                 code_dict['trackers'] = trackers
                 context = save_get_ctx(
                     app_dict,
@@ -243,12 +243,11 @@ def static_analyzer_ios(request, checksum, api=False):
             if settings.VT_ENABLED:
                 vt = VirusTotal.VirusTotal(checksum)
                 context['virus_total'] = vt.get_result(
-                    app_dict['app_path'],
-                    app_dict['md5_hash'])
+                    app_dict['app_path'])
             context['appsec'] = get_ios_dashboard(context, True)
             context['average_cvss'] = get_avg_cvss(
                 context['binary_analysis'])
-            context['is_admin'] = is_admin(request)
+            context['is_admin'] = is_admin(request)  # Cyberspect
             template = 'static_analysis/ios_binary_analysis.html'
             if api:
                 return context
@@ -310,7 +309,7 @@ def static_analyzer_ios(request, checksum, api=False):
                 # Firebase DB Check
                 code_analysis_dic['firebase'] = firebase_analysis(
                     checksum,
-                    list(set(code_analysis_dic['urls_list'])))
+                    code_analysis_dic)
                 # Extract Trackers from Domains
                 trk = Trackers.Trackers(
                     checksum,
@@ -339,7 +338,7 @@ def static_analyzer_ios(request, checksum, api=False):
             context['appsec'] = get_ios_dashboard(context, True)
             context['average_cvss'] = get_avg_cvss(
                 context['code_analysis'])
-            context['is_admin'] = is_admin(request)
+            context['is_admin'] = is_admin(request)  # Cyberspect
             template = 'static_analysis/ios_source_analysis.html'
             if api:
                 return context
