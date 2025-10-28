@@ -73,6 +73,12 @@ def get_context_from_db_entry(db_entry):
             'secrets': python_list(db_entry[0].SECRETS),
             'trackers': python_dict(db_entry[0].TRACKERS),
             'logs': get_scan_logs(db_entry[0].MD5),
+            'controlled_exploitation': python_dict(
+                getattr(db_entry[0], 'CONTROLLED_EXPLOITATION', {})),
+            'execution_mode': getattr(
+                db_entry[0],
+                'EXECUTION_MODE',
+                settings.AUTOMATION_EXECUTION.get('default_mode', 'standard')),
         }
         return context
     except Exception:
@@ -136,6 +142,10 @@ def get_context_from_analysis(app_dict,
             'secrets': app_dict['secrets'],
             'trackers': code_dict['trackers'],
             'logs': get_scan_logs(app_dict['md5_hash']),
+            'controlled_exploitation': app_dict.get('automation_results', {}),
+            'execution_mode': app_dict.get(
+                'execution_mode',
+                settings.AUTOMATION_EXECUTION.get('default_mode', 'standard')),
         }
         return context
     except Exception as exp:
@@ -191,6 +201,7 @@ def save_or_update(update_type,
             'APPSTORE_DETAILS': app_dict['appstore'],
             'SECRETS': app_dict['secrets'],
             'TRACKERS': code_dict['trackers'],
+            'CONTROLLED_EXPLOITATION': app_dict.get('automation_results', {}),
         }
         if update_type == 'save':
             db_entry = StaticAnalyzerIOS.objects.filter(
@@ -209,6 +220,9 @@ def save_or_update(update_type,
             'APP_NAME': info_dict['bin_name'],
             'PACKAGE_NAME': info_dict['id'],
             'VERSION_NAME': info_dict['bundle_version_name'],
+            'EXECUTION_MODE': app_dict.get(
+                'execution_mode',
+                settings.AUTOMATION_EXECUTION.get('default_mode', 'standard')),
         }
         RecentScansDB.objects.filter(
             MD5=app_dict['md5_hash']).update(**values)

@@ -40,6 +40,9 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
     hash_gen,
     unzip,
 )
+from mobsf.StaticAnalyzer.views.common.automation import (
+    ensure_controlled_exploitation,
+)
 from mobsf.StaticAnalyzer.views.windows.db_interaction import (
     get_context_from_analysis,
     get_context_from_db_entry,
@@ -90,6 +93,19 @@ def staticanalyzer_windows(request, checksum, api=False):
                 request,
                 'The file is not uploaded/available',
                 api)
+        if api:
+            execution_mode = request.POST.get('execution_mode')
+        else:
+            execution_mode = request.GET.get('mode')
+        stored_mode = getattr(
+            robj[0],
+            'EXECUTION_MODE',
+            settings.AUTOMATION_EXECUTION.get('default_mode', 'standard'),
+        )
+        if not execution_mode:
+            execution_mode = stored_mode
+        elif execution_mode != stored_mode:
+            robj.update(EXECUTION_MODE=execution_mode)
         typ = robj[0].SCAN_TYPE
         filename = robj[0].FILE_NAME
         if typ not in settings.WINDOWS_EXTS:
@@ -104,6 +120,7 @@ def staticanalyzer_windows(request, checksum, api=False):
             settings.UPLD_DIR, checksum + '/')
         app_dic['tools_dir'] = os.path.join(
             settings.BASE_DIR, 'StaticAnalyzer/tools/windows/')
+        app_dic['execution_mode'] = execution_mode
         # DB
         db_entry = StaticAnalyzerWindows.objects.filter(
             MD5=checksum,
@@ -167,6 +184,8 @@ def staticanalyzer_windows(request, checksum, api=False):
             vt = VirusTotal.VirusTotal(checksum)
             context['virus_total'] = vt.get_result(
                 os.path.join(app_dic['app_dir'], checksum) + '.appx')
+        mode = app_dic.get('execution_mode') or context.get('execution_mode')
+        ensure_controlled_exploitation(context, mode, 'windows')
         if api:
             return context
         else:

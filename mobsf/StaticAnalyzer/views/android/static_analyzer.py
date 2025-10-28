@@ -71,6 +71,19 @@ def static_analyzer(request, checksum, api=False):
                 request,
                 'The file is not uploaded/available',
                 api)
+        if api:
+            execution_mode = request.POST.get('execution_mode')
+        else:
+            execution_mode = request.GET.get('mode')
+        stored_mode = getattr(
+            robj[0],
+            'EXECUTION_MODE',
+            settings.AUTOMATION_EXECUTION.get('default_mode', 'standard'),
+        )
+        if not execution_mode:
+            execution_mode = stored_mode
+        elif execution_mode != stored_mode:
+            robj.update(EXECUTION_MODE=execution_mode)
         typ = robj[0].SCAN_TYPE
         filename = robj[0].FILE_NAME
         allowed_exts = tuple(f'.{i}' for i in settings.ANDROID_EXTS)
@@ -90,6 +103,7 @@ def static_analyzer(request, checksum, api=False):
         app_dic['tools_dir'] = app_dic['dir'] / 'StaticAnalyzer' / 'tools'
         app_dic['tools_dir'] = app_dic['tools_dir'].as_posix()
         app_dic['icon_path'] = ''
+        app_dic['execution_mode'] = execution_mode
         msg = f'Starting Analysis on: {filename}'
         logger.info(msg)
         if typ == 'xapk':

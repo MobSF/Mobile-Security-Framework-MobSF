@@ -6,6 +6,7 @@ from django.conf import settings
 from mobsf.MobSF.utils import (
     append_scan_status,
     get_scan_logs,
+    python_dict,
     python_list,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerWindows
@@ -43,6 +44,12 @@ def get_context_from_db_entry(db_entry):
             'binary_analysis': python_list(db_entry[0].BINARY_ANALYSIS),
             'binary_warnings': python_list(db_entry[0].BINARY_WARNINGS),
             'logs': get_scan_logs(db_entry[0].MD5),
+            'controlled_exploitation': python_dict(
+                getattr(db_entry[0], 'CONTROLLED_EXPLOITATION', {})),
+            'execution_mode': getattr(
+                db_entry[0],
+                'EXECUTION_MODE',
+                settings.AUTOMATION_EXECUTION.get('default_mode', 'standard')),
         }
         return context
     except Exception:
@@ -79,6 +86,10 @@ def get_context_from_analysis(app_dic,
             'binary_analysis': bin_an_dic['results'],
             'binary_warnings': bin_an_dic['warnings'],
             'logs': get_scan_logs(app_dic['md5']),
+            'controlled_exploitation': app_dic.get('automation_results', {}),
+            'execution_mode': app_dic.get(
+                'execution_mode',
+                settings.AUTOMATION_EXECUTION.get('default_mode', 'standard')),
         }
         return context
     except Exception as exp:
@@ -115,6 +126,7 @@ def save_or_update(update_type,
             'STRINGS': bin_an_dic['strings'],
             'BINARY_ANALYSIS': bin_an_dic['results'],
             'BINARY_WARNINGS': bin_an_dic['warnings'],
+            'CONTROLLED_EXPLOITATION': app_dic.get('automation_results', {}),
         }
         if update_type == 'save':
             db_entry = StaticAnalyzerWindows.objects.filter(
@@ -133,6 +145,9 @@ def save_or_update(update_type,
             'APP_NAME': bin_an_dic['bin_name'],
             'PACKAGE_NAME': xml_dic['pub_name'],
             'VERSION_NAME': xml_dic['version'],
+            'EXECUTION_MODE': app_dic.get(
+                'execution_mode',
+                settings.AUTOMATION_EXECUTION.get('default_mode', 'standard')),
         }
         RecentScansDB.objects.filter(
             MD5=app_dic['md5']).update(**values)
