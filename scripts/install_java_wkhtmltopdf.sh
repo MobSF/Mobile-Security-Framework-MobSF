@@ -1,24 +1,26 @@
 #!/bin/bash
-JDK_FILE=openjdk-22.0.2_linux-x64_bin.tar.gz
-JDK_FILE_ARM=openjdk-22.0.2_linux-aarch64_bin.tar.gz
-WKH_FILE=wkhtmltox_0.12.6.1-3.bookworm_amd64.deb
-WKH_FILE_ARM=wkhtmltox_0.12.6.1-3.bookworm_arm64.deb
 
 # For apktool
 mkdir -p /home/mobsf/.local/share/apktool/framework
 
+# Install yara-python dex on linux/arm64
 if [ "$TARGETPLATFORM" == "linux/arm64" ]
 then
     WKH_FILE=$WKH_FILE_ARM
     JDK_FILE=$JDK_FILE_ARM
+    apt install -y git
+    pip3 install --no-cache-dir wheel
+    pip3 wheel --wheel-dir=yara-python-dex git+https://github.com/MobSF/yara-python-dex.git
+    pip3 install --no-cache-dir --no-index --find-links=yara-python-dex yara-python-dex
+    rm -rf yara-python-dex
 fi
 
 echo "Target platform identified as $TARGETPLATFORM"
-JDK_URL="https://download.java.net/java/GA/jdk22.0.2/c9ecb94cd31b495da20a27d4581645e8/9/GPL/${JDK_FILE}"
-WKH_URL="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/${WKH_FILE}"
+
+JDK_URL="https://download.java.net/java/GA/jdk20.0.2/6e380f22cbe7469fa75fb448bd903d8e/9/GPL/${JDK_FILE}"
+WKH_URL="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/${WKH_FILE}"
 
 # Download and install wkhtmltopdf
-
 echo "Installing $WKH_FILE ..."
 wget --quiet -O /tmp/${WKH_FILE} "${WKH_URL}" && \
     dpkg -i /tmp/${WKH_FILE} && \
@@ -31,10 +33,6 @@ echo "Installing $JDK_FILE ..."
 wget --quiet "${JDK_URL}" && \
     tar zxf "${JDK_FILE}" && \
     rm -f "${JDK_FILE}"
-
-# Install JADX
-python3 tools_download.py /home/mobsf/.MobSF
-rm tools_download.py
 
 # Delete script
 rm $0
