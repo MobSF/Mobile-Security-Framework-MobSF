@@ -43,7 +43,7 @@ fi
 if [ -z "$AVD_NAME" ]; then
   echo -e "$(tput bold)Available AVDs:$(tput sgr0)\n"
   "$EMULATOR_PATH" -list-avds
-  echo -e "$(tput bold)\nUse any Android AVD 5.0 - 11.0, up to API 30 without Google Play (production image).$(tput sgr0)"
+  echo -e "$(tput bold)\nUse any Android AVD 5.0 - 14.0, up to API 34 without Google Play (production image).$(tput sgr0)"
   echo "$(tput bold)Usage: $0 AVD_NAME [START_PORT] [open_gapps.zip path]$(tput sgr0)"
   echo "$(tput bold)Example: $0 Pixel_6_Pro_API_28 5554 /path/to/open_gapps.zip$(tput sgr0)"
   exit 1
