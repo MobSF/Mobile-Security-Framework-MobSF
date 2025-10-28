@@ -37,7 +37,32 @@ from mobsf.MobSF.utils import (
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
-ANDROID_API_SUPPORTED = 34
+# Mapping between Android SDK levels and their corresponding release numbers.
+# Used as a fallback when the version string returned by the runtime cannot be
+# parsed into a float (for example pre-release builds that only expose a
+# codename). The mapping is intentionally limited to the most recent public
+# releases and can be extended without touching the rest of the code.
+SDK_VERSION_MAP = {
+    19: 4.4,
+    20: 4.4,
+    21: 5.0,
+    22: 5.1,
+    23: 6.0,
+    24: 7.0,
+    25: 7.1,
+    26: 8.0,
+    27: 8.1,
+    28: 9.0,
+    29: 10.0,
+    30: 11.0,
+    31: 12.0,
+    32: 12.1,
+    33: 13.0,
+    34: 14.0,
+    35: 15.0,
+}
+
+ANDROID_API_SUPPORTED = max(SDK_VERSION_MAP)
 
 
 class Environment:
@@ -50,6 +75,8 @@ class Environment:
         self.tools_dir = settings.TOOLS_DIR
         self.frida_str = f'MobSF-Frida-{frida_version}'.encode('utf-8')
         self.xposed_str = b'MobSF-Xposed'
+        self.runtime_api_level = None
+        self.runtime_api_supported = True
 
     def wait(self, sec):
         """Wait in Seconds."""
@@ -386,12 +413,40 @@ class Environment:
         out = self.adb_command(['getprop',
                                 'ro.build.version.release'],
                                True, False)
-        and_version = out.decode('utf-8').rstrip()
-        if and_version.count('.') > 1:
-            and_version = and_version.rsplit('.', 1)[0]
-        if and_version.count('.') > 1:
-            and_version = and_version.split('.', 1)[0]
-        return float(and_version)
+        release = out.decode('utf-8').strip()
+        # Android preview builds may expose a codename (for example
+        # "UpsideDownCake") instead of a version number. Attempt to extract a
+        # numeric value from the string before falling back to the SDK level.
+        normalized = release.replace('_', '.').replace('-', '.')
+        digits = ''.join(
+            (char if char.isdigit() or char == '.' else ' ')
+            for char in normalized
+        ).strip()
+        for token in digits.split():
+            if not token:
+                continue
+            try:
+                if token.count('.') < 2:
+                    return float(token)
+                parts = [part for part in token.split('.') if part]
+                if not parts:
+                    continue
+                cleaned = '.'.join(parts[:2])
+                return float(cleaned)
+            except ValueError:
+                continue
+        sdk = self.get_android_sdk()
+        if sdk and sdk.isdigit():
+            sdk_level = int(sdk)
+            mapped = SDK_VERSION_MAP.get(sdk_level)
+            if mapped:
+                return mapped
+            # Even if we do not have an explicit mapping, returning the SDK
+            # level keeps backwards-compatibility with the old float-based
+            # comparisons that only check for minimum supported versions.
+            return float(sdk_level)
+        logger.warning('Unable to determine Android version from release "%s"', release)
+        return 0.0
 
     def get_android_arch(self):
         """Get Android Architecture."""
@@ -405,7 +460,11 @@ class Environment:
         out = self.adb_command([
             'getprop',
             'ro.build.version.sdk'], True)
-        return out.decode('utf-8').strip()
+        sdk = out.decode('utf-8').strip()
+        if sdk.isdigit():
+            self.runtime_api_level = int(sdk)
+            self.runtime_api_supported = self.runtime_api_level <= ANDROID_API_SUPPORTED
+        return sdk
 
     def get_device_packages(self):
         """Get all packages from device."""
@@ -511,10 +570,18 @@ class Environment:
                 if api:
                     logger.info('Android API Level '
                                 'identified as %s', api)
-                    if int(api) > ANDROID_API_SUPPORTED:
-                        logger.error('This API Level is not supported'
-                                     ' for Dynamic Analysis.')
-                        return False
+                    api_level = int(api)
+                    self.runtime_api_level = api_level
+                    self.runtime_api_supported = api_level <= ANDROID_API_SUPPORTED
+                    if not self.runtime_api_supported:
+                        logger.warning(
+                            'Android API level %s is newer than the tested '
+                            'maximum (%s). Dynamic analysis will continue in '
+                            'best-effort mode, but some features may not '
+                            'work as expected.',
+                            api_level,
+                            ANDROID_API_SUPPORTED,
+                        )
             except Exception:
                 pass
             err_msg = ('VM\'s /system is not writable. '
