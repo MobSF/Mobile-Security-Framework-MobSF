@@ -60,6 +60,7 @@ def android_dynamic_analysis(request, api=False):
         device_packages = {}
         and_ver = None
         and_sdk = None
+        env = None
         apks = StaticAnalyzerAndroid.objects.filter(
             APP_TYPE='apk')
 
@@ -99,6 +100,7 @@ def android_dynamic_analysis(request, api=False):
                    'android_version': and_ver,
                    'android_sdk': and_sdk,
                    'android_supported': ANDROID_API_SUPPORTED,
+                   'android_sdk_supported': getattr(env, 'runtime_api_supported', True),
                    'proxy_ip': get_proxy_ip(identifier),
                    'proxy_port': settings.PROXY_PORT,
                    'settings_loc': get_config_loc(),

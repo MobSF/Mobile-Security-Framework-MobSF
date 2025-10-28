@@ -86,23 +86,23 @@ textarea:focus {
               <div class="card-body">
                   <div class="row">
                      <div class="col-md-9">
-                        <h4>MobSF Dynamic Analyzer Supports</h4>
+                        <h4>MobSF Dynamic Analyzer Tested Environments</h4>
                         <h5>
-                          <strong>• Genymotion Android VM</strong> version 4.1 - 14.0 (arm64, x86, and x86_64 upto API {{ android_supported }})<br/>
-                          <strong>• Android Emulator AVD</strong> (non production) version 5.0 - 14.0 (arm, arm64, x86, and x86_64 upto API {{ android_supported }})<br/>
-                          <strong>• Corellium Android VM</strong> (userdebug builds) version 7.1.2 - 14.0 (arm64 upto API {{ android_supported }})
+                          <strong>• Genymotion Android VM</strong> version 4.1 - 14.0 (arm64, x86, and x86_64 tested up to API {{ android_supported }})<br/>
+                          <strong>• Android Emulator AVD</strong> (non production) version 5.0 - 14.0 (arm, arm64, x86, and x86_64 tested up to API {{ android_supported }})<br/>
+                          <strong>• Corellium Android VM</strong> (userdebug builds) version 7.1.2 - 14.0 (arm64 tested up to API {{ android_supported }})
                         </h5>
                         <p>
                           {% if android_version %}
                             Android version >= <strong>9.0</strong> recommended<br/>
                             Detected Android Version: <strong>{{android_version}}</strong>, SDK: API level <strong>{{ android_sdk }}</strong> <br/>
-                            {% if android_sdk|floatformat > android_supported|floatformat %}
+                            {% if not android_sdk_supported and android_sdk %}
                               <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
                               <script>
                                 Swal.fire(
-                                        'Android Version/SDK not supported',
-                                        'You are running Android Version <strong>{{ android_version }}</strong> and SDK <strong>{{ android_sdk }}</strong> which is not supported by MobSF. Please use a supported Android version/API level.',
-                                        'error'
+                                        'Android Version/API not fully tested',
+                                        'You are running Android Version <strong>{{ android_version }}</strong> (SDK <strong>{{ android_sdk }}</strong>). This configuration is newer than the environments validated by MobSF. Dynamic analysis will continue in best-effort mode but some capabilities may be unavailable.',
+                                        'warning'
                                         )
                               </script>
                             {% endif %}
