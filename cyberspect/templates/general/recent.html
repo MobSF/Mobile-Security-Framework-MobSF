@@ -11,7 +11,6 @@
 {% endblock %}
 
 {% block content %}
-
 <script>
   const uploadedApps = {};
 </script>
@@ -40,7 +39,11 @@
                         <th>APPLICATION</th>
                         <th>FILE</th>
                         <th>TYPE</th>
-                        {% if is_admin %}<th>DETAILS</th>{% endif %}
+                        {% with is_admin_flag=is_admin|default:False %}
+                        {% if is_admin_flag %}
+                        <th>DETAILS</th>
+                        {% endif %}
+                        {% endwith %}
                         <th style="width: 15%">ACTIONS</th>
                     </tr>
                     </thead>
@@ -101,7 +104,8 @@
                                 {% elif '.appx' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-windows fa-3x"></i>
                                 {% endif %}
                             </td>                            
-                            {% if is_admin %}
+                            {% with is_admin_flag=is_admin|default:False %}
+                            {% if is_admin_flag %}
                             <td style="word-wrap: break-word; max-width: 200px;">           
                                 <div id="viewFields{{e.MD5}}">
                                     <div id="userAppName{{e.MD5}}">{{e.USER_APP_NAME}}</div>
@@ -115,6 +119,7 @@
                                 </div>                           
                             </td>                               
                             {% endif %}
+                            {% endwith %}
                             <td>
                                 <p>                                    
                                     {% if e.COMPLETE %}
@@ -269,7 +274,8 @@
                     </div>
                   </div>
 
-                  {% if is_admin %}
+                  {% with is_admin_flag=is_admin|default:False %}
+                  {% if is_admin_flag %}
                   <!-- Release -->
                   <div class="col-md-4">
                     <div style="margin-top:36px;">
@@ -281,6 +287,7 @@
                     </div>
                   </div>
                   {% endif %}
+                  {% endwith %}
 
                 </div> <!-- end of first row -->
 
@@ -374,7 +381,8 @@
 
                 <div class="row"> <!-- fourth row -->
 
-                  {% if is_admin %}
+                  {% with is_admin_flag=is_admin|default:False %}
+                  {% if is_admin_flag %}
                   <div class="col-md-6 mb-3">
                     <label for="override_email" class="form-label">Email Address
                       <i class="fas fa-info-circle fa-lg"
@@ -386,6 +394,7 @@
                     <div id="err_email" class="hidden"><span class="error">Email Invalid!</span></div>
                   </div>
                   {% endif %}
+                  {% endwith %}
 
                 </div> <!-- end of fourth row -->
 
@@ -856,5 +865,4 @@
     });
 
 </script>
-
 {% endblock %}

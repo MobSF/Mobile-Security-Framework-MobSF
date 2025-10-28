@@ -46,9 +46,11 @@
         <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'recent' %}" class="nav-link">SCANS</a></li>        
         <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'support' %}" class="nav-link">SUPPORT</a></li>
         <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'about' %}" class="nav-link">ABOUT</a></li>
-        {% if is_admin %}
+        {% with is_admin_flag=is_admin|default:False %}
+        {% if is_admin_flag %}
         <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'admin' %}" class="nav-link">ADMIN</a></li>
         {% endif %}
+        {% endwith %}
     </ul>
 
     <!-- SEARCH FORM -->

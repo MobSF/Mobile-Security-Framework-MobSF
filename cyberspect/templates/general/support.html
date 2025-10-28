@@ -41,7 +41,8 @@ sidebar-collapse
             <p><a href="mailto:cyberspectsupport@syslogicinc.com">cyberspectsupport@syslogicinc.com</a></p>
           </div>
         </div>
-        {% if is_admin %}        
+        {% with is_admin_flag=is_admin|default:False %}
+        {% if is_admin_flag %}        
         <div class="card">
           <div class="card-body">
             <h1>Admin Guide</h1>
@@ -53,6 +54,7 @@ sidebar-collapse
           </div>
         </div>
         {% endif %}
+        {% endwith %}
       </div>
     </div>
   </div>

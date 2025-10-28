@@ -18,6 +18,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required as lg
 
+from mobsf.MobSF.cyberspect_utils import is_admin
 from mobsf.MobSF.security import (
     sanitize_redirect,
 )
@@ -82,6 +83,7 @@ def login_view(request):
         'form': form,
         'sso': sso,
         'allow_pwd': allow_pwd,
+        'is_admin': is_admin(request),
     }
     return render(request, 'auth/login.html', context)
 
