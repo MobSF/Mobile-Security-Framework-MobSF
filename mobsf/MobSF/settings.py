@@ -116,8 +116,14 @@ APPX_MIME = [
 ]
 # Supported File Extensions
 ANDROID_EXTS = (
-    'apk', 'xapk', 'apks', 'zip',
-    'aab', 'so', 'jar', 'aar',
+    'apk',
+    'xapk',
+    'apks',
+    'zip',
+    'aab',
+    'so',
+    'jar',
+    'aar',
 )
 IOS_EXTS = ('ipa', 'dylib', 'a')
 WINDOWS_EXTS = ('appx',)
@@ -128,14 +134,17 @@ API_ONLY = os.getenv('MOBSF_API_ONLY', '0')
 
 # -----External URLS--------------------------
 MALWARE_DB_URL = 'https://www.malwaredomainlist.com/mdlcsv.php'
-MALTRAIL_DB_URL = ('https://raw.githubusercontent.com/stamparm/aux/'
-                   'master/maltrail-malware-domains.txt')
+MALTRAIL_DB_URL = (
+    'https://raw.githubusercontent.com/stamparm/aux/'
+    'master/maltrail-malware-domains.txt'
+)
 VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/vtapi/v2/file/'
 EXODUS_URL = 'https://reports.exodus-privacy.eu.org'
 APPMONSTA_URL = 'https://api.appmonsta.com/v1/stores/android/details/'
 ITUNES_URL = 'https://itunes.apple.com/lookup'
-GITHUB_URL = ('https://github.com/MobSF/Mobile-Security-Framework-MobSF/'
-              'releases/latest')
+GITHUB_URL = (
+    'https://github.com/MobSF/Mobile-Security-Framework-MobSF/' 'releases/latest'
+)
 FRIDA_SERVER = 'https://api.github.com/repos/frida/frida/releases/tags/'
 GOOGLE = 'https://www.google.com'
 BAIDU = 'https://www.baidu.com/'
@@ -149,9 +158,11 @@ APKPLZ = 'https://apkplz.net/download-app/'
 
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
-if (os.environ.get('POSTGRES_USER')
-        and os.environ.get('POSTGRES_PASSWORD')
-        and os.environ.get('POSTGRES_HOST')):
+if (
+    os.environ.get('POSTGRES_USER')
+    and os.environ.get('POSTGRES_PASSWORD')
+    and os.environ.get('POSTGRES_HOST')
+):
     # Postgres support
     default = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -201,9 +212,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.auth.middleware.RemoteUserMiddleware',
 )
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.RemoteUserBackend',
-)
+AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.RemoteUserBackend',)
 MIDDLEWARE = (
     'cyberspect.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
     'mobsf.MobSF.views.aws_sso_middleware.alb_idp_auth_middleware',
@@ -222,25 +231,23 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'APP_DIRS': True,
-        'DIRS':
-            [
-                # Cyberspect addition
-                # when Django looks for a template (e.g., index.html), it will
-                # find and use the version in cyberspect/templates/ before it
-                # looks in the original templates/ directory
-                os.path.join(CYBERSPECT_BASE_DIR, 'cyberspect/templates'),
-                os.path.join(BASE_DIR, 'templates'),
+        'DIRS': [
+            # Cyberspect addition
+            # when Django looks for a template (e.g., index.html), it will
+            # find and use the version in cyberspect/templates/ before it
+            # looks in the original templates/ directory
+            os.path.join(CYBERSPECT_BASE_DIR, 'cyberspect/templates'),
+            os.path.join(BASE_DIR, 'templates'),
+        ],
+        'OPTIONS': {
+            'debug': TEMPLATE_DEBUG,
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ],
-        'OPTIONS':
-            {
-                'debug': TEMPLATE_DEBUG,
-                'context_processors': [
-                    'django.template.context_processors.debug',
-                    'django.template.context_processors.request',
-                    'django.contrib.auth.context_processors.auth',
-                    'django.contrib.messages.context_processors.messages',
-                ],
-            },
+        },
     },
 ]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
@@ -254,23 +261,22 @@ LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = '/'
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': ('django.contrib.auth.password_validation.'
-                 'UserAttributeSimilarityValidator'),
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'UserAttributeSimilarityValidator'
+        ),
     },
     {
-        'NAME': ('django.contrib.auth.password_validation.'
-                 'MinimumLengthValidator'),
+        'NAME': ('django.contrib.auth.password_validation.' 'MinimumLengthValidator'),
         'OPTIONS': {
             'min_length': 6,
         },
     },
     {
-        'NAME': ('django.contrib.auth.password_validation.'
-                 'CommonPasswordValidator'),
+        'NAME': ('django.contrib.auth.password_validation.' 'CommonPasswordValidator'),
     },
     {
-        'NAME': ('django.contrib.auth.password_validation.'
-                 'NumericPasswordValidator'),
+        'NAME': ('django.contrib.auth.password_validation.' 'NumericPasswordValidator'),
     },
 ]
 # Better logging
@@ -284,8 +290,7 @@ LOGGING = {
         },
         'color': {
             '()': 'colorlog.ColoredFormatter',
-            'format':
-                '%(log_color)s[%(levelname)s] %(asctime)-15s - %(message)s',
+            'format': '%(log_color)s[%(levelname)s] %(asctime)-15s - %(message)s',
             'datefmt': '%d/%b/%Y %H:%M:%S',
             'log_colors': {
                 'DEBUG': 'cyan',
@@ -319,7 +324,7 @@ LOGGING = {
             'handlers': ['console', 'logfile'],
             # DEBUG will log all queries, so change it to WARNING.
             'level': 'INFO',
-            'propagate': False,   # Don't propagate to other handlers
+            'propagate': False,  # Don't propagate to other handlers
         },
         'mobsf.MobSF': {
             'handlers': ['console', 'logfile'],
@@ -348,10 +353,8 @@ SAST_TIMEOUT = int(os.getenv('MOBSF_SAST_TIMEOUT', 1000))
 BINARY_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_BINARY_ANALYSIS_TIMEOUT', 600))
 DISABLE_AUTHENTICATION = os.getenv('MOBSF_DISABLE_AUTHENTICATION')
 RATELIMIT = os.getenv('MOBSF_RATELIMIT', '7/m')
-USE_X_FORWARDED_HOST = bool(
-    os.getenv('MOBSF_USE_X_FORWARDED_HOST', '1') == '1')
-USE_X_FORWARDED_PORT = bool(
-    os.getenv('MOBSF_USE_X_FORWARDED_PORT', '1') == '1')
+USE_X_FORWARDED_HOST = bool(os.getenv('MOBSF_USE_X_FORWARDED_HOST', '1') == '1')
+USE_X_FORWARDED_PORT = bool(os.getenv('MOBSF_USE_X_FORWARDED_PORT', '1') == '1')
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # ===========================
 # ENTERPRISE FEATURE REQUESTS
@@ -390,16 +393,31 @@ if not CONFIG_HOME:
     # Common third party classes/paths that will be skipped
     # during static analysis
     import os
+
     SKIP_CLASS_PATH = {
-        'com/google/', 'androidx', 'okhttp2/', 'okhttp3/',
-        'com/android/', 'com/squareup', 'okhttp/'
-        'android/content/', 'com/twitter/', 'twitter4j/',
-        'android/support/', 'org/apache/', 'oauth/signpost',
-        'android/arch', 'org/chromium/', 'com/facebook',
-        'org/spongycastle', 'org/bouncycastle',
-        'com/amazon/identity/', 'io/fabric/sdk',
-        'com/instabug', 'com/crashlytics/android',
-        'kotlinx/', 'kotlin/',
+        'com/google/',
+        'androidx',
+        'okhttp2/',
+        'okhttp3/',
+        'com/android/',
+        'com/squareup',
+        'okhttp/' 'android/content/',
+        'com/twitter/',
+        'twitter4j/',
+        'android/support/',
+        'org/apache/',
+        'oauth/signpost',
+        'android/arch',
+        'org/chromium/',
+        'com/facebook',
+        'org/spongycastle',
+        'org/bouncycastle',
+        'com/amazon/identity/',
+        'io/fabric/sdk',
+        'com/instabug',
+        'com/crashlytics/android',
+        'kotlinx/',
+        'kotlin/',
     }
     # Disable CVSSV2 Score by default
     CVSS_SCORE_ENABLED = bool(os.getenv('MOBSF_CVSS_SCORE_ENABLED', ''))
@@ -425,7 +443,8 @@ if not CONFIG_HOME:
     # ======WINDOWS STATIC ANALYSIS SETTINGS ===========
     # Private key
     WINDOWS_VM_SECRET = os.getenv(
-        'MOBSF_WINDOWS_VM_SECRET', 'mobsf/MobSF/windows_vm_priv_key.asc')
+        'MOBSF_WINDOWS_VM_SECRET', 'mobsf/MobSF/windows_vm_priv_key.asc',
+    )
     # IP and Port of the MobSF Windows VM
     # example: WINDOWS_VM_IP = '127.0.0.1'   ;noqa E800
     WINDOWS_VM_IP = os.getenv('MOBSF_WINDOWS_VM_IP')
@@ -480,10 +499,8 @@ if not CONFIG_HOME:
 
     # ========UPSTREAM PROXY SETTINGS ==============
     # If you are behind a Proxy
-    UPSTREAM_PROXY_ENABLED = bool(os.getenv(
-        'MOBSF_UPSTREAM_PROXY_ENABLED', ''))
-    UPSTREAM_PROXY_SSL_VERIFY = os.getenv(
-        'MOBSF_UPSTREAM_PROXY_SSL_VERIFY', '1')
+    UPSTREAM_PROXY_ENABLED = bool(os.getenv('MOBSF_UPSTREAM_PROXY_ENABLED', ''))
+    UPSTREAM_PROXY_SSL_VERIFY = os.getenv('MOBSF_UPSTREAM_PROXY_SSL_VERIFY', '1')
     UPSTREAM_PROXY_TYPE = os.getenv('MOBSF_UPSTREAM_PROXY_TYPE', 'http')
     UPSTREAM_PROXY_IP = os.getenv('MOBSF_UPSTREAM_PROXY_IP', '127.0.0.1')
     UPSTREAM_PROXY_PORT = int(os.getenv('MOBSF_UPSTREAM_PROXY_PORT', '3128'))
@@ -524,7 +541,7 @@ ADMIN_USERS = os.getenv('ADMIN_USERS', 'admin@cyberspect.com')
 GENERAL_GROUP = os.getenv('GENERAL_GROUP', ' ')
 ADMIN_GROUP = os.getenv('ADMIN_GROUP', ' ')
 TENANT_STATIC_URL = STATIC_URL + os.getenv('TENANT_ID', '')
-if (not TENANT_STATIC_URL.endswith('/')):
+if not TENANT_STATIC_URL.endswith('/'):
     TENANT_STATIC_URL = TENANT_STATIC_URL + '/'
 JADX_THREADS = os.getenv('JADX_THREADS', '4')
 DEFAULT_PAGINATION_CLASS = 'utils.FasterPageNumberPagination'
