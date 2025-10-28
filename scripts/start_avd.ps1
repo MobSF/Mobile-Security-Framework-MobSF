@@ -27,7 +27,7 @@ if (!(Test-Path $ADB_PATH)) {
 if (-not $AVD_NAME) {
     Write-Output "Available AVDs:"
     & "$EMULATOR_PATH" -list-avds
-    Write-Output "Use any Android AVD 5.0 - 11, up to API 30 without Google Play (production image)."
+    Write-Output "Use any Android AVD 5.0 - 14, up to API 34 without Google Play (production image)."
     Write-Output "Usage: .\script.ps1 -AVD_NAME <AVD_NAME> [-START_PORT <START_PORT>]"
     Write-Output "Example: .\script.ps1 -AVD_NAME Pixel_6_Pro_API_28 -START_PORT 5554"
     exit 1
