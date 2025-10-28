@@ -6,6 +6,8 @@ import shutil
 from json import load
 from pathlib import Path
 
+from django.conf import settings
+
 from mobsf.MobSF.utils import (
     is_file_exists,
     python_list,
@@ -13,6 +15,10 @@ from mobsf.MobSF.utils import (
 from mobsf.DynamicAnalyzer.views.common.shared import (
     extract_urls_domains_emails,
     get_app_files,
+)
+from mobsf.DynamicAnalyzer.tools.webproxy import get_traffic
+from mobsf.DynamicAnalyzer.tools.reporting import (
+    build_dast_report as generate_dast_report,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 
@@ -56,6 +62,7 @@ def run_analysis(apk_dir, md5_hash, package):
     analysis_result['sqlite'] = all_files['sqlite']
     analysis_result['other_files'] = all_files['others']
     analysis_result['tls_tests'] = get_tls_logs(apk_dir, md5_hash)
+    analysis_result['dast'] = generate_dast_report(data['traffic'])
     return analysis_result
 
 
@@ -116,47 +123,41 @@ def get_log_data(apk_dir, package):
     droidmon_data = ''
     apimon_data = ''
     frida_logs = ''
-    web_data = ''
-    traffic = ''
-    httptools = os.path.join(str(Path.home()), '.httptools')
-    web = os.path.join(httptools, 'flows', package + '.flow.txt')
+    web_data = get_traffic(package)
+    traffic_parts = [web_data]
     logcat = os.path.join(apk_dir, 'logcat.txt')
     xlogcat = os.path.join(apk_dir, 'x_logcat.txt')
     apimon = os.path.join(apk_dir, 'mobsf_api_monitor.txt')
     fd_logs = os.path.join(apk_dir, 'mobsf_frida_out.txt')
-    if is_file_exists(web):
-        with io.open(web,
-                     mode='r',
-                     encoding='utf8',
-                     errors='ignore') as flip:
-            web_data = flip.read()
     if is_file_exists(logcat):
         with io.open(logcat,  # lgtm [py/path-injection]
                      mode='r',
                      encoding='utf8',
                      errors='ignore') as flip:
             logcat_data = flip.readlines()
-            traffic = ''.join(logcat_data)
+            traffic_parts.append(''.join(logcat_data))
     if is_file_exists(xlogcat):
         with io.open(xlogcat,  # lgtm [py/path-injection]
                      mode='r',
                      encoding='utf8',
                      errors='ignore') as flip:
             droidmon_data = flip.read()
+            traffic_parts.append(droidmon_data)
     if is_file_exists(apimon):
         with io.open(apimon,  # lgtm [py/path-injection]
                      mode='r',
                      encoding='utf8',
                      errors='ignore') as flip:
             apimon_data = flip.read()
+            traffic_parts.append(apimon_data)
     if is_file_exists(fd_logs):
         with io.open(fd_logs,  # lgtm [py/path-injection]
                      mode='r',
                      encoding='utf8',
                      errors='ignore') as flip:
             frida_logs = flip.read()
-    traffic = (web_data + traffic + droidmon_data
-               + apimon_data + frida_logs)
+            traffic_parts.append(frida_logs)
+    traffic = ''.join(part for part in traffic_parts if part)
     return {'logcat': logcat_data,
             'traffic': traffic}
 
@@ -165,14 +166,12 @@ def generate_download(apk_dir, md5_hash, download_dir, package):
     """Generating Downloads."""
     logger.info('Generating Downloads')
     try:
-        httptools = os.path.join(str(Path.home()), '.httptools')
         logcat = os.path.join(apk_dir, 'logcat.txt')
         xlogcat = os.path.join(apk_dir, 'x_logcat.txt')
         apimon = os.path.join(apk_dir, 'mobsf_api_monitor.txt')
         fd_logs = os.path.join(apk_dir, 'mobsf_frida_out.txt')
         dumpsys = os.path.join(apk_dir, 'dump.txt')
         sshot = os.path.join(apk_dir, 'screenshots-apk/')
-        web = os.path.join(httptools, 'flows', package + '.flow.txt')
         star = os.path.join(apk_dir, package + '.tar')
 
         dlogcat = os.path.join(download_dir, md5_hash + '-logcat.txt')
@@ -183,11 +182,12 @@ def generate_download(apk_dir, md5_hash, download_dir, package):
         dsshot = os.path.join(download_dir, md5_hash + '-screenshots-apk/')
         dweb = os.path.join(download_dir, md5_hash + '-web_traffic.txt')
         dstar = os.path.join(download_dir, md5_hash + '-app_data.tar')
+        dmitm = os.path.join(download_dir, md5_hash + '-mitmproxy.mitm')
 
         # Delete existing data
         dellist = [dlogcat, dxlogcat, dapimon,
                    dfd_logs, ddumpsys, dsshot,
-                   dweb, dstar]
+                   dweb, dstar, dmitm]
         for item in dellist:
             if os.path.isdir(item):
                 shutil.rmtree(item)
@@ -206,9 +206,16 @@ def generate_download(apk_dir, md5_hash, download_dir, package):
             shutil.copytree(sshot, dsshot, dirs_exist_ok=True)
         except Exception:
             pass
-        if is_file_exists(web):
-            shutil.copyfile(web, dweb)
+        aggregated_traffic = get_traffic(package)
+        if aggregated_traffic:
+            with open(dweb, 'w', encoding='utf-8') as dest:
+                dest.write(aggregated_traffic)
+        mitm_capture = Path(settings.DAST_CAPTURE_DIR) / f'{package}.mitm'
+        if mitm_capture.exists():
+            shutil.copyfile(mitm_capture, dmitm)
         if is_file_exists(star):
             shutil.copyfile(star, dstar)
     except Exception:
         logger.exception('Generating Downloads')
+
+
