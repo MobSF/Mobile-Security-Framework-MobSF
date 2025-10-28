@@ -17,6 +17,56 @@ from mobsf.MobSF.init import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _env_flag(name, default=False):
+    """Return boolean environment flag."""
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {'1', 'true', 'yes', 'on'}
+
+
+def _env_int(name, default):
+    """Return integer environment value with fallback."""
+    try:
+        return int(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return default
+
+
+# Controlled exploitation and automation connectors
+AUTOMATION_EXECUTION = {
+    'default_mode': os.environ.get('MOBSF_AUTOMATION_DEFAULT_MODE', 'standard'),
+    'connectors': {
+        'metasploit': {
+            'enabled': _env_flag('MOBSF_AUTOMATION_METASPLOIT_ENABLED'),
+            'host': os.environ.get('MOBSF_AUTOMATION_METASPLOIT_HOST', 'localhost'),
+            'port': _env_int('MOBSF_AUTOMATION_METASPLOIT_PORT', 55553),
+            'token': os.environ.get('MOBSF_AUTOMATION_METASPLOIT_TOKEN', ''),
+            'workspace': os.environ.get('MOBSF_AUTOMATION_METASPLOIT_WORKSPACE', ''),
+        },
+        'zap': {
+            'enabled': _env_flag('MOBSF_AUTOMATION_ZAP_ENABLED'),
+            'api_key': os.environ.get('MOBSF_AUTOMATION_ZAP_API_KEY', ''),
+            'address': os.environ.get('MOBSF_AUTOMATION_ZAP_ADDRESS', 'http://127.0.0.1'),
+            'port': _env_int('MOBSF_AUTOMATION_ZAP_PORT', 8090),
+            'context': os.environ.get('MOBSF_AUTOMATION_ZAP_CONTEXT', ''),
+        },
+        'nuclei': {
+            'enabled': _env_flag('MOBSF_AUTOMATION_NUCLEI_ENABLED'),
+            'binary': os.environ.get('MOBSF_AUTOMATION_NUCLEI_BINARY', 'nuclei'),
+            'templates': os.environ.get('MOBSF_AUTOMATION_NUCLEI_TEMPLATES', ''),
+            'severity_threshold': os.environ.get('MOBSF_AUTOMATION_NUCLEI_SEVERITY', 'high'),
+        },
+        'sqlmap': {
+            'enabled': _env_flag('MOBSF_AUTOMATION_SQLMAP_ENABLED'),
+            'binary': os.environ.get('MOBSF_AUTOMATION_SQLMAP_BINARY', 'sqlmap'),
+            'config_file': os.environ.get('MOBSF_AUTOMATION_SQLMAP_CONFIG', ''),
+            'risk_level': _env_int('MOBSF_AUTOMATION_SQLMAP_RISK', 1),
+        },
+    },
+}
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF CONFIGURATION
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

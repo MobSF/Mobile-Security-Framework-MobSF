@@ -68,6 +68,9 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
     hash_gen,
     unzip,
 )
+from mobsf.StaticAnalyzer.views.common.automation import (
+    ensure_controlled_exploitation,
+)
 from mobsf.StaticAnalyzer.views.common.firebase import (
     firebase_analysis,
 )
@@ -255,6 +258,8 @@ def generate_dynamic_context(request, app_dic, checksum, context, api):
     if settings.VT_ENABLED:
         vt = VirusTotal.VirusTotal(checksum)
         context['virus_total'] = vt.get_result(app_dic['app_path'])
+    mode = app_dic.get('execution_mode') or context.get('execution_mode')
+    ensure_controlled_exploitation(context, mode, 'android')
     template = 'static_analysis/android_binary_analysis.html'
     return context if api else render(request, template, context)
 

@@ -77,7 +77,7 @@ def get_scan_type(location):
     return 'apk'
 
 
-def add_apk(dwd_file, filename):
+def add_apk(dwd_file, filename, execution_mode):
     """Add APK to MobSF."""
     with dwd_file.open('rb') as flip:
         if not is_zip_magic(flip):
@@ -92,6 +92,7 @@ def add_apk(dwd_file, filename):
             'hash': md5,
             'scan_type': scan_type,
             'file_name': filename,
+            'execution_mode': execution_mode,
         }
         add_to_recent_scan(data)
         return data
@@ -115,7 +116,7 @@ def find_apk_link(url, domain):
     return None
 
 
-def try_provider(package, provider, domain):
+def try_provider(package, provider, domain, execution_mode):
     """Try using a provider."""
     downloaded_file = None
     data = None
@@ -125,13 +126,13 @@ def try_provider(package, provider, domain):
     if link:
         downloaded_file = download_file(link, temp_file)
     if downloaded_file:
-        data = add_apk(downloaded_file, apk_name)
+        data = add_apk(downloaded_file, apk_name, execution_mode)
     if data:
         return data
     return None
 
 
-def apk_download(package):
+def apk_download(package, execution_mode):
     """Download APK."""
     downloaded_file = None
     data = None
@@ -146,21 +147,24 @@ def apk_download(package):
         data = try_provider(
             package,
             f'{settings.APKTADA}{package}',
-            'apktada.com')
+            'apktada.com',
+            execution_mode)
         if data:
             return data
         # APKPURE
         data = try_provider(
             package,
             settings.APKPURE.format(package),
-            'apkpure.com')
+            'apkpure.com',
+            execution_mode)
         if data:
             return data
         # APKPLZ
         data = try_provider(
             package,
             f'{settings.APKPLZ}{package}',
-            'apkplz.net')
+            'apkplz.net',
+            execution_mode)
         if data:
             return data
         logger.warning('Unable to find download link for %s', package)

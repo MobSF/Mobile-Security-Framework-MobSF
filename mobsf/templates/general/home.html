@@ -58,6 +58,23 @@
                 </br>
                 <form id="upload_form" enctype="multipart/form-data" method="post">
                 {% csrf_token %}
+                <div class="form-group d-flex justify-content-center">
+                    <div>
+                        <label class="font-weight-bold" for="executionMode">Modo de execução</label>
+                        <select id="executionMode" name="execution_mode" class="custom-select custom-select-sm">
+                            {% for mode in available_execution_modes %}
+                            <option value="{{ mode }}" {% if mode == default_execution_mode %}selected{% endif %}>
+                                {% if mode == 'aggressive' %}
+                                Agressivo (exploração controlada)
+                                {% else %}
+                                Padrão (somente análise)
+                                {% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">O modo agressivo executa automações de exploração controlada usando conectores opcionais.</small>
+                    </div>
+                </div>
                 <div class="fileUpload btn btn-lg btn-secondary" id="but">
                     <input type="file" name="file" id="uploadFile" placeholder="Choose File" multiple>
                     <span class="fas fa-cloud-upload-alt"></span>
@@ -119,11 +136,12 @@
                     _("status").innerText = 'Trying to download ...';
                     show_loader();
                     $.ajax({
-                        url : '{% url "download_scan" %}', 
+                        url : '{% url "download_scan" %}',
                         type : "POST",
-                        dataType: "json", 
+                        dataType: "json",
                         data : {
                             package: $('#package').val(),
+                            execution_mode: getExecutionMode(),
                             csrfmiddlewaretoken: '{{ csrf_token }}',
                         },
                         success : function(json){
@@ -132,7 +150,11 @@
                                     get_status(json.hash);
                                 }, 500);
 
+                                var mode = json.execution_mode || getExecutionMode();
                                 url = json.analyzer + '/' + json.hash + '/';
+                                if (mode && mode !== 'standard') {
+                                    url += '?mode=' + encodeURIComponent(mode);
+                                }
                                 load_result(url);
                             } else {
                                 hide_loader();
@@ -170,7 +192,11 @@
                     setInterval(function() {
                         get_status(json.hash);
                     }, 500);
+                    var mode = json.execution_mode || getExecutionMode();
                     var url = json.analyzer + '/' + json.hash + '/';
+                    if (mode && mode !== 'standard') {
+                        url += '?mode=' + encodeURIComponent(mode);
+                    }
                     load_result(url);
                 }
             }
@@ -248,6 +274,14 @@
                 return false;
           }
          // File Upload
+         function getExecutionMode(){
+                var select = document.getElementById('executionMode');
+                if (!select){
+                    return '{{ default_execution_mode }}';
+                }
+                return select.value || '{{ default_execution_mode }}';
+         }
+
          function uploadFile(file, i) {
            try {
                 if (!isValidExt(file.name) || !isValidMime(file.type)){
@@ -265,6 +299,7 @@
                 xhr.addEventListener("abort", abortHandler, false);
                 var formdata = new FormData();
                 formdata.append("file", file);
+                formdata.append("execution_mode", getExecutionMode());
                 xhr.send(formdata)
             } catch (e) {
                 alert("Error:" + e);
