@@ -67,6 +67,29 @@ AUTOMATION_EXECUTION = {
         },
     },
 }
+
+# Dynamic Application Security Testing (DAST) configuration
+DAST_ROOT_DIR = os.path.join(MOBSF_HOME, 'dast/')
+DAST_CAPTURE_DIR = os.path.join(DAST_ROOT_DIR, 'captures/')
+DAST_PAYLOAD_DIR = os.path.join(DAST_ROOT_DIR, 'payloads/')
+DAST_DEFAULT_TIMEOUT = _env_int('MOBSF_DAST_TIMEOUT', 15)
+DAST_ALLOW_REAL_TRAFFIC = _env_flag('MOBSF_DAST_EXECUTE_REAL_REQUESTS')
+DAST_SESSION_STRATEGIES = {
+    'rotation_window': _env_int('MOBSF_DAST_SESSION_ROTATION', 5),
+    'max_retries': _env_int('MOBSF_DAST_SESSION_MAX_RETRIES', 3),
+}
+
+# Ensure directories exist with secure permissions.
+for _dir in (DAST_ROOT_DIR, DAST_CAPTURE_DIR, DAST_PAYLOAD_DIR):
+    try:
+        os.makedirs(_dir, exist_ok=True)
+        os.chmod(_dir, 0o700)
+    except (PermissionError, FileNotFoundError, NotImplementedError):
+        # Fall back silently when running on restricted filesystems or Windows
+        # where chmod might not be available.
+        os.makedirs(_dir, exist_ok=True)
+
+
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF CONFIGURATION
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
