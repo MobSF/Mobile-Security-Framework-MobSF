@@ -53,6 +53,39 @@ docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:la
 * MobSF Online Course: [OpSecX MAS](https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/)
 * What's New: [See Changelog](https://mobsf.github.io/Mobile-Security-Framework-MobSF/changelog.html)
 
+### Authentication enhancements
+
+MobSF ships with a secure, enterprise-ready authentication workflow. Recent improvements include:
+
+* **Configurable password policy** with support for minimum length, character class requirements, and custom special characters.
+* **Self-service password reset** with email delivery and administrator-controlled enablement.
+
+#### Password policy configuration
+
+| Environment variable | Default | Purpose |
+| --- | --- | --- |
+| `MOBSF_PASSWORD_MIN_LENGTH` | `12` | Minimum required password length. |
+| `MOBSF_PASSWORD_REQUIRE_UPPERCASE` | `true` | Require at least one uppercase letter. |
+| `MOBSF_PASSWORD_REQUIRE_LOWERCASE` | `true` | Require at least one lowercase letter. |
+| `MOBSF_PASSWORD_REQUIRE_DIGITS` | `true` | Require at least one digit. |
+| `MOBSF_PASSWORD_REQUIRE_SPECIAL` | `true` | Require at least one special character. |
+| `MOBSF_PASSWORD_SPECIAL_CHARACTERS` | `!@#$%^&*()_+-={}[]:";'<>?,./` | Allowed special character set when the previous flag is enabled. |
+
+Set values to `0`, `false`, or `no` to disable a requirement. The policy is enforced during user creation, password changes, and resets.
+
+#### Password reset controls
+
+| Environment variable | Default | Purpose |
+| --- | --- | --- |
+| `MOBSF_ENABLE_PASSWORD_RESET` | `true` | Toggle the self-service password reset flow. |
+| `MOBSF_EMAIL_BACKEND` | `django.core.mail.backends.console.EmailBackend` | Django email backend used to send reset links. |
+| `MOBSF_EMAIL_HOST` / `MOBSF_EMAIL_PORT` | _empty_ / `25` | SMTP host and port when using an SMTP backend. |
+| `MOBSF_EMAIL_USE_TLS` / `MOBSF_EMAIL_USE_SSL` | `false` | Enable TLS or SSL for outbound email. |
+| `MOBSF_EMAIL_HOST_USER` / `MOBSF_EMAIL_HOST_PASSWORD` | _empty_ | SMTP credentials. |
+| `MOBSF_EMAIL_FROM` | `MobSF <no-reply@mobsf.local>` | Sender displayed in password reset emails. |
+
+The default console backend prints reset emails to the server logs—perfect for development. Configure SMTP (or another backend) in production to deliver messages to end users.
+
 ## Collaborators
 
 [Ajin Abraham](https://in.linkedin.com/in/ajinabraham) ![india](https://user-images.githubusercontent.com/4301109/37564171-6549d678-2ab6-11e8-9b9d-21327c7f5d5b.png)  | [Magaofei](https://github.com/magaofei) ![china](https://user-images.githubusercontent.com/4301109/44515364-00bbe880-a6e0-11e8-944d-5b48a86427da.png) | [Matan Dobrushin](https://github.com/matandobr) ![israel](https://user-images.githubusercontent.com/4301109/37564177-782f1758-2ab6-11e8-91e5-c76bde37b330.png) | [Vincent Nadal](https://github.com/superpoussin22) ![france](https://user-images.githubusercontent.com/4301109/37564175-71d6d92c-2ab6-11e8-89d7-d21f5aa0bda8.png)

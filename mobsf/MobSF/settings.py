@@ -199,6 +199,35 @@ WINDOWS_EXTS = ('appx',)
 # In this mode, web UI related urls are disabled.
 API_ONLY = os.getenv('MOBSF_API_ONLY', '0')
 
+# Authentication and password policy
+ENABLE_PASSWORD_RESET = _env_flag('MOBSF_ENABLE_PASSWORD_RESET', True)
+PASSWORD_POLICY = {
+    'min_length': _env_int('MOBSF_PASSWORD_MIN_LENGTH', 12),
+    'require_uppercase': _env_flag('MOBSF_PASSWORD_REQUIRE_UPPERCASE', True),
+    'require_lowercase': _env_flag('MOBSF_PASSWORD_REQUIRE_LOWERCASE', True),
+    'require_digits': _env_flag('MOBSF_PASSWORD_REQUIRE_DIGITS', True),
+    'require_special': _env_flag('MOBSF_PASSWORD_REQUIRE_SPECIAL', True),
+    'special_characters': os.environ.get(
+        'MOBSF_PASSWORD_SPECIAL_CHARACTERS', r"!@#$%^&*()_+-={}[]:\";'<>?,./"
+    ),
+}
+
+# Email delivery (used for password resets and notifications)
+EMAIL_BACKEND = os.environ.get(
+    'MOBSF_EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend',
+)
+EMAIL_HOST = os.environ.get('MOBSF_EMAIL_HOST', '')
+EMAIL_PORT = _env_int('MOBSF_EMAIL_PORT', 25)
+EMAIL_USE_TLS = _env_flag('MOBSF_EMAIL_USE_TLS')
+EMAIL_USE_SSL = _env_flag('MOBSF_EMAIL_USE_SSL')
+EMAIL_HOST_USER = os.environ.get('MOBSF_EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('MOBSF_EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get(
+    'MOBSF_EMAIL_FROM',
+    'MobSF <no-reply@mobsf.local>',
+)
+
 # -----External URLS--------------------------
 MALWARE_DB_URL = 'https://www.malwaredomainlist.com/mdlcsv.php'
 MALTRAIL_DB_URL = ('https://raw.githubusercontent.com/stamparm/aux/'
@@ -330,18 +359,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': ('django.contrib.auth.password_validation.'
-                 'MinimumLengthValidator'),
-        'OPTIONS': {
-            'min_length': 6,
-        },
-    },
-    {
-        'NAME': ('django.contrib.auth.password_validation.'
                  'CommonPasswordValidator'),
     },
     {
         'NAME': ('django.contrib.auth.password_validation.'
                  'NumericPasswordValidator'),
+    },
+    {
+        'NAME': 'mobsf.MobSF.password_validation.ConfigurablePasswordValidator',
+        'OPTIONS': PASSWORD_POLICY,
     },
 ]
 # Better logging
