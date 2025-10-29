@@ -22,6 +22,13 @@ sidebar-collapse
                               <h1 class="display-2 h-100 d-flex align-items-center justify-content-center">
                                  Mob<strong>SF</strong>
                               </h1>
+                              {% if messages %}
+                              <ul class="messages">
+                                 {% for message in messages %}
+                                 <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                                 {% endfor %}
+                              </ul>
+                              {% endif %}
                               {% if allow_pwd %}
                               <form method="post" action="{% url 'login' %}?next={{next}}">
                                  {% csrf_token %}
@@ -62,6 +69,11 @@ sidebar-collapse
                                     <button type="submit" class="btn btn-primary btn-block">Sign In</button>
                                  </div>
                               </form>
+                              {% if password_reset_enabled %}
+                              <div class="col-12 text-center mt-3">
+                                 <a href="{% url 'password_reset' %}">Forgot your password?</a>
+                              </div>
+                              {% endif %}
                               {% endif %}
                               {% if sso %}
                               <hr>
