@@ -421,6 +421,19 @@ MANIFEST_DESC = {
                         ' application on the device.'),
         'name': '%s %s is not Protected. [android:exported=true]',
     },
+    'missing_exported_android12': {
+        'title': ('<strong>%s</strong> (%s) targets API level %s without '
+                  'defining android:exported'),
+        'level': 'error',
+        'description': ('From Android 12 (API level 31), any %s that declares '
+                        'an intent filter must explicitly set the '
+                        '[android:exported] attribute. The component %s '
+                        'targets API level %s but does not define this '
+                        'attribute, which prevents installation and leaves '
+                        'its exposure ambiguous.'),
+        'name': ('%s (%s) missing android:exported attribute for '
+                 'targetSdkVersion %s'),
+    },
     'exported_intent_filter_exists': {
         'title': ('<strong>%s</strong> (%s) is not Protected.<br>'
                   'An intent-filter exists.'),
