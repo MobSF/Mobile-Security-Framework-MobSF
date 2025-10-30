@@ -17,8 +17,8 @@ fi
 
 echo "Target platform identified as $TARGETPLATFORM"
 
-JDK_URL="https://download.java.net/java/GA/jdk20.0.2/6e380f22cbe7469fa75fb448bd903d8e/9/GPL/${JDK_FILE}"
-WKH_URL="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/${WKH_FILE}"
+JDK_URL="https://download.java.net/java/GA/jdk22.0.2/c9ecb94cd31b495da20a27d4581645e8/9/GPL/${JDK_FILE}"
+WKH_URL="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/${WKH_FILE}"
 
 # Download and install wkhtmltopdf
 echo "Installing $WKH_FILE ..."

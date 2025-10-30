@@ -67,6 +67,19 @@ except Exception:
 # ===MOBSF SECRET GENERATION AND DB MIGRATION====
 SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MobSF_HOME)
 
+# ==============3rd Party Tools (Always Available)=====================
+# These settings should be accessible regardless of CONFIG_HOME value
+VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')
+ADB_BINARY = os.getenv('MOBSF_ADB_BINARY', '')
+JAVA_DIRECTORY = os.getenv('MOBSF_JAVA_DIRECTORY', '/jdk-22.0.2/bin/')
+BUNDLE_TOOL = os.getenv('MOBSF_BUNDLE_TOOL', '')
+JADX_BINARY = os.getenv('MOBSF_JADX_BINARY', '')
+BACKSMALI_BINARY = os.getenv('MOBSF_BACKSMALI_BINARY', '')
+APKTOOL_BINARY = os.getenv('MOBSF_APKTOOL_BINARY', '')
+JTOOL_BINARY = os.getenv('MOBSF_JTOOL_BINARY', '')
+CLASSDUMP_BINARY = os.getenv('MOBSF_CLASSDUMP_BINARY', '')
+CLASSDUMP_SWIFT_BINARY = os.getenv('MOBSF_CLASSDUMP_SWIFT_BINARY', '')
+
 # =============ALLOWED DOWNLOAD EXTENSIONS=====
 ALLOWED_EXTENSIONS = {
     '.txt': 'text/plain',
@@ -450,29 +463,6 @@ if not CONFIG_HOME:
     WINDOWS_VM_IP = os.getenv('MOBSF_WINDOWS_VM_IP')
     WINDOWS_VM_PORT = os.getenv('MOBSF_WINDOWS_VM_PORT', '8000')
     # ==================================================
-
-    # ==============3rd Party Tools=====================
-    """
-    If you want to use a different version of 3rd party tools used by MobSF.
-    You can do that by specifying the path here. If specified, MobSF will run
-    the tool from this location.
-    """
-
-    # Android 3P Tools
-    BUNDLE_TOOL = os.getenv('MOBSF_BUNDLE_TOOL', '')
-    JADX_BINARY = os.getenv('MOBSF_JADX_BINARY', '')
-    BACKSMALI_BINARY = os.getenv('MOBSF_BACKSMALI_BINARY', '')
-    VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')
-    APKTOOL_BINARY = os.getenv('MOBSF_APKTOOL_BINARY', '')
-    ADB_BINARY = os.getenv('MOBSF_ADB_BINARY', '')
-
-    # iOS 3P Tools
-    JTOOL_BINARY = os.getenv('MOBSF_JTOOL_BINARY', '')
-    CLASSDUMP_BINARY = os.getenv('MOBSF_CLASSDUMP_BINARY', '')
-    CLASSDUMP_SWIFT_BINARY = os.getenv('MOBSF_CLASSDUMP_SWIFT_BINARY', '')
-
-    # COMMON
-    JAVA_DIRECTORY = os.getenv('MOBSF_JAVA_DIRECTORY', '')
 
     """
     Examples:

@@ -1,5 +1,5 @@
 # Base image
-FROM ubuntu:22.04
+FROM python:3.12-slim-bookworm
 
 # Labels and Credits
 LABEL \
@@ -10,32 +10,8 @@ LABEL \
     contributor_2="Vincent Nadal <vincent.nadal@orange.fr>" \
     description="Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis."
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-# See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
-RUN apt update -y && apt install -y  --no-install-recommends \
-    build-essential \
-    locales \
-    sqlite3 \
-    fontconfig-config \
-    libjpeg-turbo8 \
-    libxrender1 \
-    libfontconfig1 \
-    libxext6 \
-    fontconfig \
-    xfonts-75dpi \
-    xfonts-base \
-    python3 \
-    python3-dev \
-    python3-pip \
-    wget \
-    curl \
-    git \
-    jq \
-    android-tools-adb && \
-    locale-gen en_US.UTF-8 
-
-ENV MOBSF_USER=mobsf \
+ENV DEBIAN_FRONTEND=noninteractive \
+    MOBSF_USER=mobsf \
     MOBSF_PLATFORM=docker \
     MOBSF_ADB_BINARY=/usr/bin/adb \
     JDK_FILE=openjdk-22.0.2_linux-x64_bin.tar.gz \
@@ -51,6 +27,31 @@ ENV MOBSF_USER=mobsf \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONFAULTHANDLER=1 \
     POETRY_VERSION=1.8.4
+
+
+# See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
+RUN apt update -y && \
+    apt install -y  --no-install-recommends \
+    build-essential \
+    curl \
+    fontconfig \
+    fontconfig-config \
+    git \
+    jq \
+    libfontconfig1 \
+    libjpeg62-turbo \
+    libxext6 \
+    libxrender1 \
+    locales \
+    python3 \
+    python3-dev \
+    python3-pip \
+    sqlite3 \
+    xfonts-75dpi \
+    xfonts-base \
+    wget \
+    android-tools-adb && \
+    locale-gen en_US.UTF-8 
 
 # Install wkhtmltopdf & OpenJDK
 ARG TARGETPLATFORM
