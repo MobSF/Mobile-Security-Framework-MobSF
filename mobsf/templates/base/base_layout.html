@@ -4,10 +4,10 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>{{title}}</title>
+  <title>{{ title }} · {{ branding.product_name }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Mobile Security Framework - MobSF">
-  <meta name="author" content="Ajin Abraham">
+  <meta name="description" content="{{ branding.product_name }} - {{ branding.organization_name }}">
+  <meta name="author" content="{{ branding.organization_name }}">
   <link rel="icon" href="{% static "img/favicon.ico" %}">
 
   <!-- Tell the browser to be responsive to screen width -->
@@ -23,19 +23,55 @@
   <!-- Google Font: Source Sans Pro -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
   <style>
-    body {
-      zoom: 0.8; 
+    :root {
+      --mobsf-accent: {{ branding.accent_color }};
+      --mobsf-accent-dark: {{ branding.accent_color_dark }};
+      --mobsf-accent-contrast: {{ branding.accent_contrast_color }};
+      --mobsf-surface: {{ branding.background_color }};
     }
+
+    body {
+      zoom: 0.8;
+    }
+
     .modal-backdrop {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      z-index: 1040; /* Ensure it is above most elements but below modal */
-      background-color: rgba(0, 0, 0, 0.5); /* Default backdrop color */
+      z-index: 1040;
+      background-color: rgba(0, 0, 0, 0.5);
     }
 
+    .navbar-primary,
+    .btn-primary,
+    .bg-primary,
+    .badge-primary,
+    .page-item.active .page-link {
+      background-color: var(--mobsf-accent) !important;
+      border-color: var(--mobsf-accent) !important;
+      color: var(--mobsf-accent-contrast) !important;
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus,
+    .page-item.active .page-link:hover,
+    .page-item.active .page-link:focus {
+      background-color: var(--mobsf-accent-dark) !important;
+      border-color: var(--mobsf-accent-dark) !important;
+      color: var(--mobsf-accent-contrast) !important;
+    }
+
+    a,
+    .text-primary,
+    .nav-link:hover {
+      color: var(--mobsf-accent) !important;
+    }
+
+    .main-header.navbar {
+      border-bottom: 0;
+    }
   </style>
   {% block extra_css %}
  
@@ -46,12 +82,17 @@
 {% include "base/nav.html" %}    
  <!-- sidebar-->
   <!-- Main Sidebar Container -->
-  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+  <aside class="main-sidebar sidebar-dark-primary elevation-4" style="background-color: var(--mobsf-surface);">
     <!-- Brand Logo -->
     <a href="{% url 'home' %}" class="brand-link">
-      <img src="{% static "img/mobsf_icon.png" %}" alt="MobSF" class="brand-image"
-           style="opacity: .8">
-      <span class="brand-text logo-lg"> | <strong> Mob</strong>SF</span>
+      {% if branding.logo_asset %}
+      <img src="{% static branding.logo_asset %}" alt="{{ branding.product_short_name }}" class="brand-image"
+           style="opacity: .9">
+      {% else %}
+      <img src="{% static "img/mobsf_icon.png" %}" alt="{{ branding.product_short_name }}" class="brand-image"
+           style="opacity: .9">
+      {% endif %}
+      <span class="brand-text logo-lg"> | <strong>{{ branding.product_short_name }}</strong></span>
     </a>
     {% block sidebar %}
   
@@ -65,7 +106,7 @@
 
   <!-- /.content-wrapper -->
   <footer class="main-footer">
-    <strong>© {% now "Y" %} Mobile Security Framework - MobSF | <a href="https://ajinabraham.com">Ajin Abraham</a> | <a href="https://opensecurity.in">OpenSecurity</a>.</strong>
+    <strong>© {% now "Y" %} {{ branding.product_name }} | {{ branding.organization_name }}</strong>
     <div class="float-right d-none d-sm-inline-block">
       <b>Version</b> {{ version }}
     </div>
