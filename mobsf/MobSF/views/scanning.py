@@ -26,6 +26,10 @@ def add_to_recent_scan(data):
                 PACKAGE_NAME='',
                 VERSION_NAME='',
                 MD5=data['hash'],
+                EXECUTION_MODE=data.get(
+                    'execution_mode',
+                    settings.AUTOMATION_EXECUTION.get('default_mode', 'standard'),
+                ),
                 TIMESTAMP=timezone.now())
             new_db_obj.save()
     except Exception:
@@ -61,16 +65,20 @@ def handle_uploaded_file(content, extension):
 
 class Scanning(object):
 
-    def __init__(self, request):
+    def __init__(self, request, execution_mode=None):
         self.file = request.FILES['file']
         self.file_name = sanitize_filename(
             request.FILES['file'].name)
+        self.execution_mode = (
+            execution_mode
+            or settings.AUTOMATION_EXECUTION.get('default_mode', 'standard'))
         self.data = {
             'analyzer': 'static_analyzer',
             'status': 'success',
             'hash': '',
             'scan_type': '',
             'file_name': self.file_name,
+            'execution_mode': self.execution_mode,
         }
 
     def scan_apk(self):

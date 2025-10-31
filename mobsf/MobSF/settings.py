@@ -17,6 +17,87 @@ from mobsf.MobSF.init import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _env_flag(name, default=False):
+    """Return boolean environment flag."""
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {'1', 'true', 'yes', 'on'}
+
+
+def _env_int(name, default):
+    """Return integer environment value with fallback."""
+    try:
+        return int(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return default
+
+
+def _env_list(name, default):
+    """Return a sanitized list from a comma separated environment variable."""
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return [item.strip() for item in value.split(',') if item and item.strip()]
+
+
+# Controlled exploitation and automation connectors
+AUTOMATION_EXECUTION = {
+    'default_mode': os.environ.get('MOBSF_AUTOMATION_DEFAULT_MODE', 'standard'),
+    'connectors': {
+        'metasploit': {
+            'enabled': _env_flag('MOBSF_AUTOMATION_METASPLOIT_ENABLED'),
+            'host': os.environ.get('MOBSF_AUTOMATION_METASPLOIT_HOST', 'localhost'),
+            'port': _env_int('MOBSF_AUTOMATION_METASPLOIT_PORT', 55553),
+            'token': os.environ.get('MOBSF_AUTOMATION_METASPLOIT_TOKEN', ''),
+            'workspace': os.environ.get('MOBSF_AUTOMATION_METASPLOIT_WORKSPACE', ''),
+        },
+        'zap': {
+            'enabled': _env_flag('MOBSF_AUTOMATION_ZAP_ENABLED'),
+            'api_key': os.environ.get('MOBSF_AUTOMATION_ZAP_API_KEY', ''),
+            'address': os.environ.get('MOBSF_AUTOMATION_ZAP_ADDRESS', 'http://127.0.0.1'),
+            'port': _env_int('MOBSF_AUTOMATION_ZAP_PORT', 8090),
+            'context': os.environ.get('MOBSF_AUTOMATION_ZAP_CONTEXT', ''),
+        },
+        'nuclei': {
+            'enabled': _env_flag('MOBSF_AUTOMATION_NUCLEI_ENABLED'),
+            'binary': os.environ.get('MOBSF_AUTOMATION_NUCLEI_BINARY', 'nuclei'),
+            'templates': os.environ.get('MOBSF_AUTOMATION_NUCLEI_TEMPLATES', ''),
+            'severity_threshold': os.environ.get('MOBSF_AUTOMATION_NUCLEI_SEVERITY', 'high'),
+        },
+        'sqlmap': {
+            'enabled': _env_flag('MOBSF_AUTOMATION_SQLMAP_ENABLED'),
+            'binary': os.environ.get('MOBSF_AUTOMATION_SQLMAP_BINARY', 'sqlmap'),
+            'config_file': os.environ.get('MOBSF_AUTOMATION_SQLMAP_CONFIG', ''),
+            'risk_level': _env_int('MOBSF_AUTOMATION_SQLMAP_RISK', 1),
+        },
+    },
+}
+
+# Dynamic Application Security Testing (DAST) configuration
+DAST_ROOT_DIR = os.path.join(MOBSF_HOME, 'dast/')
+DAST_CAPTURE_DIR = os.path.join(DAST_ROOT_DIR, 'captures/')
+DAST_PAYLOAD_DIR = os.path.join(DAST_ROOT_DIR, 'payloads/')
+DAST_DEFAULT_TIMEOUT = _env_int('MOBSF_DAST_TIMEOUT', 15)
+DAST_ALLOW_REAL_TRAFFIC = _env_flag('MOBSF_DAST_EXECUTE_REAL_REQUESTS')
+DAST_SESSION_STRATEGIES = {
+    'rotation_window': _env_int('MOBSF_DAST_SESSION_ROTATION', 5),
+    'max_retries': _env_int('MOBSF_DAST_SESSION_MAX_RETRIES', 3),
+}
+
+# Ensure directories exist with secure permissions.
+for _dir in (DAST_ROOT_DIR, DAST_CAPTURE_DIR, DAST_PAYLOAD_DIR):
+    try:
+        os.makedirs(_dir, exist_ok=True)
+        os.chmod(_dir, 0o700)
+    except (PermissionError, FileNotFoundError, NotImplementedError):
+        # Fall back silently when running on restricted filesystems or Windows
+        # where chmod might not be available.
+        os.makedirs(_dir, exist_ok=True)
+
+
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF CONFIGURATION
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -62,6 +143,180 @@ except Exception:
 
 # ===MOBSF SECRET GENERATION AND DB MIGRATION====
 SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MOBSF_HOME)
+
+# ======================== USER INTERFACE & BRANDING ========================
+_DEFAULT_LANGUAGES = [
+    ('en', 'English'),
+    ('pt-br', 'Português (Brasil)'),
+]
+
+_available_language_codes = _env_list(
+    'MOBSF_AVAILABLE_LANGUAGES',
+    [code for code, _ in _DEFAULT_LANGUAGES],
+)
+LANGUAGES = [
+    entry for entry in _DEFAULT_LANGUAGES if entry[0] in _available_language_codes
+]
+if not LANGUAGES:
+    LANGUAGES = list(_DEFAULT_LANGUAGES)
+
+_requested_default_language = os.environ.get(
+    'MOBSF_DEFAULT_LANGUAGE',
+    LANGUAGES[0][0],
+).lower().replace('_', '-')
+_language_codes = {code for code, _ in LANGUAGES}
+if _requested_default_language not in _language_codes:
+    _requested_default_language = LANGUAGES[0][0]
+
+LANGUAGE_CODE = _requested_default_language
+LOCALE_PATHS = (
+    os.path.join(BASE_DIR, 'locale'),
+)
+
+# Languages that should be exposed in the UI selector.
+UI_LANGUAGES = [
+    code for code in _env_list(
+        'MOBSF_LOGIN_LANGUAGES',
+        [code for code, _ in LANGUAGES],
+    )
+    if code in _language_codes
+]
+if not UI_LANGUAGES:
+    UI_LANGUAGES = [code for code, _ in LANGUAGES]
+
+
+def _localized_setting(default, env_prefix, *, fallback_pt_br=None):
+    """Return a language aware configuration dictionary."""
+    localized = {'default': default}
+    if fallback_pt_br is not None:
+        localized.setdefault('pt-br', fallback_pt_br)
+    for code in _language_codes:
+        env_key = f'{env_prefix}_{code.replace("-", "_").upper()}'
+        value = os.environ.get(env_key)
+        if value:
+            localized[code] = value
+    return localized
+
+
+UI_BRANDING = {
+    'product_name': os.environ.get(
+        'MOBSF_PRODUCT_NAME',
+        'Mobile Security Framework',
+    ),
+    'product_short_name': os.environ.get(
+        'MOBSF_PRODUCT_SHORT_NAME',
+        'MobSF',
+    ),
+    'organization_name': os.environ.get(
+        'MOBSF_ORGANIZATION_NAME',
+        'Open Mobile Security',
+    ),
+    'logo_static_path': os.environ.get('MOBSF_LOGIN_LOGO_STATIC', ''),
+    'accent_color': os.environ.get('MOBSF_BRAND_PRIMARY_COLOR', '#2563eb'),
+    'accent_color_dark': os.environ.get(
+        'MOBSF_BRAND_PRIMARY_COLOR_DARK',
+        '#1e3a8a',
+    ),
+    'accent_contrast_color': os.environ.get(
+        'MOBSF_BRAND_PRIMARY_CONTRAST',
+        '#ffffff',
+    ),
+    'background_color': os.environ.get(
+        'MOBSF_BRAND_BACKGROUND_COLOR',
+        '#0b1220',
+    ),
+    'login_background_overlay': os.environ.get(
+        'MOBSF_LOGIN_BACKGROUND_OVERLAY',
+        'linear-gradient(135deg, rgba(2, 17, 36, 0.85) 0%, rgba(18, 62, 126, 0.75) 100%)',
+    ),
+    'login_titles': _localized_setting(
+        os.environ.get('MOBSF_LOGIN_HEADING_DEFAULT', 'Welcome back'),
+        'MOBSF_LOGIN_HEADING',
+        fallback_pt_br='Bem-vindo de volta',
+    ),
+    'login_messages': _localized_setting(
+        os.environ.get(
+            'MOBSF_LOGIN_TAGLINE_DEFAULT',
+            'Sign in to access your mobile security workspace.',
+        ),
+        'MOBSF_LOGIN_TAGLINE',
+        fallback_pt_br='Faça login para acessar seu ambiente de segurança mobile.',
+    ),
+    'login_support_texts': _localized_setting(
+        os.environ.get(
+            'MOBSF_LOGIN_SUPPORT_TEXT_DEFAULT',
+            'Need help? Contact your MobSF administrator.',
+        ),
+        'MOBSF_LOGIN_SUPPORT_TEXT',
+        fallback_pt_br='Precisa de ajuda? Fale com o administrador da plataforma.',
+    ),
+    'login_support_url': os.environ.get('MOBSF_LOGIN_SUPPORT_URL', ''),
+    'security_tips': [
+        tip
+        for tip in [
+            os.environ.get(
+                'MOBSF_LOGIN_SECURITY_TIP_1',
+                'Enable multi-factor authentication from your account settings.',
+            ),
+            os.environ.get(
+                'MOBSF_LOGIN_SECURITY_TIP_2',
+                'Rotate analysis credentials regularly and prefer SSO when available.',
+            ),
+            os.environ.get(
+                'MOBSF_LOGIN_SECURITY_TIP_3',
+                'Upload binaries from trusted sources only and review scan history.',
+            ),
+        ]
+        if tip
+    ],
+    'navigation_labels': {
+        'recent_scans': _localized_setting(
+            os.environ.get('MOBSF_NAV_RECENT_DEFAULT', 'Recent Scans'),
+            'MOBSF_NAV_RECENT',
+            fallback_pt_br='Análises Recentes',
+        ),
+        'static_analyzer': _localized_setting(
+            os.environ.get('MOBSF_NAV_STATIC_DEFAULT', 'Static Analyzer'),
+            'MOBSF_NAV_STATIC',
+            fallback_pt_br='Analisador Estático',
+        ),
+        'dynamic_analyzer': _localized_setting(
+            os.environ.get('MOBSF_NAV_DYNAMIC_DEFAULT', 'Dynamic Analyzer'),
+            'MOBSF_NAV_DYNAMIC',
+            fallback_pt_br='Analisador Dinâmico',
+        ),
+        'api_docs': _localized_setting(
+            os.environ.get('MOBSF_NAV_API_DEFAULT', 'API'),
+            'MOBSF_NAV_API',
+            fallback_pt_br='API',
+        ),
+        'donate': _localized_setting(
+            os.environ.get('MOBSF_NAV_DONATE_DEFAULT', 'Donate ♥'),
+            'MOBSF_NAV_DONATE',
+            fallback_pt_br='Doar ♥',
+        ),
+        'documentation': _localized_setting(
+            os.environ.get('MOBSF_NAV_DOCS_DEFAULT', 'Docs'),
+            'MOBSF_NAV_DOCS',
+            fallback_pt_br='Documentação',
+        ),
+        'about': _localized_setting(
+            os.environ.get('MOBSF_NAV_ABOUT_DEFAULT', 'About'),
+            'MOBSF_NAV_ABOUT',
+            fallback_pt_br='Sobre',
+        ),
+        'language_label': _localized_setting(
+            os.environ.get('MOBSF_NAV_LANGUAGE_DEFAULT', 'Language'),
+            'MOBSF_NAV_LANGUAGE',
+            fallback_pt_br='Idioma',
+        ),
+        'language_apply': _localized_setting(
+            os.environ.get('MOBSF_NAV_LANGUAGE_APPLY_DEFAULT', 'Apply'),
+            'MOBSF_NAV_LANGUAGE_APPLY',
+            fallback_pt_br='Aplicar',
+        ),
+    },
+}
 
 # =============ALLOWED DOWNLOAD EXTENSIONS=====
 ALLOWED_EXTENSIONS = {
@@ -125,6 +380,35 @@ WINDOWS_EXTS = ('appx',)
 # Set MOBSF_API_ONLY to 1 to enable REST API only mode
 # In this mode, web UI related urls are disabled.
 API_ONLY = os.getenv('MOBSF_API_ONLY', '0')
+
+# Authentication and password policy
+ENABLE_PASSWORD_RESET = _env_flag('MOBSF_ENABLE_PASSWORD_RESET', True)
+PASSWORD_POLICY = {
+    'min_length': _env_int('MOBSF_PASSWORD_MIN_LENGTH', 12),
+    'require_uppercase': _env_flag('MOBSF_PASSWORD_REQUIRE_UPPERCASE', True),
+    'require_lowercase': _env_flag('MOBSF_PASSWORD_REQUIRE_LOWERCASE', True),
+    'require_digits': _env_flag('MOBSF_PASSWORD_REQUIRE_DIGITS', True),
+    'require_special': _env_flag('MOBSF_PASSWORD_REQUIRE_SPECIAL', True),
+    'special_characters': os.environ.get(
+        'MOBSF_PASSWORD_SPECIAL_CHARACTERS', r"!@#$%^&*()_+-={}[]:\";'<>?,./"
+    ),
+}
+
+# Email delivery (used for password resets and notifications)
+EMAIL_BACKEND = os.environ.get(
+    'MOBSF_EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend',
+)
+EMAIL_HOST = os.environ.get('MOBSF_EMAIL_HOST', '')
+EMAIL_PORT = _env_int('MOBSF_EMAIL_PORT', 25)
+EMAIL_USE_TLS = _env_flag('MOBSF_EMAIL_USE_TLS')
+EMAIL_USE_SSL = _env_flag('MOBSF_EMAIL_USE_SSL')
+EMAIL_HOST_USER = os.environ.get('MOBSF_EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('MOBSF_EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get(
+    'MOBSF_EMAIL_FROM',
+    'MobSF <no-reply@mobsf.local>',
+)
 
 # -----External URLS--------------------------
 MALWARE_DB_URL = 'https://www.malwaredomainlist.com/mdlcsv.php'
@@ -201,18 +485,19 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django_ratelimit.middleware.RatelimitMiddleware',
 )
 MIDDLEWARE = (
     'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 
 )
 ROOT_URLCONF = 'mobsf.MobSF.urls'
 WSGI_APPLICATION = 'mobsf.MobSF.wsgi.application'
-LANGUAGE_CODE = 'en-us'
 TIME_ZONE = os.getenv('TIME_ZONE', 'UTC')
 USE_I18N = True
 USE_L10N = True
@@ -231,8 +516,10 @@ TEMPLATES = [
                 'context_processors': [
                     'django.template.context_processors.debug',
                     'django.template.context_processors.request',
+                    'django.template.context_processors.i18n',
                     'django.contrib.auth.context_processors.auth',
                     'django.contrib.messages.context_processors.messages',
+                    'mobsf.MobSF.context_processors.branding',
                 ],
             },
     },
@@ -257,18 +544,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': ('django.contrib.auth.password_validation.'
-                 'MinimumLengthValidator'),
-        'OPTIONS': {
-            'min_length': 6,
-        },
-    },
-    {
-        'NAME': ('django.contrib.auth.password_validation.'
                  'CommonPasswordValidator'),
     },
     {
         'NAME': ('django.contrib.auth.password_validation.'
                  'NumericPasswordValidator'),
+    },
+    {
+        'NAME': 'mobsf.MobSF.password_validation.ConfigurablePasswordValidator',
+        'OPTIONS': PASSWORD_POLICY,
     },
 ]
 # Better logging

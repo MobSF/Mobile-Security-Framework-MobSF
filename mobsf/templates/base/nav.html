@@ -7,13 +7,13 @@
     </ul>
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
-        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'recent' %}" class="nav-link">RECENT SCANS</a></li>
-        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'home' %}" class="nav-link">STATIC ANALYZER</a></li>
-        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'dynamic' %}" class="nav-link">DYNAMIC ANALYZER</a></li>
-        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'api_docs' %}" class="nav-link">API</a></li>
-        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'donate' %}" class="nav-link">DONATE ♥</a></li>
-        <li class="nav-item d-none d-sm-inline-block"><a target="_blank" href="https://mobsf.github.io/docs/#/" class="nav-link">DOCS</a></li>
-        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'about' %}" class="nav-link">ABOUT</a></li>
+        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'recent' %}" class="nav-link">{{ branding.navigation.recent_scans }}</a></li>
+        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'home' %}" class="nav-link">{{ branding.navigation.static_analyzer }}</a></li>
+        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'dynamic' %}" class="nav-link">{{ branding.navigation.dynamic_analyzer }}</a></li>
+        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'api_docs' %}" class="nav-link">{{ branding.navigation.api_docs }}</a></li>
+        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'donate' %}" class="nav-link">{{ branding.navigation.donate }}</a></li>
+        <li class="nav-item d-none d-sm-inline-block"><a target="_blank" href="https://mobsf.github.io/docs/#/" class="nav-link">{{ branding.navigation.documentation }}</a></li>
+        <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'about' %}" class="nav-link">{{ branding.navigation.about }}</a></li>
 
         {% if user.is_authenticated %}
         <li class="nav-item dropdown">
@@ -25,6 +25,30 @@
           {% if user.is_staff %}<li><a href="{% url 'users' %}" class="dropdown-item"><i class="fa fa-users" aria-hidden="true"></i> User Management </a></li>{% endif %}
           <li><a href="{% url 'logout' %}" class="dropdown-item"><i class="fa fa-power-off" aria-hidden="true"></i> Logout </a></li>
           </ul>
+        </li>
+        {% endif %}
+
+        {% if available_languages|length > 1 %}
+        <li class="nav-item dropdown">
+          <a id="languageDropdown" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">
+            <i class="fas fa-language"></i>
+          </a>
+          <div class="dropdown-menu dropdown-menu-right p-3" aria-labelledby="languageDropdown">
+            <h6 class="dropdown-header">{{ branding.navigation.language_label }}</h6>
+            <form action="{% url 'set_language' %}" method="post">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <div class="form-group mb-2">
+                <label class="sr-only" for="language-select">{{ branding.navigation.language_label }}</label>
+                <select id="language-select" name="language" class="custom-select custom-select-sm">
+                  {% for lang in available_languages %}
+                  <option value="{{ lang.code }}" {% if lang.selected %}selected{% endif %}>{{ lang.label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <button class="btn btn-primary btn-sm btn-block" type="submit">{{ branding.navigation.language_apply }}</button>
+            </form>
+          </div>
         </li>
         {% endif %}
 

@@ -20,6 +20,9 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
     hash_gen,
     unzip,
 )
+from mobsf.StaticAnalyzer.views.common.automation import (
+    ensure_controlled_exploitation,
+)
 from mobsf.StaticAnalyzer.views.common.firebase import (
     firebase_analysis,
 )
@@ -212,6 +215,8 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
         vt = VirusTotal.VirusTotal(checksum)
         context['virus_total'] = vt.get_result(
             app_dic['app_path'])
+    mode = app_dic.get('execution_mode') or context.get('execution_mode')
+    ensure_controlled_exploitation(context, mode, 'android')
     template = 'static_analysis/android_binary_analysis.html'
     if api:
         return context

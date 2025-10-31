@@ -8,6 +8,8 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
     extract_urls_domains_emails,
     get_app_files,
 )
+from mobsf.DynamicAnalyzer.tools.webproxy import get_traffic
+from mobsf.DynamicAnalyzer.tools.reporting import build_dast_report
 
 logger = logging.getLogger(__name__)
 
@@ -28,14 +30,13 @@ def get_logs_data(app_dir, bundle_id):
     data = []
     dump_file = Path(app_dir) / 'mobsf_dump_file.txt'
     fd_log_file = Path(app_dir) / 'mobsf_frida_out.txt'
-    flows = Path.home() / '.httptools' / 'flows'
-    web_file = flows / f'{bundle_id}.flow.txt'
     if dump_file.exists():
         data.append(dump_file.read_text('utf-8', 'ignore'))
     if fd_log_file.exists():
         data.append(fd_log_file.read_text('utf-8', 'ignore'))
-    if web_file.exists():
-        data.append(web_file.read_text('utf-8', 'ignore'))
+    web_data = get_traffic(bundle_id)
+    if web_data:
+        data.append(web_data)
     return '\n'.join(data)
 
 
@@ -57,6 +58,7 @@ def run_analysis(app_dir, bundle_id, checksum):
     analysis_result['urls'] = urls
     analysis_result['domains'] = domains
     analysis_result['emails'] = list(emails)
+    analysis_result['dast'] = build_dast_report(data)
     return analysis_result
 
 

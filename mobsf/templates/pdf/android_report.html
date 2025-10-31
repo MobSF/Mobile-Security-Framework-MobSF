@@ -158,8 +158,31 @@
         <td class="td-secondary"><h2>{{ appsec.hotspot | length}}</h2></td>
       </tr>
     </table>
+
+    <h2><i class="fas fa-bolt"></i> CONTROLLED EXPLOITATION</h2>
+    <p>Modo: {{ controlled_exploitation.mode|default:'standard'|title }} | Conectores executados: {{ controlled_exploitation.summary.connectors_triggered|default:0 }}</p>
+    <h3>Exploração confirmada ({{ controlled_exploitation.summary.confirmed_total|default:0 }})</h3>
+    {% if controlled_exploitation.confirmed %}
+    <ul>
+      {% for fid, finding in controlled_exploitation.confirmed.items %}
+      <li><strong>{{ finding.metadata.title|default:finding.title|default:fid }}</strong> — {{ finding.metadata.description|default:finding.description|default:'Detecção confirmada.' }}</li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>Nenhuma exploração confirmada.</p>
+    {% endif %}
+    <h3>Possíveis vulnerabilidades ({{ controlled_exploitation.summary.potential_total|default:0 }})</h3>
+    {% if controlled_exploitation.potential %}
+    <ul>
+      {% for fid, finding in controlled_exploitation.potential.items %}
+      <li><strong>{{ finding.metadata.title|default:finding.title|default:fid }}</strong> — {{ finding.metadata.description|default:finding.description|default:'Investigação pendente.' }}</li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>Nenhuma vulnerabilidade pendente de confirmação.</p>
+    {% endif %}
       </div>
-      
+
     </article>
   {% endif %}
     <article id="contents">

@@ -1,84 +1,178 @@
 {% extends "base/base_layout.html" %}
 {% load static %}
+{% block extra_css %}
+<style>
+  .login-hero {
+    min-height: calc(100vh - 120px);
+    padding: 3rem 1rem;
+    background-color: var(--mobsf-surface);
+    color: var(--mobsf-accent-contrast);
+  }
+
+  .login-brand-heading {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--mobsf-accent-contrast);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .login-card-body {
+    border-radius: 0.5rem;
+  }
+
+  .alert-list .alert {
+    border-radius: 0.35rem;
+  }
+
+  .login-box .card {
+    border-radius: 0.75rem;
+  }
+
+  .login-box .btn-primary {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .login-box label {
+    font-weight: 600;
+    color: #4a5568;
+  }
+
+  .login-box .form-control {
+    border-radius: 0.5rem;
+  }
+
+  .login-box .input-group-text {
+    border-radius: 0 0.5rem 0.5rem 0;
+  }
+
+  .login-box .card.shadow-lg {
+    border: 0;
+  }
+
+  .login-box .card-title {
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .login-box .media .fas {
+    font-size: 1.1rem;
+  }
+
+  .login-box a {
+    color: var(--mobsf-accent);
+    font-weight: 600;
+  }
+</style>
+{% endblock %}
 {% block sidebar_option %}
 sidebar-collapse
 {% endblock %}
 {% block content %}
 <div class="content-wrapper">
-   <div class="content-header">
-   </div>
+  <div class="login-hero" style="background: {{ branding.login_background_overlay }};">
+   <div class="content-header"></div>
    <div class="container-fluid">
-      <div class="row">
-         <div class="col-lg-12">
-            <div class="card">
-               <div class="card-body">
-                  <div class="h-100 d-flex align-items-center justify-content-center">
-                     <div class="login-box">
-                        <div class="login-logo">
-                           <a href="">Sign in to access</a>
-                        </div>
-                        <div class="card">
-                           <div class="card-body login-card-body">
-                              <h1 class="display-2 h-100 d-flex align-items-center justify-content-center">
-                                 Mob<strong>SF</strong>
-                              </h1>
-                              {% if allow_pwd %}
-                              <form method="post" action="{% url 'login' %}?next={{next}}">
-                                 {% csrf_token %}
-                                 {{ form.non_field_errors }}
-                                 <div class="input-group mb-3">
-                                    <input type="username" name="username" class="form-control" placeholder="Username">
-                                    <div class="input-group-append">
-                                       <div class="input-group-text">
-                                          <span class="fas fa-user"></span>
-                                       </div>
-                                    </div>
-                                 </div>
-                                 {% for err in form.username.errors %}
-                                 <small> {{ err }} </small><br>
-                                 {% endfor %}
-                                 <div class="input-group mb-3">
-                                    <input type="password" name="password" class="form-control" placeholder="Password">
-                                    <div class="input-group-append">
-                                       <div class="input-group-text">
-                                          <span class="fas fa-lock"></span>
-                                       </div>
-                                    </div>
-                                 </div>
-                                 {% for err in form.password.errors %}
-                                 <small> {{ err }} </small><br>
-                                 {% endfor %}
-                                 <div class="row">
-                                    <!-- <div class="col-8">
-                                       <div class="icheck-primary">
-                                       <input type="checkbox" id="remember">
-                                       <label for="remember">
-                                       Remember Me
-                                       </label>
-                                       </div>
-                                       </div> -->
-                                 </div>
-                                 <div class="col-12">
-                                    <button type="submit" class="btn btn-primary btn-block">Sign In</button>
-                                 </div>
-                              </form>
-                              {% endif %}
-                              {% if sso %}
-                              <hr>
-                              <p>
-                              <div class="col-12">
-                                 <a href="{% url 'saml_login' %}?next={{next}}" class="btn btn-primary btn-block">Sign in with SSO</a>
-                              </div>
-                              </p>
-                              {% endif %}
-                           </div>
-                        </div>
+      <div class="row justify-content-center">
+         <div class="col-xl-4 col-lg-5 col-md-8">
+            <div class="login-box text-center mb-4">
+               <div class="login-logo mb-3">
+                  <a class="login-brand-heading" href="#">{{ branding.login_heading }}</a>
+               </div>
+               <div class="card shadow-lg">
+                  <div class="card-body login-card-body p-4">
+                     <div class="mb-3">
+                        {% if branding.logo_asset %}
+                        <img src="{% static branding.logo_asset %}" alt="{{ branding.product_short_name }}" class="img-fluid" style="max-height: 72px;">
+                        {% else %}
+                        <h1 class="display-4 font-weight-bold text-primary">{{ branding.product_short_name }}</h1>
+                        {% endif %}
+                        <p class="text-muted mt-3 mb-0">{{ branding.login_message }}</p>
                      </div>
+                     {% if messages %}
+                     <div class="alert-list text-left">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags|default:'info' }}" role="alert">{{ message }}</div>
+                        {% endfor %}
+                     </div>
+                     {% endif %}
+                     {% if allow_pwd %}
+                     <form method="post" action="{% url 'login' %}?next={{next}}" class="text-left">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                        <div class="form-group">
+                           <label for="username">Username</label>
+                           <div class="input-group">
+                              <input id="username" type="username" name="username" class="form-control" placeholder="Username" autocomplete="username">
+                              <div class="input-group-append">
+                                 <div class="input-group-text">
+                                    <span class="fas fa-user"></span>
+                                 </div>
+                              </div>
+                           </div>
+                           {% for err in form.username.errors %}
+                           <small class="text-danger">{{ err }}</small>
+                           {% endfor %}
+                        </div>
+                        <div class="form-group">
+                           <label for="password">Password</label>
+                           <div class="input-group">
+                              <input id="password" type="password" name="password" class="form-control" placeholder="Password" autocomplete="current-password">
+                              <div class="input-group-append">
+                                 <div class="input-group-text">
+                                    <span class="fas fa-lock"></span>
+                                 </div>
+                              </div>
+                           </div>
+                           {% for err in form.password.errors %}
+                           <small class="text-danger">{{ err }}</small>
+                           {% endfor %}
+                        </div>
+                        <div class="form-group mb-0">
+                           <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                        </div>
+                     </form>
+                     {% if password_reset_enabled %}
+                     <div class="text-center mt-3">
+                        <a href="{% url 'password_reset' %}">Forgot your password?</a>
+                     </div>
+                     {% endif %}
+                     {% endif %}
+                     {% if sso %}
+                     <hr>
+                     <div class="text-left">
+                        <button class="btn btn-primary btn-block" type="button" onclick="window.location.href='{% url 'saml_login' %}?next={{next}}'">Sign in with SSO</button>
+                     </div>
+                     {% endif %}
                   </div>
+               </div>
+            </div>
+            <div class="card shadow-sm border-0">
+               <div class="card-body p-4">
+                  <h5 class="card-title text-primary mb-3">Security tips</h5>
+                  <ul class="list-unstyled mb-0">
+                     {% for tip in branding.security_tips %}
+                     <li class="media mb-2">
+                        <span class="mr-3 text-primary"><i class="fas fa-shield-alt"></i></span>
+                        <div class="media-body text-left">{{ tip }}</div>
+                     </li>
+                     {% endfor %}
+                  </ul>
+                  {% if branding.login_support_text %}
+                  <p class="mt-3 mb-0 text-muted text-left">
+                     {{ branding.login_support_text }}
+                     {% if branding.login_support_url %}
+                     <a href="{{ branding.login_support_url }}" class="font-weight-semibold" target="_blank" rel="noopener">Contact support</a>
+                     {% endif %}
+                  </p>
+                  {% endif %}
                </div>
             </div>
          </div>
       </div>
    </div>
+  </div>
 </div>
 {% endblock %}
