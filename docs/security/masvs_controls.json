@@ -1,0 +1,23 @@
+{
+  "version": "MASVS v2",
+  "controls": [
+    {
+      "id": "MASVS-RESILIENCE-1",
+      "description": "Ensure anti-tampering controls are enabled",
+      "default_pass": false,
+      "notes": "Requires runtime integrity checks"
+    },
+    {
+      "id": "MASVS-AUTH-1",
+      "description": "Enforce strong authentication",
+      "default_pass": true,
+      "notes": "MFA enforced via MOBSF_ENABLE_MFA"
+    },
+    {
+      "id": "MASVS-CRYPTO-1",
+      "description": "Use proven cryptography",
+      "default_pass": true,
+      "notes": "Validated by crypto analyzer"
+    }
+  ]
+}

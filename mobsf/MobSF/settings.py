@@ -35,6 +35,14 @@ def _env_int(name, default):
         return default
 
 
+def _env_list(name, default):
+    """Return a sanitized list from a comma separated environment variable."""
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return [item.strip() for item in value.split(',') if item and item.strip()]
+
+
 # Controlled exploitation and automation connectors
 AUTOMATION_EXECUTION = {
     'default_mode': os.environ.get('MOBSF_AUTOMATION_DEFAULT_MODE', 'standard'),
@@ -135,6 +143,180 @@ except Exception:
 
 # ===MOBSF SECRET GENERATION AND DB MIGRATION====
 SECRET_KEY = first_run(SECRET_FILE, BASE_DIR, MOBSF_HOME)
+
+# ======================== USER INTERFACE & BRANDING ========================
+_DEFAULT_LANGUAGES = [
+    ('en', 'English'),
+    ('pt-br', 'Português (Brasil)'),
+]
+
+_available_language_codes = _env_list(
+    'MOBSF_AVAILABLE_LANGUAGES',
+    [code for code, _ in _DEFAULT_LANGUAGES],
+)
+LANGUAGES = [
+    entry for entry in _DEFAULT_LANGUAGES if entry[0] in _available_language_codes
+]
+if not LANGUAGES:
+    LANGUAGES = list(_DEFAULT_LANGUAGES)
+
+_requested_default_language = os.environ.get(
+    'MOBSF_DEFAULT_LANGUAGE',
+    LANGUAGES[0][0],
+).lower().replace('_', '-')
+_language_codes = {code for code, _ in LANGUAGES}
+if _requested_default_language not in _language_codes:
+    _requested_default_language = LANGUAGES[0][0]
+
+LANGUAGE_CODE = _requested_default_language
+LOCALE_PATHS = (
+    os.path.join(BASE_DIR, 'locale'),
+)
+
+# Languages that should be exposed in the UI selector.
+UI_LANGUAGES = [
+    code for code in _env_list(
+        'MOBSF_LOGIN_LANGUAGES',
+        [code for code, _ in LANGUAGES],
+    )
+    if code in _language_codes
+]
+if not UI_LANGUAGES:
+    UI_LANGUAGES = [code for code, _ in LANGUAGES]
+
+
+def _localized_setting(default, env_prefix, *, fallback_pt_br=None):
+    """Return a language aware configuration dictionary."""
+    localized = {'default': default}
+    if fallback_pt_br is not None:
+        localized.setdefault('pt-br', fallback_pt_br)
+    for code in _language_codes:
+        env_key = f'{env_prefix}_{code.replace("-", "_").upper()}'
+        value = os.environ.get(env_key)
+        if value:
+            localized[code] = value
+    return localized
+
+
+UI_BRANDING = {
+    'product_name': os.environ.get(
+        'MOBSF_PRODUCT_NAME',
+        'Mobile Security Framework',
+    ),
+    'product_short_name': os.environ.get(
+        'MOBSF_PRODUCT_SHORT_NAME',
+        'MobSF',
+    ),
+    'organization_name': os.environ.get(
+        'MOBSF_ORGANIZATION_NAME',
+        'Open Mobile Security',
+    ),
+    'logo_static_path': os.environ.get('MOBSF_LOGIN_LOGO_STATIC', ''),
+    'accent_color': os.environ.get('MOBSF_BRAND_PRIMARY_COLOR', '#2563eb'),
+    'accent_color_dark': os.environ.get(
+        'MOBSF_BRAND_PRIMARY_COLOR_DARK',
+        '#1e3a8a',
+    ),
+    'accent_contrast_color': os.environ.get(
+        'MOBSF_BRAND_PRIMARY_CONTRAST',
+        '#ffffff',
+    ),
+    'background_color': os.environ.get(
+        'MOBSF_BRAND_BACKGROUND_COLOR',
+        '#0b1220',
+    ),
+    'login_background_overlay': os.environ.get(
+        'MOBSF_LOGIN_BACKGROUND_OVERLAY',
+        'linear-gradient(135deg, rgba(2, 17, 36, 0.85) 0%, rgba(18, 62, 126, 0.75) 100%)',
+    ),
+    'login_titles': _localized_setting(
+        os.environ.get('MOBSF_LOGIN_HEADING_DEFAULT', 'Welcome back'),
+        'MOBSF_LOGIN_HEADING',
+        fallback_pt_br='Bem-vindo de volta',
+    ),
+    'login_messages': _localized_setting(
+        os.environ.get(
+            'MOBSF_LOGIN_TAGLINE_DEFAULT',
+            'Sign in to access your mobile security workspace.',
+        ),
+        'MOBSF_LOGIN_TAGLINE',
+        fallback_pt_br='Faça login para acessar seu ambiente de segurança mobile.',
+    ),
+    'login_support_texts': _localized_setting(
+        os.environ.get(
+            'MOBSF_LOGIN_SUPPORT_TEXT_DEFAULT',
+            'Need help? Contact your MobSF administrator.',
+        ),
+        'MOBSF_LOGIN_SUPPORT_TEXT',
+        fallback_pt_br='Precisa de ajuda? Fale com o administrador da plataforma.',
+    ),
+    'login_support_url': os.environ.get('MOBSF_LOGIN_SUPPORT_URL', ''),
+    'security_tips': [
+        tip
+        for tip in [
+            os.environ.get(
+                'MOBSF_LOGIN_SECURITY_TIP_1',
+                'Enable multi-factor authentication from your account settings.',
+            ),
+            os.environ.get(
+                'MOBSF_LOGIN_SECURITY_TIP_2',
+                'Rotate analysis credentials regularly and prefer SSO when available.',
+            ),
+            os.environ.get(
+                'MOBSF_LOGIN_SECURITY_TIP_3',
+                'Upload binaries from trusted sources only and review scan history.',
+            ),
+        ]
+        if tip
+    ],
+    'navigation_labels': {
+        'recent_scans': _localized_setting(
+            os.environ.get('MOBSF_NAV_RECENT_DEFAULT', 'Recent Scans'),
+            'MOBSF_NAV_RECENT',
+            fallback_pt_br='Análises Recentes',
+        ),
+        'static_analyzer': _localized_setting(
+            os.environ.get('MOBSF_NAV_STATIC_DEFAULT', 'Static Analyzer'),
+            'MOBSF_NAV_STATIC',
+            fallback_pt_br='Analisador Estático',
+        ),
+        'dynamic_analyzer': _localized_setting(
+            os.environ.get('MOBSF_NAV_DYNAMIC_DEFAULT', 'Dynamic Analyzer'),
+            'MOBSF_NAV_DYNAMIC',
+            fallback_pt_br='Analisador Dinâmico',
+        ),
+        'api_docs': _localized_setting(
+            os.environ.get('MOBSF_NAV_API_DEFAULT', 'API'),
+            'MOBSF_NAV_API',
+            fallback_pt_br='API',
+        ),
+        'donate': _localized_setting(
+            os.environ.get('MOBSF_NAV_DONATE_DEFAULT', 'Donate ♥'),
+            'MOBSF_NAV_DONATE',
+            fallback_pt_br='Doar ♥',
+        ),
+        'documentation': _localized_setting(
+            os.environ.get('MOBSF_NAV_DOCS_DEFAULT', 'Docs'),
+            'MOBSF_NAV_DOCS',
+            fallback_pt_br='Documentação',
+        ),
+        'about': _localized_setting(
+            os.environ.get('MOBSF_NAV_ABOUT_DEFAULT', 'About'),
+            'MOBSF_NAV_ABOUT',
+            fallback_pt_br='Sobre',
+        ),
+        'language_label': _localized_setting(
+            os.environ.get('MOBSF_NAV_LANGUAGE_DEFAULT', 'Language'),
+            'MOBSF_NAV_LANGUAGE',
+            fallback_pt_br='Idioma',
+        ),
+        'language_apply': _localized_setting(
+            os.environ.get('MOBSF_NAV_LANGUAGE_APPLY_DEFAULT', 'Apply'),
+            'MOBSF_NAV_LANGUAGE_APPLY',
+            fallback_pt_br='Aplicar',
+        ),
+    },
+}
 
 # =============ALLOWED DOWNLOAD EXTENSIONS=====
 ALLOWED_EXTENSIONS = {
@@ -303,18 +485,19 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django_ratelimit.middleware.RatelimitMiddleware',
 )
 MIDDLEWARE = (
     'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 
 )
 ROOT_URLCONF = 'mobsf.MobSF.urls'
 WSGI_APPLICATION = 'mobsf.MobSF.wsgi.application'
-LANGUAGE_CODE = 'en-us'
 TIME_ZONE = os.getenv('TIME_ZONE', 'UTC')
 USE_I18N = True
 USE_L10N = True
@@ -333,8 +516,10 @@ TEMPLATES = [
                 'context_processors': [
                     'django.template.context_processors.debug',
                     'django.template.context_processors.request',
+                    'django.template.context_processors.i18n',
                     'django.contrib.auth.context_processors.auth',
                     'django.contrib.messages.context_processors.messages',
+                    'mobsf.MobSF.context_processors.branding',
                 ],
             },
     },
