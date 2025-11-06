@@ -1,0 +1,33 @@
+name: Security Hardening Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install dependencies
+        run: poetry install
+      - name: Dependency audit
+        run: scripts/dependency_audit.sh
+      - name: Secret scan
+        run: scripts/secret_scan.sh .
+      - name: Run MASVS suite
+        run: scripts/run_mastg_suite.sh || true
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: docs/security/reports

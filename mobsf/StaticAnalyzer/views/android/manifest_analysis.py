@@ -27,6 +27,10 @@ ANDROID_5_0_LEVEL = 21
 ANDROID_8_0_LEVEL = 26
 ANDROID_9_0_LEVEL = 28
 ANDROID_10_0_LEVEL = 29
+ANDROID_12_0_LEVEL = 31
+ANDROID_13_0_LEVEL = 33
+ANDROID_14_0_LEVEL = 34
+ANDROID_15_0_LEVEL = 35
 ANDROID_MANIFEST_FILE = 'AndroidManifest.xml'
 WELL_KNOWN_PATH = '/.well-known/assetlinks.json'
 
@@ -223,6 +227,14 @@ def manifest_analysis(app_dic, man_data_dic):
         permissions = mfxml.getElementsByTagName('permission')
         ret_value = []
         ret_list = []
+        target_sdk_value = man_data_dic.get('target_sdk')
+        target_sdk_level = None
+        if target_sdk_value and is_number(target_sdk_value):
+            try:
+                target_sdk_level = int(target_sdk_value)
+            except Exception:
+                target_sdk_level = None
+        target_sdk_display = target_sdk_value or 'Unknown'
         exported = []
         browsable_activities = {}
         permission_dict = {}
@@ -362,6 +374,32 @@ def manifest_analysis(app_dic, man_data_dic):
                             and exported_act == 'true'
                             and (launchmode != 'singleInstance' or task_affinity != '')):
                         ret_list.append(('task_hijacking2', (item,), (target_sdk,)))
+
+                component_requires_export = (
+                    target_sdk_level is not None
+                    and target_sdk_level >= ANDROID_12_0_LEVEL
+                    and node.nodeName in {
+                        'activity',
+                        'activity-alias',
+                        'receiver',
+                        'service',
+                    }
+                )
+                if component_requires_export:
+                    intent_filters = node.getElementsByTagName('intent-filter')
+                    try:
+                        has_intent_filter = len(intent_filters) > 0
+                    except TypeError:
+                        has_intent_filter = bool(getattr(intent_filters, 'length', 0))
+                    if has_intent_filter and not node.hasAttribute(f'{ns}:exported'):
+                        comp_name = node.getAttribute(f'{ns}:name') or 'Unknown Name'
+                        ret_list.append(
+                            (
+                                'missing_exported_android12',
+                                (comp_name, itemname, target_sdk_display),
+                                (itemname, comp_name, target_sdk_display),
+                            )
+                        )
 
                 # Exported Check
                 item = ''
@@ -815,6 +853,38 @@ def manifest_analysis(app_dic, man_data_dic):
         for category in man_data_dic['categories']:
             if category == 'android.intent.category.LAUNCHER':
                 break
+
+        # Android 14+ Specific Checks (API 34+)
+        if target_sdk_level and target_sdk_level >= ANDROID_14_0_LEVEL:
+            # Check for foreground service types (required in Android 14+)
+            services = mfxml.getElementsByTagName('service')
+            for service in services:
+                if service.getAttribute(f'{ns}:foregroundServiceType'):
+                    service_name = service.getAttribute(f'{ns}:name')
+                    fgs_type = service.getAttribute(f'{ns}:foregroundServiceType')
+                    ret_list.append(('has_foreground_service_type', (service_name, fgs_type,), ()))
+                elif service.getAttribute(f'{ns}:exported') != 'false':
+                    # Services without foregroundServiceType may fail on Android 14+
+                    service_name = service.getAttribute(f'{ns}:name') or 'Unknown'
+                    ret_list.append(('missing_foreground_service_type_android14', (service_name,), ()))
+
+            # Check for predictive back gesture support
+            has_back_gesture = False
+            for application in applications:
+                if application.getAttribute(f'{ns}:enableOnBackInvokedCallback') == 'true':
+                    has_back_gesture = True
+                    ret_list.append(('predictive_back_enabled', (), ()))
+                    break
+            if not has_back_gesture:
+                ret_list.append(('predictive_back_not_enabled_android14', (), ()))
+
+        # Android 13+ Photo Picker Check
+        if target_sdk_level and target_sdk_level >= ANDROID_13_0_LEVEL:
+            photo_perms = ['android.permission.READ_MEDIA_IMAGES',
+                          'android.permission.READ_MEDIA_VIDEO']
+            has_photo_perm = any(p in man_data_dic.get('perm', {}) for p in photo_perms)
+            if has_photo_perm:
+                ret_list.append(('uses_legacy_photo_access_android13', (), ()))
 
         permissions = {}
         for k, permission in man_data_dic['perm'].items():

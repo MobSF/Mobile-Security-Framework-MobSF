@@ -27,6 +27,7 @@ class RecentScansDB(models.Model):
     PACKAGE_NAME = models.CharField(max_length=260, default='')
     VERSION_NAME = models.CharField(max_length=50, default='')
     MD5 = models.CharField(max_length=32, default='', primary_key=True)
+    EXECUTION_MODE = models.CharField(max_length=32, default='standard')
     TIMESTAMP = models.DateTimeField(default=datetime.now)
     SCAN_LOGS = models.TextField(default=[])
 
@@ -83,6 +84,7 @@ class StaticAnalyzerAndroid(models.Model):
     NETWORK_SECURITY = models.TextField(default=[])
     SECRETS = models.TextField(default=[])
     SBOM = models.TextField(default={})
+    CONTROLLED_EXPLOITATION = models.TextField(default={})
 
 
 class StaticAnalyzerIOS(models.Model):
@@ -128,6 +130,7 @@ class StaticAnalyzerIOS(models.Model):
     APPSTORE_DETAILS = models.TextField(default={})
     SECRETS = models.TextField(default=[])
     TRACKERS = models.TextField(default={})
+    CONTROLLED_EXPLOITATION = models.TextField(default={})
 
 
 class StaticAnalyzerWindows(models.Model):
@@ -157,6 +160,7 @@ class StaticAnalyzerWindows(models.Model):
     STRINGS = models.TextField(default=[])
     BINARY_ANALYSIS = models.TextField(default=[])
     BINARY_WARNINGS = models.TextField(default=[])
+    CONTROLLED_EXPLOITATION = models.TextField(default={})
 
 
 class SuppressFindings(models.Model):

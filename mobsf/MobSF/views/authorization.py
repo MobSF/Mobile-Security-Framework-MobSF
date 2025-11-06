@@ -15,7 +15,10 @@ from django.shortcuts import (
     render,
 )
 from django.contrib import messages
-from django.contrib.auth import get_user_model
+from django.contrib.auth import (
+    get_user_model,
+    password_validation,
+)
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import (
     login_required,
@@ -156,6 +159,7 @@ def create_user(request):
         'title': 'Create User',
         'version': settings.VERSION,
         'form': form,
+        'password_help_texts': password_validation.password_validators_help_texts(),
     }
     return render(request, 'auth/register.html', context)
 

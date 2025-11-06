@@ -38,6 +38,9 @@ from mobsf.StaticAnalyzer.views.ios.plist_analysis import (
     get_plist_secrets,
     plist_analysis,
 )
+from mobsf.StaticAnalyzer.views.common.automation import (
+    ensure_controlled_exploitation,
+)
 from mobsf.StaticAnalyzer.views.ios.strings import (
     get_strings_metadata,
 )
@@ -243,6 +246,8 @@ def generate_dynamic_context(request, app_dic, context, checksum, api):
         context['virus_total'] = vt.get_result(app_dic['app_path'])
     context['appsec'] = get_ios_dashboard(context, True)
     context['average_cvss'] = get_avg_cvss(context['binary_analysis'])
+    mode = app_dic.get('execution_mode') or context.get('execution_mode')
+    ensure_controlled_exploitation(context, mode, 'ios')
     template = 'static_analysis/ios_binary_analysis.html'
     return context if api else render(request, template, context)
 

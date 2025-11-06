@@ -81,6 +81,8 @@ def index(request):
         'version': settings.MOBSF_VER,
         'mimes': mimes,
         'exts': '|'.join(exts),
+        'default_execution_mode': settings.AUTOMATION_EXECUTION.get('default_mode', 'standard'),
+        'available_execution_modes': ['standard', 'aggressive'],
     }
     template = 'general/home.html'
     return render(request, template, context)
@@ -94,6 +96,10 @@ class Upload(object):
         self.form = UploadFileForm(request.POST, request.FILES)
         self.file_type = None
         self.file = None
+        self.execution_mode = request.POST.get(
+            'execution_mode',
+            settings.AUTOMATION_EXECUTION.get('default_mode', 'standard'),
+        )
 
     @staticmethod
     @login_required
@@ -128,6 +134,9 @@ class Upload(object):
 
         self.file = request.FILES['file']
         self.file_type = FileType(self.file)
+        self.execution_mode = (
+            self.form.cleaned_data.get('execution_mode')
+            or self.execution_mode)
         if not self.file_type.is_allow_file():
             msg = 'File format not Supported!'
             logger.error(msg)
@@ -153,6 +162,9 @@ class Upload(object):
             return api_response, HTTP_BAD_REQUEST
         self.file = request.FILES['file']
         self.file_type = FileType(self.file)
+        self.execution_mode = (
+            self.form.cleaned_data.get('execution_mode')
+            or self.execution_mode)
         if not self.file_type.is_allow_file():
             api_response['error'] = 'File format not Supported!'
             return api_response, HTTP_BAD_REQUEST
@@ -161,7 +173,7 @@ class Upload(object):
 
     def upload(self):
         request = self.request
-        scanning = Scanning(request)
+        scanning = Scanning(request, self.execution_mode)
         content_type = self.file.content_type
         file_name = sanitize_filename(self.file.name)
         logger.info('MIME Type: %s FILE: %s', content_type, file_name)
@@ -323,16 +335,21 @@ def recent_scans(request, page_size=10, page_number=1):
 def download_apk(request):
     """Download and APK by package name."""
     package = request.POST['package']
+    execution_mode = request.POST.get(
+        'execution_mode',
+        settings.AUTOMATION_EXECUTION.get('default_mode', 'standard'),
+    )
     # Package validated in apk_download()
     context = {
         'status': 'failed',
         'description': 'Unable to download APK',
     }
-    res = apk_download(package)
+    res = apk_download(package, execution_mode)
     if res:
         context = res
         context['status'] = 'ok'
         context['package'] = package
+        context['execution_mode'] = execution_mode
     resp = HttpResponse(
         json.dumps(context),
         content_type='application/json; charset=utf-8')

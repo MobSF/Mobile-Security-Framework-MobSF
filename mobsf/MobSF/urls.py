@@ -1,5 +1,6 @@
 from django.urls import re_path
 
+from django.views.i18n import set_language
 from mobsf.DynamicAnalyzer.views.common import device
 from mobsf.DynamicAnalyzer.views.common.frida import views as frida
 from mobsf.DynamicAnalyzer.views.android import dynamic_analyzer as dz
@@ -58,9 +59,24 @@ urlpatterns = [
     re_path(r'^login/$',
             authentication.login_view,
             name='login'),
+    re_path(r'^password_reset/$',
+            authentication.MobSFPasswordResetView.as_view(),
+            name='password_reset'),
+    re_path(r'^password_reset/done/$',
+            authentication.MobSFPasswordResetDoneView.as_view(),
+            name='password_reset_done'),
+    re_path(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>.+)/$',
+            authentication.MobSFPasswordResetConfirmView.as_view(),
+            name='password_reset_confirm'),
+    re_path(r'^reset/done/$',
+            authentication.MobSFPasswordResetCompleteView.as_view(),
+            name='password_reset_complete'),
     re_path(r'^logout$',
             authentication.logout_view,
             name='logout'),
+    re_path(r'^i18n/setlang/$',
+            set_language,
+            name='set_language'),
     re_path(r'^change_password/$',
             authentication.change_password,
             name='change_password'),

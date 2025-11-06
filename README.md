@@ -1,8 +1,43 @@
-# Mobile Security Framework (MobSF)
+# Befly Mobile Security Platform (formerly MobSF)
 
 ![](https://cloud.githubusercontent.com/assets/4301109/20019521/cc61f7fc-a2f2-11e6-95f3-407030d9fdde.png)
 
-Mobile Security Framework (MobSF) is a security research platform for mobile applications in Android, iOS and Windows Mobile. MobSF can be used for a variety of use cases such as mobile application security, penetration testing, malware analysis, and privacy analysis. The Static Analyzer supports popular mobile app binaries like APK, IPA, APPX and source code. Meanwhile, the Dynamic Analyzer supports both Android and iOS applications and offers a platform for interactive instrumented testing, runtime data and network traffic analysis. MobSF seamlessly integrates with your DevSecOps or CI/CD pipeline, facilitated by REST APIs and CLI tools, enhancing your security workflow with ease.
+The Befly Mobile Security Platform (formerly MobSF) is a security research platform for mobile applications in Android, iOS and Windows Mobile. MobSF can be used for a variety of use cases such as mobile application security, penetration testing, malware analysis, and privacy analysis. The Static Analyzer supports popular mobile app binaries like APK, IPA, APPX and source code. Meanwhile, the Dynamic Analyzer supports both Android and iOS applications and offers a platform for interactive instrumented testing, runtime data and network traffic analysis. MobSF seamlessly integrates with your DevSecOps or CI/CD pipeline, facilitated by REST APIs and CLI tools, enhancing your security workflow with ease.
+
+## ⚙️ Installation (18)
+
+### Development setup
+1. Clone the repository and install Poetry (`pip install poetry`).
+2. Run `./setup.sh --profile linux` (or `--profile macos` / `setup.bat` on Windows) to provision dependencies securely.
+3. Copy `.env.example` to `.env` and populate the variables described in [Environment Configuration](docs/security/environment_configuration.md).
+
+### Production best practices
+- Deploy using the hardened Docker image documented in [Container Security](docs/security/container_security.md).
+- Rotate default credentials during provisioning and enforce MFA by setting `MOBSF_ENABLE_MFA=true`.
+- Restrict access to the admin UI via `MOBSF_ADMIN_IP_RANGES` and terminate TLS with a trusted reverse proxy.
+
+## 🔐 Security Hardening Summary
+
+The security programme incorporates all 41 controls requested by Befly. Refer to the [Security Hardening documentation](docs/security/README.md) for detailed implementation guidance covering dependency hygiene, secret management, governance, MASVS/MASTG automation, and CI/CD enforcement.
+
+### Quick start for analysts (19)
+1. Upload binaries through the web UI or CLI.
+2. Review the MASVS quick compliance panel (28) for immediate pass/fail feedback.
+3. Launch dynamic analysis with built-in Frida/JADX/Burp integrations (31).
+4. Export detailed reports that map to MASVS/MASTG controls (29).
+
+### Contributor guide (41)
+- Follow the branching and release process in [Versioning Strategy](docs/security/versioning_strategy.md).
+- Update docs and tests alongside code changes; see [Testing Strategy](docs/security/testing_strategy.md).
+- Consult [Documentation Standards](docs/security/documentation_standards.md) before submitting a pull request.
+
+### Licensing & corporate use (22, 41)
+- This project remains GPL-3.0 licensed. Evaluate compatibility with your distribution model using [Licensing Guidelines](docs/security/licensing.md).
+- Corporate deployments should maintain a fork with visible source, signed commits, and published changelogs.
+
+### Requesting new MASVS/MASTG tests (27, 30)
+- Submit plugins using the extension framework described in `docs/plugins/README.md`.
+- Map proposed tests to controls listed in [MASTG Mapping](docs/security/MASTG_mapping.md).
 
 Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82e3a63c-4813-11e6-9430-6015d98aeaab.png) in India
 
@@ -52,6 +87,40 @@ docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:la
 * Conference Presentations: [Slides & Videos](https://mobsf.github.io/Mobile-Security-Framework-MobSF/presentations.html)
 * MobSF Online Course: [OpSecX MAS](https://opsecx.com/index.php/product/automated-mobile-application-security-assessment-with-mobsf/)
 * What's New: [See Changelog](https://mobsf.github.io/Mobile-Security-Framework-MobSF/changelog.html)
+* Roadmap de melhorias (pt-BR): [docs/mobsf_melhorias_pt-br.md](docs/mobsf_melhorias_pt-br.md)
+
+### Authentication enhancements
+
+MobSF ships with a secure, enterprise-ready authentication workflow. Recent improvements include:
+
+* **Configurable password policy** with support for minimum length, character class requirements, and custom special characters.
+* **Self-service password reset** with email delivery and administrator-controlled enablement.
+
+#### Password policy configuration
+
+| Environment variable | Default | Purpose |
+| --- | --- | --- |
+| `MOBSF_PASSWORD_MIN_LENGTH` | `12` | Minimum required password length. |
+| `MOBSF_PASSWORD_REQUIRE_UPPERCASE` | `true` | Require at least one uppercase letter. |
+| `MOBSF_PASSWORD_REQUIRE_LOWERCASE` | `true` | Require at least one lowercase letter. |
+| `MOBSF_PASSWORD_REQUIRE_DIGITS` | `true` | Require at least one digit. |
+| `MOBSF_PASSWORD_REQUIRE_SPECIAL` | `true` | Require at least one special character. |
+| `MOBSF_PASSWORD_SPECIAL_CHARACTERS` | `!@#$%^&*()_+-={}[]:";'<>?,./` | Allowed special character set when the previous flag is enabled. |
+
+Set values to `0`, `false`, or `no` to disable a requirement. The policy is enforced during user creation, password changes, and resets.
+
+#### Password reset controls
+
+| Environment variable | Default | Purpose |
+| --- | --- | --- |
+| `MOBSF_ENABLE_PASSWORD_RESET` | `true` | Toggle the self-service password reset flow. |
+| `MOBSF_EMAIL_BACKEND` | `django.core.mail.backends.console.EmailBackend` | Django email backend used to send reset links. |
+| `MOBSF_EMAIL_HOST` / `MOBSF_EMAIL_PORT` | _empty_ / `25` | SMTP host and port when using an SMTP backend. |
+| `MOBSF_EMAIL_USE_TLS` / `MOBSF_EMAIL_USE_SSL` | `false` | Enable TLS or SSL for outbound email. |
+| `MOBSF_EMAIL_HOST_USER` / `MOBSF_EMAIL_HOST_PASSWORD` | _empty_ | SMTP credentials. |
+| `MOBSF_EMAIL_FROM` | `MobSF <no-reply@mobsf.local>` | Sender displayed in password reset emails. |
+
+The default console backend prints reset emails to the server logs—perfect for development. Configure SMTP (or another backend) in production to deliver messages to end users.
 
 ## Collaborators
 

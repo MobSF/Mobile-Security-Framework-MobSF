@@ -1,10 +1,12 @@
 from django import forms
+from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 
 
 class UploadFileForm(forms.Form):
     file = forms.FileField()
+    execution_mode = forms.CharField(required=False, max_length=32)
 
 
 class FormUtil(object):

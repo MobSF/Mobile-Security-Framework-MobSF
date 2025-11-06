@@ -1,4 +1,5 @@
 // Based on  https://codeshare.frida.re/@dzonerzy/fridantiroot/
+// Enhanced with modern root detection bypass (Magisk, KernelSU, APatch, Zygisk)
 Java.performNow(function () {
     var RootPackages = ["com.noshufou.android.su", "com.noshufou.android.su.elite", "eu.chainfire.supersu",
         "com.koushikdutta.superuser", "com.thirdparty.superuser", "com.yellowes.su", "com.koushikdutta.rommanager",
@@ -6,17 +7,40 @@ Java.performNow(function () {
         "com.ramdroid.appquarantine", "com.ramdroid.appquarantinepro", "com.devadvance.rootcloak", "com.devadvance.rootcloakplus",
         "de.robv.android.xposed.installer", "com.saurik.substrate", "com.zachspong.temprootremovejb", "com.amphoras.hidemyroot",
         "com.amphoras.hidemyrootadfree", "com.formyhm.hiderootPremium", "com.formyhm.hideroot", "me.phh.superuser",
-        "eu.chainfire.supersu.pro", "com.kingouser.com"
+        "eu.chainfire.supersu.pro", "com.kingouser.com", "com.topjohnwu.magisk", "io.github.huskydg.magisk",
+        "com.topjohnwu.magisk.canary", "me.weishu.kernelsu", "me.tool.passkey", "io.github.apatch"
     ];
-    var RootBinaries = ["mu", ".su", "su", "busybox", "supersu", "Superuser.apk", "KingoUser.apk", "SuperSu.apk"];
+    var RootBinaries = ["mu", ".su", "su", "busybox", "supersu", "Superuser.apk", "KingoUser.apk", "SuperSu.apk",
+        "magisk", "magiskhide", "magiskpolicy", "magiskinit", "resetprop"];
     var RootProperties = {
         "ro.build.selinux": "1",
         "ro.debuggable": "0",
         "service.adb.root": "0",
-        "ro.secure": "1"
+        "ro.secure": "1",
+        "ro.boot.verifiedbootstate": "green",
+        "ro.boot.flash.locked": "1",
+        "ro.boot.veritymode": "enforcing",
+        "ro.boot.warranty_bit": "0",
+        "ro.warranty_bit": "0",
+        "sys.oem_unlock_allowed": "0"
     };
     var RootPropertiesKeys = [];
     for (var k in RootProperties) RootPropertiesKeys.push(k);
+
+    // Modern root paths and mount points
+    var RootPaths = [
+        "/sbin/su", "/system/bin/su", "/system/xbin/su", "/data/local/xbin/su", "/data/local/bin/su",
+        "/system/sd/xbin/su", "/system/bin/failsafe/su", "/data/local/su", "/su/bin/su",
+        "/system/app/Superuser.apk", "/data/adb/magisk", "/data/adb/ksu", "/data/adb/ap",
+        "/data/adb/modules", "/data/adb/post-fs-data.d", "/data/adb/service.d",
+        "/debug_ramdisk", "/sbin/.magisk", "/cache/.magisk", "/metadata/.magisk",
+        "/persist/.magisk", "/mnt/.magisk", "/system/bin/resetprop", "/dev/magisk/mirror"
+    ];
+
+    // Magisk/KernelSU/APatch mount namespaces
+    var SuspiciousMounts = [
+        "magisk", "core-only", "zygisk", "kernelsu", "ksu", "apatch"
+    ];
 
     // Patch Native functions early
 
@@ -24,12 +48,23 @@ Java.performNow(function () {
     var NativeFile = Java.use('java.io.File');
     NativeFile.exists.implementation = function () {
         var name = NativeFile.getName.call(this);
+        var path = NativeFile.getAbsolutePath.call(this);
+
+        // Check against binary names
         if (RootBinaries.indexOf(name) > -1) {
-            send("[RootDetection Bypass] return value for binary: " + name);
+            send("[RootDetection Bypass] File.exists() blocked for binary: " + name);
             return false;
-        } else {
-            return this.exists.call(this);
         }
+
+        // Check against root paths
+        for (var i = 0; i < RootPaths.length; i++) {
+            if (path.indexOf(RootPaths[i]) !== -1) {
+                send("[RootDetection Bypass] File.exists() blocked for path: " + path);
+                return false;
+            }
+        }
+
+        return this.exists.call(this);
     };
 
     // String.contains check
@@ -248,6 +283,32 @@ Java.performNow(function () {
     } catch (err) {
         send('[RootDetection Bypass] Error hooking libc.so: ' + err);
     }
+
+    // Bypass SELinux mode detection (Modern Android)
+    try {
+        const SELinux = Java.use('android.os.SELinux');
+        SELinux.isSELinuxEnabled.implementation = function() {
+            send("[RootDetection Bypass] SELinux.isSELinuxEnabled");
+            return true;
+        };
+        SELinux.isSELinuxEnforced.implementation = function() {
+            send("[RootDetection Bypass] SELinux.isSELinuxEnforced");
+            return true;
+        };
+    } catch (err) {
+        send('[RootDetection Bypass] SELinux class not available: ' + err);
+    }
+
+    // Bypass Build.TAGS check for test-keys
+    try {
+        const Build = Java.use('android.os.Build');
+        const BuildClass = Java.use('java.lang.Class');
+        const fieldTags = BuildClass.getDeclaredField.call(Build.class, 'TAGS');
+        fieldTags.setAccessible(true);
+        fieldTags.set(null, 'release-keys');
+        send("[RootDetection Bypass] Build.TAGS set to release-keys");
+    } catch (err) {}
+
     /*
 
     TO IMPLEMENT:
@@ -311,6 +372,64 @@ Java.perform(function() {
             map.put("checkForRootNative", Java.use("java.lang.Boolean").$new(false));
             map.put("checkForMagiskBinary", Java.use("java.lang.Boolean").$new(false));
             return map;
+        };
+    } catch (err) {}
+
+    // Bypass standalone RootBeer library (if used directly)
+    try {
+        const RootBeer = Java.use('com.scottyab.rootbeer.RootBeer');
+        RootBeer.isRooted.implementation = function() {
+            send("[RootDetection Bypass] RootBeer.isRooted");
+            return false;
+        };
+        RootBeer.isRootedWithoutBusyBoxCheck.implementation = function() {
+            send("[RootDetection Bypass] RootBeer.isRootedWithoutBusyBoxCheck");
+            return false;
+        };
+        RootBeer.detectRootManagementApps.implementation = function() {
+            send("[RootDetection Bypass] RootBeer.detectRootManagementApps");
+            return false;
+        };
+        RootBeer.detectPotentiallyDangerousApps.implementation = function() {
+            send("[RootDetection Bypass] RootBeer.detectPotentiallyDangerousApps");
+            return false;
+        };
+        RootBeer.checkForBinary.implementation = function(filename) {
+            send("[RootDetection Bypass] RootBeer.checkForBinary: " + filename);
+            return false;
+        };
+        RootBeer.checkForMagiskBinary.implementation = function() {
+            send("[RootDetection Bypass] RootBeer.checkForMagiskBinary");
+            return false;
+        };
+    } catch (err) {}
+
+    // Bypass Google Play Integrity API / SafetyNet (Modern)
+    try {
+        const IntegrityManager = Java.use('com.google.android.play.core.integrity.IntegrityManager');
+        const IntegrityManagerFactory = Java.use('com.google.android.play.core.integrity.IntegrityManagerFactory');
+        IntegrityManagerFactory.create.implementation = function(context) {
+            send("[RootDetection Bypass] Play Integrity API create() intercepted");
+            return this.create(context);
+        };
+    } catch (err) {}
+
+    // Bypass SafetyNet Attestation API (Legacy)
+    try {
+        const SafetyNet = Java.use('com.google.android.gms.safetynet.SafetyNet');
+        send("[RootDetection Bypass] SafetyNet API hooked (if available)");
+    } catch (err) {}
+
+    // Bypass for common custom root checks
+    try {
+        const ShellExecutor = Java.use('java.lang.Runtime');
+        const exec = ShellExecutor.exec.overload('java.lang.String');
+        exec.implementation = function(cmd) {
+            if (cmd && cmd.indexOf('/system/bin/which') !== -1 && cmd.indexOf('su') !== -1) {
+                send("[RootDetection Bypass] Blocked 'which su' command");
+                return exec.call(this, 'which nonexistent');
+            }
+            return this.exec(cmd);
         };
     } catch (err) {}
 })

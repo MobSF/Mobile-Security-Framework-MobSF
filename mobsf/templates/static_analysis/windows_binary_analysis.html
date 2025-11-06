@@ -44,11 +44,19 @@
               </p>
             </a>
           </li>
-           <li class="nav-item">
+          <li class="nav-item">
             <a href="#scan_options" class="nav-link">
               <i class="nav-icon fas fa-cog"></i>
               <p>
                 Scan Options
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#controlled_exploitation" class="nav-link">
+              <i class="nav-icon fas fa-bolt"></i>
+              <p>
+                Exploração Controlada
               </p>
             </a>
           </li>
@@ -223,7 +231,104 @@
             </div>
         </div>
 </section>
- 
+
+<a id="controlled_exploitation" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="card card-outline card-danger">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title"><i class="fas fa-bolt"></i> Exploração Controlada</h3>
+        {% with automation=controlled_exploitation %}
+        <div>
+          <span class="badge badge-secondary">Modo: {{ automation.mode|default:'standard'|title }}</span>
+          <span class="badge badge-info">Conectores: {{ automation.summary.connectors_triggered|default:0 }}</span>
+        </div>
+        {% endwith %}
+      </div>
+      <div class="card-body">
+        {% with automation=controlled_exploitation %}
+        <div class="row">
+          <div class="col-md-6">
+            <h5>Exploração confirmada ({{ automation.summary.confirmed_total|default:0 }})</h5>
+            {% if automation.confirmed %}
+            <ul class="list-group mb-3">
+              {% for fid, finding in automation.confirmed.items %}
+              <li class="list-group-item">
+                <strong>{{ finding.metadata.title|default:finding.title|default:fid }}</strong>
+                {% if finding.metadata.severity %}
+                <span class="badge badge-danger ml-2">{{ finding.metadata.severity }}</span>
+                {% endif %}
+                {% if finding.metadata.description or finding.description %}
+                <div class="small text-muted mt-1">{{ finding.metadata.description|default:finding.description }}</div>
+                {% endif %}
+              </li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted">Nenhuma exploração confirmada.</p>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            <h5>Possíveis vulnerabilidades ({{ automation.summary.potential_total|default:0 }})</h5>
+            {% if automation.potential %}
+            <ul class="list-group mb-3">
+              {% for fid, finding in automation.potential.items %}
+              <li class="list-group-item">
+                <strong>{{ finding.metadata.title|default:finding.title|default:fid }}</strong>
+                {% if finding.metadata.severity %}
+                <span class="badge badge-warning ml-2">{{ finding.metadata.severity }}</span>
+                {% endif %}
+                {% if finding.metadata.description or finding.description %}
+                <div class="small text-muted mt-1">{{ finding.metadata.description|default:finding.description }}</div>
+                {% endif %}
+              </li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted">Nenhuma vulnerabilidade classificada como possível.</p>
+            {% endif %}
+          </div>
+        </div>
+        <h5 class="mt-3">Conectores</h5>
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered">
+            <thead class="thead-light">
+              <tr>
+                <th>Conector</th>
+                <th>Status</th>
+                <th>Observações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for connector in automation.connectors %}
+              <tr>
+                <td>{{ connector.display_name|default:connector.name|title }}</td>
+                <td>
+                  {% if connector.executed %}
+                  <span class="badge badge-success">Executado</span>
+                  {% else %}
+                  <span class="badge badge-secondary">Ignorado</span>
+                  {% endif %}
+                  {% if connector.status %}
+                  <small class="d-block text-muted">{{ connector.status }}</small>
+                  {% endif %}
+                </td>
+                <td>{{ connector.reason|default:connector.notes.mode|default:'-' }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="3" class="text-center text-muted">Nenhum conector configurado.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endwith %}
+      </div>
+    </div>
+  </div>
+</section>
+
  <a id="binary_analysis" class="anchor"></a>
  <section class="content">
   <div class="container-fluid">

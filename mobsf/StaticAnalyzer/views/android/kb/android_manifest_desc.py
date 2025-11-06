@@ -421,6 +421,19 @@ MANIFEST_DESC = {
                         ' application on the device.'),
         'name': '%s %s is not Protected. [android:exported=true]',
     },
+    'missing_exported_android12': {
+        'title': ('<strong>%s</strong> (%s) targets API level %s without '
+                  'defining android:exported'),
+        'level': 'error',
+        'description': ('From Android 12 (API level 31), any %s that declares '
+                        'an intent filter must explicitly set the '
+                        '[android:exported] attribute. The component %s '
+                        'targets API level %s but does not define this '
+                        'attribute, which prevents installation and leaves '
+                        'its exposure ambiguous.'),
+        'name': ('%s (%s) missing android:exported attribute for '
+                 'targetSdkVersion %s'),
+    },
     'exported_intent_filter_exists': {
         'title': ('<strong>%s</strong> (%s) is not Protected.<br>'
                   'An intent-filter exists.'),
@@ -854,5 +867,67 @@ MANIFEST_DESC = {
                  ' checked  if the application runs on a device where the'
                  ' the API level is less than 17.'
                  ' [%s] [Content Provider, targetSdkVersion >= 17]'),
+    },
+    'has_foreground_service_type': {
+        'title': 'Service %s declares foreground service type: %s',
+        'level': 'info',
+        'description': ('This service declares a foreground service type '
+                        'as required by Android 14 (API 34) and above. '
+                        'Foreground service types help users understand '
+                        'which capabilities your service needs and provide '
+                        'transparency about what your app is doing in the '
+                        'background. Valid types include: camera, connectedDevice, '
+                        'dataSync, health, location, mediaPlayback, mediaProjection, '
+                        'microphone, phoneCall, remoteMessaging, shortService, '
+                        'specialUse, and systemExempted.'),
+        'name': 'Service %s declares foreground service type: %s',
+    },
+    'missing_foreground_service_type_android14': {
+        'title': 'Service %s may require foreground service type for Android 14+',
+        'level': 'warning',
+        'description': ('This service does not declare a foreground service type. '
+                        'Starting with Android 14 (API level 34), if your app '
+                        'targets Android 14 or higher, you must specify appropriate '
+                        'types for each foreground service within your app. '
+                        'If your app starts a foreground service but does not '
+                        'declare the type, the system throws a '
+                        'MissingForegroundServiceTypeException.'),
+        'name': 'Service %s may require foreground service type for Android 14+',
+    },
+    'predictive_back_enabled': {
+        'title': 'App supports predictive back gesture (Android 14+)',
+        'level': 'info',
+        'description': ('This app has enabled support for the predictive back '
+                        'gesture introduced in Android 14. The predictive back '
+                        'gesture shows users a preview of where a back gesture '
+                        'will take them before they fully complete it. This is '
+                        'done by setting android:enableOnBackInvokedCallback="true" '
+                        'in the manifest.'),
+        'name': 'App supports predictive back gesture',
+    },
+    'predictive_back_not_enabled_android14': {
+        'title': 'App may not support predictive back gesture (Android 14+)',
+        'level': 'info',
+        'description': ('This app targeting Android 14 or higher has not explicitly '
+                        'enabled support for the predictive back gesture. Starting '
+                        'with Android 14, the predictive back gesture is the default '
+                        'behavior. You should migrate your app to use the new '
+                        'OnBackInvokedCallback API and set '
+                        'android:enableOnBackInvokedCallback="true" to provide '
+                        'a better user experience.'),
+        'name': 'App may not support predictive back gesture',
+    },
+    'uses_legacy_photo_access_android13': {
+        'title': 'App uses legacy photo/media permissions (Android 13+)',
+        'level': 'warning',
+        'description': ('This app requests READ_MEDIA_IMAGES or READ_MEDIA_VIDEO '
+                        'permissions. Starting with Android 13 (API level 33), '
+                        'you should consider using the Photo Picker instead of '
+                        'requesting these permissions. The Photo Picker provides '
+                        'a more privacy-friendly way for users to grant access to '
+                        'specific images and videos without needing to grant access '
+                        'to their entire media library. This reduces the permissions '
+                        'your app needs and improves user privacy.'),
+        'name': 'App uses legacy photo/media permissions',
     },
 }
