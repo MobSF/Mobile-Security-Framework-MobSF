@@ -7,4 +7,7 @@ goto :run
 SET conf="0.0.0.0:8000 [::]:8000"
 :run
 echo Running MobSF on %conf%
+
+poetry run python manage.py collectstatic --noinput
+
 poetry run waitress-serve --listen=%conf% --threads=10 --channel-timeout=3600 mobsf.MobSF.wsgi:application

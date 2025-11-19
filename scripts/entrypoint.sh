@@ -4,6 +4,9 @@ set -e
 python3 manage.py makemigrations && \
 python3 manage.py makemigrations StaticAnalyzer && \
 python3 manage.py migrate
+
+python3 manage.py collectstatic --noinput
+
 set +e
 python3 manage.py createsuperuser --noinput --email ""
 set -e
