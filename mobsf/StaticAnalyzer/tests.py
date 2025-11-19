@@ -6,7 +6,6 @@ import platform
 
 from mobsf.MobSF.init import api_key
 
-from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import Client, TestCase
@@ -25,11 +24,6 @@ def static_analysis_test():
         uploaded = []
         logger.info('Running Upload Test')
         http_client = Client()
-
-        # Create Test User
-        user_model = get_user_model()
-        user_model.objects.create_user(username='mobsf_test', password='mobsf_test', is_superuser=True, is_staff=True)
-        http_client.login(username='mobsf_test', password='mobsf_test')
 
         apk_dir = os.path.join(settings.BASE_DIR, 'StaticAnalyzer/test_files/')
         for filename in os.listdir(apk_dir):
