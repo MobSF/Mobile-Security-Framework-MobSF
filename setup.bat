@@ -1,79 +1,82 @@
 @echo off
-rem Python Check
-set /a count=0
-where python >nul 2>&1 && (
-  echo [INSTALL] Checking for Python version 3.12+
-  :redo
-  if %count% lss 3 (
-    set /a count+=1
-    rem Python Version Check
-    for /F "tokens=* USEBACKQ" %%F IN (`python --version`) DO (
-      set var=%%F
-    )
-  ) else (
-    exit /b
-  )
-  echo %var%|findstr /R "[3].[1213]" >nul
-  if errorlevel 1 (
-      if "%var%"=="" goto redo
-      echo [ERROR] MobSF dependencies require Python 3.12-3.13. Your python points to %var%
-      exit /b
-  ) else (
-      echo [INSTALL] Found %var%
-  )
 
-  rem Pip Check and Upgrade
-  pip >nul 2>&1 && (
-    echo [INSTALL] Found pip
-    python -m pip install --no-cache-dir --upgrade pip
-  ) || (
-    echo [ERROR] pip is not available in PATH
-    pause
-    exit /b
-  )
+rem ================================
+rem   Python Detection (Windows)
+rem ================================
+echo [INSTALL] Checking for Python 3.12 or newer...
 
-  rem OpenSSL Check
-  if exist "C:\\Program Files\\OpenSSL-Win64\\bin\\openssl.exe" (
-    echo [INSTALL] Found OpenSSL executable
-  ) else (
-   echo [ERROR] OpenSSL executable not found in [C:\\Program Files\\OpenSSL-Win64\\bin\\openssl.exe]
-   echo [INFO] Install OpenSSL non-light version [Win64 OpenSSL v3.x] - https://slproweb.com/products/Win32OpenSSL.html
-   pause
-   exit /b
-  )
-
-  rem Visual Studio Build Tools Check
-  if exist "C:\\Program Files (x86)\\Microsoft Visual Studio" (
-    echo [INSTALL] Found Visual Studio Build Tools
-  ) else (
-    echo [ERROR] Microsoft Visual C++ 14.0 not found in [C:\\Program Files (x86^)\\Microsoft Visual Studio]
-    echo [INFO] Install Microsoft Visual Studio Build Tools - https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools^&rel=16
-    pause
-    exit /b
-  )
-
-  set LIB=C:\Program Files\OpenSSL-Win64\lib;%LIB%
-  set INCLUDE=C:\Program Files\OpenSSL-Win64\include;%INCLUDE%
-
-  echo [INSTALL] Installing Requirements
-  python -m pip install --no-cache-dir wheel poetry==1.8.4
-  python -m poetry lock
-  python -m poetry install --only main --no-root --no-interaction --no-ansi || python -m poetry install --only main --no-root --no-interaction --no-ansi || python -m poetry install --only main --no-root --no-interaction --no-ansi
- 
-  echo [INSTALL] Clean Up
-  call scripts/clean.bat y
-
-  echo [INSTALL] Migrating Database
-  set DJANGO_SUPERUSER_USERNAME=mobsf
-  set DJANGO_SUPERUSER_PASSWORD=mobsf
-  poetry run python manage.py makemigrations
-  poetry run python manage.py makemigrations StaticAnalyzer
-  poetry run python manage.py migrate
-  poetry run python manage.py createsuperuser --noinput --email ""
-  poetry run python manage.py create_roles
-  echo Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html
-  echo [INSTALL] Installation Complete
-  exit /b 0
-) || (
-  echo [ERROR] python3 is not installed
+where py >nul 2>&1
+if errorlevel 1 (
+  echo [ERROR] Python launcher 'py' not found. Install Python 3.12+ from python.org.
+  pause
+  exit /b 1
 )
+
+for /f "tokens=* usebackq" %%F in (`py -3 --version`) do (
+    set PYVERSION=%%F
+)
+echo %PYVERSION% | findstr /R "3\.12 3\.13" >nul
+if errorlevel 1 (
+    echo [ERROR] MobSF requires Python 3.12 or 3.13. Found: %PYVERSION%
+    pause
+    exit /b 1
+)
+echo [INSTALL] Found %PYVERSION%
+
+rem ================================
+rem  Pip Check
+rem ================================
+py -m pip --version >nul 2>&1
+if errorlevel 1 (
+  echo [ERROR] pip is missing. Reinstall Python with pip enabled.
+  pause
+  exit /b 1
+)
+echo [INSTALL] Found pip
+py -m pip install --upgrade pip
+
+rem ================================
+rem   OpenSSL Check
+rem ================================
+if exist "C:\Program Files\OpenSSL-Win64\bin\openssl.exe" (
+  echo [INSTALL] Found OpenSSL
+) else (
+  echo [ERROR] OpenSSL not found in: C:\Program Files\OpenSSL-Win64
+  pause
+  exit /b 1
+)
+
+rem ================================
+rem   Visual Studio Build Tools
+rem ================================
+if exist "D:\Vscode" (
+  echo [INSTALL] Found Visual Studio Build Tools
+) else (
+  echo [ERROR] Visual Studio Build Tools NOT found.
+  pause
+  exit /b 1
+)
+
+rem ================================
+rem   Install Poetry + Dependencies
+rem ================================
+echo [INSTALL] Installing Poetry and MobSF dependencies...
+py -m pip install --no-cache-dir wheel poetry==1.8.4
+py -m poetry lock
+py -m poetry install --only main --no-root --no-interaction --no-ansi
+
+rem ================================
+rem   Database Migrations
+rem ================================
+echo [INSTALL] Running Database Migrations
+set DJANGO_SUPERUSER_USERNAME=mobsf
+set DJANGO_SUPERUSER_PASSWORD=mobsf
+
+py -m poetry run python manage.py makemigrations
+py -m poetry run python manage.py makemigrations StaticAnalyzer
+py -m poetry run python manage.py migrate
+py -m poetry run python manage.py createsuperuser --noinput --email ""
+py -m poetry run python manage.py create_roles
+
+echo [INSTALL] Setup Complete.
+exit /b 0
