@@ -358,7 +358,7 @@ def url_n_email_extract(dat, relative_path):
     url_n_file = []
     email_n_file = []
     # URL Extraction
-    urllist = URL_REGEX.findall(dat.lower())
+    urllist = URL_REGEX.findall(dat)
     for url in urllist:
         urls.add(url)
     if urls:
