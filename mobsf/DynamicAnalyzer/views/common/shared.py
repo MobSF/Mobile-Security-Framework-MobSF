@@ -37,7 +37,7 @@ def extract_urls_domains_emails(checksum, data):
     # For domain extraction, use lowercased URLs
     domains = MalwareDomainCheck().scan(
         checksum,
-        [u.lower() for u in urls if isinstance(u, str)])
+        urls)
     # Email Extraction Regex
     emails = set()
     for email in EMAIL_REGEX.findall(data.lower()):
