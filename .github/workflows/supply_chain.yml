@@ -27,4 +27,5 @@ jobs:
       - name: Socket Firewall Scan
         run: |
           sfw pip install --no-index --find-links=yara-python-dex yara-python-dex
+          pip install --no-index --find-links=yara-python-dex yara-python-dex
           sfw pip install -r requirements.txt
