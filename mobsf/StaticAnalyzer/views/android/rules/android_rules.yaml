@@ -1,7 +1,7 @@
 - id: android_ip_disclosure
   message: IP Address disclosure
   type: Regex
-  pattern: '\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b'
+  pattern: '(?<![.\d])(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])(?![.\d])'
   severity: warning
   input_case: exact
   metadata:
