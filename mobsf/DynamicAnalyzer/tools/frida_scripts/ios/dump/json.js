@@ -5,7 +5,7 @@ function traceJSON(){
     {
         onEnter: function(args) {
             var jsonData = ObjC.Object(args[2]);
-            var jsonStr = Memory.readUtf8String(jsonData.bytes(), jsonData.length());
+            var jsonStr = jsonData.bytes().readUtf8String(jsonData.length());
             send(JSON.stringify({'[MBSFDUMP] json': jsonStr}));
         }
     });

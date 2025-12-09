@@ -26,13 +26,14 @@ function listHomeDirectoryContents() {
 function getDataProtectionKeyForPath(path) {
     var fileManager = ObjC.classes.NSFileManager.defaultManager();
     var urlPath = ObjC.classes.NSURL.fileURLWithPath_(path);
-    var fileProtectionKey = ObjC.Object(ptr(fileManager.attributesOfItemAtPath_error_(urlPath.path(), NULL)));
-    var protString = fileProtectionKey.valueForKey_("NSFileProtectionKey")
-    if (protString)
-        return protString.UTF8String();
-    else{
-        return '';
+    var attributeDict = fileManager.attributesOfItemAtPath_error_(urlPath.path(), NULL);
+    if (attributeDict) {
+        var protString = attributeDict.objectForKey_("NSFileProtectionKey");
+        if (protString) {
+            return protString.UTF8String();
+        }
     }
+    return '';
 }
 
 function getDataProtectionKeysForAllPaths() {
