@@ -216,6 +216,8 @@ def get_android_dashboard(context, from_ctx=False):
         data = context
     else:
         data = adb(context)
+        if not data:
+            return findings
     # Certificate Analysis
     if (data.get('certificate_analysis')
             and 'certificate_findings' in data['certificate_analysis']):
@@ -281,6 +283,8 @@ def get_ios_dashboard(context, from_ctx=False):
         data = context
     else:
         data = idb(context)
+        if not data:
+            return findings
     # Transport Security
     if (data.get('ats_analysis')
             and 'ats_findings' in data['ats_analysis']):
@@ -369,13 +373,13 @@ def appsec_dashboard(request, checksum, api=False):
                 'Invalid Hash',
                 api)
         android_static_db = StaticAnalyzerAndroid.objects.filter(
-            MD5=checksum)
+            MD5=checksum).first()
         ios_static_db = StaticAnalyzerIOS.objects.filter(
-            MD5=checksum)
-        if android_static_db.exists():
-            context = get_android_dashboard(android_static_db)
-        elif ios_static_db.exists():
-            context = get_ios_dashboard(ios_static_db)
+            MD5=checksum).first()
+        if android_static_db:
+            context = get_android_dashboard([android_static_db])
+        elif ios_static_db:
+            context = get_ios_dashboard([ios_static_db])
         else:
             if api:
                 return {'not_found': 'Report not found or supported'}
