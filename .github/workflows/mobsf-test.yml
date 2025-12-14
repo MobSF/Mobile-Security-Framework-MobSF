@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, macos-latest, windows-latest]
-        python-version: ['3.12']
+        python-version: ['3.12', '3.13']
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -47,7 +47,9 @@ jobs:
     - name: Install macOS Dependencies
       if: startsWith(matrix.os, 'macOS')
       run: |
-        brew install --cask wkhtmltopdf
+        export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-2/
+        export WKHTML_PKG=wkhtmltox-0.12.6-2.macos-cocoa.pkg
+        curl -L ${WKHTML_URL}${WKHTML_PKG} -O && sudo installer -pkg ${WKHTML_PKG} -target ~ && rm -rf ${WKHTML_PKG}
 
     - name: Install Windows Dependencies
       if: startsWith(matrix.os, 'windows')

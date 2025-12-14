@@ -25,6 +25,19 @@ def get_app_details(app_dic, man_data):
         'description': 'Failed to identify the package name',
     }
     try:
+        # Check if Google Play Store is reachable
+        # The library can cause timeout issue behind proxy
+        try:
+            proxies, verify = upstream_proxy('https')
+            requests.get(settings.PLAYSTORE,
+                         timeout=5,
+                         proxies=proxies,
+                         verify=verify)
+        except Exception:
+            logger.warning('Google Play Store is not reachable.'
+                           ' Skipping Play Store lookup.')
+            return
+
         if man_data.get('packagename'):
             package_id = man_data['packagename']
         elif app_dic.get('apk_features', {}).get('package'):

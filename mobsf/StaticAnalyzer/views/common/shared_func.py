@@ -120,6 +120,8 @@ def unzip(checksum, app_path, ext_path):
     try:
         with zipfile.ZipFile(app_path, 'r') as zipptr:
             files = zipptr.namelist()
+            total_size = 0
+            stop_fallback_extraction = False
             for fileinfo in zipptr.infolist():
                 ext_path = original_ext_path
 
@@ -145,7 +147,25 @@ def unzip(checksum, app_path, ext_path):
                     msg = ('Zip slip detected. skipped extracting'
                            f' {sanitize_for_logging(file_path)}')
                     logger.error(msg)
+                    stop_fallback_extraction = True
                     continue
+
+                # Check uncompressed size
+                if not fileinfo.is_dir():
+                    total_size += fileinfo.file_size
+                    if fileinfo.file_size > settings.ZIP_MAX_UNCOMPRESSED_FILE_SIZE:
+                        size_mb = fileinfo.file_size / (1024 * 1024)
+                        msg = (f'File too large ({size_mb:.2f} MB). Skipping '
+                               f'{sanitize_for_logging(file_path)}')
+                        logger.warning(msg)
+                    if total_size > settings.ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE:
+                        stop_fallback_extraction = True
+                        total_size_mb = total_size / (1024 * 1024)
+                        msg = ('Total uncompressed size '
+                               f'({total_size_mb:.2f} MB) exceeds limit. '
+                               'Aborting extraction.')
+                        logger.error(msg)
+                        raise Exception(msg)
 
                 # Fix permissions
                 if fileinfo.is_dir():
@@ -167,6 +187,11 @@ def unzip(checksum, app_path, ext_path):
         msg = f'Unzipping Error - {str(exp)}'
         logger.error(msg)
         append_scan_status(checksum, msg, repr(exp))
+        # Do not fallback to OS unzip
+        # if the total uncompressed file size is too large
+        # or if zip slip is detected
+        if stop_fallback_extraction:
+            return files
         # Fallback to OS unzip
         ofiles = os_unzip(checksum, app_path, ext_path)
         if not files:
@@ -191,6 +216,7 @@ def os_unzip(checksum, app_path, ext_path):
             logger.warning(msg)
             append_scan_status(checksum, msg)
             return []
+        # OS Unzip utility does handle path traversal and absolute paths
         subprocess.call(
             [unzip_b, '-o', '-q', app_path, '-d', ext_path])
         # Set permissions, packed files
@@ -245,14 +271,24 @@ def lipo_thin(checksum, src, dst):
 
 
 def ar_os(src, dst):
-    out = ''
     """Extract AR using OS utility."""
+    out = b''
     cur = os.getcwd()
     try:
         os.chdir(dst)
+        files = subprocess.check_output(
+            [shutil.which('ar'), 't', src],
+            stderr=subprocess.STDOUT)
+        for raw_file in files.decode('utf-8').split('\n'):
+            if is_path_traversal(raw_file):
+                msg = f'AR slip detected in AR file {src} at {raw_file}'
+                logger.error(msg)
+                raise ValueError(msg)
         out = subprocess.check_output(
             [shutil.which('ar'), 'x', src],
             stderr=subprocess.STDOUT)
+    except ValueError:
+        out = b''
     except Exception as exp:
         out = exp.output
     finally:
@@ -322,7 +358,7 @@ def url_n_email_extract(dat, relative_path):
     url_n_file = []
     email_n_file = []
     # URL Extraction
-    urllist = URL_REGEX.findall(dat.lower())
+    urllist = URL_REGEX.findall(dat)
     for url in urllist:
         urls.add(url)
     if urls:
@@ -485,7 +521,7 @@ def scan_library(request, checksum):
         lib_dir = Path(settings.UPLD_DIR) / checksum
 
         sfile = lib_dir / relative_path
-        if not is_safe_path(lib_dir.as_posix(), sfile.as_posix()):
+        if not is_safe_path(lib_dir.as_posix(), sfile.as_posix(), relative_path):
             msg = 'Path Traversal Detected!'
             return print_n_send_error_response(request, msg)
         ext = sfile.suffix

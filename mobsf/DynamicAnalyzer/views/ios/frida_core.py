@@ -21,7 +21,9 @@ from mobsf.DynamicAnalyzer.views.ios.frida_auxiliary_scripts import (
 from mobsf.DynamicAnalyzer.views.ios.corellium_ssh import (
     ssh_jumphost_port_forward,
 )
-
+from mobsf.DynamicAnalyzer.views.common.frida import (
+    get_bridge_loader,
+)
 
 logger = logging.getLogger(__name__)
 _PID = None
@@ -58,6 +60,7 @@ class Frida:
             'This app is not supported by Frida. '
             'Are you able to run the app on '
             'this device?')
+        self.bridge_loader = get_bridge_loader()
 
     def get_scripts(self, script_type, selected_scripts):
         """Get Frida Scripts."""
@@ -102,7 +105,7 @@ class Frida:
                     class_trace(self.extras['class_trace']))
         return scripts
 
-    def get_script(self):
+    def get_script(self, nolog=False):
         """Get final script."""
         if not self.code:
             self.code = ''
@@ -116,6 +119,22 @@ class Frida:
         rpc = f'rpc.exports = {{ \n{rpc_script}\n }};'
         combined = '\n'.join(scripts)
         final = f'{rpc}\n setTimeout(function() {{ \n{combined}\n }}, 1000)'
+
+        # Use bridges only for Frida 17.0.0+
+        if self.bridge_loader.is_required_and_available():
+            try:
+                final = self.bridge_loader.inject_bridge_support(
+                    final, 'objc')
+                if not nolog:
+                    logger.info('Frida Script injected with bridges')
+            except Exception:
+                logger.exception(
+                    'Failed to inject script with bridges '
+                    '(required for Frida 17.0.0+)')
+        else:
+            if not nolog:
+                logger.info('Frida Script injected')
+
         return final
 
     def frida_response(self, message, data):

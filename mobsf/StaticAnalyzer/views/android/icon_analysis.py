@@ -110,7 +110,6 @@ def find_icon_path_zip(checksum, res_dir, icon_paths_from_manifest):
     fetched from the manifest and by global search
     returns an empty string on fail or a full path
     """
-    global KNOWN_MIPMAP_SIZES
     try:
         msg = 'Guessing icon path'
         logger.info(msg)

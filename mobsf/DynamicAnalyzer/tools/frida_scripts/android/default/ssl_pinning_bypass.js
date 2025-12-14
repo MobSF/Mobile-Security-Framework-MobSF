@@ -65,13 +65,154 @@ Java.perform(function() {
     }
     try {
         var CertificatePinner2 = Java.use('okhttp3.CertificatePinner');
-        CertificatePinner2.check.overload('java.lang.String', 'java.util.List').implementation = function (str) {
-            send('[SSL Pinning Bypass] okhttp3.CertificatePinner.check() bypassed for ' + str);
+        
+        // Hook all check method overloads
+        CertificatePinner2.check.overload('java.lang.String', 'java.util.List').implementation = function (hostname, certificates) {
+            send('[SSL Pinning Bypass] okhttp3.CertificatePinner.check(String, List) bypassed for ' + hostname);
             return;
         };
+        
+        CertificatePinner2.check.overload('java.lang.String', '[Ljava.security.cert.Certificate;').implementation = function (hostname, certificates) {
+            send('[SSL Pinning Bypass] okhttp3.CertificatePinner.check(String, Certificate[]) bypassed for ' + hostname);
+            return;
+        };
+        
+        // Additional check method overload that might exist
+        try {
+            CertificatePinner2.check.overload('java.lang.String', 'java.util.List', 'java.lang.String').implementation = function (hostname, certificates, algorithm) {
+                send('[SSL Pinning Bypass] okhttp3.CertificatePinner.check(String, List, String) bypassed for ' + hostname);
+                return;
+            };
+        } catch(e) {}
+        
+        // Hook the internal pin checking method
+        try {
+            CertificatePinner2.check$okhttp.implementation = function (hostname, certificates) {
+                send('[SSL Pinning Bypass] okhttp3.CertificatePinner.check$okhttp bypassed for ' + hostname);
+                return;
+            };
+        } catch(e) {}
+        
     } catch(err) {
         send('[SSL Pinning Bypass] okhttp3 CertificatePinner not found');
     }
+    
+    // Comprehensive OkHttp3 bypass combining all approaches to avoid redeclaration
+    try {
+        var OkHttpClient = Java.use('okhttp3.OkHttpClient');
+        var OkHttpClientBuilder = Java.use('okhttp3.OkHttpClient$Builder');
+        var CertificatePinner = Java.use('okhttp3.CertificatePinner');
+        
+        // Create empty certificate pinner
+        var EmptyCertificatePinner = CertificatePinner.Builder.$new().build();
+        
+        // Bypass certificate pinner in builder
+        OkHttpClientBuilder.certificatePinner.implementation = function(certificatePinner) {
+            send('[SSL Pinning Bypass] okhttp3.OkHttpClient.Builder.certificatePinner() bypassed');
+            return this;
+        };
+        
+        OkHttpClientBuilder.build.implementation = function() {
+            var client = this.build();
+            try {
+                // Try to replace certificate pinner with empty one
+                var certificatePinnerField = OkHttpClient.class.getDeclaredField('certificatePinner');
+                certificatePinnerField.setAccessible(true);
+                certificatePinnerField.set(client, EmptyCertificatePinner);
+                send('[SSL Pinning Bypass] okhttp3.OkHttpClient certificate pinner replaced with empty pinner');
+            } catch (e) {
+                send('[SSL Pinning Bypass] Failed to replace certificate pinner: ' + e);
+            }
+            return client;
+        };
+        
+        // Hook findMatchingPins method if it exists
+        try {
+            CertificatePinner.findMatchingPins.implementation = function(hostname) {
+                send('[SSL Pinning Bypass] okhttp3.CertificatePinner.findMatchingPins() bypassed for ' + hostname);
+                var ArrayList = Java.use('java.util.ArrayList');
+                return ArrayList.$new(); // Return empty list
+            };
+        } catch(e) {}
+        
+        // Hook sha256 method if it exists
+        try {
+            CertificatePinner.sha256Hash.implementation = function(certificate) {
+                send('[SSL Pinning Bypass] okhttp3.CertificatePinner.sha256Hash() bypassed');
+                // Return a dummy hash that will match
+                var ByteString = Java.use('okio.ByteString');
+                return ByteString.decodeHex('0000000000000000000000000000000000000000000000000000000000000000');
+            };
+        } catch(e) {}
+        
+        // More aggressive approach - completely suppress the certificate pinning exception
+        try {
+            var RealInterceptorChain = Java.use('okhttp3.internal.http.RealInterceptorChain');
+            RealInterceptorChain.proceed.overload('okhttp3.Request').implementation = function(request) {
+                try {
+                    return this.proceed(request);
+                } catch (e) {
+                    if (e.toString().includes('Certificate pinning failure')) {
+                        send('[SSL Pinning Bypass] Certificate pinning failure suppressed for: ' + request.url());
+                        // Return the original method call but without pinning
+                        var originalPinner = this.call().client().certificatePinner();
+                        try {
+                            // Temporarily replace with empty pinner
+                            var clientField = this.call().getClass().getDeclaredField('client');
+                            clientField.setAccessible(true);
+                            var client = clientField.get(this.call());
+                            
+                            var pinnerField = client.getClass().getDeclaredField('certificatePinner');
+                            pinnerField.setAccessible(true);
+                            pinnerField.set(client, EmptyCertificatePinner);
+                            
+                            var result = this.proceed(request);
+                            
+                            // Restore original pinner
+                            pinnerField.set(client, originalPinner);
+                            return result;
+                        } catch (reflectionError) {
+                            send('[SSL Pinning Bypass] Reflection bypass failed: ' + reflectionError);
+                            throw e;
+                        }
+                    }
+                    throw e;
+                }
+            };
+        } catch(interceptorErr) {}
+        
+    } catch(err) {
+        send('[SSL Pinning Bypass] Comprehensive okhttp3 bypass not available');
+    }
+    
+    // Direct bypass for SSLPeerUnverifiedException 
+    try {
+        var SSLPeerUnverifiedException = Java.use('javax.net.ssl.SSLPeerUnverifiedException');
+        SSLPeerUnverifiedException.$init.overload('java.lang.String').implementation = function(message) {
+            if (message && message.includes('Certificate pinning failure')) {
+                send('[SSL Pinning Bypass] SSLPeerUnverifiedException with certificate pinning blocked');
+                // Don't throw the exception, just return
+                return;
+            }
+            return this.$init(message);
+        };
+    } catch(err) {
+        send('[SSL Pinning Bypass] SSLPeerUnverifiedException bypass not available');
+    }
+    
+    // Additional OkHttp3 bypasses for interceptors and connection specs
+    try {
+        // Bypass ConnectionSpec TLS versions
+        var ConnectionSpec = Java.use('okhttp3.ConnectionSpec');
+        ConnectionSpec.isCompatible.implementation = function(sslSocket) {
+            send('[SSL Pinning Bypass] okhttp3.ConnectionSpec.isCompatible() bypassed');
+            return true;
+        };
+    } catch(err) {
+        send('[SSL Pinning Bypass] okhttp3 ConnectionSpec not found');
+    }
+    
+    // Note: RealConnection.connectTls bypass removed to prevent app crashes
     try {
         // https://gist.github.com/cubehouse/56797147b5cb22768b500f25d3888a22
         var dataTheorem = Java.use('com.datatheorem.android.trustkit.pinning.OkHostnameVerifier');
@@ -268,55 +409,54 @@ Java.perform(function() {
         send("[SSL Pinning Bypass] Appmattus CertificateTransparencyInterceptor not found");
     }
     try{
-        bypassOkHttp3CertificateTransparency();
+        bypassCertificateTransparency();
     } catch (err) {
         send('[SSL Pinning Bypass] certificatetransparency.CTInterceptorBuilder not found');
     }
+    
+
 }, 0);
 
 
-function bypassOkHttp3CertificateTransparency() {
+function bypassCertificateTransparency() {
   // https://gist.github.com/m-rey/f2a235123908ca42395b6d3c5fe1128e
-    var CertificateTransparencyInterceptor = Java.use('com.appmattus.certificatetransparency.internal.verifier.CertificateTransparencyInterceptor');
-    var OkHttpClientBuilder = Java.use('okhttp3.OkHttpClient$Builder');
+    try {
+        var CertificateTransparencyInterceptor = Java.use('com.appmattus.certificatetransparency.internal.verifier.CertificateTransparencyInterceptor');
 
-    CertificateTransparencyInterceptor.intercept.implementation = function (chain) {
-        var request = chain.request();
-        var url = request.url();
-        var host = url.host();
+        CertificateTransparencyInterceptor.intercept.implementation = function (chain) {
+            var request = chain.request();
+            var url = request.url();
+            var host = url.host();
 
-        // Dynamically access the VerificationResult classes
-        var VerificationResult = Java.use('com.appmattus.certificatetransparency.VerificationResult');
-        var VerificationResultSuccessInsecureConnection = Java.use('com.appmattus.certificatetransparency.VerificationResult$Success$InsecureConnection');
-        var VerificationResultFailureNoCertificates = Java.use('com.appmattus.certificatetransparency.VerificationResult$Failure$NoCertificates');
+            // Dynamically access the VerificationResult classes
+            var VerificationResult = Java.use('com.appmattus.certificatetransparency.VerificationResult');
+            var VerificationResultSuccessInsecureConnection = Java.use('com.appmattus.certificatetransparency.VerificationResult$Success$InsecureConnection');
+            var VerificationResultFailureNoCertificates = Java.use('com.appmattus.certificatetransparency.VerificationResult$Failure$NoCertificates');
 
-        // Create instances of the desired VerificationResult classes
-        var success = VerificationResultSuccessInsecureConnection.$new(host);
-        var failureNoCertificates = VerificationResultFailureNoCertificates.$new();
+            // Create instances of the desired VerificationResult classes
+            var success = VerificationResultSuccessInsecureConnection.$new(host);
+            var failureNoCertificates = VerificationResultFailureNoCertificates.$new();
 
-        // Bypass certificate transparency verification
-        var certs = chain.connection().handshake().peerCertificates();
-        if (certs.length === 0) {
-        send('[SSL Pinning Bypass] Certificate transparency bypassed.');
-        return failureNoCertificates;
-        }
-
-        try {
-        // Proceed with the original request
-        return chain.proceed(request);
-        } catch (e) {
-        // Catch SSLPeerUnverifiedException and return intercepted response
-        if (e.toString().includes('SSLPeerUnverifiedException')) {
-            send('[SSL Pinning Bypass] Certificate transparency failed.');
+            // Bypass certificate transparency verification
+            var certs = chain.connection().handshake().peerCertificates();
+            if (certs.length === 0) {
+            send('[SSL Pinning Bypass] Certificate transparency bypassed.');
             return failureNoCertificates;
-        }
-        throw e;
-        }
-    };
+            }
 
-    OkHttpClientBuilder.build.implementation = function () {
-        // Intercept the OkHttpClient creation
-        var client = this.build();
-        return client;
-    };
+            try {
+            // Proceed with the original request
+            return chain.proceed(request);
+            } catch (e) {
+            // Catch SSLPeerUnverifiedException and return intercepted response
+            if (e.toString().includes('SSLPeerUnverifiedException')) {
+                send('[SSL Pinning Bypass] Certificate transparency failed.');
+                return failureNoCertificates;
+            }
+            throw e;
+            }
+        };
+    } catch (err) {
+        send('[SSL Pinning Bypass] CertificateTransparencyInterceptor not found');
+    }
 }

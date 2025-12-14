@@ -138,6 +138,7 @@ GITHUB_URL = ('https://github.com/MobSF/Mobile-Security-Framework-MobSF/'
               'releases/latest')
 FRIDA_SERVER = 'https://api.github.com/repos/frida/frida/releases/tags/'
 GOOGLE = 'https://www.google.com'
+PLAYSTORE = 'https://play.google.com'
 BAIDU = 'https://www.baidu.com/'
 APKPURE = 'https://m.apkpure.com/android/{}/download?from=details'
 APKTADA = 'https://apktada.com/download-apk/'
@@ -241,8 +242,12 @@ MEDIA_URL = '/uploads/'
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-# 256MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 268435456
+# 256MB limit for file uploads
+DATA_UPLOAD_MAX_MEMORY_SIZE = 256 * 1024 * 1024
+# 400MB per file limit for uncompressed files
+ZIP_MAX_UNCOMPRESSED_FILE_SIZE = 400 * 1024 * 1024
+# 3GB total limit for all uncompressed files
+ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE = 3000 * 1024 * 1024
 LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = '/'
 AUTH_PASSWORD_VALIDATORS = [

@@ -35,7 +35,7 @@ from mobsf.MobSF.utils import (
     python_dict,
 )
 from mobsf.MobSF.init import api_key
-from mobsf.MobSF.security import sanitize_filename
+from mobsf.MobSF.security import sanitize_filename, sanitize_svg
 from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
@@ -402,14 +402,31 @@ def scan_status(request, api=False):
 
 def file_download(dwd_file, filename, content_type):
     """HTTP file download response."""
-    with open(dwd_file, 'rb') as file:
-        wrapper = FileWrapper(file)
-        response = HttpResponse(wrapper, content_type=content_type)
-        response['Content-Length'] = dwd_file.stat().st_size
+    def create_response(content, is_binary=True):
+        """Helper function to create HTTP response."""
+        if is_binary:
+            wrapper = FileWrapper(content)
+            response = HttpResponse(wrapper, content_type=content_type)
+            response['Content-Length'] = dwd_file.stat().st_size
+        else:
+            response = HttpResponse(content, content_type=content_type)
         if filename:
-            val = f'attachment; filename="{filename}"'
+            # Remove CRLF from filename to prevent header injection
+            safe_filename = filename.replace('\r', '').replace('\n', '')
+            val = f'attachment; filename="{safe_filename}"'
             response['Content-Disposition'] = val
         return response
+
+    # Handle SVG files with bleach cleaning to prevent XSS attacks
+    if dwd_file.suffix == '.svg':
+        with open(dwd_file, 'r', encoding='utf-8') as file:
+            svg_content = file.read()
+            cleaned_svg = sanitize_svg(svg_content)
+            return create_response(cleaned_svg, is_binary=False)
+
+    # Handle all other binary file types
+    with open(dwd_file, 'rb') as file:
+        return create_response(file)
 
 
 @login_required
@@ -458,7 +475,7 @@ def download(request):
     dwd_file = Path(root) / filename
 
     # Security Checks
-    if '../' in filename or not is_safe_path(root, dwd_file):
+    if not is_safe_path(root, dwd_file, filename):
         msg = 'Path Traversal Attack Detected'
         return print_n_send_error_response(request, msg)
 

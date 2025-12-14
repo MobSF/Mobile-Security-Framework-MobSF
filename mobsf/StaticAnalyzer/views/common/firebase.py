@@ -5,8 +5,8 @@ from urllib.parse import urlparse
 from mobsf.MobSF.utils import (
     append_scan_status,
     upstream_proxy,
-    valid_host,
 )
+from mobsf.MobSF.security import valid_host
 
 import requests
 
@@ -80,13 +80,12 @@ def firebase_analysis(checksum, code_an_dic):
 def open_firebase(checksum, url):
     # Detect Open Firebase Database
     try:
-        invalid = 'Invalid Firebase URL'
         if not valid_host(url):
-            logger.warning(invalid)
+            logger.warning('Invalid Host: %s', url)
             return url, False
         purl = urlparse(url)
-        if not purl.netloc.endswith('firebaseio.com'):
-            logger.warning(invalid)
+        if not purl.netloc.lower().endswith('.firebaseio.com'):
+            logger.warning('Invalid Firebase URL')
             return url, False
         base_url = f'{purl.scheme}://{purl.netloc}/.json'
         proxies, verify = upstream_proxy('https')
@@ -116,7 +115,7 @@ def firebase_db_check(checksum, code_an_dic):
     try:
         urls = list(set(code_an_dic['urls_list']))
         for url in urls:
-            if 'firebaseio.com' not in url:
+            if '.firebaseio.com' not in url:
                 continue
             returl, is_open = open_firebase(checksum, url)
             if is_open:

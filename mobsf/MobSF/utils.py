@@ -16,11 +16,10 @@ import signal
 import string
 import subprocess
 import stat
-import socket
 import sqlite3
 import unicodedata
 import threading
-from urllib.parse import urlparse
+from urllib.parse import unquote
 from pathlib import Path
 from concurrent.futures import (
     ThreadPoolExecutor,
@@ -56,7 +55,7 @@ URL_REGEX = re.compile(
         r'file://|javascript:|data:|www\d{0,3}[.])'
         r'[\w().=/;,#:@?&~*+!$%\'{}-]+)'
     ),
-    re.UNICODE)
+    re.UNICODE | re.IGNORECASE)
 EMAIL_REGEX = re.compile(r'[\w+.-]{1,20}@[\w-]{1,20}\.[\w]{2,10}')
 USERNAME_REGEX = re.compile(r'^\w[\w\-\@\.]{1,35}$')
 GOOGLE_API_KEY_REGEX = re.compile(r'AIza[0-9A-Za-z-_]{35}$')
@@ -133,6 +132,8 @@ def print_version():
         dst_str = f' ({dist}) '
     env_str = f'OS Environment: {os}{dst_str}{pltfm}'
     logger.info(env_str)
+    python_version = sys.version.split(' ')[0]
+    logger.info('Python Version: %s', python_version)
     cores, threads, ram = get_system_resources()
     logger.info('CPU Cores: %s, Threads: %s, RAM: %.2f GB', cores, threads, ram)
     find_java_binary()
@@ -604,8 +605,10 @@ def get_proxy_ip(identifier):
     return proxy_ip
 
 
-def is_safe_path(safe_root, check_path):
+def is_safe_path(safe_root, check_path, raw_file):
     """Detect Path Traversal."""
+    if is_path_traversal(raw_file):
+        return False
     safe_root = os.path.realpath(os.path.normpath(safe_root))
     check_path = os.path.realpath(os.path.normpath(check_path))
     return os.path.commonprefix([check_path, safe_root]) == safe_root
@@ -708,11 +711,37 @@ def is_path_traversal(user_input):
     """Check for path traversal."""
     if not user_input:
         return False
-    if (('../' in user_input)
-        or ('%2e%2e' in user_input)
-        or ('..' in user_input)
-            or ('%252e' in user_input)):
-        logger.error('Path traversal attack detected')
+
+    # Disallow absolute paths and windows paths and backslashes
+    if os.path.isabs(user_input) or user_input.startswith(('\\', '//')):
+        logger.error('Path traversal attack detected with absolute path')
+        return True
+
+    # Normalize and decode URL-encoded characters
+    try:
+        # Handle URL decoding (e.g., %2e -> .)
+        decoded = unquote(user_input)
+        # Handle double URL decoding (e.g., %252e -> %2e -> .)
+        double_decoded = unquote(decoded)
+    except Exception:
+        logger.error('Path traversal attack detected with invalid URL encoding')
+        return True
+
+    # Check for path traversal in both original and decoded versions
+    dangerous_patterns = ['..', '../', '..\\', '..\\\\']
+
+    # Check original filename
+    if any(pattern in user_input for pattern in dangerous_patterns):
+        logger.error('Path traversal attack detected with invalid path')
+        return True
+
+    # Check decoded versions
+    if any(pattern in decoded for pattern in dangerous_patterns):
+        logger.error('Path traversal attack detected with invalid path')
+        return True
+
+    if any(pattern in double_decoded for pattern in dangerous_patterns):
+        logger.error('Path traversal attack detected with invalid path')
         return True
     return False
 
@@ -902,58 +931,6 @@ def settings_enabled(attr):
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     """Generate random string."""
     return ''.join(random.choice(chars) for _ in range(size))
-
-
-def valid_host(host):
-    """Check if host is valid."""
-    try:
-        prefixs = ('http://', 'https://')
-        if not host.startswith(prefixs):
-            host = f'http://{host}'
-        parsed = urlparse(host)
-        domain = parsed.netloc
-        path = parsed.path
-        if len(domain) == 0:
-            # No valid domain
-            return False
-        if len(path) > 0:
-            # Only host is allowed
-            return False
-        if ':' in domain:
-            # IPv6
-            return False
-        # Local network
-        invalid_prefix = (
-            '100.64.',
-            '127.',
-            '192.',
-            '198.',
-            '10.',
-            '172.',
-            '169.',
-            '0.',
-            '203.0.',
-            '224.0.',
-            '240.0',
-            '255.255.',
-            'localhost',
-            '::1',
-            '64::ff9b::',
-            '100::',
-            '2001::',
-            '2002::',
-            'fc00::',
-            'fe80::',
-            'ff00::')
-        if domain.startswith(invalid_prefix):
-            return False
-        ip = socket.gethostbyname(domain)
-        if ip.startswith(invalid_prefix):
-            # Resolve dns to get IP
-            return False
-        return True
-    except Exception:
-        return False
 
 
 def append_scan_status(checksum, status, exception=None):

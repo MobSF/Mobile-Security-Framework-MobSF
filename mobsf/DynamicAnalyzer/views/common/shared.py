@@ -27,17 +27,18 @@ logger = logging.getLogger(__name__)
 def extract_urls_domains_emails(checksum, data):
     """Extract URLs, Domains and Emails."""
     # URL Extraction
-    urls = re.findall(URL_REGEX, data.lower())
+    urls = re.findall(URL_REGEX, data)
     if urls:
         urls = list(set(urls))
     else:
         urls = []
     # Domain Extraction and Malware Check
     logger.info('Performing Malware check on extracted domains')
+    # For domain extraction, use lowercased URLs
     domains = MalwareDomainCheck().scan(
         checksum,
         urls)
-    # Email Etraction Regex
+    # Email Extraction Regex
     emails = set()
     for email in EMAIL_REGEX.findall(data.lower()):
         if email.startswith('//'):
