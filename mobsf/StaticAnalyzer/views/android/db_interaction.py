@@ -94,6 +94,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
     except Exception:
         msg = 'Fetching data from the DB failed.'
         logger.exception(msg)
+        return None
 
 
 def get_context_from_analysis(app_dic,
