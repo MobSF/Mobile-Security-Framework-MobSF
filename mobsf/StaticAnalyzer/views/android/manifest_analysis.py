@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 import requests
 from concurrent.futures import ThreadPoolExecutor
+from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
     append_scan_status,
@@ -66,6 +67,13 @@ ANDROID_API_LEVEL_MAP = {
     '35': '15',
     '36': '16',
 }
+
+
+def escape_manifest_attribute(value):
+    """Escape manifest attributes."""
+    if not value:
+        return value
+    return escape(value)
 
 
 def assetlinks_check(act_name, well_knowns):
@@ -314,6 +322,7 @@ def manifest_analysis(app_dic, man_data_dic):
                 # Checks for Activities
                 if itemname in ['Activity', 'Activity-Alias']:
                     item = node.getAttribute(f'{ns}:name')
+                    item = escape_manifest_attribute(item)
                     # Browsable Activities
                     browse_dic = get_browsable_activities(node, ns)
                     if browse_dic['browsable']:
@@ -377,6 +386,7 @@ def manifest_analysis(app_dic, man_data_dic):
                     if node.getAttribute(f'{ns}:exported') == 'true':
                         perm = ''
                         item = node.getAttribute(f'{ns}:name')
+                        item = escape_manifest_attribute(item)
                         if node.getAttribute(f'{ns}:permission'):
                             # permission exists
                             perm = ('<strong>Permission: </strong>'
@@ -490,6 +500,7 @@ def manifest_analysis(app_dic, man_data_dic):
                                 is_inf = True
                         if is_inf:
                             item = node.getAttribute(f'{ns}:name')
+                            item = escape_manifest_attribute(item)
                             if node.getAttribute(f'{ns}:permission'):
                                 # permission exists
                                 perm = ('<strong>Permission: </strong>'
@@ -605,6 +616,7 @@ def manifest_analysis(app_dic, man_data_dic):
                                 if itemname == 'Content Provider' and int(man_data_dic['target_sdk']) < ANDROID_4_2_LEVEL:
                                     perm = ''
                                     item = node.getAttribute(f'{ns}:name')
+                                    item = escape_manifest_attribute(item)
                                     if node.getAttribute(f'{ns}:permission'):
                                         # permission exists
                                         perm = ('<strong>Permission: </strong>'
@@ -686,6 +698,7 @@ def manifest_analysis(app_dic, man_data_dic):
                                         perm = ''
                                         item = node.getAttribute(
                                             f'{ns}:name')
+                                        item = escape_manifest_attribute(item)
                                         if node.getAttribute(f'{ns}:permission'):
                                             # permission exists
                                             perm = ('<strong>Permission: </strong>'
@@ -773,10 +786,12 @@ def manifest_analysis(app_dic, man_data_dic):
         for data in data_tag:
             if data.getAttribute(f'{ns}:scheme') == 'android_secret_code':
                 xmlhost = data.getAttribute(f'{ns}:host')
+                xmlhost = escape_manifest_attribute(xmlhost)
                 ret_list.append(('dialer_code_found', (xmlhost,), ()))
 
             elif data.getAttribute(f'{ns}:port'):
                 dataport = data.getAttribute(f'{ns}:port')
+                dataport = escape_manifest_attribute(dataport)
                 ret_list.append(('sms_receiver_port_found', (dataport,), ()))
         # INTENTS
         processed_priorities = {}
