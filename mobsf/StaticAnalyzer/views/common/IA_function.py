@@ -8,21 +8,22 @@ def array_to_str(dataset):
     if isinstance(dataset, (list, tuple)):
         cadena = ""
         for x in dataset:
-            cadena += x + "," 
+            cadena += x + ","
     else:
         cadena = dataset
     cadena.strip()
     cadena = cadena[:-1]
     if len(cadena) == 0:
         cadena = "Sin_permisos_definidos"
-    
+
     return cadena
 
+
 def validate_malware_ia(data):
-    
+
     permission = list(data.keys()) if data.keys() else []
     permission = array_to_str(permission)
-    print("[*]Permisos listado pre IA" )
+    print("[*]Permisos listado pre IA")
     print(permission)
 
     model_path = "mobsf\\StaticAnalyzer\\tools\\IA_model\\NyerAndroidMalware"
@@ -43,10 +44,8 @@ def validate_malware_ia(data):
 
     # Suponiendo dos clases: [Benigno, Malware]
     prob_benign, prob_malware = probs[0].tolist()
-    #print("[*]Evaluacion HASH: {}".format(data["hash"]))
-    print(f"Probabilidad Benigno: {prob_benign*100:.2f}%")
-    print(f"Probabilidad Malware: {prob_malware*100:.2f}%")
+    # print("[*]Evaluacion HASH: {}".format(data["hash"]))
+    print(f"Probabilidad Benigno: {prob_benign * 100:.2f}%")
+    print(f"Probabilidad Malware: {prob_malware * 100:.2f}%")
 
-    return {"IA_MALWARE_PERCENTAGE":prob_malware}
-
-    
+    return {"IA_MALWARE_PERCENTAGE": prob_malware}

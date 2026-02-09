@@ -222,7 +222,7 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
         code_an_dic['domains'] = MalwareDomainCheck().scan(
             checksum,
             code_an_dic['urls_list'])
-       
+
         ia_analisis = validate_malware_ia(man_data_dic['perm'])
 
         context = save_get_ctx(

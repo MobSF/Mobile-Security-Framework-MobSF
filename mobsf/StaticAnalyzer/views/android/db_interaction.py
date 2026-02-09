@@ -90,8 +90,8 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'secrets': python_list(db_entry[0].SECRETS),
             'logs': get_scan_logs(db_entry[0].MD5),
             'sbom': python_dict(db_entry[0].SBOM),
-            "IA_MALWARE_PERCENTAGE":python_dict(db_entry[0].IA_MALWARE_PERCENTAGE) * 100,
-            "IA_DANGER_PERCENTAGE": getattr(settings,'IA_DANGER_PERCENTAGE',20)
+            "IA_MALWARE_PERCENTAGE": python_dict(db_entry[0].IA_MALWARE_PERCENTAGE) * 100,
+            "IA_DANGER_PERCENTAGE": getattr(settings, 'IA_DANGER_PERCENTAGE', 20)
         }
         return context
     except Exception:
@@ -168,8 +168,8 @@ def get_context_from_analysis(app_dic,
             'secrets': code_an_dic['secrets'],
             'logs': get_scan_logs(app_dic['md5']),
             'sbom': code_an_dic['sbom'],
-            "IA_MALWARE_PERCENTAGE": float(ia_analisis.get("IA_MALWARE_PERCENTAGE",0)) * 100,
-            "IA_DANGER_PERCENTAGE": getattr(settings,'IA_DANGER_PERCENTAGE',0)
+            "IA_MALWARE_PERCENTAGE": float(ia_analisis.get("IA_MALWARE_PERCENTAGE", 0)) * 100 if ia_analisis else 0,
+            "IA_DANGER_PERCENTAGE": getattr(settings, 'IA_DANGER_PERCENTAGE', 0)
         }
         return context
     except Exception as exp:
@@ -237,7 +237,7 @@ def save_or_update(update_type,
             'NETWORK_SECURITY': man_an_dic['network_security'],
             'SECRETS': code_an_dic['secrets'],
             'SBOM': code_an_dic['sbom'],
-            "IA_MALWARE_PERCENTAGE":ia_analisis.get("IA_MALWARE_PERCENTAGE","")
+            "IA_MALWARE_PERCENTAGE": ia_analisis.get("IA_MALWARE_PERCENTAGE", "0") if ia_analisis else 0,
         }
         if update_type == 'save':
             db_entry = StaticAnalyzerAndroid.objects.filter(
