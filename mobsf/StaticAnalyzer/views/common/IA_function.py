@@ -1,7 +1,7 @@
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as functional
 
 
 def array_to_str(dataset):
@@ -41,11 +41,11 @@ def validate_malware_ia(data):
         logits = outputs.logits
 
     # Obtener probabilidades softmax para cada clase
-    probs = F.softmax(logits, dim=1)
+    probs = functional.softmax(logits, dim=1)
 
     # Suponiendo dos clases: [Benigno, Malware]
     prob_benign, prob_malware = probs[0].tolist()
-    # print("[*]Evaluacion HASH: {}".format(data["hash"]))
+    
     print(f'Probabilidad Benigno: {prob_benign * 100:.2f}%')
     print(f'Probabilidad Malware: {prob_malware * 100:.2f}%')
 

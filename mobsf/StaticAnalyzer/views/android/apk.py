@@ -83,7 +83,6 @@ from mobsf.MobSF.views.authorization import (
     Permissions,
     has_permission,
 )
-
 from mobsf.StaticAnalyzer.views.common.IA_function import validate_malware_ia
 
 logger = logging.getLogger(__name__)
@@ -235,7 +234,7 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
             apkid_results,
             trackers,
             rescan,
-            ia_analisis
+            ia_analisis,
         )
         if queue:
             return mark_task_completed(
