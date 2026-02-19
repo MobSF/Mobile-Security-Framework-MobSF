@@ -36,7 +36,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
         manifest_analysis = process_suppression_manifest(
             python_list(db_entry[0].MANIFEST_ANALYSIS),
             package)
-        IA_MALWARE_PERCENTAGE = python_dict(db_entry[0].IA_MALWARE_PERCENTAGE)
+        ia_malware_percentage = python_dict(db_entry[0].IA_MALWARE_PERCENTAGE)
         context = {
             'version': settings.MOBSF_VER,
             'title': 'Static Analysis',
@@ -90,7 +90,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'secrets': python_list(db_entry[0].SECRETS),
             'logs': get_scan_logs(db_entry[0].MD5),
             'sbom': python_dict(db_entry[0].SBOM),
-            'IA_MALWARE_PERCENTAGE': IA_MALWARE_PERCENTAGE * 100,
+            'IA_MALWARE_PERCENTAGE': ia_malware_percentage * 100,
             'IA_DANGER_PERCENTAGE': getattr(settings, 'IA_DANGER_PERCENTAGE', 20),
         }
 
@@ -121,9 +121,9 @@ def get_context_from_analysis(app_dic,
             package)
         
         if ia_analisis:
-            IA_MALWARE_PERCENTAGE = float(ia_analisis.get('IA_MALWARE_PERCENTAGE', 0))
+            ia_malware_percentage  = float(ia_analisis.get('IA_MALWARE_PERCENTAGE', 0))
         else: 
-            IA_MALWARE_PERCENTAGE = 0 
+            ia_malware_percentage  = 0 
 
         context = {
             'title': 'Static Analysis',
@@ -175,7 +175,7 @@ def get_context_from_analysis(app_dic,
             'secrets': code_an_dic['secrets'],
             'logs': get_scan_logs(app_dic['md5']),
             'sbom': code_an_dic['sbom'],
-            'IA_MALWARE_PERCENTAGE': IA_MALWARE_PERCENTAGE * 100,
+            'IA_MALWARE_PERCENTAGE': ia_malware_percentage * 100,
             'IA_DANGER_PERCENTAGE': getattr(settings, 'IA_DANGER_PERCENTAGE', 0),
         }
 
