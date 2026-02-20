@@ -12,10 +12,12 @@ OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
+
 @app.route('/chat/<scan_hash>/')
 def chat_ui(scan_hash):
     # We can pass scan_hash to the template
     return render_template('chat.html', scan_hash=scan_hash)
+
 
 @app.route('/api/chat', methods=['POST'])
 def chat_api():
@@ -30,10 +32,11 @@ def chat_api():
     headers = {'Authorization': MOBSF_API_KEY}
     try:
         # Fetch report from MobSF
-        resp = requests.post(f"{MOBSF_URL}/api/v1/report_json", data={'hash': scan_hash}, headers=headers)
+        resp = requests.post(f"{MOBSF_URL}/api/v1/report_json",
+                             data={'hash': scan_hash}, headers=headers)
         if resp.status_code != 200:
-             return jsonify({'error': f"MobSF Error: {resp.status_code} {resp.text}"}), 500
-        
+            return jsonify({'error': f"MobSF Error: {resp.status_code} {resp.text}"}), 500
+
         report_data = resp.json()
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -45,19 +48,19 @@ def chat_api():
     
     Answer the user's question based on this report.
     """
-    
+
     messages = [{"role": "system", "content": system_instruction}]
     for turn in history:
         # Gemini format adaptation if needed, but sidecar uses new format
         role = turn.get('role', 'user')
         if role == 'model':
             role = 'assistant'
-            
+
         content = turn.get('content', '')
         if not content and 'parts' in turn:
-             content = turn['parts'][0]
+            content = turn['parts'][0]
         messages.append({"role": role, "content": str(content)})
-    
+
     messages.append({"role": "user", "content": message})
 
     try:
@@ -68,7 +71,8 @@ def chat_api():
         reply = completion.choices[0].message.content
         return jsonify({'response': reply})
     except Exception as e:
-         return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run()
