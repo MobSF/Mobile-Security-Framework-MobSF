@@ -42,6 +42,7 @@ from mobsf.MobSF. init import api_key
 
 from . import settings
 
+
 logger = logging.getLogger(__name__)
 ADB_PATH = None
 BASE64_REGEX = re.compile(r'^[-A-Za-z0-9+/]*={0,3}$')

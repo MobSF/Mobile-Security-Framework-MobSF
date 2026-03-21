@@ -15,6 +15,8 @@ from urllib.request import (
     getproxies,
 )
 
+from mobsf.MobSF.exceptions import PathTraversalError
+
 logging.basicConfig(
     level=logging.INFO,
     format='[%(levelname)s] %(asctime)-15s - %(message)s',
@@ -158,7 +160,7 @@ def install_jadx(mobsf_home, version='1.5.0'):
                         os.path.join(abs_extract_dir, member))
                     if not (member_path.startswith(abs_extract_dir + os.sep)
                             or member_path == abs_extract_dir):
-                        raise Exception('Attempted Path Traversal in Zip File')
+                        raise PathTraversalError('Attempted Path Traversal in Zip File')
                     zip_ref.extract(member, extract_dir)
 
         # Set execute permission
