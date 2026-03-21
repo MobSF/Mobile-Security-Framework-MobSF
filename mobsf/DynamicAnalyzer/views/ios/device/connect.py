@@ -27,6 +27,7 @@ class IOSConnector:
         self.port = None
         self.username = None
         self.password = None
+        self.iproxy_procs = []  # Popen handles for iproxy subprocesses
 
     def _ssh_execute_command(self, command, timeout=30):
         """Execute a command on SSH client."""
@@ -209,10 +210,15 @@ class IOSConnector:
             if self.ssh_client:
                 self.ssh_client.close()
                 self.ssh_client = None
-            
-            if self.connection_type == 'usb':
-                subprocess.run(['pkill', '-f', 'iproxy'], 
-                             capture_output=True)
+
+            # Terminate only the iproxy processes started by this instance
+            # rather than pkill -f iproxy which would kill unrelated processes
+            for proc in self.iproxy_procs:
+                try:
+                    proc.terminate()
+                except Exception:
+                    pass
+            self.iproxy_procs = []
             logger.info("Disconnected from iOS device")
         except Exception as e:
             logger.error("Error during disconnect: %s", str(e))
@@ -368,12 +374,14 @@ class IOSConnector:
                          capture_output=True)
             time.sleep(1)
             
-            # Start iproxy for port forwarding
+            # Start iproxy for port forwarding; store handles for clean teardown
             cmds = [['iproxy', str(port), '22', '-u', device_id],
                     ['iproxy', '37042', '27042', '-u', device_id]]
             for cmd in cmds:
                 logger.info("Starting iproxy: %s", ' '.join(cmd))
-                subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                proc = subprocess.Popen(
+                    cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                self.iproxy_procs.append(proc)
             
             # Wait for port forwarding to be ready
             logger.info("Waiting for port forwarding to be ready...")
