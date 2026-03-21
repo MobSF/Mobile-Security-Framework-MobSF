@@ -4,6 +4,8 @@ from pathlib import Path
 import sys
 import time
 
+SCREENSHOT_CAPTURED_MSG = '✅ Screenshot Captured'
+
 from django.conf import settings
 
 import frida
@@ -61,6 +63,7 @@ class Frida:
             'Are you able to run the app on '
             'this device?')
         self.bridge_loader = get_bridge_loader()
+        self.screenshot_event = None
 
     def get_scripts(self, script_type, selected_scripts):
         """Get Frida Scripts."""
@@ -157,6 +160,9 @@ class Frida:
             else:
                 logger.debug('[Frida] %s', msg)
                 self.write_log(self.frida_log, f'{msg}\n')
+                if (self.screenshot_event
+                        and SCREENSHOT_CAPTURED_MSG in msg):
+                    self.screenshot_event.set()
         else:
             logger.error('[Frida] %s', message)
 
