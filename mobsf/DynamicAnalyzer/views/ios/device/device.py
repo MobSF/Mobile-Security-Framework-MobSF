@@ -257,44 +257,57 @@ class IOSDevice:
         return False
 
     def _appsync_install(self):
-        """Check and install AppSync Unified."""
+        """Check and install AppSync Unified.
+
+        Returns:
+            False: Already installed - caller may proceed with IPA install.
+            True: Just installed and userspace reboot is in progress.
+                  Caller should abort and retry after the reboot settles.
+        Raises:
+            Exception: AppSync could not be installed by either method.
+        """
         check_install = 'apt list --installed | grep -E \'ai\.akemi\.app(inst|syncunified)\''
         out, _, _ = self.execute_command(check_install)
         if 'appsyncunified' in out or 'appinst' in out:
-            return False
-        
-        # Install AppSync Unified
-        logger.info('AppSync Unified is not installed. '
-                    'Attempting to install...')
-        # Method 1: Install AppSync Unified from deb file
+            return False  # Already installed, proceed
+
+        # AppSync is not installed - attempt installation
+        logger.info('AppSync Unified is not installed. Attempting to install...')
+
+        # Method 1: Install from bundled deb file
         tools_dir = Path(settings.TOOLS_DIR) / 'ios' / 'appsync'
         if 'arm64' in self.get_platform_architecture():
             deb_file = tools_dir / 'ai.akemi.appsyncunified_116.0_iphoneos-arm64.akemi-git-235aca6cddfbdc9fa87fcb5b2aec2df37ed6d65a.deb'
         else:
             deb_file = tools_dir / 'ai.akemi.appsyncunified_116.0_iphoneos-arm.akemi-git-235aca6cddfbdc9fa87fcb5b2aec2df37ed6d65a.deb'
         if not deb_file.exists():
-            raise Exception('AppSync Unified deb file does not exist: %s', deb_file)
+            raise Exception('AppSync Unified deb file does not exist: %s' % deb_file)
         remote_path = '/tmp/appsync.deb'
         self.upload_file(deb_file, remote_path)
         self.install_apt_package('mobilesubstrate')
         if self.install_deb(remote_path):
+            logger.info(
+                'AppSync Unified installed from bundled deb. '
+                'Rebooting userspace...')
             self.execute_command('launchctl reboot userspace')
             time.sleep(15)
             return True
-        # Method 2: Install AppSync Unified from cydia.akemi.ai
+
+        # Method 2: Install from cydia.akemi.ai
         logger.info('Attempting to install AppSync Unified from cydia.akemi.ai')
         src_file = '/etc/apt/sources.list.d/cydia.list'
         src = 'deb https://cydia.akemi.ai/ ./'
-        install_cmds = [
-            f'grep -qxF \'{src}\' {src_file} || echo \'{src}\' >> {src_file}',
-            'apt update',
-            'apt install -y --allow-unauthenticated ai.akemi.appinst',
-            'launchctl reboot userspace',
-        ]
-        for i in install_cmds:
-            out, _, _ = self.execute_command(i)
-            logger.info(out)
-        logger.info('Please wait for 15 seconds for the userspace to reboot.')
+        self.execute_command(
+            f'grep -qxF \'{src}\' {src_file} || echo \'{src}\' >> {src_file}')
+        self.execute_command('apt update')
+        _, error, exit_code = self.execute_command(
+            'apt install -y --allow-unauthenticated ai.akemi.appinst')
+        if exit_code != 0:
+            raise Exception(
+                'Failed to install AppSync Unified via apt: %s' % error)
+        logger.info(
+            'AppSync Unified installed via apt. Rebooting userspace...')
+        self.execute_command('launchctl reboot userspace')
         time.sleep(15)
         return True
     
@@ -304,7 +317,9 @@ class IOSDevice:
             return False
         # Check if AppSync Unified is installed
         if self._appsync_install():
-            logger.info('AppSync Unified is installed, please try again.')
+            logger.info(
+                'AppSync Unified was just installed and userspace is '
+                'rebooting. Please try again in a moment.')
             return False
         ipa_path = Path(settings.UPLD_DIR) / checksum / f'{checksum}.ipa'
         if not ipa_path.exists():
