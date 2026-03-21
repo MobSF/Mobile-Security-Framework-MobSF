@@ -4,12 +4,13 @@ Keeping MobSF updated to the latest version is essential for ensuring security a
 
 ## Reporting a Vulnerability
 
-Please report all security issues [here](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/new) or email ajin25(gmail). We believe in coordinated and responsible disclosure.
+Please report all security issues [here](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/new). We believe in coordinated and responsible disclosure.
 
 ## Past Security Issues
 
 | Vulnerability | Affected Versions |
 | ------- | ------------------ |
+| [Stored XSS via Manifest Analysis - Dialer Code Host Field](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-8hf7-h89p-3pqj) | `<=4.4.4` |
 | [Arbitrary File Write (AR-Slip) via Absolute Path in .a Extraction](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-9gh8-9r95-3fc3) | `<=4.4.0` |
 | [Path Traversal in GET /download/`<filename>` using absolute filenames in MobSF data directory)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-ccc3-fvfx-mw3v) | `<=4.4.0` |
 | [Zip bomb Denial of Service (DoS) via Resource Exhaustion (Disk Space)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-c5vg-26p8-q8cr) | `<=4.3.2` |
