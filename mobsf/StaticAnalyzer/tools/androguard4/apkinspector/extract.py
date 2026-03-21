@@ -3,6 +3,8 @@
 import zlib
 import os
 
+from mobsf.MobSF.exceptions import PathTraversalError
+
 
 def extract_file_based_on_header_info(apk_file, local_header_info, central_directory_info):
     """
@@ -94,7 +96,11 @@ def extract_all_files_from_central_directory(apk_file, central_directory_entries
                 extract_file_based_on_header_info(
                     apk_file, local_header_entries[filename], cd_header_info)[0]
             # Construct the output file path
-            output_path = os.path.join(output_dir, filename)
+            output_path = os.path.realpath(os.path.join(output_dir, filename))
+            abs_output_dir = os.path.realpath(output_dir)
+            if not (output_path.startswith(abs_output_dir + os.sep)
+                    or output_path == abs_output_dir):
+                raise PathTraversalError('Attempted Path Traversal in APK Zip Entry')
             # Create directories if necessary
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             # Write the extracted data to the output file
