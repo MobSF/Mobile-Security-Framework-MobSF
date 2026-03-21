@@ -152,7 +152,13 @@ def install_jadx(mobsf_home, version='1.5.0'):
             logger.info('Extracting JADX to %s', extract_dir)
             extract_dir.mkdir(parents=True, exist_ok=True)
             with zipfile.ZipFile(tmp_zip_file.name, 'r') as zip_ref:
+                abs_extract_dir = os.path.realpath(extract_dir)
                 for member in zip_ref.namelist():
+                    member_path = os.path.realpath(
+                        os.path.join(abs_extract_dir, member))
+                    if not (member_path.startswith(abs_extract_dir + os.sep)
+                            or member_path == abs_extract_dir):
+                        raise Exception('Attempted Path Traversal in Zip File')
                     zip_ref.extract(member, extract_dir)
 
         # Set execute permission

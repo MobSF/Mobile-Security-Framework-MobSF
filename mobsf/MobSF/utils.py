@@ -613,7 +613,7 @@ def is_safe_path(safe_root, check_path, raw_file):
         return False
     safe_root = os.path.realpath(os.path.normpath(safe_root))
     check_path = os.path.realpath(os.path.normpath(check_path))
-    return os.path.commonprefix([check_path, safe_root]) == safe_root
+    return check_path.startswith(safe_root + os.sep) or check_path == safe_root
 
 
 def file_size(app_path):
