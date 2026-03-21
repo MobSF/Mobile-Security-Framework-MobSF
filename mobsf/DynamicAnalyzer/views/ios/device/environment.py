@@ -1,10 +1,9 @@
 # -*- coding: utf_8 -*-
 """iOS Device Environment for Dynamic Analysis."""
 
+import io
 import logging
 import plistlib
-import tempfile
-import os
 import time
 from pathlib import Path
 
@@ -108,53 +107,40 @@ class IOSEnvironment:
             if not self.frida_plist_path:
                 logger.error('No Frida plist path available')
                 return False
-                
+
             logger.info('Modifying Frida plist for WiFi access')
-            # Read the current plist content
-            output = self.ios_device.read_file(self.frida_plist_path)
-            if not output:
+            # Read as raw bytes — handles both XML and binary plist formats.
+            # read_file() would fail on binary plists due to UTF-8 decoding.
+            plist_bytes = self.ios_device.read_binary_file(self.frida_plist_path)
+            if not plist_bytes:
                 raise Exception('Failed to read Frida plist')
-            
-            if "<string>-l</string>" in output and "<string>0.0.0.0</string>" in output:
+
+            # Quick check for already-patched XML plist (avoids re-parsing)
+            if (b'<string>-l</string>' in plist_bytes
+                    and b'<string>0.0.0.0</string>' in plist_bytes):
                 logger.info('WiFi arguments already present in plist')
                 return True
-            
-            with tempfile.NamedTemporaryFile(mode='wb', delete=False) as temp_file:
-                temp_file.write(output.encode('utf-8'))
-                temp_file_path = temp_file.name
-            
-            try:
-                # Load the existing plist
-                with open(temp_file_path, "rb") as f:
-                    plist = plistlib.load(f)
-                
-                # Get current ProgramArguments
-                args = plist.get("ProgramArguments", [])
-                
-                # Add WiFi arguments if not present
-                if "-l" not in args:
-                    args.append("-l")
-                if "0.0.0.0" not in args:
-                    args.append("0.0.0.0")
-                
-                # Update the plist
-                plist["ProgramArguments"] = args
-                logger.info('Added -l 0.0.0.0 to ProgramArguments')
-                
-                # Save the updated plist to temporary file
-                with open(temp_file_path, "wb") as f:
-                    plistlib.dump(plist, f, fmt=plistlib.FMT_XML)
-                
-                self.ios_device.upload_file(temp_file_path, self.frida_plist_path)
-                
-            finally:
-                # Clean up temporary file
-                if os.path.exists(temp_file_path):
-                    os.unlink(temp_file_path)
-            
+
+            # plistlib.loads() handles both XML and binary plist formats
+            plist = plistlib.loads(plist_bytes)
+            args = plist.get('ProgramArguments', [])
+            if '-l' not in args:
+                args.append('-l')
+            if '0.0.0.0' not in args:
+                args.append('0.0.0.0')
+            plist['ProgramArguments'] = args
+            logger.info('Added -l 0.0.0.0 to ProgramArguments')
+
+            # Serialize back to XML and upload in-memory (no temp file needed)
+            updated_bytes = plistlib.dumps(plist, fmt=plistlib.FMT_XML)
+            plist_name = Path(self.frida_plist_path).name
+            plist_dir = str(Path(self.frida_plist_path).parent) + '/'
+            self.ios_device.upload_file_object(
+                io.BytesIO(updated_bytes), plist_name, plist_dir)
+
             logger.info('Successfully modified Frida plist for WiFi access')
             return True
-            
+
         except Exception:
             logger.exception('[ERROR] Modifying Frida plist for WiFi access')
         return False
