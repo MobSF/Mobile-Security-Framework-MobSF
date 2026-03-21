@@ -71,7 +71,35 @@ where python >nul 2>&1 && (
   poetry run python manage.py migrate
   poetry run python manage.py createsuperuser --noinput --email ""
   poetry run python manage.py create_roles
+  
   echo Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html
+  
+  
+  rem ------------------------------------------------------------
+  rem [INSTALL] Download Hugging Face model to MobSF tools folder
+  rem ------------------------------------------------------------
+  
+  echo [INSTALL] Downloading IA model from Hugging Face...
+
+  set "MODEL_REPO=Hachirou18/NyerAndroidMalware"
+  set "MODEL_DIR=%CD%\mobsf\StaticAnalyzer\tools\IA_model\NyerAndroidMalware"
+
+  if not exist "%MODEL_DIR%" mkdir "%MODEL_DIR%"
+
+  python -m pip install --no-cache-dir -U huggingface_hub || (
+    echo [ERROR] Failed to install huggingface_hub
+    pause
+    exit /b 1
+  )
+
+  python -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id=r'%MODEL_REPO%', local_dir=r'%MODEL_DIR%', local_dir_use_symlinks=False)" || (
+    echo [ERROR] Failed to download model %MODEL_REPO%
+    pause
+    exit /b 1
+  )
+
+
+
   echo [INSTALL] Installation Complete
   exit /b 0
 ) || (

@@ -61,4 +61,23 @@ if ! command -v wkhtmltopdf &>/dev/null; then
     echo 'Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html'
 fi
 
+
+echo "------------------------------------------------------------"
+echo "[INSTALL] Download Hugging Face model to MobSF tools folder"
+echo "------------------------------------------------------------"
+echo "[INSTALL] Downloading IA model from Hugging Face..."
+
+MODEL_REPO="Hachirou18/NyerAndroidMalware"
+MODEL_DIR="$(pwd)/mobsf/StaticAnalyzer/tools/IA_model/NyerAndroidMalware"
+
+mkdir -p "$MODEL_DIR"
+
+python -m pip install --no-cache-dir -U huggingface_hub
+
+# Download full repo snapshot into local dir.
+# local_dir_use_symlinks=False avoids symlinks (useful especially on Windows/WSL/containers).
+python -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='$MODEL_REPO', local_dir='$MODEL_DIR', local_dir_use_symlinks=False)"
+
+
+
 echo '[INSTALL] Installation Complete'

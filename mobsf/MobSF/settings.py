@@ -538,3 +538,7 @@ else:
     # CORELLIUM_PROJECT_ID is optional, MobSF will use any available project id
     # ===============================================
     # ^CONFIG-END^: Do not edit this line
+
+
+# IA Settings
+IA_DANGER_PERCENTAGE = os.getenv('MOBSF_IA_DANGER_PERCENTAGE', 60)

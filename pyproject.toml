@@ -23,7 +23,7 @@ classifiers = [
 mobsf = "mobsf.__main__:main"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.12,<3.15"
 django = ">=3.1.5"
 rsa = ">=4.7"
 requests = ">=2.25.1"
@@ -62,6 +62,8 @@ django-q2 = "^1.7.4"
 defusedxml = "^0.7.1"
 bleach = "^6.2.0"
 bcrypt = "4.0.1" # Pinned to avoid warnings with mitmproxy 12
+transformers = "^5.0.0"
+torch = "^2.8.0+cu126"
 
 [build-system]
 requires = ["poetry-core"]

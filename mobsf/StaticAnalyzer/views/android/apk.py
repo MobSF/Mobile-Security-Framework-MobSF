@@ -83,6 +83,7 @@ from mobsf.MobSF.views.authorization import (
     Permissions,
     has_permission,
 )
+from mobsf.StaticAnalyzer.views.common.IA_function import validate_malware_ia
 
 logger = logging.getLogger(__name__)
 
@@ -220,6 +221,9 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
         code_an_dic['domains'] = MalwareDomainCheck().scan(
             checksum,
             code_an_dic['urls_list'])
+
+        ia_analisis = validate_malware_ia(man_data_dic['perm'])
+
         context = save_get_ctx(
             app_dic,
             man_data_dic,
@@ -230,6 +234,7 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
             apkid_results,
             trackers,
             rescan,
+            ia_analisis,
         )
         if queue:
             return mark_task_completed(

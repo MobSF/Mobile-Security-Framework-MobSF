@@ -433,6 +433,8 @@
                       <span class="badge bg-success">VirusTotal Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
                     {% endif %}
                   {% endif %}
+                  <span class="badge {% if IA_MALWARE_PERCENTAGE >= IA_DANGER_PERCENTAGE %}bg-danger{% else %}bg-success{% endif %}">IA MALWARE PERCENTAGE</span>
+                  {{ IA_MALWARE_PERCENTAGE | floatformat:2 }}%<br/>
                 </p>
                 {% if app_type not in 'so' %}
                   <p> <a href="{% url 'appsec_dashboard' checksum=md5 %}" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>

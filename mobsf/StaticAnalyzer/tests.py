@@ -20,6 +20,7 @@ EXTS = settings.ANDROID_EXTS + settings.IOS_EXTS + settings.WINDOWS_EXTS
 def static_analysis_test():
     """Test Static Analyzer."""
     logger.info('Running Static Analyzer Unit test')
+    auth = api_key(settings.MOBSF_HOME)
     try:
         uploaded = []
         logger.info('Running Upload Test')
@@ -32,9 +33,13 @@ def static_analysis_test():
                 continue
             fpath = os.path.join(apk_dir, filename)
             with open(fpath, 'rb') as file_pointer:
+                print(f"[+] Archivo: {fpath}")
+                print("[*]¨Auth: {}".format(auth))
                 response = http_client.post(
-                    '/upload/',
-                    {'file': file_pointer})
+                    '/api/v1/upload',
+                    {'file': file_pointer},
+                    HTTP_AUTHORIZATION=auth)
+                
                 obj = json.loads(response.content.decode('utf-8'))
                 if response.status_code == 200 and obj['status'] == 'success':
                     logger.info('[OK] Upload OK: %s', filename)
