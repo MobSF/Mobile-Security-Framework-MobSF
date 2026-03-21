@@ -218,6 +218,7 @@ class IOSEnvironment:
 
             # Create a file to indicate that frida setup is done
             self.ios_device.write_file('/tmp/frida_setup_done', frida_version)
+            return True
         except Exception:
             logger.exception('[ERROR] Setting up Frida for iOS')
             return False
