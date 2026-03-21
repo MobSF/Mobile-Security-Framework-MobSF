@@ -18,25 +18,25 @@ from mobsf.DynamicAnalyzer.views.ios.analysis import (
     run_analysis,
 )
 from mobsf.DynamicAnalyzer.views.ios.device.dynamic_analyzer import (
-    validate_and_connect_device,
-    OK,
     FAILED,
+    OK,
+    validate_and_connect_device,
 )
 from mobsf.DynamicAnalyzer.tools.webproxy import (
     get_http_tools_url,
     stop_httptools,
 )
 from mobsf.MobSF.utils import (
+    IOS_DEVICE_ID_REGEX,
+    SSH_DEVICE_ID_REGEX,
     base64_decode,
-    is_md5,
     get_md5,
+    is_md5,
     key,
     pretty_json,
     print_n_send_error_response,
     replace,
     strict_package_check,
-    IOS_DEVICE_ID_REGEX,
-    SSH_DEVICE_ID_REGEX,
 )
 from mobsf.MobSF.views.authentication import (
     login_required,
@@ -73,6 +73,8 @@ def download_app_data_device(ios_device, checksum):
             shutil.copyfile(localtar, dst)
 
 # JSON API
+
+
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
@@ -197,10 +199,11 @@ def download_file_device(request, api=False):
         if error:
             data['message'] = error
             return send_response(data, api)
-        fo = ios_device.download_file_object(remote_path)
-        if fo:
-            response = HttpResponse(fo, content_type='application/octet-stream')
-            response['Content-Disposition'] = f'inline; filename={Path(remote_path).name}'
+        file_obj = ios_device.download_file_object(remote_path)
+        if file_obj:
+            response = HttpResponse(file_obj, content_type='application/octet-stream')
+            response['Content-Disposition'] = (
+                f'inline; filename={Path(remote_path).name}')
             return response
         else:
             data['message'] = 'Failed to download file'
@@ -243,13 +246,13 @@ def ios_api_monitor(request, api=False):
             # remove all duplicate lines
             lines = list(set(lines))
             api_data = []
-            
+
             for line in lines:
                 if line.strip():
                     try:
                         # Parse each line as JSON
                         json_obj = json.loads(line)
-                        
+
                         # Determine the API type based on the keys in the JSON object
                         api_type = None
                         if 'cookies' in json_obj:
@@ -282,17 +285,18 @@ def ios_api_monitor(request, api=False):
                             api_type = 'Data Directory'
                         else:
                             # If no known key, use the first key as API type
-                            api_type = list(json_obj.keys())[0] if json_obj else 'Unknown'
-                        
+                            api_type = list(json_obj.keys())[
+                                0] if json_obj else 'Unknown'
+
                         # Create the data object for DataTable
                         api_data.append({
                             'api': api_type,
-                            'data': json_obj
+                            'data': json_obj,
                         })
                     except json.JSONDecodeError:
                         # Skip invalid JSON lines
                         continue
-            
+
             data['data'] = api_data
             return send_response(data, api)
         template = 'dynamic_analysis/ios/api_monitor.html'

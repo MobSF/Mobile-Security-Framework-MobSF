@@ -30,64 +30,65 @@ class IOSDevice:
         """Execute a command on SSH client."""
         if not self.connector.ssh_client:
             return None, None, None
-        
+
         return self.connector._ssh_execute_command(command, timeout)
-    
+
     def ps(self):
         """Get the list of running processes."""
         if not self.connector.ssh_client:
             return None
         output, error, exit_code = self.execute_command('ps aux')
         if exit_code != 0:
-            logger.error("Failed to get list of running processes: %s", error)
+            logger.error('Failed to get list of running processes: %s', error)
             return None
-        
+
         # Parse ps aux output format
         processes = []
         lines = output.split('\n')
-        
+
         # Skip header line
         for line in lines[1:]:
             if line.strip():
                 try:
-                    # ps aux format: USER PID %CPU %MEM VSZ RSS TT STAT START TIME COMMAND
+                    # ps aux format:
+                    # USER PID %CPU %MEM VSZ RSS TT STAT START TIME COMMAND
                     parts = line.split()
                     if len(parts) >= 11:
                         pid = parts[1]
                         command = ' '.join(parts[10:])
-                        
-                        # Only include processes with .app in the path (iOS applications)
+
+                        # Only include processes with .app in the path
                         if '.app/' in command:
                             # Extract app name from .app path
                             app_parts = command.split('.app/')
                             if app_parts:
                                 app_path = app_parts[0]
                                 app_name = app_path.split('/')[-1]
-                                
+
                                 processes.append({
                                     'pid': pid,
-                                    'process_name': app_name
+                                    'process_name': app_name,
                                 })
                 except Exception as e:
-                    logger.warning("Failed to parse process line: %s - %s", line, str(e))
+                    logger.warning(
+                        'Failed to parse process line: %s - %s', line, str(e))
                     continue
-        
+
         return processes
-    
 
     def get_cpu_architecture(self):
         """Get the device CPU architecture."""
         if not self.connector.ssh_client:
             return None
-        
+
         try:
-            err = "Failed to get device CPU architecture"
+            err = 'Failed to get device CPU architecture'
             output, error, exit_code = self.execute_command('arch')
             if exit_code != 0:
-                logger.error("%s: %s", err, error)
+                logger.error('%s: %s', err, error)
                 return None
             arch = output.strip()
-            
+
             arch_mapping = {
                 'arm64': 'arm64',           # iPhone 5s and later (A7+)
                 'arm64e': 'arm64',          # iPhone XS and later (A12+)
@@ -95,32 +96,30 @@ class IOSDevice:
                 'armv7s': 'arm',            # iPhone 5, 5c (optimized for Swift)
             }
             return arch_mapping.get(arch)
-        
 
         except Exception:
             logger.exception(err)
         return None
-    
+
     def get_platform_architecture(self):
         """Get the device platform architecture."""
         if not self.connector.ssh_client:
             return None
-        
+
         try:
-            err = "Failed to get device platform architecture"
+            err = 'Failed to get device platform architecture'
             output, error, exit_code = self.execute_command('dpkg --print-architecture')
             if exit_code != 0:
-                logger.error("%s: %s", err, error)
+                logger.error('%s: %s', err, error)
                 return None
             arch = output.strip()
-            
+
             if 'iphoneos-arm64' in arch:
                 return 'arm64'
             return 'arm'
         except Exception:
             logger.exception(err)
         return None
-
 
     def upload_file(self, local_path, remote_path):
         """Upload a file to the iOS device."""
@@ -130,12 +129,12 @@ class IOSDevice:
         try:
             with self.connector.ssh_client.open_sftp() as sftp:
                 sftp.put(local_path, remote_path)
-            logger.info("Uploaded %s to %s", local_path, remote_path)
+            logger.info('Uploaded %s to %s', local_path, remote_path)
             return True
         except Exception:
-            logger.exception("Failed to upload file")
+            logger.exception('Failed to upload file')
         return False
-    
+
     def upload_file_object(self, fobject, filename, path='/tmp/'):
         """Upload a file object to the iOS device."""
         if not self.connector.ssh_client:
@@ -146,10 +145,10 @@ class IOSDevice:
             remote_path = path / filename
             with self.connector.ssh_client.open_sftp() as sftp:
                 sftp.putfo(fobject, str(remote_path))
-            logger.info("Uploaded %s to %s", filename, str(remote_path))
+            logger.info('Uploaded %s to %s', filename, str(remote_path))
             return True
         except Exception:
-            logger.exception("Failed to upload file")
+            logger.exception('Failed to upload file')
         return False
 
     def download_file(self, remote_path, local_path):
@@ -159,15 +158,15 @@ class IOSDevice:
         try:
             with self.connector.ssh_client.open_sftp() as sftp:
                 sftp.get(remote_path, local_path)
-            logger.info("Downloaded %s to %s", remote_path, local_path)
+            logger.info('Downloaded %s to %s', remote_path, local_path)
             return True
         except FileNotFoundError:
-            logger.error("File not found: %s", remote_path)
+            logger.error('File not found: %s', remote_path)
             return False
         except Exception:
-            logger.exception("Failed to download file")
+            logger.exception('Failed to download file')
         return False
-    
+
     def download_file_object(self, remote_path):
         """Return a file object from the iOS device."""
         if not self.connector.ssh_client:
@@ -179,10 +178,10 @@ class IOSDevice:
                     buffer.seek(0)
                     return buffer.read()
         except FileNotFoundError:
-            logger.error("File not found: %s", remote_path)
+            logger.error('File not found: %s', remote_path)
             return False
         except Exception:
-            logger.exception("Failed to download file")
+            logger.exception('Failed to download file')
         return False
 
     def write_file(self, remote_path, content):
@@ -195,7 +194,7 @@ class IOSDevice:
                     sftp.putfo(buffer, remote_path)
             return True
         except Exception:
-            logger.exception("Failed to write file")
+            logger.exception('Failed to write file')
         return False
 
     def read_file(self, remote_path):
@@ -223,7 +222,7 @@ class IOSDevice:
                     buffer.seek(0)
                     return buffer.read()
         except Exception:
-            logger.exception("Failed to read binary file")
+            logger.exception('Failed to read binary file')
         return None
 
     def install_deb(self, remote_path):
@@ -233,27 +232,28 @@ class IOSDevice:
         try:
             _, error, exit_code = self.execute_command(f'dpkg -i {remote_path}')
             if exit_code != 0:
-                logger.error("Install failed in iOS device: %s", error)
+                logger.error('Install failed in iOS device: %s', error)
                 return False
-            logger.info("Successfully installed deb file: %s", remote_path)
+            logger.info('Successfully installed deb file: %s', remote_path)
             return True
         except Exception:
-            logger.exception("Failed to install deb file")
+            logger.exception('Failed to install deb file')
         return False
-    
+
     def install_apt_package(self, package_name):
         """Install an apt package on the iOS device."""
         if not self.connector.ssh_client:
             return False
         try:
-            _, error, exit_code = self.execute_command(f'apt-get install -y {package_name}')
+            _, error, exit_code = self.execute_command(
+                f'apt-get install -y {package_name}')
             if exit_code != 0:
-                logger.error("Install failed in iOS device: %s", error)
+                logger.error('Install failed in iOS device: %s', error)
                 return False
-            logger.info("Successfully installed apt package: %s", package_name)
+            logger.info('Successfully installed apt package: %s', package_name)
             return True
         except Exception:
-            logger.exception("Failed to install apt package")
+            logger.exception('Failed to install apt package')
         return False
 
     def _appsync_install(self):
@@ -266,7 +266,9 @@ class IOSDevice:
         Raises:
             Exception: AppSync could not be installed by either method.
         """
-        check_install = 'apt list --installed | grep -E \'ai\.akemi\.app(inst|syncunified)\''
+        check_install = (
+            r"apt list --installed | grep -E 'ai\.akemi\.app(inst|syncunified)'"
+        )
         out, _, _ = self.execute_command(check_install)
         if 'appsyncunified' in out or 'appinst' in out:
             return False  # Already installed, proceed
@@ -277,9 +279,13 @@ class IOSDevice:
         # Method 1: Install from bundled deb file
         tools_dir = Path(settings.TOOLS_DIR) / 'ios' / 'appsync'
         if 'arm64' in self.get_platform_architecture():
-            deb_file = tools_dir / 'ai.akemi.appsyncunified_116.0_iphoneos-arm64.akemi-git-235aca6cddfbdc9fa87fcb5b2aec2df37ed6d65a.deb'
+            arm64 = ('ai.akemi.appsyncunified_116.0_iphoneos-arm64'
+                     '.akemi-git-235aca6cddfbdc9fa87fcb5b2aec2df37ed6d65a.deb')
+            deb_file = tools_dir / arm64
         else:
-            deb_file = tools_dir / 'ai.akemi.appsyncunified_116.0_iphoneos-arm.akemi-git-235aca6cddfbdc9fa87fcb5b2aec2df37ed6d65a.deb'
+            arm = ('ai.akemi.appsyncunified_116.0_iphoneos-arm'
+                   '.akemi-git-235aca6cddfbdc9fa87fcb5b2aec2df37ed6d65a.deb')
+            deb_file = tools_dir / arm
         if not deb_file.exists():
             raise Exception('AppSync Unified deb file does not exist: %s' % deb_file)
         remote_path = '/tmp/appsync.deb'
@@ -310,7 +316,7 @@ class IOSDevice:
         self.execute_command('launchctl reboot userspace')
         time.sleep(15)
         return True
-    
+
     def install_ipa(self, checksum):
         """Install an IPA file on the iOS device."""
         if not self.connector.ssh_client:
@@ -323,36 +329,39 @@ class IOSDevice:
             return False
         ipa_path = Path(settings.UPLD_DIR) / checksum / f'{checksum}.ipa'
         if not ipa_path.exists():
-            logger.error("IPA file does not exist: %s", ipa_path)
+            logger.error('IPA file does not exist: %s', ipa_path)
             return False
         if not self.upload_file(ipa_path, f'/tmp/{checksum}.ipa'):
-            logger.error("Failed to upload IPA file")
+            logger.error('Failed to upload IPA file')
             return False
         out, error, exit_code = self.execute_command(f'appinst /tmp/{checksum}.ipa')
         self.execute_command(f'rm -f /tmp/{checksum}.ipa')
         if 'Successfully installed' in out:
-            logger.info("Successfully installed IPA")
+            logger.info('Successfully installed IPA')
             return True
         if exit_code != 0:
-            logger.error("Failed to install IPA: %s", error)
+            logger.error('Failed to install IPA: %s', error)
         else:
-            logger.error("Failed to install IPA: %s", out)
+            logger.error('Failed to install IPA: %s', out)
         return False
-    
 
     def list_applications(self):
         """List installed applications."""
         if not self.connector.ssh_client:
             return []
-        logger.info("Listing applications on iOS device")
-        classify = lambda path: "System" if path.startswith("/Applications/") else ("User" if "/var/containers/Bundle/Application" in path else "Other")
-        checksum = lambda path: hashlib.md5(path.encode('utf-8')).hexdigest()
+        logger.info('Listing applications on iOS device')
+
+        def classify(path):
+            return 'System' if path.startswith(
+                '/Applications/') else (
+                'User' if '/var/containers/Bundle/Application' in path else 'Other')
+
+        def checksum(path):
+            return hashlib.md5(path.encode('utf-8')).hexdigest()
         bundle_ids = []
         try:
             sftp_client = self.connector.ssh_client.open_sftp()
-            output, _, exit_code = self.execute_command(
-                'uicache -l'
-            )
+            output, _, exit_code = self.execute_command('uicache -l')
             if exit_code == 0:
                 for line in output.split('\n'):
                     if line.strip():
@@ -362,7 +371,8 @@ class IOSDevice:
                         app_name, app_icon = self.get_app_name(app_path, sftp_client)
                         bundle_ids.append({
                             'app_name': app_name,
-                            'app_icon': self.get_app_icon(app_path, app_icon,  sftp_client),
+                            'app_icon': self.get_app_icon(
+                                app_path, app_icon, sftp_client),
                             'bundle_id': bundle_id,
                             'app_path': app_path,
                             'app_type': classify(app_path),
@@ -370,10 +380,10 @@ class IOSDevice:
                 sftp_client.close()
                 return bundle_ids
             else:
-                logger.error("Failed to get app details")
+                logger.error('Failed to get app details')
                 return []
         except Exception:
-            logger.exception("Failed to get app details")
+            logger.exception('Failed to get app details')
             return []
         finally:
             if sftp_client:
@@ -389,21 +399,27 @@ class IOSDevice:
                 sftp.getfo(str(plist_path), buffer)
                 buffer.seek(0)
                 plist = plistlib.load(buffer)
-            app_name = plist.get('CFBundleDisplayName') or plist.get('CFBundleName') or plist.get('CFBundleExecutable') or 'Unknown App'
+            app_name = (
+                plist.get('CFBundleDisplayName')
+                or plist.get('CFBundleName')
+                or plist.get('CFBundleExecutable')
+                or 'Unknown App'
+            )
             app_icon = None
             # First try modern nested structure
             try:
-                icons = plist["CFBundleIcons"]["CFBundlePrimaryIcon"]["CFBundleIconFiles"]
+                icons = (plist['CFBundleIcons']['CFBundlePrimaryIcon']
+                         ['CFBundleIconFiles'])
                 if isinstance(icons, list) and icons:
                     app_icon = icons[-1]  # Return the largest/resolution version
             except (KeyError, TypeError):
                 pass
             if not app_icon:
                 # Fallback to legacy key
-                app_icon = plist.get("CFBundleIconFile", None)
+                app_icon = plist.get('CFBundleIconFile', None)
             return app_name, app_icon
         except Exception:
-            logger.exception("Failed to get app name")
+            logger.exception('Failed to get app name')
         return None, None
 
     def _crush_png(self, icon_path):
@@ -417,13 +433,13 @@ class IOSDevice:
             if system == 'Darwin':
                 args = ['xcrun', '-sdk', 'iphoneos', 'pngcrush', '-q',
                         '-revert-iphone-optimizations',
-                        icon_path, icon_path + ".fixed"]
+                        icon_path, icon_path + '.fixed']
                 try:
                     out = subprocess.run(args, capture_output=True)
                     if b'libpng error:' in out.stdout:
                         # PNG looks normal
                         raise ValueError('PNG is not CgBI')
-                    shutil.move(icon_path + ".fixed", icon_path)
+                    shutil.move(icon_path + '.fixed', icon_path)
                 except Exception:
                     pass
             else:
@@ -438,17 +454,17 @@ class IOSDevice:
                 if cgbipng_bin:
                     cbin = tools_dir / 'CgbiPngFix' / cgbipng_bin
                     args = [cbin.as_posix(), '-i',
-                            icon_path, '-o', icon_path + ".fixed"]
+                            icon_path, '-o', icon_path + '.fixed']
                     try:
                         out = subprocess.run(args, capture_output=True)
-                        shutil.move(icon_path + ".fixed", icon_path)
+                        shutil.move(icon_path + '.fixed', icon_path)
                     except Exception:
                         # Fails or PNG is not crushed
-                       pass
+                        pass
                 else:
                     logger.warning('CgbiPngFix not available for %s %s', system, arch)
         except Exception:
-            logger.exception("Failed to crush png")
+            logger.exception('Failed to crush png')
         return None
 
     def get_app_icon(self, app_path, app_icon, sftp):
@@ -464,7 +480,7 @@ class IOSDevice:
                 # Guess icon path
                 search_pattern = 'AppIcon*.png'
             output, _, exit_code = self.execute_command(
-                f'find "{app_path}" -iname "{search_pattern}"'
+                f'find "{app_path}" -iname "{search_pattern}"',
             )
             if exit_code == 0:
                 if '.png' not in output:
@@ -472,13 +488,15 @@ class IOSDevice:
                 for line in output.split('\n'):
                     if line.strip():
                         icon_path = Path(line.strip())
-                        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
+                        with tempfile.NamedTemporaryFile(
+                                suffix='.png', delete=False) as temp_file:
                             temp_path = Path(temp_file.name)
                             sftp.get(str(icon_path), str(temp_path))
                             self._crush_png(str(temp_path))
-                            return base64.b64encode(temp_path.read_bytes()).decode('utf-8')
+                            return base64.b64encode(
+                                temp_path.read_bytes()).decode('utf-8')
         except Exception:
-            logger.exception("Failed to get app icon")
+            logger.exception('Failed to get app icon')
         finally:
             if temp_path and temp_path.exists():
                 temp_path.unlink()

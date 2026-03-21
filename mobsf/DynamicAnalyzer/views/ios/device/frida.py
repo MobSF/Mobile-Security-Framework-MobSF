@@ -11,13 +11,16 @@ from mobsf.DynamicAnalyzer.views.ios.device.environment import IOSEnvironment
 logger = logging.getLogger(__name__)
 _PID = None
 
+
 class FridaIOSDevice(Frida):
     """Frida iOS Device for Dynamic Analysis."""
 
-    def __init__(self, ios_device, ssh_string, app_hash, bundle_id, defaults, dump, auxiliary, extras, code):
+    def __init__(
+            self, ios_device, ssh_string, app_hash, bundle_id,
+            defaults, dump, auxiliary, extras, code):
         """Initialize."""
-        
-        super().__init__(ssh_string, app_hash, bundle_id, defaults, dump, auxiliary, extras, code)
+        super().__init__(
+            ssh_string, app_hash, bundle_id, defaults, dump, auxiliary, extras, code)
         self.connector = ios_device.connector
         self.env = IOSEnvironment(ios_device)
         self.api = None
@@ -39,7 +42,6 @@ class FridaIOSDevice(Frida):
             self.frida_device = frida.get_device_manager().add_remote_device(
                 self.connector.host)
 
-    
     def run_app(self):
         """Run the app with frida."""
         pid = None
@@ -74,7 +76,7 @@ class FridaIOSDevice(Frida):
         except Exception:
             logger.exception('Failed to run app')
         return None
-    
+
     def spawn(self):
         """Connect to Frida Server and spawn the app."""
         global _PID
@@ -91,7 +93,6 @@ class FridaIOSDevice(Frida):
             if not _PID:
                 _PID = self.frida_device.spawn([self.bundle_id])
             logger.info('Spawned %s with PID %s', self.bundle_id, _PID)
-            #time.sleep(2)
         except frida.TimedOutError:
             logger.error('Timed out while waiting for device to appear')
         except frida.ServerNotRunningError:

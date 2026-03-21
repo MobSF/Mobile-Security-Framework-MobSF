@@ -15,8 +15,8 @@ from mobsf.MobSF.utils import (
 )
 from mobsf.DynamicAnalyzer.forms import UploadFileForm
 from mobsf.DynamicAnalyzer.views.ios.helpers import (
-    get_local_ipa_list,
     configure_proxy,
+    get_local_ipa_list,
 )
 from mobsf.DynamicAnalyzer.views.ios.corellium_ssh import (
     generate_keypair_if_not_exists,

@@ -14,13 +14,12 @@ from django.views.decorators.http import require_http_methods
 from mobsf.MobSF.utils import (
     IOS_DEVICE_ID_REGEX,
     SSH_DEVICE_ID_REGEX,
+    get_md5,
+    is_md5,
     parse_host_port,
     print_n_send_error_response,
     strict_package_check,
-    is_md5,
-    get_md5,
 )
-
 from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
     is_attack_pattern,
@@ -28,8 +27,8 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
 )
 from mobsf.DynamicAnalyzer.forms import UploadFileForm
 from mobsf.DynamicAnalyzer.views.ios.helpers import (
-    get_local_ipa_list,
     configure_proxy,
+    get_local_ipa_list,
 )
 from mobsf.DynamicAnalyzer.views.ios.device.device import IOSDevice
 from mobsf.DynamicAnalyzer.views.ios.device.connect import IOSConnector
@@ -288,7 +287,7 @@ def upload_file_device(request, api=False):
         logger.exception(err_msg)
         data['message'] = str(exp)
     return send_response(data, api)
-   
+
 
 # JSON API
 @login_required
@@ -365,14 +364,14 @@ def ps_device(request, api=False):
             data['message'] = processes
         else:
             data['message'] = 'No processes found'
-            
+
     except Exception as exp:
         logger.exception('Getting process list failed')
         data['message'] = str(exp)
     return send_response(data, api)
 
 
-# JSON API    
+# JSON API
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
@@ -421,7 +420,7 @@ def install_ipa_device(request, api=False):
             data['message'] = 'Failed to install IPA'
             return send_response(data, api)
         data['status'] = OK
-        data['message'] = f'Successfully installed IPA'
+        data['message'] = 'Successfully installed IPA'
     except Exception:
         logger.exception('Failed to install IPA on iOS device')
     return send_response(data, api)
@@ -472,12 +471,13 @@ def download_screenshot(ios_device, checksum, screenshot_event=None):
             screenshot_event.wait(timeout=30)
         else:
             time.sleep(5)
-        timestamp = time.strftime("%Y%m%d%H%M%S")
+        timestamp = time.strftime('%Y%m%d%H%M%S')
         path = Path(settings.DWD_DIR) / f'{checksum}-sshot-{timestamp}.png'
-        ios_device.download_file("/tmp/screenshot.png", path)
+        ios_device.download_file('/tmp/screenshot.png', path)
     except Exception as exp:
         logger.error('Failed to download screenshot from iOS device')
         logger.error(exp)
+
 
 def validate_and_connect_device(device_id):
     """Validate device_id and establish connection to iOS device."""
@@ -498,7 +498,7 @@ def validate_and_connect_device(device_id):
     else:
         ip, port = get_ios_device_wifi_connect_string(device_id)
         connected = connector.connect_wifi(
-            ip, port, username=ssh_user, password=ssh_password)
+            ip, ssh_user, ssh_password, port=port)
         if not connected:
             return None, 'Failed to connect to iOS device over WiFi'
     ios_device = IOSDevice(connector)

@@ -1,15 +1,19 @@
 import logging
-from threading import Thread
-from pathlib import Path
 import sys
 import time
-
-SCREENSHOT_CAPTURED_MSG = '✅ Screenshot Captured'
-
-from django.conf import settings
+from pathlib import Path
+from threading import Thread
 
 import frida
 
+from django.conf import settings
+
+from mobsf.DynamicAnalyzer.views.common.frida import (
+    get_bridge_loader,
+)
+from mobsf.DynamicAnalyzer.views.ios.corellium_ssh import (
+    ssh_jumphost_port_forward,
+)
 from mobsf.DynamicAnalyzer.views.ios.frida_auxiliary_scripts import (
     class_pattern,
     class_trace,
@@ -20,12 +24,9 @@ from mobsf.DynamicAnalyzer.views.ios.frida_auxiliary_scripts import (
     string_capture,
     string_compare,
 )
-from mobsf.DynamicAnalyzer.views.ios.corellium_ssh import (
-    ssh_jumphost_port_forward,
-)
-from mobsf.DynamicAnalyzer.views.common.frida import (
-    get_bridge_loader,
-)
+
+SCREENSHOT_CAPTURED_MSG = '✅ Screenshot Captured'
+
 
 logger = logging.getLogger(__name__)
 _PID = None

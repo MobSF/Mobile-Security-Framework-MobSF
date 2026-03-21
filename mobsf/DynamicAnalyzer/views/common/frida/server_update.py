@@ -20,10 +20,10 @@ logger = logging.getLogger(__name__)
 
 class FridaServerUpdater:
     """Class for managing Frida server updates and downloads."""
-    
+
     def __init__(self, platform, version):
         """Initialize the FridaServerUpdater.
-        
+
         Args:
             platform (str): The platform ('android' or 'ios')
             version (str): The Frida version to manage
@@ -31,7 +31,7 @@ class FridaServerUpdater:
         self.download_dir = Path(settings.DWD_DIR)
         self.platform = platform
         self.version = version
-    
+
     def clean_up_old_binaries(self):
         """Delete old Frida server binaries."""
         if self.platform == 'android':
@@ -47,11 +47,10 @@ class FridaServerUpdater:
 
     def download_frida_server(self, url, fname, proxies, verify):
         """Download Frida server binary."""
-
         try:
             logger.info('Downloading Frida server binary: %s', fname)
             dwd_loc = self.download_dir / fname
-            
+
             with requests.get(
                     url,
                     timeout=15,
@@ -59,16 +58,16 @@ class FridaServerUpdater:
                     verify=verify,
                     stream=True) as r:
                 r.raise_for_status()
-                
+
                 with open(dwd_loc, 'wb') as f:
                     if fname.endswith('.deb'):
                         copyfileobj(r.raw, f)
                     else:
                         copyfileobj(LZMAFile(r.raw), f)
-            
+
             self.clean_up_old_binaries()
             return True
-            
+
         except Exception:
             logger.exception('[ERROR] Downloading Frida Server Binary')
             # Clean up partial download
@@ -101,25 +100,27 @@ class FridaServerUpdater:
                 f'{settings.FRIDA_SERVER}{self.version}',
                 timeout=5,
                 proxies=proxies,
-                verify=verify
+                verify=verify,
             )
             response.raise_for_status()
-            
+
             # Find the correct binary
             if self.platform == 'android':
                 asset = f'{fserver}.xz'
             else:
                 asset = fserver
-            for item in response.json()['assets']:    
+            for item in response.json()['assets']:
                 if item['name'] == asset:
                     return self.download_frida_server(
-                        item['browser_download_url'], fserver, proxies, verify
+                        item['browser_download_url'], fserver, proxies, verify,
                     )
 
-            logger.error('Frida server binary not found for platform: %s, architecture: %s', 
-                        self.platform, arch)
-            
+            logger.error(
+                'Frida server binary not found for platform: %s, architecture: %s',
+                self.platform, arch,
+            )
+
         except Exception:
             logger.exception('[ERROR] Fetching Frida Server Release')
-        
+
         return False

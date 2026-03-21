@@ -65,7 +65,7 @@ def view_file(request, api=False):
                     plist_data = loads(raw_data)
                     dat = dumps(plist_data, fmt=FMT_XML).decode('utf-8', 'ignore')
                 except Exception as e:
-                    logger.warning(f"Failed to parse binary plist: {e}")
+                    logger.warning('Failed to parse binary plist: %s', e)
                     dat = raw_data.decode('utf-8', 'ignore')
             else:
                 # It's a text plist, read as text

@@ -60,7 +60,7 @@ def get_ios_model_mapping():
         'i386': 'iPhone Simulator',
         'x86_64': 'iPhone Simulator',
         'arm64': 'iPhone Simulator',
-        
+
         # iPhone Models
         'iPhone1,1': 'iPhone',
         'iPhone1,2': 'iPhone 3G',
@@ -120,7 +120,7 @@ def get_ios_model_mapping():
         'iPhone17,3': 'iPhone 16',
         'iPhone17,4': 'iPhone 16 Plus',
         'iPhone17,5': 'iPhone 16e',
-        
+
         # iPod Models
         'iPod1,1': '1st Gen iPod',
         'iPod2,1': '2nd Gen iPod',
@@ -129,7 +129,7 @@ def get_ios_model_mapping():
         'iPod5,1': '5th Gen iPod',
         'iPod7,1': '6th Gen iPod',
         'iPod9,1': '7th Gen iPod',
-        
+
         # iPad Models
         'iPad1,1': 'iPad',
         'iPad1,2': 'iPad 3G',
@@ -229,7 +229,7 @@ def get_ios_model_mapping():
         'iPad16,4': 'iPad Pro 11 inch 5th Gen',
         'iPad16,5': 'iPad Pro 12.9 inch 7th Gen',
         'iPad16,6': 'iPad Pro 12.9 inch 7th Gen',
-        
+
         # Apple Watch Models
         'Watch1,1': 'Apple Watch 38mm case',
         'Watch1,2': 'Apple Watch 42mm case',
@@ -281,6 +281,7 @@ def get_ios_model_mapping():
         'Watch7,11': 'Apple Watch Series 10 46mm (GPS+Cellular)',
     }
 
+
 def configure_proxy(request, project, ci=None):
     """Configure HTTPS Proxy."""
     proxy_port = settings.PROXY_PORT
@@ -291,5 +292,5 @@ def configure_proxy(request, project, ci=None):
         # Remote Port forward for HTTPS Proxy
         logger.info('Starting Remote Port Forward over SSH')
         Thread(target=ssh_jumphost_reverse_port_forward,
-            args=(ci.get_ssh_connection_string(),),
-            daemon=True).start()
+               args=(ci.get_ssh_connection_string(),),
+               daemon=True).start()
