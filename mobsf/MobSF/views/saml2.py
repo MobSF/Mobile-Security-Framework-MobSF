@@ -64,6 +64,9 @@ def init_saml_auth(req):
             },
             'x509cert': settings.IDP_X509CERT,
         },
+        'security': {
+            'requestedAuthnContext': False,
+        },
     }
     try:
         idp_data = None

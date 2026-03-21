@@ -1,7 +1,7 @@
 MANIFEST_DESC = {
     'well_known_assetlinks': {
         'title': ('App Link assetlinks.json file not found'
-                  '<br>[android:name=%s]<br>[android:host=%s]'),
+                  '[android:name=%s][android:host=%s]'),
         'level': 'high',
         'description': ('App Link asset verification URL (%s) not found or '
                         'configured incorrectly. (Status Code: %s). '
@@ -22,7 +22,7 @@ MANIFEST_DESC = {
     },
     'clear_text_traffic': {
         'title': ('Clear text traffic is Enabled For App'
-                  '<br>[android:usesCleartextTraffic=true]'),
+                  '[android:usesCleartextTraffic=true]'),
         'level': 'high',
         'description': ('The app intends to use cleartext network traffic,'
                         ' such as cleartext HTTP, FTP stacks, DownloadManager,'
@@ -38,7 +38,7 @@ MANIFEST_DESC = {
                  '[android:usesCleartextTraffic=true]'),
     },
     'direct_boot_aware': {
-        'title': 'App is direct-boot aware <br>[android:directBootAware=true]',
+        'title': 'App is direct-boot aware [android:directBootAware=true]',
         'level': 'info',
         'description': ('This app can run before the user unlocks the device. '
                         'If you\'re using a custom subclass of Application, '
@@ -52,7 +52,7 @@ MANIFEST_DESC = {
     },
     'has_network_security': {
         'title': ('App has a Network Security Configuration'
-                  '<br>[android:networkSecurityConfig=%s]'),
+                  '[android:networkSecurityConfig=%s]'),
         'level': 'info',
         'description': ('The Network Security Configuration feature lets apps'
                         ' customize their network security settings in a safe,'
@@ -64,7 +64,7 @@ MANIFEST_DESC = {
     },
     'vulnerable_os_version': {
         'title': ('App can be installed on a vulnerable '
-                  'unpatched Android version<br>Android %s, [minSdk=%s]'),
+                  'unpatched Android version %s, [minSdk=%s]'),
         'level': 'high',
         'description': ('This application can be installed on an older version'
                         ' of android that has multiple unfixed '
@@ -76,8 +76,8 @@ MANIFEST_DESC = {
                  'unpatched Android version %s, [minSdk=%s]'),
     },
     'vulnerable_os_version2': {
-        'title': ('App can be installed on a vulnerable Android version'
-                  '<br>Android %s, minSdk=%s]'),
+        'title': ('App can be installed on a vulnerable Android version %s,'
+                  ' minSdk=%s]'),
         'level': 'warning',
         'description': ('This application can be installed on an older version'
                         ' of android that has multiple vulnerabilities. '
@@ -87,7 +87,7 @@ MANIFEST_DESC = {
                  ' %s, [minSdk=%s]'),
     },
     'app_is_debuggable': {
-        'title': 'Debug Enabled For App<br>[android:debuggable=true]',
+        'title': 'Debug Enabled For App [android:debuggable=true]',
         'level': 'high',
         'description': ('Debugging was enabled on the app which makes it '
                         'easier for reverse engineers to hook a debugger to'
@@ -96,8 +96,7 @@ MANIFEST_DESC = {
         'name': 'Debug Enabled For App [android:debuggable=true]',
     },
     'app_allowbackup': {
-        'title': ('Application Data can be Backed up'
-                  '<br>[android:allowBackup=true]'),
+        'title': ('Application Data can be Backed up [android:allowBackup=true]'),
         'level': 'warning',
         'description': ('This flag allows anyone to backup your application'
                         ' data via adb. It allows users who have enabled USB'
@@ -106,7 +105,7 @@ MANIFEST_DESC = {
         'name': 'Application Data can be Backed up [android:allowBackup=true]',
     },
     'allowbackup_not_set': {
-        'title': ('Application Data can be Backed up<br>[android:allowBackup]'
+        'title': ('Application Data can be Backed up [android:allowBackup]'
                   ' flag is missing.'),
         'level': 'warning',
         'description': ('The flag [android:allowBackup] should be set to false'
@@ -118,14 +117,14 @@ MANIFEST_DESC = {
                  ' is missing.'),
     },
     'app_in_test_mode': {
-        'title': 'Application is in Test Mode <br>[android:testOnly=true]',
+        'title': 'Application is in Test Mode [android:testOnly=true]',
         'level': 'high',
         'description': ('It may expose functionality or data outside of itself'
                         ' that would cause a security hole.'),
         'name': 'Application is in Test Mode [android:testOnly=true]',
     },
     'task_affinity_set': {
-        'title': 'TaskAffinity is set for activity <br>(%s)',
+        'title': 'TaskAffinity is set for activity (%s)',
         'level': 'warning',
         'description': ('If taskAffinity is set, then other application'
                         ' could read the Intents sent to Activities '
@@ -187,7 +186,7 @@ MANIFEST_DESC = {
         'name': 'Activity (%s) is vulnerable to StrandHogg 2.0',
     },
     'improper_provider_permission': {
-        'title': 'Improper Content Provider Permissions<br>[%s]',
+        'title': 'Improper Content Provider Permissions [%s]',
         'level': 'warning',
         'description': ('A content provider permission was set to allows'
                         ' access from any other app on the device. '
@@ -198,7 +197,7 @@ MANIFEST_DESC = {
     },
     'dialer_code_found': {
         'title': ('Dailer Code: %s Found'
-                  ' <br>[android:scheme="android_secret_code"]'),
+                  ' [android:scheme="android_secret_code"]'),
         'level': 'warning',
         'description': ('A secret code was found in the manifest. These codes,'
                         ' when entered into the dialer grant access to hidden'
@@ -207,7 +206,7 @@ MANIFEST_DESC = {
                  ' [android:scheme="android_secret_code"]'),
     },
     'sms_receiver_port_found': {
-        'title': 'Data SMS Receiver Set on Port: %s Found<br>[android:port]',
+        'title': 'Data SMS Receiver Set on Port: %s Found [android:port]',
         'level': 'warning',
         'description': ('A binary SMS receiver is configured to listen on a'
                         ' port. Binary SMS messages sent to a device are '
@@ -219,7 +218,7 @@ MANIFEST_DESC = {
         'name': 'Data SMS Receiver Set on Port: %s Found. [android:port]',
     },
     'high_intent_priority_found': {
-        'title': 'High Intent Priority (%s) - {%s} Hit(s)<br>[android:priority]',
+        'title': 'High Intent Priority (%s) - {%s} Hit(s) [android:priority]',
         'level': 'warning',
         'description': ('By setting an intent priority higher than another'
                         ' intent, the app effectively overrides '
@@ -227,7 +226,7 @@ MANIFEST_DESC = {
         'name': 'High Intent Priority (%s) - {%s} Hit(s) [android:priority]',
     },
     'high_action_priority_found': {
-        'title': 'High Action Priority (%s)<br>[android:priority] ',
+        'title': 'High Action Priority (%s)[android:priority] ',
         'level': 'warning',
         'description': ('By setting an action priority higher than'
                         ' another action, the app effectively '
@@ -235,8 +234,8 @@ MANIFEST_DESC = {
         'name': 'High Action Priority (%s). [android:priority]',
     },
     'exported_protected_permission_signature': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission.'
-                  '<br>%s<br>[android:exported=true]'),
+        'title': ('%s (%s) is Protected by a permission.'
+                  '%s [android:exported=true]'),
         'level': 'info',
         'description': ('A%s %s is found to be exported, but'
                         ' is protected by permission.'),
@@ -244,9 +243,9 @@ MANIFEST_DESC = {
                  ' [%s] [android:exported=true]'),
     },
     'exported_protected_permission_normal': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission, but'
+        'title': ('%s (%s) is Protected by a permission, but'
                   ' the protection level of the permission should be checked.'
-                  '<br>%s <br>[android:exported=true]'),
+                  '%s [android:exported=true]'),
         'level': 'warning',
         'description': ('A%s %s is found to be shared with other apps on the'
                         ' device therefore leaving it accessible to any other'
@@ -264,9 +263,9 @@ MANIFEST_DESC = {
                  ' [%s] [android:exported=true]'),
     },
     'exported_protected_permission_dangerous': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission, but'
+        'title': ('%s (%s) is Protected by a permission, but'
                   ' the protection level of the permission should be checked.'
-                  '<br>%s <br>[android:exported=true]'),
+                  ' %s [android:exported=true]'),
         'level': 'warning',
         'description': ('A%s %s is found to be shared with other apps on the'
                         ' device therefore leaving it accessible to any other'
@@ -283,9 +282,9 @@ MANIFEST_DESC = {
                  ' [%s] [android:exported=true]'),
     },
     'exported_protected_permission_signatureorsystem': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission, but'
+        'title': ('%s (%s) is Protected by a permission, but'
                   ' the protection level of the permission should be checked.'
-                  '<br>%s <br>[android:exported=true]'),
+                  ' %s [android:exported=true]'),
         'level': 'info',
         'description': ('A%s %s is found to be exported, but is protected by'
                         ' a permission. However, the protection level of the'
@@ -300,9 +299,9 @@ MANIFEST_DESC = {
                  ' [%s] [android:exported=true]'),
     },
     'exported_protected_permission_not_defined': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission, but'
+        'title': ('%s (%s) is Protected by a permission, but'
                   ' the protection level of the permission should be checked.'
-                  '<br>%s <br>[android:exported=true]'),
+                  ' %s [android:exported=true]'),
         'level': 'warning',
         'description': ('A%s %s is found to be shared with other apps on the'
                         ' device therefore leaving it accessible to any other'
@@ -321,10 +320,9 @@ MANIFEST_DESC = {
                  'checked. [%s] [android:exported=true]'),
     },
     'exported_protected_permission_normal_app_level': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission at'
+        'title': ('%s (%s) is Protected by a permission at'
                   ' the application level, but the protection level of the '
-                  'permission should be checked.<br>%s <br>'
-                  '[android:exported=true]'),
+                  'permission should be checked. %s [android:exported=true]'),
         'level': 'warning',
         'description': ('A%s %s is found to be shared with other apps on the'
                         ' device therefore leaving it accessible to any other'
@@ -341,10 +339,10 @@ MANIFEST_DESC = {
                  'checked. [%s] [android:exported=true]'),
     },
     'exported_protected_permission_dangerous_app_level': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission at'
+        'title': ('%s (%s) is Protected by a permission at'
                   ' the application level, but the protection level of the '
                   'permission should be checked.'
-                  '<br>%s <br>[android:exported=true]'),
+                  ' %s [android:exported=true]'),
         'level': 'warning',
         'description': ('A%s %s is found to be shared with other apps on the'
                         ' device therefore leaving it accessible to any other'
@@ -362,8 +360,8 @@ MANIFEST_DESC = {
                  'checked. [%s] [android:exported=true]'),
     },
     'exported_protected_permission': {
-        'title': ('<strong>%s</strong> (%s)  Protected by a permission at'
-                  ' the application level.<br>%s<br>[android:exported=true]'),
+        'title': ('%s (%s)  Protected by a permission at'
+                  ' the application level. %s [android:exported=true]'),
         'level': 'info',
         'description': ('A%s %s is found to be exported, but is protected by'
                         ' a permission at the application level.'),
@@ -371,10 +369,10 @@ MANIFEST_DESC = {
                  ' [%s] [android:exported=true]'),
     },
     'exported_protected_permission_signatureorsystem_app_level': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission at '
+        'title': ('%s (%s) is Protected by a permission at '
                   'the application level, but the protection level of the '
                   'permission should be checked.'
-                  '<br>%s <br>[android:exported=true]'),
+                  ' %s [android:exported=true]'),
         'level': 'info',
         'description': ('A%s %s is found to be exported, but is protected '
                         'by a permission at the application level. However,'
@@ -390,10 +388,10 @@ MANIFEST_DESC = {
                  ' [%s] [android:exported=true]'),
     },
     'exported_protected_permission_app_level': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission'
+        'title': ('%s (%s) is Protected by a permission'
                   ' at the application, but the protection level of the '
                   'permission should be checked.'
-                  '<br>%s <br>[android:exported=true]'),
+                  ' %s [android:exported=true]'),
         'level': 'warning',
         'description': ('A%s %s is found to be shared with other apps on '
                         'the device therefore leaving it accessible to any'
@@ -413,8 +411,8 @@ MANIFEST_DESC = {
                  ' [%s] [android:exported=true]'),
     },
     'explicitly_exported': {
-        'title': ('<strong>%s</strong> (%s) is not Protected.'
-                  ' <br>[android:exported=true]'),
+        'title': ('%s (%s) is not Protected.'
+                  ' [android:exported=true]'),
         'level': 'warning',
         'description': ('A%s %s is found to be shared with other apps on the'
                         ' device therefore leaving it accessible to any other'
@@ -422,8 +420,8 @@ MANIFEST_DESC = {
         'name': '%s %s is not Protected. [android:exported=true]',
     },
     'exported_intent_filter_exists': {
-        'title': ('<strong>%s</strong> (%s) is not Protected.<br>'
-                  'An intent-filter exists.'),
+        'title': ('%s (%s) is not Protected.'
+                  ' An intent-filter exists.'),
         'level': 'warning',
         'description': ('A%s %s is found to be shared with other apps on the'
                         ' device therefore leaving it accessible to any other '
@@ -433,7 +431,7 @@ MANIFEST_DESC = {
         'name': '%s %s is not Protected.An intent-filter exists.',
     },
     'exported_provider': {
-        'title': ('<strong>%s</strong> (%s) is not Protected. <br>'
+        'title': ('%s (%s) is not Protected. '
                   '[Content Provider, targetSdkVersion < 17]'),
         'level': 'warning',
         'description': ('A%s %s is found to be shared with other apps'
@@ -447,9 +445,9 @@ MANIFEST_DESC = {
                  ' [Content Provider, targetSdkVersion < 17]'),
     },
     'exported_provider_2': {
-        'title': ('<strong>%s</strong> (%s) would not be Protected if the'
+        'title': ('%s (%s) would not be Protected if the'
                   ' application ran on a device where the the API level was'
-                  ' less than 17. <br>[Content Provider, '
+                  ' less than 17. [Content Provider, '
                   'targetSdkVersion >= 17]'),
         'level': 'warning',
         'description': ('The Content Provider(%s %s) would be exported if the'
@@ -464,9 +462,9 @@ MANIFEST_DESC = {
                  ' [Content Provider, targetSdkVersion >= 17]'),
     },
     'exported_provider_normal': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission, but'
+        'title': ('%s (%s) is Protected by a permission, but'
                   ' the protection level of the permission should be checked.'
-                  '<br>%s <br>[Content Provider, targetSdkVersion < 17]'),
+                  ' %s [Content Provider, targetSdkVersion < 17]'),
         'level': 'warning',
         'description': ('A%s %s is found to be shared with other apps on the'
                         ' device therefore leaving it accessible to any other'
@@ -485,9 +483,9 @@ MANIFEST_DESC = {
                  ' targetSdkVersion < 17]'),
     },
     'exported_provider_danger': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission, '
+        'title': ('%s (%s) is Protected by a permission, '
                   'but the protection level of the permission should be '
-                  'checked.<br>%s <br>[Content Provider, '
+                  'checked. %s [Content Provider, '
                   'targetSdkVersion < 17]'),
         'level': 'warning',
         'description': ('A%s %s is found to be shared with other apps on the'
@@ -506,8 +504,8 @@ MANIFEST_DESC = {
                  'targetSdkVersion < 17]'),
     },
     'exported_provider_signature': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission.'
-                  '<br>%s <br>[Content Provider, targetSdkVersion < 17]'),
+        'title': ('%s (%s) is Protected by a permission.'
+                  ' %s [Content Provider, targetSdkVersion < 17]'),
         'level': 'info',
         'description': ('A%s %s is found to be shared with other apps on the'
                         ' device therefore leaving it accessible to any other'
@@ -517,9 +515,9 @@ MANIFEST_DESC = {
                  'targetSdkVersion < 17]'),
     },
     'exported_provider_signatureorsystem': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission,'
+        'title': ('%s (%s) is Protected by a permission,'
                   ' but the protection level of the permission should be '
-                  'checked.<br>%s <br>[Content Provider, '
+                  'checked. %s [Content Provider, '
                   'targetSdkVersion < 17]'),
         'level': 'info',
         'description': ('A%s %s is found to be exported, but is protected by'
@@ -535,9 +533,9 @@ MANIFEST_DESC = {
                  'targetSdkVersion < 17]'),
     },
     'exported_provider_unknown': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission, but'
+        'title': ('%s (%s) is Protected by a permission, but'
                   ' the protection level of the permission should be checked.'
-                  '<br>%s <br>[Content Provider, targetSdkVersion < 17]'),
+                  ' %s [Content Provider, targetSdkVersion < 17]'),
         'level': 'warning',
         'description': ('A%s %s is found to be shared with other apps on the '
                         'device therefore leaving it accessible to any other '
@@ -556,10 +554,10 @@ MANIFEST_DESC = {
                  ' targetSdkVersion < 17]'),
     },
     'exported_provider_normal_app': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission at'
+        'title': ('%s (%s) is Protected by a permission at'
                   ' the application level, but the protection level of the'
                   ' permission should be checked.'
-                  '<br>%s <br>[Content Provider, targetSdkVersion < 17]'),
+                  ' %s [Content Provider, targetSdkVersion < 17]'),
         'level': 'warning',
         'description': ('A%s %s is found to be shared with other apps on the'
                         ' device therefore leaving it accessible to any other'
@@ -577,10 +575,10 @@ MANIFEST_DESC = {
                  ' [%s] [Content Provider, targetSdkVersion < 17]'),
     },
     'exported_provider_danger_appl': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission at '
+        'title': ('%s (%s) is Protected by a permission at '
                   'the application level, but the protection level of the '
                   'permission should be checked.'
-                  '<br>%s <br>[Content Provider, targetSdkVersion < 17]'),
+                  ' %s [Content Provider, targetSdkVersion < 17]'),
         'level': 'warning',
         'description': ('A%s %s is found to be shared with other apps on the'
                         ' device therefore leaving it accessible to any other'
@@ -598,8 +596,8 @@ MANIFEST_DESC = {
                  '[%s] [Content Provider, targetSdkVersion < 17]'),
     },
     'exported_provider_signature_appl': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission at'
-                  ' the application level.<br>%s <br>[Content Provider,'
+        'title': ('%s (%s) is Protected by a permission at'
+                  ' the application level. %s [Content Provider,'
                   ' targetSdkVersion < 17]'),
         'level': 'info',
         'description': ('A%s %s is found to be shared with other apps on'
@@ -610,10 +608,10 @@ MANIFEST_DESC = {
                  '[%s] [Content Provider, targetSdkVersion < 17]'),
     },
     'exported_provider_signatureorsystem_app': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission at'
+        'title': ('%s (%s) is Protected by a permission at'
                   ' the application level, but the protection level of the'
                   ' permission should be checked.'
-                  '<br>%s <br>[Content Provider, targetSdkVersion < 17]'),
+                  ' %s [Content Provider, targetSdkVersion < 17]'),
         'level': 'info',
         'description': ('A%s %s is found to be exported, but is protected by'
                         ' a permission at the application level. However, the'
@@ -628,10 +626,10 @@ MANIFEST_DESC = {
                  'checked. [%s] [Content Provider, targetSdkVersion < 17]'),
     },
     'exported_provider_unknown_app': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission at'
+        'title': ('%s (%s) is Protected by a permission at'
                   ' application level, but the protection level of the '
-                  'permission should be checked.<br>%s '
-                  '<br>[Content Provider, targetSdkVersion < 17]'),
+                  'permission should be checked. %s '
+                  '[Content Provider, targetSdkVersion < 17]'),
         'level': 'warning',
         'description': ('A%s %s is found to be shared with other apps on the'
                         ' device therefore leaving it accessible to any other'
@@ -650,11 +648,11 @@ MANIFEST_DESC = {
                  ' [%s] [Content Provider, targetSdkVersion < 17]'),
     },
     'exported_provider_normal_new': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission, '
+        'title': ('%s (%s) is Protected by a permission, '
                   'but the protection level of the permission should be '
                   'checked if the application runs on a device where the '
                   'the API level is less than 17'
-                  '<br>%s <br>[Content Provider, targetSdkVersion >= 17]'),
+                  ' %s [Content Provider, targetSdkVersion >= 17]'),
         'level': 'warning',
         'description': ('The Content Provider (%s) would be exported if the'
                         ' application ran on a device where the the API level'
@@ -673,10 +671,10 @@ MANIFEST_DESC = {
                  ' [%s] [Content Provider, targetSdkVersion >= 17]'),
     },
     'exported_provider_danger_new': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission,'
+        'title': ('%s (%s) is Protected by a permission,'
                   ' but the protection level of the permission should be '
                   'checked if the application runs on a device where '
-                  'the API level is less than 17.<br>%s <br>'
+                  'the API level is less than 17. %s '
                   '[Content Provider, targetSdkVersion >= 17]'),
         'level': 'warning',
         'description': ('The Content Provider(%s) would be exported if the'
@@ -696,8 +694,8 @@ MANIFEST_DESC = {
                  ' [%s] [Content Provider, targetSdkVersion >= 17]'),
     },
     'exported_provider_signature_new': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission.'
-                  '<br>%s <br>[Content Provider, targetSdkVersion >= 17]'),
+        'title': ('%s (%s) is Protected by a permission.'
+                  ' %s [Content Provider, targetSdkVersion >= 17]'),
         'level': 'info',
         'description': ('The Content Provider(%s) would be exported if the'
                         ' application ran on a device where the the API level'
@@ -707,9 +705,9 @@ MANIFEST_DESC = {
                  ' [%s] [Content Provider, targetSdkVersion >= 17]'),
     },
     'exported_provider_signatureorsystem_new': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission, but'
+        'title': ('%s (%s) is Protected by a permission, but'
                   ' the protection level of the permission should be checked.'
-                  '<br>%s <br>[Content Provider, targetSdkVersion >= 17]'),
+                  ' %s [Content Provider, targetSdkVersion >= 17]'),
         'level': 'info',
         'description': ('The Content Provider(%s) would be exported if the '
                         'application ran on a device where the API level was'
@@ -726,10 +724,10 @@ MANIFEST_DESC = {
                  ' [%s] [Content Provider, targetSdkVersion >= 17]'),
     },
     'exported_provider_unknown_new': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission, but'
+        'title': ('%s (%s) is Protected by a permission, but'
                   ' the protection level of the permission should be checked'
                   ' if the application runs on a device where the the API '
-                  'level is less than 17.<br>%s <br>'
+                  'level is less than 17. %s '
                   '[Content Provider, targetSdkVersion >= 17]'),
         'level': 'warning',
         'description': ('The Content Provider(%s) would be exported if the'
@@ -751,11 +749,11 @@ MANIFEST_DESC = {
                  ' [%s] [Content Provider, targetSdkVersion >= 17]'),
     },
     'exported_provider_normal_app_new': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission at'
+        'title': ('%s (%s) is Protected by a permission at'
                   ' the application level, but the protection level of the'
                   ' permission should be checked if the application runs on'
                   ' a device where the the API level is less than 17'
-                  '<br>%s <br>[Content Provider, targetSdkVersion >= 17]'),
+                  ' %s [Content Provider, targetSdkVersion >= 17]'),
         'level': 'warning',
         'description': ('The Content Provider (%s) would be exported if the'
                         ' application ran on a device where the the API '
@@ -775,11 +773,11 @@ MANIFEST_DESC = {
                  ' [%s] [Content Provider, targetSdkVersion >= 17]'),
     },
     'exported_provider_danger_app_new': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission at'
+        'title': ('%s (%s) is Protected by a permission at'
                   ' the application level, but the protection level of the'
                   ' permission should be checked if the application runs on'
                   ' a device where the the API level is less than 17.'
-                  '<br>%s <br>[Content Provider, targetSdkVersion >= 17]'),
+                  ' %s [Content Provider, targetSdkVersion >= 17]'),
         'level': 'warning',
         'description': ('The Content Provider(%s) would be exported if the'
                         ' application ran on a device where the the API '
@@ -799,8 +797,8 @@ MANIFEST_DESC = {
                  '[Content Provider, targetSdkVersion >= 17]'),
     },
     'exported_provider_signature_app_new': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission at'
-                  ' the application level.<br>%s<br>'
+        'title': ('%s (%s) is Protected by a permission at'
+                  ' the application level. %s '
                   '[Content Provider, targetSdkVersion >= 17]'),
         'level': 'info',
         'description': ('The Content Provider(%s) would be exported if the'
@@ -811,10 +809,10 @@ MANIFEST_DESC = {
                  ' [%s] [Content Provider, targetSdkVersion >= 17]'),
     },
     'exported_provider_signatureorsystem_app_new': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission at'
+        'title': ('%s (%s) is Protected by a permission at'
                   ' the application level, but the protection level of the'
                   ' permission should be checked.'
-                  '<br>%s <br>[Content Provider, targetSdkVersion >= 17]'),
+                  ' %s [Content Provider, targetSdkVersion >= 17]'),
         'level': 'info',
         'description': ('The Content Provider(%s) would be exported if the'
                         ' application ran on a device where the API level was'
@@ -831,11 +829,11 @@ MANIFEST_DESC = {
                  ' [%s] [Content Provider, targetSdkVersion >= 17]'),
     },
     'exported_provider_unknown_app_new': {
-        'title': ('<strong>%s</strong> (%s) is Protected by a permission at '
+        'title': ('%s (%s) is Protected by a permission at '
                   'the application level, but the protection level of the '
                   'permission should be checked  if the application runs on'
                   ' a device where the the API level is less than 17.'
-                  '<br>%s <br>[Content Provider, targetSdkVersion >= 17]'),
+                  ' %s [Content Provider, targetSdkVersion >= 17]'),
         'level': 'warning',
         'description': ('The Content Provider(%s) would be exported if the'
                         ' application ran on a device where the the API level'
