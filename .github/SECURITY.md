@@ -10,6 +10,7 @@ Please report all security issues [here](https://github.com/MobSF/Mobile-Securit
 
 | Vulnerability | Affected Versions |
 | ------- | ------------------ |
+| [SQL Injection in SQLite Database Viewer utils](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-hqjr-43r5-9q58) | `<=4.4.5` |
 | [Stored XSS via Manifest Analysis - Dialer Code Host Field](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-8hf7-h89p-3pqj) | `<=4.4.4` |
 | [Arbitrary File Write (AR-Slip) via Absolute Path in .a Extraction](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-9gh8-9r95-3fc3) | `<=4.4.0` |
 | [Path Traversal in GET /download/`<filename>` using absolute filenames in MobSF data directory)](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-ccc3-fvfx-mw3v) | `<=4.4.0` |

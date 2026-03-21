@@ -42,6 +42,7 @@ from mobsf.MobSF. init import api_key
 
 from . import settings
 
+
 logger = logging.getLogger(__name__)
 ADB_PATH = None
 BASE64_REGEX = re.compile(r'^[-A-Za-z0-9+/]*={0,3}$')
@@ -544,23 +545,25 @@ def read_sqlite(sqlite_file):
     logger.info('Reading SQLite db')
     table_dict = {}
     try:
-        con = sqlite3.connect(sqlite_file)
+        con = sqlite3.connect(f'file:{sqlite_file}?mode=ro', uri=True)
         cur = con.cursor()
         cur.execute('SELECT name FROM sqlite_master WHERE type=\'table\';')
         tables = cur.fetchall()
         for table in tables:
-            table_dict[table[0]] = {'head': [], 'data': []}
-            cur.execute('PRAGMA table_info(\'%s\')' % table)
+            table_name = table[0]
+            safe_name = table_name.replace('"', '""')
+            table_dict[table_name] = {'head': [], 'data': []}
+            cur.execute(f'PRAGMA table_info("{safe_name}")')
             rows = cur.fetchall()
             for sq_row in rows:
-                table_dict[table[0]]['head'].append(sq_row[1])
-            cur.execute('SELECT * FROM \'%s\'' % table)
+                table_dict[table_name]['head'].append(sq_row[1])
+            cur.execute(f'SELECT * FROM "{safe_name}"')
             rows = cur.fetchall()
             for sq_row in rows:
                 tmp_row = []
                 for each_row in sq_row:
                     tmp_row.append(str(each_row))
-                table_dict[table[0]]['data'].append(tmp_row)
+                table_dict[table_name]['data'].append(tmp_row)
     except Exception:
         logger.exception('Reading SQLite db')
     return table_dict
@@ -611,7 +614,7 @@ def is_safe_path(safe_root, check_path, raw_file):
         return False
     safe_root = os.path.realpath(os.path.normpath(safe_root))
     check_path = os.path.realpath(os.path.normpath(check_path))
-    return os.path.commonprefix([check_path, safe_root]) == safe_root
+    return check_path.startswith(safe_root + os.sep) or check_path == safe_root
 
 
 def file_size(app_path):

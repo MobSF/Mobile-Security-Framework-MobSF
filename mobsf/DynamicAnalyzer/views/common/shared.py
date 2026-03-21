@@ -14,6 +14,7 @@ from django.http import HttpResponse
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
     MalwareDomainCheck,
 )
+from mobsf.MobSF.exceptions import PathTraversalError
 from mobsf.MobSF.utils import (
     EMAIL_REGEX,
     URL_REGEX,
@@ -90,8 +91,8 @@ def untar_files(tar_loc, untar_dir):
             def is_within_directory(directory, target):
                 abs_directory = os.path.abspath(directory)
                 abs_target = os.path.abspath(target)
-                prefix = os.path.commonprefix([abs_directory, abs_target])
-                return prefix == abs_directory
+                return (abs_target.startswith(abs_directory + os.sep)
+                        or abs_target == abs_directory)
 
             def safe_extract(tar, path='.',
                              members=None,
@@ -100,7 +101,7 @@ def untar_files(tar_loc, untar_dir):
                 for member in tar.getmembers():
                     member_path = os.path.join(path, member.name)
                     if not is_within_directory(path, member_path):
-                        raise Exception('Attempted Path Traversal in Tar File')
+                        raise PathTraversalError('Attempted Path Traversal in Tar File')
                 tar.extractall(path, members, numeric_owner=numeric_owner)
 
             safe_extract(tar, untar_dir, members=safe_paths(tar))
