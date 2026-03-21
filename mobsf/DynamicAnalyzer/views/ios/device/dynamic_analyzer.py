@@ -3,7 +3,7 @@
 import logging
 import os
 import time
-from threading import Thread
+from threading import Event, Thread
 from pathlib import Path
 
 from django.conf import settings
@@ -206,7 +206,12 @@ def ios_instrument_device(request, api=False):
             data['message'] = frida_obj.get_script(nolog=True)
         elif action == 'capture':
             # Capture screenshot
-            Thread(target=download_screenshot, args=(ios_device, md5_hash), daemon=True).start()
+            screenshot_event = Event()
+            frida_obj.screenshot_event = screenshot_event
+            Thread(
+                target=download_screenshot,
+                args=(ios_device, md5_hash, screenshot_event),
+                daemon=True).start()
 
         if action in ('spawn', 'session', 'capture'):
             if pid and pid.isdigit():
@@ -458,10 +463,15 @@ def get_ios_device_wifi_connect_string(ssh_string):
     return None, None
 
 
-def download_screenshot(ios_device, checksum):
+def download_screenshot(ios_device, checksum, screenshot_event=None):
     """Download screenshot from device."""
     try:
-        time.sleep(5)
+        # Wait for the Frida script to signal screenshot completion
+        # rather than using a fixed sleep, with a 30s timeout as fallback.
+        if screenshot_event:
+            screenshot_event.wait(timeout=30)
+        else:
+            time.sleep(5)
         timestamp = time.strftime("%Y%m%d%H%M%S")
         path = Path(settings.DWD_DIR) / f'{checksum}-sshot-{timestamp}.png'
         ios_device.download_file("/tmp/screenshot.png", path)
