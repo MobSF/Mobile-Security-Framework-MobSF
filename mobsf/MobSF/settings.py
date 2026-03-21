@@ -535,6 +535,10 @@ else:
     # Should be SSH IP:PORT, example: 192.168.1.100:22
     # Filed also supports multiple devices, example: 192.168.1.100:22,192.168.1.101:22
     IOS_ANALYZER_IDENTIFIERS = os.getenv('MOBSF_IOS_ANALYZER_IDENTIFIERS', '')
+    # SSH credentials for jailbroken iOS device (USB or WiFi path)
+    # Defaults match the standard jailbreak SSH default (root/alpine)
+    IOS_SSH_USER = os.getenv('MOBSF_IOS_SSH_USER', 'root')
+    IOS_SSH_PASSWORD = os.getenv('MOBSF_IOS_SSH_PASSWORD', 'alpine')
     # ==============================================
 
     # =======IOS DYNAMIC ANALYSIS CORELLIUM SETTINGS===========

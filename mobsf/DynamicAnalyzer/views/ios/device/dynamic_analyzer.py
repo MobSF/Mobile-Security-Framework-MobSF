@@ -485,17 +485,21 @@ def validate_and_connect_device(device_id):
     wifi = SSH_DEVICE_ID_REGEX.match(device_id)
     if not (usb or wifi):
         return None, 'Invalid device id or SSH connection string format'
-    
+
+    ssh_user = getattr(settings, 'IOS_SSH_USER', 'root')
+    ssh_password = getattr(settings, 'IOS_SSH_PASSWORD', 'alpine')
+
     connector = IOSConnector()
     if usb:
-        connected = connector.connect_usb(device_id)
+        connected = connector.connect_usb(
+            device_id, username=ssh_user, password=ssh_password)
         if not connected:
             return None, 'Failed to connect to iOS device over USB'
     else:
         ip, port = get_ios_device_wifi_connect_string(device_id)
-        connected = connector.connect_wifi(ip, port)
+        connected = connector.connect_wifi(
+            ip, port, username=ssh_user, password=ssh_password)
         if not connected:
             return None, 'Failed to connect to iOS device over WiFi'
     ios_device = IOSDevice(connector)
-    
     return ios_device, None
