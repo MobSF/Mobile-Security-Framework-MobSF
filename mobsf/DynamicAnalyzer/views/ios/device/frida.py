@@ -21,10 +21,23 @@ class FridaIOSDevice(Frida):
         self.connector = ios_device.connector
         self.env = IOSEnvironment(ios_device)
         self.api = None
+        # USB path: iproxy maps localhost:37042 -> device:27042
+        #   MobSF starts this automatically via _setup_usb_port_forward().
+        #   Frida connects to localhost:37042.
+        #
+        # WiFi / Docker path: Frida connects directly to the device host
+        #   on the default Frida port (27042). No local port mapping is
+        #   created by MobSF. When running in Docker/Colima, run iproxy
+        #   on the macOS host before starting MobSF:
+        #     iproxy -s 0.0.0.0 2222:22 27042:27042 -u <udid>
+        #   Then set MOBSF_IOS_ANALYZER_IDENTIFIERS=host.lima.internal:2222
+        #   (Colima) or host.docker.internal:2222 (Docker Desktop).
         if self.connector.connection_type == 'usb':
-            self.frida_device = frida.get_device_manager().add_remote_device(f'{self.connector.host}:37042')
+            self.frida_device = frida.get_device_manager().add_remote_device(
+                f'{self.connector.host}:37042')
         else:
-            self.frida_device = frida.get_device_manager().add_remote_device(self.connector.host)
+            self.frida_device = frida.get_device_manager().add_remote_device(
+                self.connector.host)
 
     
     def run_app(self):
