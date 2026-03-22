@@ -48,7 +48,7 @@ class FridaServerUpdater:
     def download_frida_server(self, url, fname, proxies, verify):
         """Download Frida server binary."""
         try:
-            logger.info('Downloading Frida server binary: %s', fname)
+            logger.info('Downloading Frida server v%s binary: %s', self.version, fname)
             dwd_loc = self.download_dir / fname
 
             with requests.get(
@@ -69,7 +69,8 @@ class FridaServerUpdater:
             return True
 
         except Exception:
-            logger.exception('[ERROR] Downloading Frida Server Binary')
+            logger.exception(
+                '[ERROR] Downloading Frida Server v%s Binary', self.version)
             # Clean up partial download
             try:
                 dwd_loc.unlink()
@@ -116,11 +117,12 @@ class FridaServerUpdater:
                     )
 
             logger.error(
-                'Frida server binary not found for platform: %s, architecture: %s',
+                'Frida server v%s binary not found for platform: %s, architecture: %s',
+                self.version,
                 self.platform, arch,
             )
 
         except Exception:
-            logger.exception('[ERROR] Fetching Frida Server Release')
+            logger.exception('[ERROR] Fetching Frida Server v%s Release', self.version)
 
         return False

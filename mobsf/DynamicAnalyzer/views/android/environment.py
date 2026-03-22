@@ -708,7 +708,7 @@ class Environment:
             logger.error(msg)
             return
         frida_path = os.path.join(settings.DWD_DIR, frida_bin)
-        logger.info('Copying frida server for %s', frida_arch)
+        logger.info('Copying frida server v%s for %s', frida_version, frida_arch)
         self.adb_command(['push', frida_path, '/system/fd_server'])
         self.adb_command(['chmod', '755', '/system/fd_server'], True)
 
@@ -716,7 +716,7 @@ class Environment:
         """Start Frida Server."""
         check = self.adb_command(['ps'], True)
         if b'fd_server' in check:
-            logger.info('Frida Server is already running')
+            logger.info('Frida Server v%s is already running', frida_version)
             return
 
         def start_frida():
@@ -730,6 +730,6 @@ class Environment:
         trd = threading.Thread(target=start_frida)
         trd.daemon = True
         trd.start()
-        logger.info('Starting Frida Server')
+        logger.info('Starting Frida Server v%s', frida_version)
         logger.info('Waiting for 2 seconds...')
         time.sleep(2)

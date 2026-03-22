@@ -80,7 +80,7 @@ class IOSEnvironment:
     def _install_frida_server_on_device(self):
         """Install Frida server on iOS device."""
         try:
-            logger.info('Installing Frida Server on iOS device')
+            logger.info('Installing Frida Server v%s on iOS device', frida_version)
 
             # Upload the binary to the device
             success = self.ios_device.upload_file(
@@ -89,15 +89,18 @@ class IOSEnvironment:
             )
 
             if not success:
-                raise Exception('Failed to upload Frida server binary to device')
+                raise Exception(
+                    'Failed to upload Frida server v%s binary to device', frida_version)
 
             success = self.ios_device.install_deb('/tmp/fd.deb')
             if not success:
-                raise Exception('Failed to install Frida server on device')
+                raise Exception(
+                    'Failed to install Frida server v%s on device', frida_version)
             return True
 
         except Exception:
-            logger.exception('[ERROR] Installing Frida server on iOS device')
+            logger.exception(
+                '[ERROR] Installing Frida server v%s on iOS device', frida_version)
         return False
 
     def _modify_frida_plist_for_wifi(self):
@@ -131,7 +134,7 @@ class IOSEnvironment:
             plist['ProgramArguments'] = args
             logger.info('Added -l 0.0.0.0 to ProgramArguments')
 
-            # Serialize back to XML and upload in-memory (no temp file needed)
+            # Serialize back to XML and upload in-memory
             updated_bytes = plistlib.dumps(plist, fmt=plistlib.FMT_XML)
             plist_name = Path(self.frida_plist_path).name
             plist_dir = str(Path(self.frida_plist_path).parent) + '/'
@@ -148,7 +151,7 @@ class IOSEnvironment:
     def _enable_frida_on_wifi(self):
         """Enable Frida on WiFi."""
         try:
-            logger.info('Enabling Frida Server on 0.0.0.0')
+            logger.info('Enabling Frida Server v%s on 0.0.0.0', frida_version)
             self._find_frida_server_plist()
             if not self.frida_plist_path:
                 raise ValueError('Frida server plist not found')
@@ -159,11 +162,13 @@ class IOSEnvironment:
 
             # Reload the modified plist
             self.start_frida_server()
-            logger.info('Successfully started Frida Server on (0.0.0.0)')
+            logger.info(
+                'Successfully started Frida Server v%s on (0.0.0.0)', frida_version)
             return True
 
         except Exception:
-            logger.exception('[ERROR] Enabling Frida Server on 0.0.0.0')
+            logger.exception(
+                '[ERROR] Enabling Frida Server v%s on 0.0.0.0', frida_version)
         return False
 
     def setup_or_start_frida(self):
@@ -172,7 +177,8 @@ class IOSEnvironment:
             # Check if setup is already done
             if self.ios_device.read_file('/tmp/frida_setup_done') == frida_version:
                 self.start_frida_server()
-                logger.info('Successfully started Frida Server on (0.0.0.0)')
+                logger.info(
+                    'Successfully started Frida Server v%s on (0.0.0.0)', frida_version)
                 return True
 
             # Get iOS platform architecture

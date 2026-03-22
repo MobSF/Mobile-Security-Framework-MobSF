@@ -219,7 +219,6 @@ class IOSConnector:
                 self.ssh_client = None
 
             # Terminate only the iproxy processes started by this instance
-            # rather than pkill -f iproxy which would kill unrelated processes
             for proc in self.iproxy_procs:
                 try:
                     proc.terminate()
