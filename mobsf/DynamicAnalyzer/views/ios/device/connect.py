@@ -300,7 +300,7 @@ class IOSConnector:
         return ssh
 
     def _test_connection_ssh(
-            self, host, port=22, username='root', password='alpine', timeout=10):
+            self, host, port, username, password, timeout=10):
         """Test SSH connection to iOS device."""
         try:
             logger.info('Testing SSH connection to %s:%s', host, port)
