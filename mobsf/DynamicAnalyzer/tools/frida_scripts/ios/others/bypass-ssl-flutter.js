@@ -27,7 +27,7 @@ function disablePinning()
 {
    var pattern = "FF 03 05 D1 FC 6F 0F A9 F8 5F 10 A9 F6 57 11 A9 F4 4F 12 A9 FD 7B 13 A9 FD C3 04 91 08 0A 80 52"
    for (const r of Process.enumerateRanges('r-x')) {
-      if (r.file && r.file.path.indexOf('Flutter') > -1) {
+      if (r.file && r.file.path.includes('Flutter')) {
          for (const match of Memory.scan(r.base, r.size, pattern)) {
             send('[+] ssl_verify_result found at: ' + match.address.toString());
             hook_ssl_verify_result(match.address);

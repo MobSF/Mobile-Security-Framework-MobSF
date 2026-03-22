@@ -10,6 +10,7 @@ from mobsf.DynamicAnalyzer.views.ios.device.environment import IOSEnvironment
 
 logger = logging.getLogger(__name__)
 _PID = None
+_SPAWN_LOG_MSG = 'Spawned %s with PID %s'
 
 
 class FridaIOSDevice(Frida):
@@ -49,18 +50,18 @@ class FridaIOSDevice(Frida):
             try:
                 pid = self.frida_device.spawn([self.bundle_id])
                 self.frida_device.resume(pid)
-                logger.info('Spawned %s with PID %s', self.bundle_id, pid)
+                logger.info(_SPAWN_LOG_MSG, self.bundle_id, pid)
                 return pid
             except frida.NotSupportedError:
                 logger.error(self.not_supported_text)
-                logger.info('Spawned %s with PID %s', self.bundle_id, pid)
+                logger.info(_SPAWN_LOG_MSG, self.bundle_id, pid)
                 return pid
             except frida.ServerNotRunningError:
                 self.env.start_frida_server()
                 time.sleep(1)
                 pid = self.frida_device.spawn([self.bundle_id])
                 self.frida_device.resume(pid)
-                logger.info('Spawned %s with PID %s', self.bundle_id, pid)
+                logger.info(_SPAWN_LOG_MSG, self.bundle_id, pid)
                 return pid
         except frida.TimedOutError:
             logger.error('Timed out while waiting for device to appear')
@@ -92,7 +93,7 @@ class FridaIOSDevice(Frida):
                 _PID = None
             if not _PID:
                 _PID = self.frida_device.spawn([self.bundle_id])
-            logger.info('Spawned %s with PID %s', self.bundle_id, _PID)
+            logger.info(_SPAWN_LOG_MSG, self.bundle_id, _PID)
         except frida.TimedOutError:
             logger.error('Timed out while waiting for device to appear')
         except frida.ServerNotRunningError:

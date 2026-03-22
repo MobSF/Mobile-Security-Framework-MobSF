@@ -58,7 +58,7 @@ def safe_paths(tar_meta):
 
 
 def onexc(func, path, exc_info):
-    exc_type, exc_value, exc_traceback = exc_info
+    _, exc_value, _ = exc_info
     if exc_value.errno == errno.EACCES:  # Permission error
         try:
             os.chmod(path, 0o755)

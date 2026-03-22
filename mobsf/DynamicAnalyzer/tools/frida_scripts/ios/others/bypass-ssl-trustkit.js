@@ -13,13 +13,10 @@ function bypassTrustKit() {
 
     try {
         const classMap = ObjC.enumerateLoadedClassesSync();
-        let found = false;
 
         for (const image in classMap) {
             for (const className of classMap[image]) {
                 if (className === "TrustKit") {
-                    found = true;
-
                     send("✅ Found TrustKit class in: " + image);
 
                     const method = ObjC.classes.TrustKit["+ initSharedInstanceWithConfiguration:"];
@@ -39,9 +36,7 @@ function bypassTrustKit() {
             }
         }
 
-        if (!found) {
-            send("❌ TrustKit class not found.");
-        }
+        send("❌ TrustKit class not found.");
     } catch (err) {
         send("❌ Error during TrustKit bypass: " + err.message);
     }

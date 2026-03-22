@@ -1,23 +1,23 @@
 function safeToString(obj) {
-    return (obj && obj.toString) ? obj.toString() : "null";
+    return obj?.toString?.() ?? "null";
 }
 
 
-var host = ObjC.classes.NSHost.currentHost();
+const host = ObjC.classes.NSHost.currentHost();
 send("Host name: " + safeToString(host.name()));
 
-var addresses = host.addresses();
-for (var i = 0; i < addresses.count(); i++) {
+const addresses = host.addresses();
+for (let i = 0; i < addresses.count(); i++) {
     send("Address: " + safeToString(addresses.objectAtIndex_(i)));
 }
 
-var networkInfo = ObjC.classes.CTTelephonyNetworkInfo.alloc().init();
-var providers = networkInfo.serviceSubscriberCellularProviders();
-var keys = providers.allKeys();
+const networkInfo = ObjC.classes.CTTelephonyNetworkInfo.alloc().init();
+const providers = networkInfo.serviceSubscriberCellularProviders();
+const keys = providers.allKeys();
 
-for (var i = 0; i < keys.count(); i++) {
-    var key = keys.objectAtIndex_(i);
-    var carrier = providers.objectForKey_(key);
+for (let j = 0; j < keys.count(); j++) {
+    const key = keys.objectAtIndex_(j);
+    const carrier = providers.objectForKey_(key);
     send("Carrier for " + safeToString(key) + ":");
     send("  Carrier Name: " + safeToString(carrier.carrierName()));
     send("  Mobile Country Code: " + safeToString(carrier.mobileCountryCode()));
