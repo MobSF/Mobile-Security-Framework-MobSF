@@ -34,9 +34,9 @@ try {
                     CCOperation: args[0].toInt32(),
                     CCAlgorithm: args[1].toInt32(),
                     CCOptions: args[2].toInt32(),
-                    Key: !args[3].isNull() ? base64ArrayBuffer(Memory.readByteArray(args[3], args[4].toInt32())) : null,
-                    IV: !args[5].isNull() ? base64ArrayBuffer(Memory.readByteArray(args[5], 16)) : null,
-                    dataInput: !args[6].isNull() ? base64ArrayBuffer(Memory.readByteArray(args[6], args[7].toInt32())) : null
+                    Key: !args[3].isNull() ? base64ArrayBuffer(args[3].readByteArray(args[4].toInt32())) : null,
+                    IV: !args[5].isNull() ? base64ArrayBuffer(args[5].readByteArray(16)) : null,
+                    dataInput: !args[6].isNull() ? base64ArrayBuffer(args[6].readByteArray(args[7].toInt32())) : null
                 };
                 this.dataOut = args[8];
                 this.dataOutLength = args[10];
@@ -45,7 +45,7 @@ try {
             onLeave: function(retval) {
                 const cccrypt_re = {
                     dataOutput: !this.dataOut.isNull()
-                        ? base64ArrayBuffer(Memory.readByteArray(this.dataOut, this.dataOutLength.readU32()))
+                        ? base64ArrayBuffer(this.dataOut.readByteArray(this.dataOutLength.readU32()))
                         : null
                 };
                 send(JSON.stringify({'[MBSFDUMP] crypto': cccrypt_re}));
@@ -60,8 +60,8 @@ try {
                     CCOperation: args[0].toInt32(),
                     CCAlgorithm: args[1].toInt32(),
                     CCOptions: args[2].toInt32(),
-                    Key: !args[3].isNull() ? base64ArrayBuffer(Memory.readByteArray(args[3], args[4].toInt32())) : null,
-                    IV: !args[5].isNull() ? base64ArrayBuffer(Memory.readByteArray(args[5], 16)) : null
+                    Key: !args[3].isNull() ? base64ArrayBuffer(args[3].readByteArray(args[4].toInt32())) : null,
+                    IV: !args[5].isNull() ? base64ArrayBuffer(args[5].readByteArray(16)) : null
                 };
                 send(JSON.stringify({'[MBSFDUMP] crypto': cccryptorcreate}));
             }
@@ -75,7 +75,7 @@ try {
                 this.len = args[5];
                 const update = {
                     dataInput: !args[1].isNull()
-                        ? base64ArrayBuffer(Memory.readByteArray(args[1], args[2].toInt32()))
+                        ? base64ArrayBuffer(args[1].readByteArray(args[2].toInt32()))
                         : null
                 };
                 send(JSON.stringify({'[MBSFDUMP] crypto': update}));
@@ -83,7 +83,7 @@ try {
             onLeave: function(retval) {
                 const updateOut = {
                     dataOutput: !this.out.isNull()
-                        ? base64ArrayBuffer(Memory.readByteArray(this.out, this.len.readU32()))
+                        ? base64ArrayBuffer(this.out.readByteArray(this.len.readU32()))
                         : null
                 };
                 send(JSON.stringify({'[MBSFDUMP] crypto': updateOut}));
@@ -100,7 +100,7 @@ try {
             onLeave: function(retval) {
                 const finalOut = {
                     dataOutput: !this.out2.isNull()
-                        ? base64ArrayBuffer(Memory.readByteArray(this.out2, this.len2.readU32()))
+                        ? base64ArrayBuffer(this.out2.readByteArray(this.len2.readU32()))
                         : null
                 };
                 send(JSON.stringify({'[MBSFDUMP] crypto': finalOut}));
@@ -126,7 +126,7 @@ try {
                     operation: 'CC_SHA1_Update',
                     contextAddress: args[0],
                     data: !args[1].isNull()
-                        ? base64ArrayBuffer(Memory.readByteArray(args[1], args[2].toInt32()))
+                        ? base64ArrayBuffer(args[1].readByteArray(args[2].toInt32()))
                         : null
                 };
                 send(JSON.stringify({'[MBSFDUMP] crypto': update}));
@@ -145,7 +145,7 @@ try {
                     operation: 'CC_SHA1_Final',
                     contextAddress: this.ctxSha,
                     hash: !this.mdSha.isNull()
-                        ? base64ArrayBuffer(Memory.readByteArray(this.mdSha, 20))
+                        ? base64ArrayBuffer(this.mdSha.readByteArray(20))
                         : null
                 };
                 send(JSON.stringify({'[MBSFDUMP] crypto': shaFinal}));
@@ -161,7 +161,7 @@ try {
     CC_SHA1_Update();
     CC_SHA1_Final();
 
-    send("iOS crypto dumper loaded successfully");
+    send("Dumping IOS Crypto Operations");
 } catch (e) {
     send("Error loading iOS crypto dumper: " + e);
 }

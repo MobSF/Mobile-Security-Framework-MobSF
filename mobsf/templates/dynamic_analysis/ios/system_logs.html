@@ -31,7 +31,7 @@ $(document).ready( function () {
         }
         data.csrfmiddlewaretoken ='{{ csrf_token }}';
         $.ajax({
-            url : '{% url 'ios_system_logs' %}',
+            url : '{% url "ios_system_logs" %}',
             type : "POST",
             dataType: "json", 
             data : data,
