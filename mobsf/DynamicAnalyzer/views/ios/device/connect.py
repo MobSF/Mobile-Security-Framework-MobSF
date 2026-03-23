@@ -2,6 +2,7 @@
 """Connect to iOS device using SSH over USB or WiFi."""
 
 import logging
+import shutil
 import socket
 import subprocess
 import threading
@@ -246,6 +247,11 @@ class IOSConnector:
         """Get list of USB connected iOS devices."""
         try:
             logger.info('Getting iOS devices connected via USB')
+            if not shutil.which('idevice_id'):
+                logger.warning(
+                    'libimobiledevice is not installed. '
+                    'Install it with: brew install libimobiledevice')
+                return []
             # Use idevice_id to list devices
             result = subprocess.run(['idevice_id', '-l'],
                                     capture_output=True, text=True)
