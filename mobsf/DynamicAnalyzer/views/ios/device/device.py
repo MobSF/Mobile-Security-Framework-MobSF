@@ -359,6 +359,7 @@ class IOSDevice:
         def checksum(path):
             return hashlib.md5(path.encode('utf-8')).hexdigest()
         bundle_ids = []
+        sftp_client = None
         try:
             sftp_client = self.connector.ssh_client.open_sftp()
             output, _, exit_code = self.execute_command('uicache -l')

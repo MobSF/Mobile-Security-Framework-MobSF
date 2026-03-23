@@ -191,7 +191,7 @@ class IOSConnector:
     def connect_wifi(self, ip_address, username, password, port=22):
         """Connect to iOS device using WiFi SSH."""
         try:
-            if port not in range(1, 65535):
+            if port not in range(1, 65536):
                 raise Exception('Invalid port number')
             logger.info('Attempting WiFi SSH connection to %s:%s', ip_address, port)
 
@@ -317,12 +317,20 @@ class IOSConnector:
             if 'uid=0(root)' in output:
                 logger.info('Verified iOS device is Jailbroken')
                 return True
-            else:
-                logger.warning('Not connected as root: %s', output)
-                return False
+
+            logger.warning('Not connected as root: %s', output)
+            ssh.close()
+            self.ssh_client = None
+            return False
 
         except Exception as e:
             logger.error('SSH connection test failed: %s', str(e))
+            if self.ssh_client:
+                try:
+                    self.ssh_client.close()
+                except Exception:
+                    pass
+                self.ssh_client = None
             return False
 
     def _establish_ssh_connection(
@@ -408,6 +416,12 @@ class IOSConnector:
             frida_port_open = test_port(37042)
 
             if not ssh_port_open or not frida_port_open:
+                for proc in self.iproxy_procs:
+                    try:
+                        proc.terminate()
+                    except Exception:
+                        pass
+                self.iproxy_procs = []
                 failed_ports = []
                 if not ssh_port_open:
                     failed_ports.append(f'SSH port {port}')

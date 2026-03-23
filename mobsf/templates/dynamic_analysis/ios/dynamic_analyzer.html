@@ -561,7 +561,7 @@ function load_frida_others(){
   action('{% url 'list_frida_scripts' %}', {device: 'ios'}, function(json) {
     if (json.status == 'ok'){
         json.files.forEach(function(script) {
-          $('#fd_scs').append('<option value=' + escape(script) + '>' + escape(script) + '</option>');
+          $('<option>').val(script).text(script).appendTo('#fd_scs');
         });
       }
   });
@@ -1172,8 +1172,7 @@ function frida_instrument(frida_action, pid=null, new_bundle_id=null){
         if (frida_action == 'ps' && json.message && json.message.length > 0 && Array.isArray(json.message)){
           $("#process_select").empty();
           json.message.forEach(function(p) {
-            $('#process_select').append(
-              '<option value=' + escape(p.pid.toString()) + ',' + escape(p.identifier.toString()) + '>' +  escape(p.pid.toString()) + ': ' + escapeHtml(p.name.toString()) + ' - ' + escape(p.identifier.toString()) + '</option>');
+            $('<option>').val(p.pid.toString() + ',' + p.identifier.toString()).text(p.pid.toString() + ': ' + p.name.toString() + ' - ' + p.identifier.toString()).appendTo('#process_select');
           });
           $('#frida_attach_mdl').modal('toggle');
         } else if (frida_action =='get'){
