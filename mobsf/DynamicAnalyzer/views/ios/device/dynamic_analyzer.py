@@ -52,7 +52,10 @@ FAILED = 'failed'
 def dynamic_analysis_device(request, api=False):
     """The iOS Device Dynamic Analysis Entry point."""
     try:
-        device_id = request.GET.get('device_id', '')
+        if api:
+            device_id = request.POST.get('device_id', '')
+        else:
+            device_id = request.GET.get('device_id', '')
         scan_apps = get_local_ipa_list()
         connector = IOSConnector()
         wifi_devices = get_ios_devices_over_wifi()

@@ -35,6 +35,7 @@ from mobsf.MobSF.views import (
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.MobSF.views.api import api_android_dynamic_analysis as api_dz
 from mobsf.MobSF.views.api import api_ios_dynamic_analysis as api_idz
+from mobsf.MobSF.views.api import api_ios_device_analysis as api_iddz
 from mobsf.StaticAnalyzer import tests
 from mobsf.StaticAnalyzer.views.common import (
     appsec,
@@ -183,6 +184,33 @@ urlpatterns = [
     # Frida
     re_path(r'^api/v1/frida/ios_instrument$', api_idz.api_ios_instrument),
     re_path(r'^api/v1/dynamic/ios_report_json$', api_idz.api_ios_view_report),
+    # iOS Jailbroken Device
+    re_path(r'^api/v1/ios/device_dynamic_analysis$',
+            api_iddz.api_device_dynamic_analysis),
+    re_path(r'^api/v1/ios/device_get$',
+            api_iddz.api_device_get),
+    re_path(r'^api/v1/ios/device_install_ipa$',
+            api_iddz.api_device_install_ipa),
+    re_path(r'^api/v1/ios/device_dynamic_analyzer$',
+            api_iddz.api_device_dynamic_analyzer),
+    re_path(r'^api/v1/ios/device_file_upload$',
+            api_iddz.api_device_file_upload),
+    re_path(r'^api/v1/ios/device_ssh_execute$',
+            api_iddz.api_device_ssh_execute),
+    re_path(r'^api/v1/ios/device_instrument$',
+            api_iddz.api_device_instrument),
+    re_path(r'^api/v1/ios/device_system_logs$',
+            api_iddz.api_device_system_logs),
+    re_path(r'^api/v1/ios/device_ps$',
+            api_iddz.api_device_ps),
+    re_path(r'^api/v1/ios/device_file_download$',
+            api_iddz.api_device_file_download),
+    re_path(r'^api/v1/ios/device_api_monitor$',
+            api_iddz.api_device_api_monitor),
+    re_path(r'^api/v1/ios/device_download_app_data$',
+            api_iddz.api_device_download_app_data),
+    re_path(r'^api/v1/ios/device_report_json$',
+            api_iddz.api_device_report_json),
 ]
 if settings.API_ONLY == '0':
     urlpatterns.extend([
