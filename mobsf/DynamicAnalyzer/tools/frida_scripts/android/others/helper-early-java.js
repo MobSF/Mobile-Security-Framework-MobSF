@@ -1,10 +1,11 @@
 // Source: https://github.com/apkunpacker/FridaScripts
+// Updated for Frida 17.0.0+ compatibility
 var Duplicate = [];
-Module.enumerateExportsSync("libart.so").forEach(function(exp) {
+Process.getModuleByName("libart.so").enumerateExports().forEach(function(exp) {
     if (exp.name.indexOf("ClassLinker") != -1 && exp.name.indexOf("FindClassE") != -1) {
         Interceptor.attach(exp.address, {
             onEnter: function(args) {
-                this.name = Memory.readCString(args[2]);
+                this.name = args[2].readCString();
             },
             onLeave: function(retval) {
                 if (Duplicate.indexOf(this.name) >= 0) return;

@@ -5,10 +5,10 @@
  *
  */
 function listDirectoryContentsAtPath(path) {
-    var fileManager = ObjC.classes.NSFileManager.defaultManager();
-    var enumerator = fileManager.enumeratorAtPath_(path);
-    var file;
-    var paths = [];
+    const fileManager = ObjC.classes.NSFileManager.defaultManager();
+    const enumerator = fileManager.enumeratorAtPath_(path);
+    let file;
+    const paths = [];
 
     while ((file = enumerator.nextObject()) !== null) {
         paths.push(path + '/' + file);
@@ -18,32 +18,33 @@ function listDirectoryContentsAtPath(path) {
 }
 
 function listHomeDirectoryContents() {
-    var homePath = ObjC.classes.NSProcessInfo.processInfo().environment().objectForKey_("HOME").toString();
-    var paths = listDirectoryContentsAtPath(homePath);
+    const homePath = ObjC.classes.NSProcessInfo.processInfo().environment().objectForKey_("HOME").toString();
+    const paths = listDirectoryContentsAtPath(homePath);
     return paths;
 }
 
 function getDataProtectionKeyForPath(path) {
-    var fileManager = ObjC.classes.NSFileManager.defaultManager();
-    var urlPath = ObjC.classes.NSURL.fileURLWithPath_(path);
-    var fileProtectionKey = ObjC.Object(ptr(fileManager.attributesOfItemAtPath_error_(urlPath.path(), NULL)));
-    var protString = fileProtectionKey.valueForKey_("NSFileProtectionKey")
-    if (protString)
-        return protString.UTF8String();
-    else{
-        return '';
+    const fileManager = ObjC.classes.NSFileManager.defaultManager();
+    const urlPath = ObjC.classes.NSURL.fileURLWithPath_(path);
+    const attributeDict = fileManager.attributesOfItemAtPath_error_(urlPath.path(), NULL);
+    if (attributeDict) {
+        const protString = attributeDict.objectForKey_("NSFileProtectionKey");
+        if (protString) {
+            return protString.UTF8String();
+        }
     }
+    return '';
 }
 
 function getDataProtectionKeysForAllPaths() {
-    var fileManager = ObjC.classes.NSFileManager.defaultManager();
-    var dict = [];
-    var paths = listHomeDirectoryContents();
+    const fileManager = ObjC.classes.NSFileManager.defaultManager();
+    const dict = [];
+    const paths = listHomeDirectoryContents();
 
-    var isDir = Memory.alloc(Process.pointerSize);
+    const isDir = Memory.alloc(Process.pointerSize);
     isDir.writePointer(NULL);
 
-    for (var i = 0; i < paths.length; i++) {
+    for (let i = 0; i < paths.length; i++) {
 
         fileManager.fileExistsAtPath_isDirectory_(paths[i], isDir);
 

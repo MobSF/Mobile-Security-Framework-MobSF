@@ -136,11 +136,11 @@ function dumpKeyChain(){
         //     }
     
         // try and get a string representation of the data
-        try {
-    
+                try {
+
             var data_instance = new ObjC.Object(raw_data);
-            return Memory.readUtf8String(data_instance.bytes(), data_instance.length());
-    
+            return data_instance.bytes().readUtf8String(data_instance.length());
+
         } catch (_) {
     
             try {
@@ -271,7 +271,7 @@ function dumpKeyChain(){
         }
     
         // read the resultant dict of the lookup from memory
-        var search_results = new ObjC.Object(Memory.readPointer(results_pointer));
+        var search_results = new ObjC.Object(results_pointer.readPointer());
     
         // if there are search results, loop them each and populate the return
         // array with the data we got

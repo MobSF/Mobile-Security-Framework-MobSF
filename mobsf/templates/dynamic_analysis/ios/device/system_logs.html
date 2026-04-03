@@ -1,0 +1,244 @@
+{% extends "base/base_layout.html" %}
+ {% block sidebar_option %}
+      sidebar-collapse
+{% endblock %}
+{% block content %}
+<style>
+    #logs {
+      font-family: monospace;
+      white-space: pre-wrap;
+      background-color: #1e1e1e;
+      color: #eee;
+      padding: 1em;
+    }
+  </style>
+<div class="content-wrapper">
+  <div class="content-header">
+  </div>
+   <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+            <div class="card">
+              <div class="card-body">
+                                <data id="pid" value="{{ pid }}"></data>
+                <h3 class="page-header"><strong>{% if pid %}{{pid}} Logs{% else %}System Logs{% endif %} </strong></h3>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <label for="pid_select" class="mb-0 mr-2">Select Process:</label>
+                            <select id="pid_select" class="form-control">
+                                <option value="">All System Logs</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div id="messages">Data refreshed in every 10 seconds. <button id="clearLogs" class="btn btn-sm btn-secondary">Clear Logs</button></div>
+                    </div>
+                </div>
+                  <pre id="logs" style="max-height: 600px; overflow-y: auto; white-space: pre-wrap;"></pre>
+          </div>
+        </div>
+       </div>
+     </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script type="text/javascript">
+
+function ansiToHtml(input) {
+  // First escape HTML characters to prevent injection
+  let result = input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Handle ANSI escape sequences
+  // Reset all formatting
+  result = result.replace(/\[0m/g, '</span>');
+  
+  // Bold text
+  result = result.replace(/\[1m/g, '<span style="font-weight:bold">');
+  
+  // Foreground colors (standard)
+  result = result.replace(/\[30m/g, '<span style="color:black">');
+  result = result.replace(/\[31m/g, '<span style="color:red">');
+  result = result.replace(/\[32m/g, '<span style="color:green">');
+  result = result.replace(/\[33m/g, '<span style="color:yellow">');
+  result = result.replace(/\[34m/g, '<span style="color:blue">');
+  result = result.replace(/\[35m/g, '<span style="color:magenta">');
+  result = result.replace(/\[36m/g, '<span style="color:cyan">');
+  result = result.replace(/\[37m/g, '<span style="color:white">');
+  
+  // Foreground colors (bright)
+  result = result.replace(/\[90m/g, '<span style="color:gray">');
+  result = result.replace(/\[91m/g, '<span style="color:lightcoral">');
+  result = result.replace(/\[92m/g, '<span style="color:lightgreen">');
+  result = result.replace(/\[93m/g, '<span style="color:lightyellow">');
+  result = result.replace(/\[94m/g, '<span style="color:lightblue">');
+  result = result.replace(/\[95m/g, '<span style="color:violet">');
+  result = result.replace(/\[96m/g, '<span style="color:lightcyan">');
+  result = result.replace(/\[97m/g, '<span style="color:white">');
+  
+  // Background colors
+  result = result.replace(/\[40m/g, '<span style="background-color:black">');
+  result = result.replace(/\[41m/g, '<span style="background-color:red">');
+  result = result.replace(/\[42m/g, '<span style="background-color:green">');
+  result = result.replace(/\[43m/g, '<span style="background-color:yellow">');
+  result = result.replace(/\[44m/g, '<span style="background-color:blue">');
+  result = result.replace(/\[45m/g, '<span style="background-color:magenta">');
+  result = result.replace(/\[46m/g, '<span style="background-color:cyan">');
+  result = result.replace(/\[47m/g, '<span style="background-color:white">');
+  
+  // Background colors (bright)
+  result = result.replace(/\[100m/g, '<span style="background-color:gray">');
+  result = result.replace(/\[101m/g, '<span style="background-color:lightcoral">');
+  result = result.replace(/\[102m/g, '<span style="background-color:lightgreen">');
+  result = result.replace(/\[103m/g, '<span style="background-color:lightyellow">');
+  result = result.replace(/\[104m/g, '<span style="background-color:lightblue">');
+  result = result.replace(/\[105m/g, '<span style="background-color:violet">');
+  result = result.replace(/\[106m/g, '<span style="background-color:lightcyan">');
+  result = result.replace(/\[107m/g, '<span style="background-color:white">');
+  
+  // Handle combined codes like [1;36m (bold + cyan)
+  result = result.replace(/\[1;30m/g, '<span style="font-weight:bold;color:black">');
+  result = result.replace(/\[1;31m/g, '<span style="font-weight:bold;color:red">');
+  result = result.replace(/\[1;32m/g, '<span style="font-weight:bold;color:green">');
+  result = result.replace(/\[1;33m/g, '<span style="font-weight:bold;color:yellow">');
+  result = result.replace(/\[1;34m/g, '<span style="font-weight:bold;color:blue">');
+  result = result.replace(/\[1;35m/g, '<span style="font-weight:bold;color:magenta">');
+  result = result.replace(/\[1;36m/g, '<span style="font-weight:bold;color:cyan">');
+  result = result.replace(/\[1;37m/g, '<span style="font-weight:bold;color:white">');
+  
+  // Handle other combined codes
+  result = result.replace(/\[1;90m/g, '<span style="font-weight:bold;color:gray">');
+  result = result.replace(/\[1;91m/g, '<span style="font-weight:bold;color:lightcoral">');
+  result = result.replace(/\[1;92m/g, '<span style="font-weight:bold;color:lightgreen">');
+  result = result.replace(/\[1;93m/g, '<span style="font-weight:bold;color:lightyellow">');
+  result = result.replace(/\[1;94m/g, '<span style="font-weight:bold;color:lightblue">');
+  result = result.replace(/\[1;95m/g, '<span style="font-weight:bold;color:violet">');
+  result = result.replace(/\[1;96m/g, '<span style="font-weight:bold;color:lightcyan">');
+  result = result.replace(/\[1;97m/g, '<span style="font-weight:bold;color:white">');
+
+  return result;
+}
+
+$(document).ready( function () {
+    
+    // HTML escape function
+    function escapeHtml(text) {
+        var map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+    
+    // Clear logs button functionality
+    $('#clearLogs').click(function() {
+        $('#logs').empty();
+    });
+    
+    
+    // Load process list on page load
+    loadProcessList();
+    
+    // Handle PID selection change
+    $('#pid_select').change(function() {
+        var selectedPid = $(this).val();
+        var label = $(this).find('option:selected').text();
+        if (selectedPid) {
+            $('#pid').val(selectedPid);
+            $('h3 strong').text(label);
+        } else {
+            $('#pid').val('');
+            $('h3 strong').text('System Logs');
+        }
+        // Clear logs when switching processes
+        $('#logs').empty();
+    });
+    
+    function loadProcessList() {
+        var data = {
+            'device_id': '{{ device_id }}',
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        };
+        
+        $.ajax({
+            url: '{% url "ps_device" %}',
+            type: 'POST',
+            dataType: 'json',
+            data: data,
+            success: function(json) {
+                if (json.status === 'ok' && json.message && Array.isArray(json.message)) {
+                    var select = $('#pid_select');
+                    // Keep the "All System Logs" option
+                    select.find('option:not(:first)').remove();
+                    
+                    json.message.forEach(function(process) {
+                        var option = $('<option></option>')
+                            .val(process.pid)
+                            .text(process.pid + ': ' + escapeHtml(process.process_name));
+                        select.append(option);
+                    });
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                console.log('Failed to load process list:', xhr.responseText);
+            }
+        });
+    }
+    
+ 
+    function get_logs(){
+        var data = {
+            'device_id': '{{ device_id }}',
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        };
+        var pid = document.getElementById('pid').value;
+        // check if pid is a digit , conmvert to int
+        if (pid && !isNaN(pid)) {
+            pid = parseInt(pid);
+            url = '{% url "system_logs_device" %}?device_id={{ device_id }}&pid=' + pid;
+        }
+        else {
+            url = '{% url "system_logs_device" %}?device_id={{ device_id }}';
+        }
+        $.ajax({
+            url : url,
+            type : "POST",
+            dataType: "json", 
+            data : data,
+            success : function(json){ 
+                if (json.message && json.message.trim()) {
+                    // Append new logs with timestamp
+                    var timestamp = new Date().toLocaleTimeString();
+                    var newLogEntry = '[' + timestamp + '] ' + json.message + '\n';
+                    $('#logs').append(ansiToHtml(newLogEntry));
+                    
+                    // Auto-scroll to bottom after any content changes
+                    setTimeout(function() {
+                        var logsElement = document.getElementById('logs');
+                        if (logsElement) {
+                            logsElement.scrollTop = logsElement.scrollHeight;
+                        }
+                    }, 10);
+                }
+            },
+            error : function(xhr, ajaxOptions, thrownError) {
+              console.log(xhr.responseText);
+            }
+        });
+    }
+    get_logs();
+    setInterval( function () {
+         get_logs();
+    }, 10000 );
+});
+
+</script>
+
+{% endblock %}
