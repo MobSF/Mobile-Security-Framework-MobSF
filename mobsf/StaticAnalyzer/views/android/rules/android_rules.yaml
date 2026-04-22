@@ -132,6 +132,217 @@
     owasp-mobile: m2
     masvs: storage-2
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#external-storage
+- id: android_hardcoded_external_storage_path
+  message: Hardcoded external storage path detected. Sensitive data should not be stored in public paths.
+  type: RegexOr
+  pattern:
+    - \/sdcard\/
+    - \/storage\/emulated\/0\/
+    - Environment\.getExternalStorageDirectory\(
+  severity: warning
+  input_case: exact
+  metadata:
+    cvss: 5.5
+    cwe: cwe-312
+    owasp-mobile: m2
+    masvs: storage-2
+- id: android_public_external_storage_access
+  message: Access to public external storage directory detected. Review data sensitivity before storing content.
+  type: RegexOr
+  pattern:
+    - Environment\.DIRECTORY_(DOWNLOADS|DOCUMENTS|DCIM|PICTURES|MOVIES|MUSIC)
+    - getExternalStoragePublicDirectory\(
+  severity: warning
+  input_case: exact
+  metadata:
+    cvss: 5.5
+    cwe: cwe-200
+    owasp-mobile: m2
+    masvs: storage-2
+- id: android_external_media_obb_access
+  message: External media/OBB directory access detected. Files here may be accessible or tampered by other apps.
+  type: RegexOr
+  pattern:
+    - \.getExternalMediaDirs\(
+    - \.getObbDir\(
+  severity: warning
+  input_case: exact
+  metadata:
+    cvss: 5.5
+    cwe: cwe-276
+    owasp-mobile: m2
+    masvs: storage-2
+- id: android_unencrypted_sqlite_usage
+  message: SQLite usage detected. Ensure sensitive data is encrypted at rest.
+  type: RegexOr
+  pattern:
+    - SQLiteOpenHelper
+    - SQLiteDatabase\.openOrCreateDatabase\(
+    - \.getWritableDatabase\(
+    - \.getReadableDatabase\(
+  severity: info
+  input_case: exact
+  metadata:
+    cvss: 3.9
+    cwe: cwe-311
+    owasp-mobile: m2
+    masvs: storage-2
+- id: android_sqlite_external_storage
+  message: SQLite database usage with external storage reference detected.
+  type: RegexAnd
+  pattern:
+    - SQLite
+    - \.getExternal(Storage|FilesDir|CacheDir)|\/sdcard\/|\/storage\/emulated\/0\/
+  severity: high
+  input_case: exact
+  metadata:
+    cvss: 7.5
+    cwe: cwe-312
+    owasp-mobile: m2
+    masvs: storage-2
+- id: android_sqlite_cursor_logging
+  message: Cursor or query result may be logged. Sensitive database data should never be logged.
+  type: RegexAndOr
+  pattern:
+    - '(Cursor|SQLiteDatabase|rawQuery\()'
+    - - Log\.(d|i|w|e|v)\(
+      - System\.out\.print
+  severity: warning
+  input_case: exact
+  metadata:
+    cvss: 6.5
+    cwe: cwe-532
+    owasp-mobile: m2
+    masvs: storage-3
+- id: android_unencrypted_sharedpreferences_usage
+  message: SharedPreferences usage detected. Ensure sensitive values use encrypted storage.
+  type: RegexOr
+  pattern:
+    - getSharedPreferences\(
+    - PreferenceManager\.getDefaultSharedPreferences\(
+  severity: info
+  input_case: exact
+  metadata:
+    cvss: 3.9
+    cwe: cwe-312
+    owasp-mobile: m2
+    masvs: storage-2
+- id: android_cache_directory_usage
+  message: Cache directory usage detected. Ensure sensitive data is not persisted in cache.
+  type: RegexOr
+  pattern:
+    - \.getCacheDir\(
+    - \.getExternalCacheDir\(
+    - WebSettings\.setAppCacheEnabled\(true\)
+    - WebSettings\.setCacheMode\(WebSettings\.LOAD_CACHE_(ELSE_NETWORK|ONLY)\)
+    - HttpResponseCache\.install\(
+  severity: info
+  input_case: exact
+  metadata:
+    cvss: 3.9
+    cwe: cwe-525
+    owasp-mobile: m2
+    masvs: storage-2
+- id: android_manifest_allow_backup
+  message: Manifest allows app backup. Disable backups for apps handling sensitive data.
+  type: Regex
+  pattern: 'android:allowBackup\s*=\s*"true"'
+  severity: warning
+  input_case: exact
+  metadata:
+    cvss: 5.3
+    cwe: cwe-312
+    owasp-mobile: m2
+    masvs: storage-2
+- id: android_sms_inbox_access
+  message: SMS inbox access via ContentResolver detected.
+  type: RegexOr
+  pattern:
+    - content:\/\/sms\/inbox
+    - Telephony\.Sms\.Inbox
+  severity: high
+  input_case: exact
+  metadata:
+    cvss: 6.5
+    cwe: cwe-359
+    owasp-mobile: m2
+    masvs: privacy-1
+- id: android_sms_telephony_access
+  message: SMS access via Telephony API detected.
+  type: RegexOr
+  pattern:
+    - Telephony\.Sms
+    - SmsMessage\.createFromPdu\(
+  severity: high
+  input_case: exact
+  metadata:
+    cvss: 6.5
+    cwe: cwe-359
+    owasp-mobile: m2
+    masvs: privacy-1
+- id: android_sms_programmatic_send
+  message: Programmatic SMS sending detected.
+  type: RegexOr
+  pattern:
+    - SmsManager\.getDefault\(\)\.sendTextMessage\(
+    - SmsManager\.getDefault\(\)\.sendMultipartTextMessage\(
+  severity: warning
+  input_case: exact
+  metadata:
+    cvss: 5.3
+    cwe: cwe-749
+    owasp-mobile: m1
+    masvs: platform-4
+- id: android_sms_receiver_registration
+  message: SMS broadcast receiver registration detected.
+  type: RegexOr
+  pattern:
+    - SMS_RECEIVED_ACTION
+    - android\.provider\.Telephony\.SMS_RECEIVED
+  severity: warning
+  input_case: exact
+  metadata:
+    cvss: 5.3
+    cwe: cwe-749
+    owasp-mobile: m1
+    masvs: platform-4
+- id: android_sms_abort_broadcast
+  message: SMS broadcast interception via abortBroadcast detected.
+  type: Regex
+  pattern: abortBroadcast\(
+  severity: warning
+  input_case: exact
+  metadata:
+    cvss: 5.3
+    cwe: cwe-749
+    owasp-mobile: m1
+    masvs: platform-4
+- id: android_hardcoded_timeout_init
+  message: Hardcoded timeout/connection parameter in initialization detected.
+  type: RegexOr
+  pattern:
+    - setConnectTimeout\(\s*[0-9]{2,7}\s*\)
+    - setReadTimeout\(\s*[0-9]{2,7}\s*\)
+    - withConnectTimeout\(\s*[0-9]{2,7}\s*\)
+    - withReadTimeout\(\s*[0-9]{2,7}\s*\)
+  severity: info
+  input_case: exact
+  metadata:
+    cvss: 3.7
+    cwe: cwe-1052
+    owasp-mobile: ''
+    masvs: code-2
+- id: android_hardcoded_security_mode_init
+  message: Hardcoded security mode string in initialization detected.
+  type: Regex
+  pattern: '(SSL|TLS|NoPadding|PKCS1Padding|PKCS5Padding|ECB|CBC)\s*["\'']\s*\)'
+  severity: info
+  input_case: exact
+  metadata:
+    cvss: 3.7
+    cwe: cwe-1052
+    owasp-mobile: ''
+    masvs: code-2
 - id: android_temp_file
   message: >-
     App creates temp file. Sensitive information should never be written into a
@@ -768,3 +979,58 @@
     masvs: storage-14
     owasp-mobile: m9
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#checking-memory-for-sensitive-data-mstg-storage-10
+- id: android_hardcoded_email
+  message: Hardcoded email address detected.
+  input_case: lower
+  pattern: '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}'
+  severity: warning
+  type: Regex
+  metadata:
+    cvss: 4.3
+    cwe: cwe-200
+    masvs: storage-14
+    owasp-mobile: m9
+- id: android_hardcoded_url
+  message: Hardcoded URL or API endpoint detected.
+  input_case: exact
+  pattern: 'https?:\/\/(?:[a-zA-Z0-9\-._~%!$&''()*+,;=]+@)?[a-zA-Z0-9.-]+(?::[0-9]{2,5})?(?:\/[a-zA-Z0-9\-._~%!$&''()*+,;=:@\/]*)?(?:\?[a-zA-Z0-9\-._~%!$&''()*+,;=:@\/?]*)?'
+  severity: warning
+  type: Regex
+  metadata:
+    cvss: 4.3
+    cwe: cwe-200
+    masvs: storage-14
+    owasp-mobile: m9
+- id: android_math_random_sensitive
+  message: Math.random() usage detected. Do not use for security-sensitive operations.
+  input_case: exact
+  pattern: Math\.random\(
+  severity: warning
+  type: Regex
+  metadata:
+    cvss: 5.9
+    cwe: cwe-330
+    masvs: crypto-6
+    owasp-mobile: m5
+- id: android_hardcoded_iv_string
+  message: IvParameterSpec may be initialized using a hardcoded string.
+  input_case: exact
+  pattern: IvParameterSpec\(\s*".{8,64}"\.getBytes\(
+  severity: high
+  type: Regex
+  metadata:
+    cvss: 7.5
+    cwe: cwe-329
+    masvs: crypto-3
+    owasp-mobile: m5
+- id: android_hardcoded_iv_byte_array
+  message: IvParameterSpec may be initialized using a hardcoded byte array.
+  input_case: exact
+  pattern: IvParameterSpec\(\s*new\s+byte\[\]\s*\{[^\}]{8,256}\}\s*\)
+  severity: high
+  type: Regex
+  metadata:
+    cvss: 7.5
+    cwe: cwe-329
+    masvs: crypto-3
+    owasp-mobile: m5

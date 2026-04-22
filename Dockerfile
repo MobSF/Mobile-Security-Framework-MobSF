@@ -56,8 +56,11 @@ RUN apt update -y && \
 ARG TARGETPLATFORM
 
 # Install wkhtmltopdf, OpenJDK and jadx
-COPY scripts/dependencies.sh mobsf/MobSF/tools_download.py ./
-RUN ./dependencies.sh
+COPY scripts/dependencies.sh /tmp/dependencies.sh
+COPY mobsf/MobSF/tools_download.py /tmp/tools_download.py
+RUN sed -i 's/\r$//' /tmp/dependencies.sh && \
+    chmod +x /tmp/dependencies.sh && \
+    cd /tmp && /bin/bash /tmp/dependencies.sh
 
 # Install Python dependencies
 COPY pyproject.toml .
