@@ -168,9 +168,9 @@ def get_mobsf_home(use_home, base_dir):
 
 
 def get_mobsf_version():
-# Cyberspect mods begin
+    # Cyberspect mods begin
     return BANNER, VERSION, f'v{VERSION}', CYBERSPECT_VERSION
-# Cyberspect mods end
+    # Cyberspect mods end
 
 
 def load_source(modname, filename):

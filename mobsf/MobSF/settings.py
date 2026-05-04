@@ -211,17 +211,15 @@ MIDDLEWARE_CLASSES = (
     'django_ratelimit.middleware.RatelimitMiddleware',
 )
 AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.RemoteUserBackend',)
-# Cyberspect mods begin
 MIDDLEWARE = (
-# Cyberspect mods begin
+    # Cyberspect mods begin
     'cyberspect.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
-# Cyberspect mods end
+    # Cyberspect mods end
     'mobsf.MobSF.views.aws_sso_middleware.alb_idp_auth_middleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 )
-# Cyberspect mods end
 ROOT_URLCONF = 'mobsf.MobSF.urls'
 WSGI_APPLICATION = 'mobsf.MobSF.wsgi.application'
 LANGUAGE_CODE = 'en-us'
@@ -249,11 +247,11 @@ TEMPLATES = [
                     'django.template.context_processors.request',
                     'django.contrib.auth.context_processors.auth',
                     'django.contrib.messages.context_processors.messages',
-# Cyberspect mods begin
+                    # Cyberspect mods begin
                     'cyberspect.context_processors.is_admin_processor',
                     'cyberspect.context_processors.app_versions_processor',
                     'cyberspect.context_processors.recent_scans_processor',
-# Cyberspect mods end
+                    # Cyberspect mods end
                 ],
         },
     },

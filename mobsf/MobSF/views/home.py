@@ -618,9 +618,7 @@ def download(request):
 
 
 @login_required
-# Cyberspect add begins
 def generate_download(request, api=False):
-# Cyberspect add begins
     """Generate downloads for uploaded binaries/source."""
     try:
         # Cyberspect add begins
@@ -773,7 +771,7 @@ class RecentScans(object):
                     'count': paginator.count,
                     'num_pages': paginator.num_pages,
                 }
-                # Cyberspect mods end
+            # Cyberspect mods end
         except Exception as exp:
             # Cyberspect mods begin
             exmsg = ''.join(tb.format_exception(None, exp, exp.__traceback__))

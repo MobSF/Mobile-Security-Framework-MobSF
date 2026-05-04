@@ -30,7 +30,7 @@ from mobsf.MobSF.security import (
 from mobsf.MobSF.tools_download import install_jadx
 from mobsf.MobSF.views import (
     admin,
-# Cyberspect mods begin
+# Cyberspect mods end
     authentication,
     authorization,
     home,
