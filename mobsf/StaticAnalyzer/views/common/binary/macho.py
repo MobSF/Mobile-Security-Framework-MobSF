@@ -157,7 +157,9 @@ class MachOChecksec:
                 'This binary has debug symbols stripped. We cannot identify '
                 'whether ARC is enabled or not.')
         else:
+            # Cyberspect mods begin
             severity = 'warning'
+            # Cyberspect mods end
             desc = (
                 'The binary is not compiled with Automatic '
                 'Reference Counting (ARC) flag. ARC is a compiler '
