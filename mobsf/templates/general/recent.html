@@ -65,9 +65,7 @@
                                   {% if e.FILE_NAME|slice:"-5:" != '.appx' %}
                                     {% if e.FILE_NAME|slice:"-3:" != '.so' %}
                                       {% if e.FILE_NAME|slice:"-2:" != '.a' %}
-                                    <!--Cyberspect mod begins-->
-                                    <p> <a href="{% url "appsec_dashboard" checksum=e.MD5 %}" class="btn btn-sm btn-outline-primary" role="button"><i class="fas fa-user-shield"></i> Scorecard</a></p>
-                                    <!--Cyberspect mod ends-->
+                                    <p> <a href="{% url "appsec_dashboard" checksum=e.MD5 %}" class="btn btn-sm btn-outline-primary" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
                                       {% endif %}
                                     {% endif %}
                                     {% endif %}

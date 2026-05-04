@@ -319,9 +319,7 @@
                     <span class="badge bg-success">Trackers Detection</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
                   {% endif %}  
                 </p>
-                  <!--Cyberspect mod begins-->
-                  <p> <a href="{% url 'appsec_dashboard' checksum=md5 %}" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> Scorecard</a></p>
-                  <!--Cyberspect mod ends-->
+                  <p> <a href="{% url 'appsec_dashboard' checksum=md5 %}" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
 
                 </div>
                 <div class="col-6">

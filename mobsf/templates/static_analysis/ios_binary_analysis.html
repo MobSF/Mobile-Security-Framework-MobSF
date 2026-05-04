@@ -326,9 +326,7 @@
                   {% endif %}
                 </p>
                 {% if app_type not in 'Dylib,A' %}
-                  <!--Cyberspect mod begins-->
-                  <p> <a href="{% url 'appsec_dashboard' checksum=md5 %}" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> Scorecard</a></p>
-                  <!--Cyberspect mod ends-->
+                  <p> <a href="{% url 'appsec_dashboard' checksum=md5 %}" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
                 {% endif %}
                 </div>
                 <div class="col-4">
