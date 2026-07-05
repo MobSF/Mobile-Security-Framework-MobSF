@@ -14,12 +14,14 @@ from lxml import etree
 
 from django.conf import settings
 
+from mobsf.MobSF.security import (
+    is_path_traversal,
+    is_safe_path,
+)
 from mobsf.MobSF.utils import (
     append_scan_status,
     find_java_binary,
     is_file_exists,
-    is_path_traversal,
-    is_safe_path,
 )
 from mobsf.StaticAnalyzer.tools.androguard4 import (
     axml,

@@ -14,9 +14,9 @@ from django.shortcuts import render
 from django.utils.html import escape
 
 from mobsf.MobSF.forms import FormUtil
+from mobsf.MobSF.security import is_safe_path
 from mobsf.MobSF.utils import (
     is_file_exists,
-    is_safe_path,
     print_n_send_error_response,
     read_sqlite,
 )

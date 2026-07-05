@@ -14,14 +14,14 @@ from django.views.decorators.http import require_http_methods
 
 from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
-    is_attack_pattern,
     send_response,
 )
+from mobsf.MobSF.security import is_attack_pattern
 from mobsf.DynamicAnalyzer.views.android.environment import (
     Environment,
 )
+from mobsf.MobSF.security import cmd_injection_check
 from mobsf.MobSF.utils import (
-    cmd_injection_check,
     docker_translate_localhost,
     get_adb,
     get_device,

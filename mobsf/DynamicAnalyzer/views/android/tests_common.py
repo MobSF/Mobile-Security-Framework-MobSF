@@ -27,8 +27,8 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
     get_http_tools_url,
     stop_httptools,
 )
+from mobsf.MobSF.security import cmd_injection_check
 from mobsf.MobSF.utils import (
-    cmd_injection_check,
     is_md5,
     python_list,
 )

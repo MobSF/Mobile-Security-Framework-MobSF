@@ -29,13 +29,12 @@ from mobsf.MobSF.utils import (
     is_dir_exists,
     is_file_exists,
     is_md5,
-    is_safe_path,
     key,
     print_n_send_error_response,
     python_dict,
 )
 from mobsf.MobSF.init import api_key
-from mobsf.MobSF.security import sanitize_filename, sanitize_svg
+from mobsf.MobSF.security import is_safe_path, sanitize_filename, sanitize_svg
 from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download

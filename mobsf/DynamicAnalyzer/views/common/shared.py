@@ -15,11 +15,10 @@ from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
     MalwareDomainCheck,
 )
 from mobsf.MobSF.exceptions import PathTraversalError
+from mobsf.MobSF.security import clean_filename, is_pipe_or_link
 from mobsf.MobSF.utils import (
     EMAIL_REGEX,
     URL_REGEX,
-    clean_filename,
-    is_pipe_or_link,
 )
 
 logger = logging.getLogger(__name__)
@@ -173,12 +172,3 @@ def invalid_params(api=False):
     if api:
         return data
     return send_response(data)
-
-
-def is_attack_pattern(user_input):
-    """Check for attacks."""
-    atk_pattern = re.compile(r';|\$\(|\|\||&&')
-    stat = re.findall(atk_pattern, user_input)
-    if stat:
-        logger.error('Possible RCE attack detected')
-    return stat

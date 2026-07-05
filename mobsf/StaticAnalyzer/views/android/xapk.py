@@ -9,11 +9,11 @@ from pathlib import Path
 from django.conf import settings
 
 from mobsf.StaticAnalyzer.views.common.shared_func import unzip
+from mobsf.MobSF.security import is_safe_path
 from mobsf.MobSF.utils import (
     append_scan_status,
     find_java_binary,
     is_file_exists,
-    is_safe_path,
 )
 
 logger = logging.getLogger(__name__)

@@ -10,8 +10,8 @@ from django.utils.html import escape
 from django.http import JsonResponse
 
 from mobsf.MobSF.forms import FormUtil
+from mobsf.MobSF.security import is_safe_path
 from mobsf.MobSF.utils import (
-    is_safe_path,
     print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (

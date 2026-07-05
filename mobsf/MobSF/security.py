@@ -9,7 +9,11 @@ import sys
 from shutil import which
 from pathlib import Path
 from platform import system
-from urllib.parse import urlparse
+import os
+import stat
+import string
+import unicodedata
+from urllib.parse import unquote, urlparse
 from concurrent.futures import ThreadPoolExecutor
 
 from mobsf.MobSF.utils import (
@@ -367,3 +371,85 @@ def sanitize_svg(svg_content):
         attributes=safe_attrs,
         strip=True,
     )
+
+
+def is_path_traversal(user_input):
+    """Check for path traversal."""
+    if not user_input:
+        return False
+
+    # Disallow absolute paths and windows paths and backslashes
+    if os.path.isabs(user_input) or user_input.startswith(('\\', '//')):
+        logger.error('Path traversal attack detected with absolute path')
+        return True
+
+    # Normalize and decode URL-encoded characters
+    try:
+        # Handle URL decoding (e.g., %2e -> .)
+        decoded = unquote(user_input)
+        # Handle double URL decoding (e.g., %252e -> %2e -> .)
+        double_decoded = unquote(decoded)
+    except Exception:
+        logger.error('Path traversal attack detected with invalid URL encoding')
+        return True
+
+    # Check for path traversal in both original and decoded versions
+    dangerous_patterns = ['..', '../', '..\\', '..\\\\']
+
+    if any(pattern in user_input for pattern in dangerous_patterns):
+        logger.error('Path traversal attack detected with invalid path')
+        return True
+
+    if any(pattern in decoded for pattern in dangerous_patterns):
+        logger.error('Path traversal attack detected with invalid path')
+        return True
+
+    if any(pattern in double_decoded for pattern in dangerous_patterns):
+        logger.error('Path traversal attack detected with invalid path')
+        return True
+    return False
+
+
+def is_safe_path(safe_root, check_path, raw_file):
+    """Detect Path Traversal."""
+    if is_path_traversal(raw_file):
+        return False
+    safe_root = os.path.realpath(os.path.normpath(safe_root))
+    check_path = os.path.realpath(os.path.normpath(check_path))
+    return check_path.startswith(safe_root + os.sep) or check_path == safe_root
+
+
+def clean_filename(filename, replace=' '):
+    """Sanitize filename for Windows compatibility."""
+    if system() == 'Windows':
+        whitelist = f'-_.() {string.ascii_letters}{string.digits}'
+        for r in replace:
+            filename = filename.replace(r, '_')
+        cleaned_filename = unicodedata.normalize(
+            'NFKD', filename).encode('ASCII', 'ignore').decode()
+        return ''.join(c for c in cleaned_filename if c in whitelist)
+    return filename
+
+
+def cmd_injection_check(data):
+    """OS Cmd Injection check from Commix."""
+    breakers = [
+        ';', '%3B', '&', '%26', '&&',
+        '%26%26', '|', '%7C', '||',
+        '%7C%7C', '%0a', '%0d%0a',
+    ]
+    return any(i in data for i in breakers)
+
+
+def is_pipe_or_link(path):
+    """Check for named pipe or symlink."""
+    return os.path.islink(path) or stat.S_ISFIFO(os.stat(path).st_mode)
+
+
+def is_attack_pattern(user_input):
+    """Check for shell injection attack patterns."""
+    atk_pattern = re.compile(r';|\$\(|\|\||&&')
+    result = re.findall(atk_pattern, user_input)
+    if result:
+        logger.error('Possible RCE attack detected')
+    return result

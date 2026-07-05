@@ -5,9 +5,9 @@ from pathlib import Path
 
 from defusedxml.minidom import parseString
 
+from mobsf.MobSF.security import is_path_traversal
 from mobsf.MobSF.utils import (
     append_scan_status,
-    is_path_traversal,
 )
 
 logger = logging.getLogger(__name__)

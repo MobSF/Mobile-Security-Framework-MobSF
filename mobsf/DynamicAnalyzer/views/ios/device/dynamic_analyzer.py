@@ -22,9 +22,9 @@ from mobsf.MobSF.utils import (
 )
 from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
-    is_attack_pattern,
     send_response,
 )
+from mobsf.MobSF.security import is_attack_pattern
 from mobsf.DynamicAnalyzer.forms import UploadFileForm
 from mobsf.DynamicAnalyzer.views.ios.helpers import (
     configure_proxy,
