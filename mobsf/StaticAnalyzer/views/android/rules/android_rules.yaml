@@ -295,6 +295,22 @@
     owasp-mobile: m3
     masvs: network-3
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05g-Testing-Network-Communication.md#webview-server-certificate-verification
+- id: android_webview_mixed_content
+  message: >-
+    Insecure WebView Implementation. WebView is configured with
+    MIXED_CONTENT_ALWAYS_ALLOW, allowing a page loaded over HTTPS to load
+    content from insecure HTTP origins. This exposes the application to
+    man-in-the-middle content injection.
+  type: Regex
+  pattern: setMixedContentMode\(.{0,48}MIXED_CONTENT_ALWAYS_ALLOW
+  severity: high
+  input_case: exact
+  metadata:
+    cvss: 7.4
+    cwe: cwe-319
+    owasp-mobile: m3
+    masvs: network-1
+    ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05g-Testing-Network-Communication.md
 - id: android_sql_raw_query
   message: >-
     App uses SQLite Database and execute raw SQL query. Untrusted user input in
