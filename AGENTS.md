@@ -167,6 +167,48 @@ established in the existing API views.
 
 ---
 
+## Archive Extraction Safety
+
+### TAR
+
+Never use a hand-rolled name-only check with `os.path.abspath`. The symlink +
+nested-entry combination bypasses it: a symlink member named `escape` passes the
+name check, gets extracted to disk, and then a file member named `escape/pwned.txt`
+is written through the symlink to an arbitrary location.
+
+`os.path.abspath` normalises `..` but does **not** resolve symlinks.
+`os.path.realpath` resolves both — but even `realpath`-based checks that run before
+extraction have a TOCTOU window.
+
+Use Python 3.12's built-in filter instead (MobSF requires `python = "^3.12"`):
+
+```python
+# Correct — per-member, type-aware, symlink-aware
+tar.extractall(dest, members=safe_members_generator, filter='data')
+
+# Wrong — abspath-based name check; blind to symlinks
+for member in tar.getmembers():
+    if not os.path.abspath(join(dest, member.name)).startswith(dest):
+        raise ...
+tar.extractall(dest, members=...)
+```
+
+`filter='data'` rejects: symlinks outside destination, hardlinks outside destination,
+absolute paths, path traversal, and device files — per member, before extraction.
+
+For code that must support Python < 3.12, fall back to: skip all symlink and hardlink
+members (`member.issym()` / `member.islnk()`), then use `realpath` for the boundary
+check, and validate-then-extract per member rather than batch-validate-then-extractall.
+
+### ZIP
+
+Python's `zipfile` module does not create real filesystem symlinks from Unix symlink
+entries — it writes the link target as plain file bytes. The TAR symlink attack does
+not apply to ZIP extraction. Use `is_path_traversal` + `is_safe_path` for member name
+validation and validate per-member before calling `zip_ref.extract(member, dest)`.
+
+---
+
 ## Import Conventions
 
 When adding new imports, maintain alphabetical order within each import group to satisfy
@@ -185,5 +227,8 @@ When adding new imports, maintain alphabetical order within each import group to
 - [ ] Outbound URLs checked with `valid_host`
 - [ ] Redirects wrapped in `sanitize_redirect`
 - [ ] Log statements use `sanitize_for_logging` on any user-derived value
+- [ ] TAR extraction uses `filter='data'` — not a hand-rolled `abspath` check
+- [ ] ZIP extraction validates each member path with `realpath` before `extract()`
+- [ ] Every security guard has `continue` / `return` / `raise` — logging alone is not a guard
 - [ ] Fix applied symmetrically to all equivalent code paths
 - [ ] `tox -e lint` passes with exit code 0

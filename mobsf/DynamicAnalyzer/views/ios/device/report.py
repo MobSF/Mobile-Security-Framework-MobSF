@@ -1,6 +1,7 @@
 # -*- coding: utf_8 -*-
 """Dynamic Analyzer Reporting for iOS devices."""
 import logging
+import shlex
 import shutil
 from pathlib import Path
 import json
@@ -66,7 +67,8 @@ def download_app_data_device(ios_device, checksum):
             'utf-8').splitlines()[0].strip()
         tarfile = f'/tmp/{checksum}-app-container.tar'
         localtar = app_dir / f'{checksum}-app-container.tar'
-        ios_device.execute_command(f'tar -C {app_container} -cvf {tarfile} .')
+        ios_device.execute_command(
+            f'tar -C {shlex.quote(app_container)} -cvf {shlex.quote(tarfile)} .')
         ios_device.download_file(tarfile, localtar)
         if localtar.exists():
             dst = Path(settings.DWD_DIR) / f'{checksum}-app_data.tar'
