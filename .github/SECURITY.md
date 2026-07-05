@@ -9,7 +9,8 @@ Please report all security issues [here](https://github.com/MobSF/Mobile-Securit
 ## Past Security Issues
 
 | Vulnerability | Affected Versions |
-| ------- | ------------------ |
+| ------- | ------------------ |'
+| [Zip Bomb Denial of Service via Per-File Size Limit Bypass in ZIP/APK](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-x768-8642-mmq9) | `<=4.5.0` |
 | [Regression: CSRF checks not enforced after Django migration](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-3p54-567p-2wpr) | `<=4.5.0` |
 | [Arbitrary File Read via Path Traversal in ZIP Uploads](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-8j49-mmcx-4mp5) | `<=4.5.0` |
 | [SQL Injection in SQLite Database Viewer utils](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-hqjr-43r5-9q58) | `<=4.4.5` |

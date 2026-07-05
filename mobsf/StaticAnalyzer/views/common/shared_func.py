@@ -160,6 +160,7 @@ def unzip(checksum, app_path, ext_path):
                         msg = (f'File too large ({size_mb:.2f} MB). Skipping '
                                f'{sanitize_for_logging(file_path)}')
                         logger.warning(msg)
+                        continue
                     if total_size > settings.ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE:
                         stop_fallback_extraction = True
                         total_size_mb = total_size / (1024 * 1024)
