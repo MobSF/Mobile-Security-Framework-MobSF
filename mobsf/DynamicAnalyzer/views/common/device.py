@@ -11,9 +11,9 @@ from django.utils.html import escape
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
+from mobsf.MobSF.security import is_safe_path
 from mobsf.MobSF.utils import (
     is_md5,
-    is_safe_path,
     print_n_send_error_response,
     read_sqlite,
 )

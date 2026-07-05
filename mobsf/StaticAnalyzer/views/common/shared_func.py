@@ -23,14 +23,16 @@ from mobsf.MobSF import settings
 from mobsf.MobSF.security import (
     sanitize_for_logging,
 )
+from mobsf.MobSF.security import (
+    is_path_traversal,
+    is_safe_path,
+)
 from mobsf.MobSF.utils import (
     EMAIL_REGEX,
     STRINGS_REGEX,
     URL_REGEX,
     append_scan_status,
     is_md5,
-    is_path_traversal,
-    is_safe_path,
     print_n_send_error_response,
     set_permissions,
 )
@@ -158,6 +160,7 @@ def unzip(checksum, app_path, ext_path):
                         msg = (f'File too large ({size_mb:.2f} MB). Skipping '
                                f'{sanitize_for_logging(file_path)}')
                         logger.warning(msg)
+                        continue
                     if total_size > settings.ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE:
                         stop_fallback_extraction = True
                         total_size_mb = total_size / (1024 * 1024)

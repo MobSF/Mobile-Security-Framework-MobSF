@@ -14,11 +14,14 @@ from lxml import etree
 
 from django.conf import settings
 
+from mobsf.MobSF.security import (
+    is_path_traversal,
+    is_safe_path,
+)
 from mobsf.MobSF.utils import (
     append_scan_status,
     find_java_binary,
     is_file_exists,
-    is_path_traversal,
 )
 from mobsf.StaticAnalyzer.tools.androguard4 import (
     axml,
@@ -115,21 +118,33 @@ def find_icon_path_zip(checksum, res_dir, icon_paths_from_manifest):
         logger.info(msg)
         append_scan_status(checksum, msg)
         for icon_path in icon_paths_from_manifest:
+            if is_path_traversal(icon_path):
+                logger.warning('Path traversal detected in icon path: %s', icon_path)
+                continue
             if icon_path.startswith('@'):
                 path_array = icon_path.strip('@').split(os.sep)
                 rel_path = os.sep.join(path_array[1:])
                 for size_str in KNOWN_MIPMAP_SIZES:
                     tmp_path = os.path.join(
                         res_dir, path_array[0] + size_str, rel_path + '.png')
+                    if not is_safe_path(res_dir, tmp_path, icon_path):
+                        continue
                     if os.path.exists(tmp_path):
                         return tmp_path
             elif icon_path.startswith(('res/', '/res/')):
-                stripped_relative_path = icon_path.strip(
-                    '/res')  # Works for neither /res and res
-                full_path = os.path.join(res_dir, stripped_relative_path)
+                # Use removeprefix-style stripping to remove only the res/ prefix,
+                # not a character set (str.strip('/res') strips chars {/,r,e,s}).
+                rel = icon_path.lstrip('/')
+                if rel.startswith('res/'):
+                    rel = rel[len('res/'):]
+                full_path = os.path.join(res_dir, rel)
+                if not is_safe_path(res_dir, full_path, icon_path):
+                    continue
                 if os.path.exists(full_path):
                     return full_path
                 full_path += '.png'
+                if not is_safe_path(res_dir, full_path, icon_path):
+                    continue
                 if os.path.exists(full_path):
                     return full_path
 
