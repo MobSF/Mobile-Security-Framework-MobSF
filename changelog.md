@@ -1,3 +1,17 @@
+### v4.5.1 Changelog
+
+- Features or Enhancements
+   - Added Jailbroken iOS Device support in MobSF, Tested in iPhone 6s and 8 with Checkra1n and Palera1n jailbreaks [Early Beta]. See docs: https://mobsf.github.io/docs/#/dynamic_analyzer_docker?id=jailbroken-ios-device-beta
+   - Added a new android rule to flag Webview mixed content
+- Bug Fixes
+   - Macho Debug Symbol False positive fix in objdump
+- Security
+   - Fixed Multiple Security issues
+     - https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-95px-34x5-p37h
+     - https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-x768-8642-mmq9
+     - https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-3p54-567p-2wpr
+     - https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-8j49-mmcx-4mp5
+
 ### v4.4.2 Changelog
 
 - Features or Enhancements
