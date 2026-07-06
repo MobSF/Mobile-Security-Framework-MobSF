@@ -36,14 +36,74 @@ MobSF is also bundled with [Android Tamer](https://tamerplatform.com), [BlackArc
 
 ## Documentation
 
-Quick setup with docker
+### Quick Setup with Docker
 
-```
+```bash
 docker pull opensecurity/mobile-security-framework-mobsf:latest
 docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:latest
 
 # Default username and password: mobsf/mobsf
 ```
+
+### Native Installation
+
+MobSF can be installed natively on Windows, macOS, and Linux for better performance and development.
+
+**Requirements:**
+- Python 3.12 or higher
+- Git
+- JDK 17+ (for Android analysis)
+
+**Windows:**
+```batch
+git clone https://github.com/MobSF/Mobile-Security-Framework-MobSF.git
+cd Mobile-Security-Framework-MobSF
+setup.bat
+run.bat
+```
+
+**macOS/Linux:**
+```bash
+git clone https://github.com/MobSF/Mobile-Security-Framework-MobSF.git
+cd Mobile-Security-Framework-MobSF
+chmod +x setup.sh run.sh
+./setup.sh
+./run.sh
+```
+
+After setup, access MobSF at `http://127.0.0.1:8000` with default credentials `mobsf/mobsf`.
+
+**Troubleshooting:**
+- If `setup.sh` fails on macOS, ensure Xcode Command Line Tools are installed: `xcode-select --install`
+- If port 8000 is in use, edit `mobsf/MobSF/settings.py` and change `BIND_ADDRESS` and `PORT`
+- For detailed installation instructions, see the [full documentation](https://mobsf.github.io/docs)
+
+### REST API Usage
+
+MobSF provides a REST API for automation and CI/CD integration.
+
+**Authentication:**
+All API requests require the API key. Find it in `mobsf/MobSF/settings.py` under `API_KEY`.
+
+**Example: Upload and scan an APK**
+```bash
+# Upload file
+curl -X POST http://127.0.0.1:8000/api/v1/upload \
+  -H "Authorization: YOUR_API_KEY" \
+  -F "file=@app.apk"
+
+# Start scan
+curl -X POST http://127.0.0.1:8000/api/v1/scan \
+  -H "Authorization: YOUR_API_KEY" \
+  -d "hash=<md5_hash>&scan_type=apk&re_scan=1"
+
+# Get report
+curl -X GET http://127.0.0.1:8000/api/v1/report_json \
+  -H "Authorization: YOUR_API_KEY" \
+  -d "hash=<md5_hash>"
+```
+
+For complete API documentation, see [API Reference](https://mobsf.github.io/docs/#/api).
 
 [![See MobSF Documentation](https://user-images.githubusercontent.com/4301109/70686099-3855f780-1c79-11ea-8141-899e39459da2.png)](https://mobsf.github.io/docs)
 
