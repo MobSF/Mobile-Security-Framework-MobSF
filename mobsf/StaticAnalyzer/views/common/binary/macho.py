@@ -23,7 +23,14 @@ def objdump_is_debug_symbol_stripped(macho_file):
     out = subprocess.check_output(
         [shutil.which('objdump'), '--syms', macho_file],
         stderr=subprocess.STDOUT)
-    return b' d  ' not in out
+    out = out.decode('utf-8', 'ignore')
+    # radr://5614542 symbol is added back for
+    # debug symbols stripped binaries
+    stripped_sym = 'radr://5614542'
+    for line in out.splitlines():
+        if ' d  ' in line and stripped_sym not in line:
+            return False
+    return True
 
 
 class MachOChecksec:

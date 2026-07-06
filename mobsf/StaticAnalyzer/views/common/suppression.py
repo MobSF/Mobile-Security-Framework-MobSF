@@ -15,9 +15,9 @@ from mobsf.StaticAnalyzer.models import (
 )
 from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
-    is_attack_pattern,
     send_response,
 )
+from mobsf.MobSF.security import is_attack_pattern
 from mobsf.MobSF.utils import (
     android_component,
     is_md5,

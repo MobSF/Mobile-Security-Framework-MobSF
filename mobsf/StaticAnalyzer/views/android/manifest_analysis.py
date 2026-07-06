@@ -107,13 +107,16 @@ def _check_url(host, w_url):
             urls.add(f'https://{w_url[7:]}')
 
         for url in urls:
-            # Additional checks to ensure that
-            # the final path is WELL_KNOWN_PATH
+            # Validate the fully-assembled URL — path, port, query, and params.
             purl = urlparse(url)
             if (purl.path != WELL_KNOWN_PATH
                 or len(purl.query) > 0
                     or len(purl.params) > 0):
                 logger.warning('Invalid Assetlinks URL: %s', url)
+                continue
+            if purl.port and purl.port not in (80, 443):
+                logger.warning(
+                    'Non-standard port in assetlinks URL rejected: %s', url)
                 continue
             r = requests.get(url,
                              timeout=5,
@@ -190,6 +193,12 @@ def get_browsable_activities(node, ns):
                             continue
                         shost = f'{scheme}://{host}'
                         if port and is_number(port):
+                            if int(port) not in (80, 443):
+                                logger.warning(
+                                    'Non-standard port rejected in assetlinks '
+                                    'check (port %s bypasses valid_host): %s',
+                                    port, host)
+                                continue
                             c_url = f'{shost}:{port}{WELL_KNOWN_PATH}'
                         else:
                             c_url = f'{shost}{WELL_KNOWN_PATH}'

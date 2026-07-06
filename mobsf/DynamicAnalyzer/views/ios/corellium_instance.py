@@ -2,6 +2,7 @@
 """Instance Operation APIs."""
 import logging
 import re
+import shlex
 import shutil
 import time
 from base64 import b64encode
@@ -737,7 +738,8 @@ def download_app_data(ci, checksum):
         tarfile = f'/tmp/{checksum}-app-container.tar'
         localtar = app_dir / f'{checksum}-app-container.tar'
         ssh_execute_cmd(
-            target, f'tar -C {app_container} -cvf {tarfile} .')
+            target,
+            f'tar -C {shlex.quote(app_container)} -cvf {shlex.quote(tarfile)} .')
         with target.open_sftp() as sftp:
             sftp.get(tarfile, localtar)
         target.close()

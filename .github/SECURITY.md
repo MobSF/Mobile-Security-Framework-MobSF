@@ -10,6 +10,10 @@ Please report all security issues [here](https://github.com/MobSF/Mobile-Securit
 
 | Vulnerability | Affected Versions |
 | ------- | ------------------ |
+| [SSRF port restriction bypass in assetlinks_check](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-95px-34x5-p37h) | `<=4.5.0` |
+| [Zip Bomb Denial of Service via Per-File Size Limit Bypass in ZIP/APK](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-x768-8642-mmq9) | `<=4.5.0` |
+| [Regression: CSRF checks not enforced after Django migration](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-3p54-567p-2wpr) | `<=4.5.0` |
+| [Arbitrary File Read via Path Traversal in ZIP Uploads](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-8j49-mmcx-4mp5) | `<=4.5.0` |
 | [SQL Injection in SQLite Database Viewer utils](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-hqjr-43r5-9q58) | `<=4.4.5` |
 | [Stored XSS via Manifest Analysis - Dialer Code Host Field](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-8hf7-h89p-3pqj) | `<=4.4.4` |
 | [Arbitrary File Write (AR-Slip) via Absolute Path in .a Extraction](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-9gh8-9r95-3fc3) | `<=4.4.0` |

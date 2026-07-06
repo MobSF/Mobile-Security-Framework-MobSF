@@ -3,9 +3,9 @@ from pathlib import Path
 
 from django import forms
 
+from mobsf.MobSF.security import is_path_traversal
 from mobsf.MobSF.utils import (
     is_md5,
-    is_path_traversal,
 )
 
 
