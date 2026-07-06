@@ -107,6 +107,11 @@ def get_executable_hashes():
         'nuget.exe',
         'where.exe',
         'wkhtmltopdf.exe',
+        'idevice_id',
+        'ideviceinfo',
+        'idevicename',
+        'pkill',
+        'iproxy',
     ]
     for sbin in system_bins:
         bin_path = which(sbin)

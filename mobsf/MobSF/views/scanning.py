@@ -155,7 +155,6 @@ def handle_uploaded_file(content, extension, source_content=None):
                 for chunk in content.chunks():
                     destination.write(chunk)
 
-    # Cyberspect mods
     if (source_content):
         bfr = isinstance(source_content, io.BufferedReader)
         with open(f'{anal_dir}{md5sum}{extension}' + '.src', 'wb+') as f:

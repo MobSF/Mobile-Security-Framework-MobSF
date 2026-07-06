@@ -69,7 +69,7 @@
               <li><code>api/v1/dynamic/view_source</code> - <a href="#dynamic-view-source-api">Dynamic Analysis View Source</a></li>
             </ol>
 
-            <h1>Dynamic Analysis iOS</h1>
+            <h1>Dynamic Analysis iOS (Corellium)</h1>
             <ol>
               <li><code>api/v1/ios/corellium_supported_models</code> - <a href="#supported-models-api">Supported Corellium iOS Models</a></li>
               <li><code>api/v1/ios/corellium_ios_versions</code> - <a href="#supported-ios-versions-api">Supported Corellium iOS Versions</a></li>
@@ -98,6 +98,23 @@
               <li><code>api/v1/ios/file_download</code> - <a href="#file-download-api">File Download</a></li>
               <li><code>api/v1/frida/ios_instrument</code> - <a href="#ios-instrument-api">Frida Instrument App</a></li>
               <li><code>api/v1/dynamic/ios_report_json</code> - <a href="#ios-report-json-api">iOS Dynamic Analysis Report</a></li>
+            </ol>
+
+            <h1>Dynamic Analysis iOS (Jailbroken Device)</h1>
+            <ol>
+              <li><code>api/v1/ios/device_dynamic_analysis</code> - <a href="#device-dynamic-analysis-api">iOS Device Dynamic Analysis</a></li>
+              <li><code>api/v1/ios/device_get</code> - <a href="#device-get-api">Get iOS Device Details</a></li>
+              <li><code>api/v1/ios/device_install_ipa</code> - <a href="#device-install-ipa-api">Install IPA on Device</a></li>
+              <li><code>api/v1/ios/device_dynamic_analyzer</code> - <a href="#device-dynamic-analyzer-api">iOS Device Dynamic Analyzer</a></li>
+              <li><code>api/v1/ios/device_file_upload</code> - <a href="#device-file-upload-api">Upload File to Device</a></li>
+              <li><code>api/v1/ios/device_ssh_execute</code> - <a href="#device-ssh-execute-api">SSH Execute on Device</a></li>
+              <li><code>api/v1/ios/device_instrument</code> - <a href="#device-instrument-api">Frida Instrument on Device</a></li>
+              <li><code>api/v1/ios/device_system_logs</code> - <a href="#device-system-logs-api">Device System Logs</a></li>
+              <li><code>api/v1/ios/device_ps</code> - <a href="#device-ps-api">Device Running Processes</a></li>
+              <li><code>api/v1/ios/device_file_download</code> - <a href="#device-file-download-api">Download File from Device</a></li>
+              <li><code>api/v1/ios/device_api_monitor</code> - <a href="#device-api-monitor-api">iOS Device API Monitor</a></li>
+              <li><code>api/v1/ios/device_download_app_data</code> - <a href="#device-download-app-data-api">Download App Data from Device</a></li>
+              <li><code>api/v1/ios/device_report_json</code> - <a href="#device-report-json-api">iOS Device Dynamic Analysis Report</a></li>
             </ol>
           <hr>
             <h2><a id="upload-file-api"></a><strong>Upload File API</strong></h2>
@@ -5087,6 +5104,1048 @@
                 <ul>
                   <li>
                     <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/ios_report_json --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization: {{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="device-dynamic-analysis-api"></a><strong>iOS Device Dynamic Analysis API</strong></h2>
+            <p>iOS Jailbroken Device Dynamic Analysis Entrypoint.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/device_dynamic_analysis</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization: &lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key: &lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>device_id</td>
+                  <td>iOS device id</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_dynamic_analysis --data "device_id=00008110-000A4CE00C81C01E" -H "Authorization: {{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="device-get-api"></a><strong>Get iOS Device Details API</strong></h2>
+            <p>Get iOS Device Details and List Apps.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/device_get</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization: &lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key: &lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>device_id</td>
+                  <td>iOS device id (Available from /api/v1/ios/device_dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_get --data "device_id=00008110-000A4CE00C81C01E" -H "Authorization: {{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="device-install-ipa-api"></a><strong>Install IPA on Device API</strong></h2>
+            <p>Install an IPA file on the jailbroken iOS device.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/device_install_ipa</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization: &lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key: &lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>device_id</td>
+                  <td>iOS device id (Available from /api/v1/ios/device_dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>checksum</td>
+                  <td>MD5 hash of the scan (Available from /api/v1/upload)</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_install_ipa --data "device_id=00008110-000A4CE00C81C01E&checksum=f49355aa96053a36248905f78d5419a8" -H "Authorization: {{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="device-dynamic-analyzer-api"></a><strong>iOS Device Dynamic Analyzer API</strong></h2>
+            <p>Start iOS Device Dynamic Analyzer.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/device_dynamic_analyzer</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization: &lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key: &lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>device_id</td>
+                  <td>iOS device id (Available from /api/v1/ios/device_dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>bundle_id</td>
+                  <td>iOS app bundle id</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_dynamic_analyzer --data "device_id=00008110-000A4CE00C81C01E&bundle_id=com.example.app" -H "Authorization: {{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="device-file-upload-api"></a><strong>Upload File to Device API</strong></h2>
+            <p>Upload a file to the jailbroken iOS device.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/device_file_upload</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization: &lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key: &lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>device_id</td>
+                  <td>iOS device id (Available from /api/v1/ios/device_dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>file</td>
+                  <td>multipart/form-data</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_file_upload -F "device_id=00008110-000A4CE00C81C01E" -F "file=@/path/to/file" -H "Authorization: {{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="device-ssh-execute-api"></a><strong>SSH Execute on Device API</strong></h2>
+            <p>Execute commands on the jailbroken iOS device over SSH.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/device_ssh_execute</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization: &lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key: &lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>device_id</td>
+                  <td>iOS device id (Available from /api/v1/ios/device_dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>cmd</td>
+                  <td>Command to execute on the device</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_ssh_execute --data "device_id=00008110-000A4CE00C81C01E&cmd=ls /tmp" -H "Authorization: {{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="device-instrument-api"></a><strong>Frida Instrument on Device API</strong></h2>
+            <p>Frida Instrument an app on the jailbroken iOS device.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/device_instrument</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization: &lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key: &lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>device_id</td>
+                  <td>iOS device id (Available from /api/v1/ios/device_dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>bundle_id</td>
+                  <td>iOS app bundle id</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>default_hooks</td>
+                  <td>Default Frida hooks (comma separated)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>dump_hooks</td>
+                  <td>Dump Frida hooks (comma separated)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>auxiliary_hooks</td>
+                  <td>Auxiliary Frida hooks (comma separated)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>frida_code</td>
+                  <td>Custom Frida code to inject</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>frida_action</td>
+                  <td>spawn/session/ps. The default action is spawn</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>pid</td>
+                  <td>Process id to attach to</td>
+                  <td>No</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok", "message": "Frida Instrumentation successful"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_instrument --data "device_id=00008110-000A4CE00C81C01E&bundle_id=com.example.app&default_hooks=jailbreak_bypass&dump_hooks=network,crypto&auxiliary_hooks=&frida_code=" -H "Authorization: {{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="device-system-logs-api"></a><strong>Device System Logs API</strong></h2>
+            <p>Get system logs from the jailbroken iOS device.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/device_system_logs</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization: &lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key: &lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>device_id</td>
+                  <td>iOS device id (Available from /api/v1/ios/device_dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_system_logs --data "device_id=00008110-000A4CE00C81C01E" -H "Authorization: {{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="device-ps-api"></a><strong>Device Running Processes API</strong></h2>
+            <p>Get list of running processes on the jailbroken iOS device.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/device_ps</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization: &lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key: &lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>device_id</td>
+                  <td>iOS device id (Available from /api/v1/ios/device_dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_ps --data "device_id=00008110-000A4CE00C81C01E" -H "Authorization: {{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="device-file-download-api"></a><strong>Download File from Device API</strong></h2>
+            <p>Download a file from the jailbroken iOS device.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/device_file_download</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization: &lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key: &lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>device_id</td>
+                  <td>iOS device id (Available from /api/v1/ios/device_dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>file</td>
+                  <td>File path on the device to download</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/octet-stream</code> or <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> File download or <code>{"status": "ok"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_file_download --data "device_id=00008110-000A4CE00C81C01E&file=/tmp/example.txt" -H "Authorization: {{ api_key}}" --output example.txt
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="device-api-monitor-api"></a><strong>iOS Device API Monitor API</strong></h2>
+            <p>Get iOS Device API Monitor data.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/device_api_monitor</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization: &lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key: &lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>checksum</td>
+                  <td>MD5 hash of the scan (Available from /api/v1/upload)</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_api_monitor --data "checksum=f49355aa96053a36248905f78d5419a8" -H "Authorization: {{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="device-download-app-data-api"></a><strong>Download App Data from Device API</strong></h2>
+            <p>Download Application Data from the jailbroken iOS device.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/device_download_app_data</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization: &lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key: &lt;api_key&gt;</code></p>
+              </li>
+              <li>
+                <p><strong>Data Params</strong></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>device_id</td>
+                  <td>iOS device id (Available from /api/v1/ios/device_dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>bundle_id</td>
+                  <td>iOS app bundle id</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"status": "ok"}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_download_app_data --data "device_id=00008110-000A4CE00C81C01E&bundle_id=com.example.app" -H "Authorization: {{ api_key}}"
+                  </code></pre>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+
+            <hr />
+            <h2><a id="device-report-json-api"></a><strong>iOS Device Dynamic Analysis Report API</strong></h2>
+            <p>Get iOS Device Dynamic Analysis Report.</p>
+            <ul>
+              <li>
+                <p><strong>URL:</strong> <code>/api/v1/ios/device_report_json</code></p>
+              </li>
+              <li>
+                <p><strong>Method:</strong> <code>POST</code></p>
+              </li>
+              <li>
+                <p><strong>Header:</strong> <code>Authorization: &lt;api_key&gt;</code> <strong>Or</strong> <code>X-Mobsf-Api-Key: &lt;api_key&gt;</code></p>
+              </li>
+            </ul>
+            <table class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Param Name</th>
+                  <th>Param Value</th>
+                  <th>Required</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>device_id</td>
+                  <td>iOS device id (Available from /api/v1/ios/device_dynamic_analysis)</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <td>bundle_id</td>
+                  <td>iOS app bundle id</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+            <br />
+            <ul>
+              <li>
+                <p><strong>Success Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>200</code><br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{"hash": "...", "version": "...", "title": "iOS Device Dynamic Analysis Report", ...}</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Error Response:</strong></p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>500 Internal Server Error</code> or <code>405 Method Not Allowed</code> or <code>422 Unprocessable Entity</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &lt;error message&gt; }</code>
+                  </li>
+                </ul>
+                <p>OR</p>
+                <ul>
+                  <li>
+                    <strong>Code:</strong> <code>401 Unauthorized</code> <br />
+                    <strong>Content-Type:</strong> <code>application/json; charset=utf-8</code> <br />
+                    <strong>Content:</strong> <code>{&quot;error&quot;: &quot;You are unauthorized to make this request.&quot; }</code>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <p><strong>Sample Call:</strong></p>
+                <ul>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_report_json --data "device_id=00008110-000A4CE00C81C01E&bundle_id=com.example.app" -H "Authorization: {{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>

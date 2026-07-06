@@ -1,13 +1,19 @@
 import logging
-from threading import Thread
-from pathlib import Path
 import sys
 import time
-
-from django.conf import settings
+from pathlib import Path
+from threading import Thread
 
 import frida
 
+from django.conf import settings
+
+from mobsf.DynamicAnalyzer.views.common.frida import (
+    get_bridge_loader,
+)
+from mobsf.DynamicAnalyzer.views.ios.corellium_ssh import (
+    ssh_jumphost_port_forward,
+)
 from mobsf.DynamicAnalyzer.views.ios.frida_auxiliary_scripts import (
     class_pattern,
     class_trace,
@@ -18,12 +24,9 @@ from mobsf.DynamicAnalyzer.views.ios.frida_auxiliary_scripts import (
     string_capture,
     string_compare,
 )
-from mobsf.DynamicAnalyzer.views.ios.corellium_ssh import (
-    ssh_jumphost_port_forward,
-)
-from mobsf.DynamicAnalyzer.views.common.frida import (
-    get_bridge_loader,
-)
+
+SCREENSHOT_CAPTURED_MSG = '✅ Screenshot Captured'
+
 
 logger = logging.getLogger(__name__)
 _PID = None
@@ -61,6 +64,7 @@ class Frida:
             'Are you able to run the app on '
             'this device?')
         self.bridge_loader = get_bridge_loader()
+        self.screenshot_event = None
 
     def get_scripts(self, script_type, selected_scripts):
         """Get Frida Scripts."""
@@ -157,6 +161,9 @@ class Frida:
             else:
                 logger.debug('[Frida] %s', msg)
                 self.write_log(self.frida_log, f'{msg}\n')
+                if (self.screenshot_event
+                        and SCREENSHOT_CAPTURED_MSG in msg):
+                    self.screenshot_event.set()
         else:
             logger.error('[Frida] %s', message)
 
@@ -287,8 +294,15 @@ class Frida:
                 self.container_file.write_text(self.app_container)
             except frida.InvalidOperationError:
                 pass
+            # Migrating defaults to rpc functions
+            if 'ssl_pinning' in self.defaults:
+                api.bypass_ios_ssl_pinning()
+
             if not self.extras:
                 return
+            screenshot_action = self.extras.get('screenshot_action')
+            if screenshot_action == 'capture':
+                api.get_screenshot()
             raction = self.extras.get('rclass_action')
             rclass = self.extras.get('rclass_name')
             rclass_pattern = self.extras.get('rclass_pattern')

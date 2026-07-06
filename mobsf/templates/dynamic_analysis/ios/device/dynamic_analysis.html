@@ -1,0 +1,335 @@
+{% extends "base/base_layout.html" %}
+{% load static %}
+{% block sidebar_option %}
+    sidebar-collapse
+{% endblock %}
+{% block extra_css %}
+ <!-- DataTables -->
+<link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
+<link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
+<link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
+<style>
+#app_icon{
+  width: 64px;
+  height: 64px;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="content-wrapper">
+  <div class="content-header">
+  </div>
+   <div class="container-fluid">
+
+
+   <div class="row">
+          <div class="col-md-12">
+            <div class="card bg-gradient-primary">
+              <!-- /.card-header -->
+              <div class="card-body">
+                  <div class="row">
+                     <div class="col-md-12">
+                        <h4>MobSF iOS Dynamic Analyzer</h4>
+                        <data id="choosen_device" value="{{ selected_device }}"></data>
+                        <div class="card-body">
+                          <div class="table-responsive">
+                         <p>
+                         <h6><strong> Choose a device for Dynamic Analysis: </strong></h6>
+                         <select class="form-control" id="ios_dynamic"></select>
+                        </p>
+                        </div>
+                        </div>
+                      
+                      </div>   
+                     </div>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        
+          <div class="col-md-12">
+            <div class="card card-default">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fa fa-rocket"></i> MobSF Dynamic Analysis</h3>
+              </div>
+              <div class="card-body">
+                 <div class="table-responsive">
+                <h4> Apps in Device</h4>
+                <table id="in_device" class="table table-bordered table-hover table-striped">
+                  <tbody>
+                  </tbody>
+              </table>
+            </br>
+
+            <h4> Apps Available</h4>
+            <table class="dattbl table table-bordered table-hover table-striped">
+                <thead>
+                <tr>
+                    <th>APP</th>
+                    <th>FILE NAME</th>
+                    <th>BUNDLE ID</th>
+                    <th>ACTION</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if apps %}
+                {% for e in apps %}
+                    <tr>
+                        <td align="center">
+                          <img id="app_icon" src="/download/{{ e.MD5 }}-icon.png"/>
+                          <br/><strong>{{ e.APP_NAME }} - {{ e.APP_VERSION }}</strong>
+                        </td>
+                        <td>
+                            {{ e.FILE_NAME }}
+                        </td>
+                        <td>
+                            {{ e.BUNDLE_ID }}
+                       </td>
+                        <td align="center"> 
+                          {% if e.ENCRYPTED %}
+                            <span class="badge badge-danger">ENCRYPTED IPA</span></br>
+                            <small>You need decrypted IPA for dynamic analysis.</small>
+                          {% else %}
+                          <p>
+                              <a class="btn btn-success upload-install-btn disabled" onclick="upload_and_install('{{ e.MD5 }}')" data-checksum="{{ e.MD5 }}"><i class="fab fa-apple"></i> Upload &amp; Install</a>
+                          </p>
+                          <p>
+                            <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url 'view_report_device' bundle_id=e.BUNDLE_ID %}" onclick="dynamic_loader()"><i class="fa fa-mobile"></i> View Report </a>
+                         </p>
+                         {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% endif %}
+                </tbody>
+            </table>
+
+            </div>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+
+        </div>
+       </div>
+     </div>
+    </div>
+</div>
+
+
+
+<!--Loader-->
+<div class="hidden loading">
+<div class='uil-ring-css' style='transform:scale(0.79);'>
+  <div></div>
+</div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<!-- DataTables -->
+<script src="{% static "adminlte/plugins/datatables/jquery.dataTables.min.js" %} "></script>
+<script src="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.js" %}"></script>
+<script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
+<script>
+
+// Escape HTML
+function escapeHtml(unsafe){
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+function dynamic_loader(){
+    var loadingOverlay = document.querySelector('.loading');
+    loadingOverlay.classList.remove('hidden');
+}
+function stop_loader(){
+  var loadingOverlay = document.querySelector('.loading');
+  loadingOverlay.classList.add('hidden');
+}
+
+// Datatables
+  $(function () {
+    // Datatable
+    $('.dattbl').DataTable({
+      "paging": true,
+      "lengthChange": false,
+      "searching": true,
+      "ordering": false,
+      "info": true,
+      "autoWidth": true,
+      "responsive": true,
+      "language": {
+          "zeroRecords": " "             
+      },
+    });
+  });
+
+// Populate Available Dynamic Analyzer instances.
+{% for i in wifi_devices %}
+    $('#ios_dynamic').append($('<option>',{
+        value: '{{ i.0 }}:{{ i.1 }}',
+        text: '{{ i.0 }}:{{ i.1 }} (WiFi)',
+    }));
+{% endfor %}
+{% for i in usb_devices %}
+    $('#ios_dynamic').append($('<option>',{
+        value: '{{ i.id}}',
+        text: '{{ i.model }} - iOS {{ i.version}} - {{ i.serial}}',
+    }));
+{% endfor %}
+
+var choosen_device = document.querySelector('#choosen_device').value;
+if (choosen_device){
+  $('#ios_dynamic option').each(function(){
+    if ($(this).val() === choosen_device){
+      $(this).prop('selected', true);
+    }
+  });
+} else {
+  // Add text select a device
+  $('#ios_dynamic').append($('<option>',{
+    value: '',
+    text: 'Select a Jailbroken iOS Device',
+    selected: true,
+  }));
+}
+
+// List apps onload
+if ($('#ios_dynamic').val()){
+  list_apps();
+}
+
+// List apps on device change
+$('#ios_dynamic').on('change', function() {
+  location.href = '{% url 'dynamic_ios_device' %}?device_id=' + $(this).val();
+});
+
+// List installed apps
+function list_apps(){
+  $('#in_device tbody tr').remove();
+  $('#in_device thead').remove();
+  dynamic_loader();
+  $.ajax({
+        url: '{% url 'get_ios_device' %}',
+        type : 'POST',
+        data : {
+          csrfmiddlewaretoken: '{{ csrf_token }}',
+          device_id: $('#ios_dynamic').val(),
+        },
+        dataType: 'json',
+                success : function(json) {
+                    if(!json)
+                      stop_loader();
+                    if(!json.status){
+                      stop_loader();
+                      Swal.fire(
+                                'Listing apps failed',
+                                'Device is not ready',
+                                'error'
+                                )
+                    }
+                    if (json.status==='ok'){
+                      $('#in_device').append('<thead><tr> <th>APP</th> <th>BUNDLE ID</th> <th>APP TYPE</th> <th>ACTION</th> </tr></thead><tbody></tbody>');
+                      for(var i=0; i < json.apps.length; i++) {
+                              let name = json.apps[i].app_name || 'Unknown App';
+                              let bundle = json.apps[i].bundle_id || 'Unknown Bundle';
+                              let type = json.apps[i].app_type || 'Unknown';
+                              let reportExists = true;
+                              let iconb64;
+                              if (json.apps[i].app_icon)
+                                iconb64 = 'data:image/png;base64,' + json.apps[i].app_icon;
+                              else
+                                iconb64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+                              var buttonState = 'disabled';
+                              if (reportExists)
+                                buttonState = '';
+                              var order;
+                              if (type === 'User')
+                                order = 'first';
+                              else
+                                order = 'last';
+
+                              var url = `{% url 'dynamic_analyzer_device' %}?bundle_id=${escapeHtml(bundle)}&device_id=${$('#ios_dynamic').val()}`;
+                              $('#in_device > tbody:' + order + '-child').append(
+                                `<tr><td align="center">
+                                  <img id="app_icon" src="${escapeHtml(iconb64)}"/><br/>
+                                  <strong>${escapeHtml(name)}</strong></td>
+                                  <td>${escapeHtml(bundle)}</td>
+                                  <td>${escapeHtml(type)}</td>
+                                  <td><p>
+                                      <a class="btn btn-success disable" onclick="dynamic_loader()" href="${url}"><i class="fab fa-apple"></i> Start Dynamic Analysis</a> 
+                                      <a class="btn btn-info ${buttonState}" onclick="dynamic_loader()" href="../../ios/view_report_device/${escapeHtml(bundle)}"><i class="fa fa-mobile"></i> View Report </a>
+                                      </p>
+                                  </td></tr>`);
+                        }
+                        $('.upload-install-btn').removeClass('disabled');
+                        stop_loader();
+                    }
+                    else {
+                      stop_loader();
+                      Swal.fire(
+                                'Listing apps failed',
+                                json.message,
+                                'error'
+                                )
+                    }
+                },
+                error : function(xhr,errmsg,err) {
+                  stop_loader();
+                  console.log(errmsg)
+                }
+    });
+}
+
+// Upload and Install IPA to device
+function upload_and_install(checksum){
+  dynamic_loader();
+  $.ajax({
+          url: '{% url 'install_ipa_device' %}',
+          type : 'POST',
+          dataType: 'json',
+              data : {
+                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                      device_id: $('#ios_dynamic').val(),
+                      checksum: checksum,
+                      },
+                  success : function(json) {
+                      if (json.status !== 'ok'){
+                          stop_loader();
+                          Swal.fire(
+                          'IPA Install Failed',
+                          'Failed to Install IPA: ' + json.message,
+                          'error'
+                          )
+                      } else {
+                        stop_loader();
+                        Swal.fire(
+                          'IPA Installed',
+                          'The IPA is successfully installed',
+                          'success'
+                          );
+                        list_apps();
+                      }
+                  },
+                  error : function(xhr,errmsg,err) {
+                      stop_loader();
+                      Swal.fire(
+                          'IPA Install Errored',
+                          errmsg,
+                          'error'
+                          )
+                  }
+      });
+}
+</script>
+{% endblock %}

@@ -1,54 +1,68 @@
-/* Description: Dump all methods inside classes owned by the app only
- * Mode: S+A
- * Version: 1.0
- * Credit: PassionFruit (https://github.com/chaitin/passionfruit/blob/master/agent/app/classdump.js) & https://github.com/interference-security/frida-scripts/blob/master/iOS
- * Author: @interference-security
- */
-//Twitter: https://twitter.com/xploresec
-//GitHub: https://github.com/interference-security
-// Modified to support Frida 17.0.0+
+function run_show_app_classes_methods_only() {
+    send("Started: Find App's Classes and Methods");
 
-function run_show_app_classes_methods_only()
-{
-    send("Started: Find App's Classes and Methods")
-    var free = new NativeFunction(Module.getGlobalExportByName('free'), 'void', ['pointer'])
-    var copyClassNamesForImage = new NativeFunction(Module.getGlobalExportByName('objc_copyClassNamesForImage'), 'pointer', ['pointer', 'pointer'])
-    var p = Memory.alloc(Process.pointerSize)
-    p.writeUInt(0)
-    var path = ObjC.classes.NSBundle.mainBundle().executablePath().UTF8String()
-    var pPath = Memory.allocUtf8String(path)
-    var pClasses = copyClassNamesForImage(pPath, p)
-    var count = p.readUInt()
-    var classesArray = new Array(count)
-    for (var i = 0; i < count; i++)
-    {
-        var pClassName = pClasses.add(i * Process.pointerSize).readPointer()
-        classesArray[i] = pClassName.readUtf8String()
-        var className = classesArray[i]
-        send("[AUXILIARY] Class: " + className);
-        //var methods = ObjC.classes[className].$methods;
-        var methods = ObjC.classes[className].$ownMethods;
-        for (var j = 0; j < methods.length; j++)
-        {
-            send("[AUXILIARY] \t[-] Method: " + methods[j]);
-            try
-            {
-                send("[AUXILIARY] \t\t[-] Arguments Type: " + ObjC.classes[className][methods[j]].argumentTypes);
-                send("[AUXILIARY] \t\t[-] Return Type: " + ObjC.classes[className][methods[j]].returnType);
-            }
-            catch(err) {}
-        }
-    }
-    free(pClasses)
-    send("App Classes found: " + count);
-    send("Completed: Find App's Classes")
-}
-
-function show_app_classes_methods_only()
-{
     try {
-        setImmediate(run_show_app_classes_methods_only)
-    } catch(err) {}
+        const free = new NativeFunction(
+            Process.getModuleByName('libc++abi.dylib').getExportByName('free'),
+            'void',
+            ['pointer']
+        );
+
+        const copyClassNamesForImage = new NativeFunction(
+            Process.getModuleByName('libobjc.A.dylib').getExportByName('objc_copyClassNamesForImage'),
+            'pointer',
+            ['pointer', 'pointer']
+        );
+
+        const path = ObjC.classes.NSBundle.mainBundle().executablePath().UTF8String();
+        const pPath = Memory.allocUtf8String(path);
+        const pCount = Memory.alloc(Process.pointerSize);
+        pCount.writeUInt(0);
+
+        const pClasses = copyClassNamesForImage(pPath, pCount);
+        const count = pCount.readUInt();
+
+        send(`[AUXILIARY] Classes found in app image: ${count}`);
+
+        for (let i = 0; i < count; i++) {
+            const classPtr = pClasses.add(i * Process.pointerSize).readPointer();
+            const className = classPtr.readUtf8String();
+
+            if (!ObjC.classes.hasOwnProperty(className)) {
+                continue;
+            }
+
+            const klass = ObjC.classes[className];
+            send(`[AUXILIARY] Class: ${className}`);
+
+            const methods = klass.$ownMethods;
+            for (const methodName of methods) {
+                send(`  [-] Method: ${methodName}`);
+
+                try {
+                    const method = klass[methodName];
+                    send(`      ├─ Args: ${method.argumentTypes}`);
+                    send(`      └─ Return: ${method.returnType}`);
+                } catch (err) {
+                    send(`      ⚠️  Failed to inspect method: ${err.message}`);
+                }
+            }
+        }
+
+        free(pClasses);
+    } catch (err) {
+        send(`❌ Error: ${err.message}`);
+    }
+
+    send("Completed: Find App's Classes");
 }
 
-show_app_classes_methods_only()
+function show_app_classes_methods_only() {
+    try {
+        setImmediate(run_show_app_classes_methods_only);
+    } catch (err) {
+        send(`❌ Unexpected error: ${err.message}`);
+    }
+}
+
+show_app_classes_methods_only();

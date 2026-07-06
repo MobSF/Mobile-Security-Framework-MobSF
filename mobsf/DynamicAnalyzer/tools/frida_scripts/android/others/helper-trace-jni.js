@@ -44,8 +44,8 @@ Java.perform(function () {
             }
         });
 
-        send("[✔] Hook installed on libc open()");
+        send("[+] Hook installed on libc open()");
     } catch (e) {
-        send("[✘] Error hooking libc open: " + e);
+        send("[-] Error hooking libc open: " + e);
     }
 });

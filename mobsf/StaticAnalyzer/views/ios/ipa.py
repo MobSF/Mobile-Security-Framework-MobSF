@@ -169,7 +169,7 @@ def ipa_analysis_task(checksum, app_dic, rescan, queue=False):
     context = None
     try:
         if queue:
-            # Cyberspect mod - comment out: settings.ASYNC_ANALYSIS = True
+            # Cyberspect mod - commented out: settings.ASYNC_ANALYSIS = True
             # it's a code smell to change the Django global setting
             # at runtime
             mark_task_started(checksum)
@@ -264,7 +264,7 @@ def ipa_analysis(request, app_dic, rescan, api):
         # Add check for async worker to prevent nested async
         in_async_worker = request.META.get('_in_async_worker', False)
         if settings.ASYNC_ANALYSIS and not in_async_worker:
-            # Cyberspect mods end
+        # Cyberspect mods end
             return async_analysis(
                 checksum,
                 api,
@@ -281,7 +281,7 @@ def ios_analysis_task(checksum, app_dic, rescan, queue=False):
     context = None
     try:
         if queue:
-            # Cyberspect mod - comment out: settings.ASYNC_ANALYSIS = True
+            # Cyberspect mod - commented out: settings.ASYNC_ANALYSIS = True
             # it's a code smell to change the Django global setting
             # at runtime
             mark_task_started(checksum)
@@ -357,7 +357,7 @@ def ios_analysis(request, app_dic, rescan, api):
         # Add check for async worker to prevent nested async
         in_async_worker = request.META.get('_in_async_worker', False)
         if settings.ASYNC_ANALYSIS and not in_async_worker:
-            # Cyberspect mods end
+        # Cyberspect mods end
             return async_analysis(
                 checksum,
                 api,

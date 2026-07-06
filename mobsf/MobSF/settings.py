@@ -211,15 +211,15 @@ MIDDLEWARE_CLASSES = (
     'django_ratelimit.middleware.RatelimitMiddleware',
 )
 AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.RemoteUserBackend',)
-# Cyberspect mods begin
 MIDDLEWARE = (
+    # Cyberspect mods begin
     'cyberspect.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
+    # Cyberspect mods end
     'mobsf.MobSF.views.aws_sso_middleware.alb_idp_auth_middleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 )
-# Cyberspect mods end
 ROOT_URLCONF = 'mobsf.MobSF.urls'
 WSGI_APPLICATION = 'mobsf.MobSF.wsgi.application'
 LANGUAGE_CODE = 'en-us'
@@ -247,9 +247,11 @@ TEMPLATES = [
                     'django.template.context_processors.request',
                     'django.contrib.auth.context_processors.auth',
                     'django.contrib.messages.context_processors.messages',
+                    # Cyberspect mods begin
                     'cyberspect.context_processors.is_admin_processor',
                     'cyberspect.context_processors.app_versions_processor',
                     'cyberspect.context_processors.recent_scans_processor',
+                    # Cyberspect mods end
                 ],
         },
     },
@@ -598,6 +600,16 @@ if not CONFIG_HOME:
     # if VT_UPLOAD is set to True.
     # ===============================================
     # =======IOS DYNAMIC ANALYSIS SETTINGS===========
+    # Should be SSH IP:PORT, example: 192.168.1.100:22
+    # Field also supports multiple devices, example: 192.168.1.100:22,192.168.1.101:22
+    IOS_ANALYZER_IDENTIFIERS = os.getenv('MOBSF_IOS_ANALYZER_IDENTIFIERS', '')
+    # SSH credentials for jailbroken iOS device (USB or WiFi path)
+    # Defaults match the standard jailbreak SSH default (root/alpine)
+    IOS_SSH_USER = os.getenv('MOBSF_IOS_SSH_USER', 'root')
+    IOS_SSH_PASSWORD = os.getenv('MOBSF_IOS_SSH_PASSWORD', 'alpine')
+    # ==============================================
+
+    # =======IOS DYNAMIC ANALYSIS CORELLIUM SETTINGS===========
     CORELLIUM_API_DOMAIN = os.getenv('MOBSF_CORELLIUM_API_DOMAIN', '')
     CORELLIUM_API_KEY = os.getenv('MOBSF_CORELLIUM_API_KEY', '')
     CORELLIUM_PROJECT_ID = os.getenv('MOBSF_CORELLIUM_PROJECT_ID', '')

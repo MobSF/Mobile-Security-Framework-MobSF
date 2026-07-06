@@ -18,16 +18,16 @@ from mobsf.install.windows.setup import windows_config_local
 
 logger = logging.getLogger(__name__)
 
-# Cyberspect version - a non-emmpty string below will display the
+# Cyberspect version - a non-empty string below will display the
 # Cyberspect version number in the footer and VERSION as the MobSF version
-CYBERSPECT_VERSION = '2026.04'
-VERSION = '4.4.6'
+CYBERSPECT_VERSION = '2026.05'
+VERSION = '4.5.0'
 BANNER = r"""
-  __  __       _    ____  _____       _  _   _  _   
- |  \/  | ___ | |__/ ___||  ___|_   _| || | | || |  
- | |\/| |/ _ \| '_ \___ \| |_  \ \ / / || |_| || |_ 
- | |  | | (_) | |_) |__) |  _|  \ V /|__   _|__   _|
- |_|  |_|\___/|_.__/____/|_|     \_/    |_|(_) |_|  
+  __  __       _    ____  _____       _  _    ____  
+ |  \/  | ___ | |__/ ___||  ___|_   _| || |  | ___| 
+ | |\/| |/ _ \| '_ \___ \| |_  \ \ / / || |_ |___ \ 
+ | |  | | (_) | |_) |__) |  _|  \ V /|__   _| ___) |
+ |_|  |_|\___/|_.__/____/|_|     \_/    |_|(_)____/ 
 """  # noqa: W291
 # ASCII Font: Standard
 
@@ -124,10 +124,12 @@ def get_mobsf_home(use_home, base_dir):
         base_dir = Path(base_dir)
         mobsf_home = ''
         if use_home:
+            # Cyberspect mods begin
             mobsf_files_path = os.getenv('FILES_PATH',
                                          os.path.expanduser('~'))
             # use MobSF (not .MobSF) for AWS EFS
             mobsf_home = Path(mobsf_files_path) / 'MobSF'
+            # Cyberspect mods end
             custom_home = os.getenv('MOBSF_HOME_DIR')
             if custom_home:
                 p = Path(custom_home)
@@ -166,7 +168,9 @@ def get_mobsf_home(use_home, base_dir):
 
 
 def get_mobsf_version():
+    # Cyberspect mods begin
     return BANNER, VERSION, f'v{VERSION}', CYBERSPECT_VERSION
+    # Cyberspect mods end
 
 
 def load_source(modname, filename):

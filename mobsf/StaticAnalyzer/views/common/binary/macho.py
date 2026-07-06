@@ -83,7 +83,9 @@ class MachOChecksec:
                 'Oriented Programming (ROP) attacks much more difficult '
                 'to execute reliably.')
         else:
+            # Cyberspect mods begin
             severity = 'warning'
+            # Cyberspect mods begin
             ext = Path(self.macho_name).suffix
             # PIE check not applicable for static and dynamic libraries
             # https://github.com/MobSF/Mobile-Security-Framework-MobSF/
@@ -121,7 +123,9 @@ class MachOChecksec:
                 'This binary has debug symbols stripped. We cannot identify '
                 'whether stack canary is enabled or not.')
         else:
+            # Cyberspect mods begin
             severity = 'warning'
+            # Cyberspect mods begin
             sw_msg = ''
             if 'libswift' in self.macho_name:
                 severity = 'warning'
@@ -153,7 +157,9 @@ class MachOChecksec:
                 'This binary has debug symbols stripped. We cannot identify '
                 'whether ARC is enabled or not.')
         else:
+            # Cyberspect mods begin
             severity = 'warning'
+            # Cyberspect mods end
             desc = (
                 'The binary is not compiled with Automatic '
                 'Reference Counting (ARC) flag. ARC is a compiler '

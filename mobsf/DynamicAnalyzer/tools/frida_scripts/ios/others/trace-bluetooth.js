@@ -31,7 +31,7 @@ Interceptor.attach(ObjC.classes.CBPeripheral['- writeValue:forCharacteristic:typ
     {
         var data = new ObjC.Object(args[2]);
         var CBChar = new ObjC.Object(args[3]);
-        var dataBytes = Memory.readByteArray(data.bytes(), data.length());
+        var dataBytes = data.bytes().readByteArray(data.length());
         var b = new Uint8Array(dataBytes);
         var hexData = "";
 

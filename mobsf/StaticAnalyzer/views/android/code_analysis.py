@@ -77,7 +77,7 @@ def code_analysis(
         manifest_file,
         android_permissions,
         in_daemon=False):
-    # Cyberspect mods end
+# Cyberspect mods end
     """Perform the code analysis."""
     result = {
         'api': {},
@@ -178,7 +178,7 @@ def code_analysis(
             }
             # Cyberspect mods begin
             cengine = ChoiceEngine(
-                niap_options, src, in_daemon=in_daemon)  # Cyberspect mod
+                niap_options, src, in_daemon=in_daemon)
             # Cyberspect mods end
             file_data = cengine.read_files()
             result['niap'] = cengine.run_rules(

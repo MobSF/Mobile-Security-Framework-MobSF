@@ -61,16 +61,17 @@ def ios_view_report(request, bundle_id, api=False):
         download_dir = settings.DWD_DIR
         tools_dir = settings.TOOLS_DIR
         frida_log = app_dir / 'mobsf_frida_out.txt'
-        if not frida_log.exists():
+        data_dir = app_dir / 'DYNAMIC_DeviceData'
+        if not (frida_log.exists() or data_dir.exists()):
             msg = ('Dynamic Analysis report is not available '
                    'for this app. Perform Dynamic Analysis '
                    'and generate the report.')
             return print_n_send_error_response(request, msg, api)
         api_analysis = ios_api_analysis(app_dir)
-        dump_analaysis = run_analysis(app_dir, bundle_id, checksum)
+        dump_analysis = run_analysis(app_dir, bundle_id, checksum)
         trk = Trackers.Trackers(checksum, app_dir, tools_dir)
         trackers = trk.get_trackers_domains_or_deps(
-            dump_analaysis['domains'], None)
+            dump_analysis['domains'], None)
         screenshots = get_screenshots(checksum, download_dir)
         context = {
             'hash': checksum,
@@ -83,7 +84,7 @@ def ios_view_report(request, bundle_id, api=False):
             'frida_logs': frida_log.exists(),
         }
         context.update(api_analysis)
-        context.update(dump_analaysis)
+        context.update(dump_analysis)
         template = 'dynamic_analysis/ios/dynamic_report.html'
         if api:
             return context

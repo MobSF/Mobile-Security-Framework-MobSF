@@ -17,7 +17,7 @@ try {
 	
 	Interceptor.attach(foundation.getExportByName("NSLog"), {
 		onEnter: function(args) {
-			send(JSON.stringify({'[MBSFDUMP] nslog': 'NSLog -> ' + ObjC.Object(ptr(args[0])).toString() + ', ' + Memory.readCString(ptr(args[1]))}));
+			send(JSON.stringify({'[MBSFDUMP] nslog': 'NSLog -> ' + ObjC.Object(ptr(args[0])).toString() + ', ' + ptr(args[1]).readCString()}));
 		},
 		onLeave: function(retval) {
 		}
@@ -25,7 +25,7 @@ try {
 
 	Interceptor.attach(foundation.getExportByName("NSLogv"), {
 		onEnter: function(args) {
-			send(JSON.stringify({'[MBSFDUMP] nslog': 'NSLogv -> ' + ObjC.Object(ptr(args[0])).toString()+ ', ' + Memory.readCString(ptr(args[1]))}));
+			send(JSON.stringify({'[MBSFDUMP] nslog': 'NSLogv -> ' + ObjC.Object(ptr(args[0])).toString()+ ', ' + ptr(args[1]).readCString()}));
 		},
 		onLeave: function(retval) {
 		}

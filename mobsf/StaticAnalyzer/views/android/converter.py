@@ -77,10 +77,10 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
     try:
         # Cyberspect mods begin
         jadx_version = settings.JADX_VERSION
-        # Cyberspect mods begin
         jadx_base_path = Path(dwd_tools_dir) / 'jadx' / f'jadx-{jadx_version}' / 'bin'
         msg = f'Decompiling APK to Java with jadx ({jadx_base_path})'
         logger.info(msg)
+        # Cyberspect mods begin
         output_dir = Path(app_dir) / 'java_source'
 
         msg = 'Decompiling APK to Java with JADX'
@@ -120,7 +120,7 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
             # Cyberspect mods begin
             '-q', '-r', '--show-bad-code', '-j',
             settings.JADX_THREADS, app_path]
-        # Cyberspect mods end
+            # Cyberspect mods end
         result = run_jadx(args)
         if result.returncode == 0:
             return  # Success

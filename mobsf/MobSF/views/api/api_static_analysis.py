@@ -66,10 +66,12 @@ def api_recent_scans(request):
 @csrf_exempt
 def api_scan(request):
     """POST - Scan API."""
+    # Cyberspect mods begin
     params = {'cyberspect_scan_id', 'hash'}
     if set(request.POST).intersection(params) != params:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
+    # Cyberspect mods end
     checksum = request.POST['hash']
     if not is_md5(checksum):
         return make_api_response(

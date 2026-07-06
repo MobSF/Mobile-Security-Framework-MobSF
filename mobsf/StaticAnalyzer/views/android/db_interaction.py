@@ -41,7 +41,9 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             package)
         context = {
             'version': settings.MOBSF_VER,
+            # Cyberspect mods begin
             'cversion': settings.CYBERSPECT_VER,
+            # Cyberspect mods end
             'title': 'Static Analysis',
             'file_name': db_entry[0].FILE_NAME,
             'app_name': db_entry[0].APP_NAME,

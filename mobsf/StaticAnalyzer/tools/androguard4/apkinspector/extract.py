@@ -96,7 +96,9 @@ def extract_all_files_from_central_directory(apk_file, central_directory_entries
                 extract_file_based_on_header_info(
                     apk_file, local_header_entries[filename], cd_header_info)[0]
             # Construct the output file path
+            # Cyberspect mods begin
             output_path = os.path.join(output_dir, filename)
+            # Cyberspect mods end
             output_path = os.path.realpath(os.path.join(output_dir, filename))
             abs_output_dir = os.path.realpath(output_dir)
             if not (output_path.startswith(abs_output_dir + os.sep)

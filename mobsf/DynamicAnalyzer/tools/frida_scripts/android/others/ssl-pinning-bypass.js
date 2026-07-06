@@ -991,7 +991,7 @@ setTimeout(function() {
                 return ret;
             };
             netBuilder.addPublicKeyPins.implementation = function(hostName, pinsSha256, includeSubdomains, expirationDate) {
-                console.log("[+] Сronet addPublicKeyPins hostName = " + hostName);
+                console.log("[+] Cronet addPublicKeyPins hostName = " + hostName);
                 return this;
             };
         } catch (err) {}

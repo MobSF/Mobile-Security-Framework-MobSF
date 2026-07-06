@@ -221,7 +221,7 @@ def apk_analysis_task(checksum, app_dic, rescan, queue=False):
             man_data_dic['perm'],
             # Cyberspect mods begin
             in_daemon=queue)  # Pass the daemon flag
-        # Cyberspect mods end
+            # Cyberspect mods end
         # Get the strings and metadata
         get_strings_metadata(
             app_dic,
@@ -303,7 +303,7 @@ def apk_analysis(request, app_dic, rescan, api):
         # Add check for async worker to prevent nested async
         in_async_worker = request.META.get('_in_async_worker', False)
         if settings.ASYNC_ANALYSIS and not in_async_worker:
-            # Cyberspect mods end
+        # Cyberspect mods end
             return async_analysis(
                 checksum,
                 api,
@@ -356,7 +356,7 @@ def src_analysis_task(checksum, app_dic, rescan, pro_type, queue=False):
             man_data_dic['perm'],
             # Cyberspect mods begin
             in_daemon=queue)  # Pass the daemon flag
-        # Cyberspect mods end
+            # Cyberspect mods end
         # Get the strings and metadata
         get_strings_metadata(
             app_dic,
