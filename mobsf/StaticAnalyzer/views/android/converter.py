@@ -163,19 +163,20 @@ def run_apktool(app_path, app_dir, tools_dir):
                 and Path(settings.APKTOOL_BINARY).exists()):
             apktool_path = Path(settings.APKTOOL_BINARY)
         else:
-            apktool_path = tools_dir / 'apktool_2.10.0.jar'
+            apktool_path = tools_dir / 'apktool_3.0.2.jar'
 
         # Prepare output directory and manifest file paths
         output_dir = app_dir / 'apktool_out'
         # Run apktool to extract AndroidManifest.xml
         args = [find_java_binary(),
-                '-jar',
                 '-Djdk.util.zip.disableZip64ExtraFieldValidation=true',
+                '-jar',
                 str(apktool_path),
-                '--match-original',
-                '--frame-path',
+                'd',
+                '-p',
                 gettempdir(),
-                '-f', '-s', 'd',
+                '-f', 
+                '-s',
                 str(app_path),
                 '-o',
                 str(output_dir)]
