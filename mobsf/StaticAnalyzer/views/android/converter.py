@@ -175,7 +175,7 @@ def run_apktool(app_path, app_dir, tools_dir):
                 'd',
                 '-p',
                 gettempdir(),
-                '-f', 
+                '-f',
                 '-s',
                 str(app_path),
                 '-o',

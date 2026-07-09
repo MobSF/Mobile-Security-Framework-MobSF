@@ -135,26 +135,24 @@ def get_pub_key_details(data):
 
 def get_signature_versions(checksum, app_path: str, tools_dir: str) -> dict[str, bool]:
     """Get signature versions using apksigner."""
-    
-    # enforce any versions we absolutely want to see
     try:
-        logger.info("Getting Signature Versions")
+        logger.info('Getting Signature Versions')
         apksigner = Path(tools_dir) / 'apksigner.jar'
         args = [
             find_java_binary(), '-Xmx1024M',
             '-Djava.library.path=', '-jar',
             apksigner.as_posix(),
-            'verify', '--verbose', app_path
+            'verify', '--verbose', app_path,
         ]
 
         out = subprocess.check_output(args, stderr=subprocess.STDOUT)
         out = out.decode('utf-8', 'ignore')
 
         pattern = re.compile(
-            r'^\s*Verified using\s+'        # Start of line and ignore leading whitespace
+            r'^\s*Verified using\s+'        # Start of line and skip leading whitespace
             r'(?P<version>v\d+(?:\.\d+)?)'  # Capture version like v1, v2, v3.1
             r'\s+scheme\s+\(.*?\):\s+'      # Ignore the parenthetical description
-            r'(?P<value>true|false)\s*$',   # Capture true/false at end of line           
+            r'(?P<value>true|false)\s*$',   # Capture true/false at end of line
             re.IGNORECASE | re.MULTILINE,
         )
 
@@ -171,7 +169,6 @@ def get_signature_versions(checksum, app_path: str, tools_dir: str) -> dict[str,
         return signatures
 
 
-
 def apksigtool_cert(checksum, apk_path, tools_dir):
     """Get Human readable certificate with apksigtool."""
     certlist = []
@@ -180,8 +177,8 @@ def apksigtool_cert(checksum, apk_path, tools_dir):
     signed = False
     certs_no = 0
     min_sdk = None
-    
-    signature_versions = {v: None for v in ['v1', 'v2', 'v3', 'v4']}
+
+    signature_versions = dict.fromkeys(['v1', 'v2', 'v3', 'v4'], None)
     try:
         from apksigtool import (
             APKSignatureSchemeBlock,
@@ -191,11 +188,11 @@ def apksigtool_cert(checksum, apk_path, tools_dir):
         from apksigcopier import (
             extract_meta,
         )
-        
+
         meta = extract_meta(apk_path)
         sig_files = [x.filename for x, _ in meta]
         signature_versions['v1'] = bool(sig_files)
-        
+
         try:
             _, sig_block = extract_v2_sig(apk_path)
             for pair in parse_apk_signing_block(sig_block).pairs:
@@ -210,38 +207,39 @@ def apksigtool_cert(checksum, apk_path, tools_dir):
                         certs_no = len(signer.signed_data.certificates)
                         for cert in signer.signed_data.certificates:
                             certs.extend(
-                                x 
-                                for x in get_cert_details(cert.data) 
+                                x
+                                for x in get_cert_details(cert.data)
                                 if x not in certs
                             )
-                        
+
                         pub_keys.extend(
-                            x 
-                            for x in get_pub_key_details(signer.public_key.data) 
+                            x
+                            for x in get_pub_key_details(signer.public_key.data)
                             if x not in pub_keys
                         )
         except Exception:
             logger.warning('Failed to get signature versions with apksigtool')
 
-        certlist.append("Binary is signed" if signed else "Binary is not signed")
-        
+        certlist.append('Binary is signed' if signed else 'Binary is not signed')
+
         if not signed:
-            signature_versions = {k: False for k in signature_versions.keys()}
+            signature_versions = dict.fromkeys(signature_versions.keys(), False)
         else:
             try:
                 apksigner_versions = get_signature_versions(
                     checksum,
                     apk_path,
-                    tools_dir
+                    tools_dir,
                 )
-                
+
                 if any(apksigner_versions.values()):
                     signature_versions = apksigner_versions
                 else:
-                    logger.info('Keeping signature versions with apksigtool since apksigner.jar could not find them')
+                    logger.info('Keeping signature versions with apksigtool'
+                                ' since apksigner.jar could not find them')
             except Exception:
                 logger.info('Fetching signature versions with apksigtool')
-        
+
         certlist.extend(f'{k} signature: {v}' for k, v in signature_versions.items())
         certlist.extend(certs)
         certlist.extend(pub_keys)
@@ -251,7 +249,7 @@ def apksigtool_cert(checksum, apk_path, tools_dir):
         logger.exception(msg)
         append_scan_status(checksum, msg, repr(exp))
         certlist.append('Missing certificate')
-        
+
     return {
         'cert_data': '\n'.join(certlist),
         'signed': signed,
@@ -264,29 +262,32 @@ def get_cert_data(checksum, a, app_path, tools_dir):
     """Get Human readable certificate."""
     certlist = []
     signed = a.is_signed() or False
-    signature_versions = {v: False for v in ['v1', 'v2', 'v3', 'v4']}
-    
+    signature_versions = dict.fromkeys(['v1', 'v2', 'v3', 'v4'], False)
+
     if signed:
         certlist.append('Binary is signed')
     else:
         certlist.append('Binary is not signed')
         certlist.append('Missing certificate')
-        
+
     if signed:
         try:
             apksigner_versions = get_signature_versions(
                 checksum,
                 app_path,
-                tools_dir
+                tools_dir,
             )
         except Exception:
-            apksigner_versions = dict()
+            apksigner_versions = {}
             logger.info('Fetching signature versions with apksigtool')
-    
+
         signature_versions = apksigner_versions \
             if any(apksigner_versions.values()) \
-            else {'v1': a.is_signed_v1(), 'v2': a.is_signed_v2(), 'v3': a.is_signed_v3(), 'v4': None}
-    
+            else {
+                'v1': a.is_signed_v1(), 'v2': a.is_signed_v2(),
+                'v3': a.is_signed_v3(), 'v4': None,
+            }
+
     certlist.extend(f'{k} signature: {v}' for k, v in signature_versions.items())
     certs = set(a.get_certificates_der_v3() + a.get_certificates_der_v2()
                 + [a.get_certificate_der(x)
@@ -308,7 +309,6 @@ def get_cert_data(checksum, a, app_path, tools_dir):
         **signature_versions,
         'min_sdk': None,
     }
-
 
 
 def cert_info(app_dic, man_dict):
