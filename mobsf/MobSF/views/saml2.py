@@ -18,6 +18,7 @@ from django.contrib.auth import login
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
 
 from mobsf.MobSF.views.authorization import (
     MAINTAINER_GROUP,
@@ -155,6 +156,7 @@ def saml_login(request):
 
 
 @require_http_methods(['POST'])
+@csrf_exempt
 def saml_acs(request):
     """Handle SSO Assertion Consumer Service."""
     try:
