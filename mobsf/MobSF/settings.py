@@ -407,7 +407,7 @@ else:
     import os
     SKIP_CLASS_PATH = {
         'com/google/', 'androidx', 'okhttp2/', 'okhttp3/',
-        'com/android/', 'com/squareup', 'okhttp/'
+        'com/android/', 'com/squareup', 'okhttp/',
         'android/content/', 'com/twitter/', 'twitter4j/',
         'android/support/', 'org/apache/', 'oauth/signpost',
         'android/arch', 'org/chromium/', 'com/facebook',
