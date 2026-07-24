@@ -173,7 +173,7 @@
                           </label>
                           <label>
                             <input name="dump_hooks" type="checkbox" value="cookies" checked>
-                            Cookies 
+                            Cookie 
                           </label>
                             <label>
                             <input name="dump_hooks" type="checkbox" value="file-access" checked>
@@ -229,7 +229,7 @@
                               </label> 
                              <label>
                             <input name="auxiliary" type="checkbox" value="string_capture" id="string_capture">
-                               Capture Strings
+                               Capture 字符串
                             </label>
                              <label>
                             <input name="auxiliary" type="checkbox" value="string_compare" id="string_compare">
@@ -243,7 +243,7 @@
                              <input type="text" class="form-control" id="class_name" placeholder="NSData">
                              <label>
                               <input onclick="aux_click(this)" name="auxiliary" type="checkbox" value="search_class" id="search_class">
-                              Search Class Pattern
+                              搜索 Class Pattern
                             </label>
                              <input type="text" class="form-control" id="class_search" placeholder="Jailbreak*">
                              <label>
@@ -296,7 +296,7 @@
            <div class="col-md-8" id="codeedit">
             <div class="card card-default">
               <div class="card-header">
-                <h3 class="card-title"><i class="fa fa-code"></i> Frida Code Editor </h3>
+                <h3 class="card-title"><i class="fa fa-code"></i> Frida Code 编辑or </h3>
                 <!-- /.card-tools -->
               </div>
               <!-- /.card-header -->
@@ -328,7 +328,7 @@
               <!-- /.card-header -->
               <div class="card-body">
                 <form style="display: flex; justify-content: flex-end">
-                  <label for="id_file" class="btn btn-primary btn-sm"><i class="fas fa-file-upload"></i> Upload to Device</label>
+                  <label for="id_file" class="btn btn-primary btn-sm"><i class="fas fa-file-upload"></i> Upload to 设备</label>
                   <input type="file" style="visibility:hidden; width: 0%;" name="file" required="" id="id_file" onchange="uploadFile()">
                 </form>
                    <div id="shell">
@@ -402,7 +402,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">Attach to a Running Process</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <button type="button" class="close" data-dismiss="modal" aria-label="关闭">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -441,7 +441,7 @@
 <script src="{% static "enlighterjs/enlighterjs.min.js" %}"></script>
 <script>
 
-var appContainerPath;
+var appContainer路径;
 // Loading Spinner
 function dynamic_loader(){
     var loadingOverlay = document.querySelector('.loading');
@@ -520,7 +520,7 @@ function load_frida_others(){
   });
 }
 
-// Code Editor
+// Code 编辑or
 var editor = CodeMirror.fromTextArea(document.getElementById("code-js"), {
     lineNumbers: true,
     mode: "javascript",
@@ -536,7 +536,7 @@ restore();
 function restore(){
   var custom_code = window.sessionStorage.getItem("code");
   if (custom_code !== null) {
-    setTimeout(function(){ editor.getDoc().setValue(custom_code); }, 2000);
+    setTimeout(function(){ editor.getDoc().set值(custom_code); }, 2000);
   }
 }
 
@@ -625,7 +625,7 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
       myElement.scrollTop = myElement.scrollHeight;
       
       // Ensure the shell element is visible in the viewport
-      myElement.scrollIntoView({ 
+      myElement.scrollInto查看({ 
         block: 'end', 
         behavior: 'smooth',
         inline: 'nearest'
@@ -637,7 +637,7 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
         window.shellObserver = new MutationObserver(function(mutations) {
           // When content changes, scroll to keep shell visible
           myElement.scrollTop = myElement.scrollHeight;
-          myElement.scrollIntoView({ 
+          myElement.scrollInto查看({ 
             block: 'end', 
             behavior: 'smooth',
             inline: 'nearest'
@@ -712,7 +712,7 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
             e.preventDefault();
             // Implement tab suggest.
         } else if (e.keyCode == 13) { // enter
-            // Save shell history.
+            // 保存 shell history.
             if (this.value) {
                 history_[history_.length] = this.value;
                 histpos_ = history_.length;
@@ -749,8 +749,8 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
                     output('<div class="ls-files">' + CMDS_.join('<br>') + '</div>');
                     break;    
                 case 'app_path':
-                    if (appContainerPath)
-                      output(appContainerPath);
+                    if (appContainer路径)
+                      output(appContainer路径);
                     break;                  
                 default:
                    if (exec_cmd.length > 0)
@@ -802,10 +802,10 @@ setInterval( function () {
 }, 3000);
 
 // Get App Container path
-function getContainerPath(){
+function getContainer路径(){
   action('{% url 'get_container_path' %}', {bundle_id: '{{ bundle_id }}'}, function(json) {
     if (json.status==="ok"){
-        appContainerPath = json.message;
+        appContainer路径 = json.message;
     }
   });
 }
@@ -822,7 +822,7 @@ $("#loadscript").click(function() {
    var scripts = $('#fd_scs').val();
    action('{% url 'get_script' %}', {scripts: scripts, device: 'ios'}, function(json) {
     if (json.status==="ok"){
-        editor.getDoc().setValue(json.content);
+        editor.getDoc().set值(json.content);
     }
   });
   return false;  
@@ -830,15 +830,15 @@ $("#loadscript").click(function() {
 
 // Frida Spawn, Session and Ps
 function frida_instrument(frida_action, pid=null, new_bundle_id=null){
-    // Save Frida Code to Session Storage
-    var code = editor.getDoc().getValue();
+    // 保存 Frida Code to Session Storage
+    var code = editor.getDoc().get值();
     window.sessionStorage.setItem('code', code);
     // Show Frida logs
     document.getElementById('frida-logs').style.display = 'block';
     // Show Frida inject button
     document.getElementById('frida_get').hidden = false;
     var screenshot_action = null;
-    var custom_code = editor.getDoc().getValue();
+    var custom_code = editor.getDoc().get值();
     var default_hooks = [];
     var dump_hooks = [];
     var auxiliary_hooks = [];
@@ -897,8 +897,8 @@ function frida_instrument(frida_action, pid=null, new_bundle_id=null){
       if (json.status !== "ok")
           print_status(json.message);
       else {
-        if (!appContainerPath)
-          setTimeout(function(){ getContainerPath(); }, 5000);
+        if (!appContainer路径)
+          setTimeout(function(){ getContainer路径(); }, 5000);
         // Attach to a running process
         if (frida_action == 'ps' && json.message && json.message.length > 0 && Array.isArray(json.message)){
           $("#process_select").empty();
@@ -990,8 +990,8 @@ $("#frida_get").click(function() {
 //Finish & Generate Report
 $("#report").one( "click", function() {
   dynamic_loader();
-  // Download app data
-  print_status("Downloading application data.");
+  // 下载 app data
+  print_status("下载ing application data.");
   action('{% url 'download_data_device' bundle_id=bundle_id %}', {device_id: '{{ device_id }}'}, function(json) {
     stop_loader();
     if (json.status==="ok"){
@@ -999,7 +999,7 @@ $("#report").one( "click", function() {
       print_status("Generating report");
       location.href = '{% url 'view_report_device' bundle_id=bundle_id %}?device_id={{ device_id }}';
     } else {
-      print_status("Failed to download application data");
+      print_status("未通过 to download application data");
     }
   });
 });
@@ -1039,7 +1039,7 @@ function uploadFile(){
                       'File uploaded to: <b>/tmp/' + escape(id_file.files[0].name) + '</b>',
                       'success')
           } else {
-            print_status("Failed to upload file.");
+            print_status("未通过 to upload file.");
           }
         },
         error : function(xhr, ajaxOptions, thrownError) {
@@ -1049,11 +1049,11 @@ function uploadFile(){
       });
   } catch (e) {
       stop_loader();
-      print_status("Failed to upload file: " + e);
+      print_status("未通过 to upload file: " + e);
   }
 }
 
-//Print Status
+//Print 状态
 function print_status(message){
   $('#stat').append(message + '\n');
   $('#stat').scrollTop($('#stat')[0].scrollHeight);

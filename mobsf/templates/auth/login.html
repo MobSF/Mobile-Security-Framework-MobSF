@@ -15,7 +15,7 @@ sidebar-collapse
                   <div class="h-100 d-flex align-items-center justify-content-center">
                      <div class="login-box">
                         <div class="login-logo">
-                           <a href="">Sign in to access</a>
+                           <a href="">登录以继续</a>
                         </div>
                         <div class="card">
                            <div class="card-body login-card-body">
@@ -27,7 +27,7 @@ sidebar-collapse
                                  {% csrf_token %}
                                  {{ form.non_field_errors }}
                                  <div class="input-group mb-3">
-                                    <input type="username" name="username" class="form-control" placeholder="Username">
+                                    <input type="username" name="username" class="form-control" placeholder="用户名">
                                     <div class="input-group-append">
                                        <div class="input-group-text">
                                           <span class="fas fa-user"></span>
@@ -38,7 +38,7 @@ sidebar-collapse
                                  <small> {{ err }} </small><br>
                                  {% endfor %}
                                  <div class="input-group mb-3">
-                                    <input type="password" name="password" class="form-control" placeholder="Password">
+                                    <input type="password" name="password" class="form-control" placeholder="密码">
                                     <div class="input-group-append">
                                        <div class="input-group-text">
                                           <span class="fas fa-lock"></span>
@@ -59,7 +59,7 @@ sidebar-collapse
                                        </div> -->
                                  </div>
                                  <div class="col-12">
-                                    <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                                    <button type="submit" class="btn btn-primary btn-block">登录</button>
                                  </div>
                               </form>
                               {% endif %}
@@ -67,7 +67,7 @@ sidebar-collapse
                               <hr>
                               <p>
                               <div class="col-12">
-                                 <a href="{% url 'saml_login' %}?next={{next}}" class="btn btn-primary btn-block">Sign in with SSO</a>
+                                 <a href="{% url 'saml_login' %}?next={{next}}" class="btn btn-primary btn-block">通过单点登录(SSO)登录</a>
                               </div>
                               </p>
                               {% endif %}

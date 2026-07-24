@@ -52,7 +52,7 @@ pre {
             <a href="#information" class="nav-link">
               <i class="nav-icon fas fa-info-circle"></i>
               <p>
-                Information
+                基本信息
               </p>
             </a>
           </li>
@@ -133,7 +133,7 @@ pre {
             <a href="#cookies" class="nav-link">
               <i class="nav-icon fas fa-cookie"></i>
               <p>
-                App Cookies
+                App Cookie
               </p>
             </a>
           </li>
@@ -173,7 +173,7 @@ pre {
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-bug"></i>
               <p>
-                Malware Analysis
+                恶意软件分析
                 <i class="fas fa-angle-left right"></i>
               </p>
             </a>
@@ -210,13 +210,13 @@ pre {
               <li class="nav-item">
                 <a href="#emails" class="nav-link">
                   <i class="fas fa-envelope nav-icon"></i>
-                  <p>Emails</p>
+                  <p>邮箱</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="#trackers" class="nav-link">
                   <i class="fas fa-user-secret nav-icon"></i>
-                  <p>Trackers</p>
+                  <p>追踪器</p>
                 </a>
               </li>
             </ul>
@@ -225,7 +225,7 @@ pre {
             <a href="#" class="nav-link">
               <i class="nav-icon far fa-copy"></i>
               <p>
-                File Analysis
+                文件分析
                 <i class="fas fa-angle-left right"></i>
               </p>
             </a>
@@ -233,19 +233,19 @@ pre {
               <li class="nav-item">
                 <a href="#sqlitedb" class="nav-link">
                   <i class="fas fa-database nav-icon"></i>
-                  <p>SQLite Database</p>
+                  <p>SQLite 数据库</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="#plistfiles" class="nav-link">
                   <i class="fas fa-file-code nav-icon"></i>
-                  <p>Plist Files</p>
+                  <p>Plist 文件</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="#other_files" class="nav-link">
                   <i class="fas fa-file-contract nav-icon"></i>
-                  <p>Other Files</p>
+                  <p>Other 文件</p>
                 </a>
               </li>
             </ul>
@@ -254,7 +254,7 @@ pre {
             <a href="javascript:window.print()" class="nav-link">
             <i class="nav-icon fas fa-print"></i>
             <p>
-              Download / Print Report
+              下载 / Print Report
             </p>
             </a>
           </li>
@@ -294,12 +294,12 @@ pre {
               <h5 class="card-title"></h5>
                 <div class="row">
                 <div class="col-12">
-                  <p><strong><i class="fas fa-info-circle"></i> INFORMATION</strong></p>
+                  <p><strong><i class="fas fa-info-circle"></i> 信息RMATION</strong></p>
                    <div align="center">
                       <p>
                       {% if frida_logs %}
                           <a target="_blank" class="btn btn-primary" role="button" href="{% url 'ios_api_monitor' %}?checksum={{ hash }}&bundle_id={{ bundleid }}"><i class="fa fa-search"></i> API Monitor Logs</a>
-                          <a target="_blank" class="btn btn-primary" role="button" href="{% url 'frida_logs' %}?hash={{ hash }}"><i class="fas fa-spider"></i> Frida Logs View</a>
+                          <a target="_blank" class="btn btn-primary" role="button" href="{% url 'frida_logs' %}?hash={{ hash }}"><i class="fas fa-spider"></i> Frida Logs 查看</a>
                       {% endif %}
                         <a class="btn btn-success" target="_blank" role="button" href="{% url 'httptools' %}?project={{bundleid}}"><i class="fab fa-hire-a-helper"></i> Start HTTPTools</a>
                       </p>
@@ -401,7 +401,7 @@ pre {
                     <strong>Protected:</strong>  {{item.protected}} </br>
                     <strong>Label:</strong> {{item.label}} </br>
                     <strong>Access Control:</strong> {{item.access_control}} </br>
-                    <strong>Description:</strong> {{item.description}} </br>
+                    <strong>描述:</strong> {{item.description}} </br>
                     <strong>Comment:</strong> {{item.comment}} </br>
                     <strong>Creator:</strong>  {{item.creator}} </br>
                     <strong>Type:</strong> {{item.type}} </br>
@@ -739,13 +739,13 @@ pre {
                 <table id="table_cookies" class="table table-bordered table-hover table-striped">
                  <thead>
                    <tr>
-                     <th>NAME</th>
+                     <th>名称</th>
                      <th>VALUE</th>
-                     <th>DOMAIN</th>
+                     <th>域名</th>
                      <th>PATH</th>
                      <th>EXPIRY</th>
                      <th>HTTPONLY</th>
-                     <th>SECURE</th>
+                     <th>安全</th>
                      <th>VERSION</th>
                    </tr>
                  </thead>
@@ -852,8 +852,8 @@ pre {
                     <tr>
                       <th>HOST</th>
                       <th>AUTHENTICATION METHOD</th>
-                      <th>PROTOCOL</th>
-                      <th>PORT</th>
+                      <th>协议</th>
+                      <th>端口</th>
                       <th>USER</th>
                       <th>PASSWORD</th>
                     </tr>
@@ -942,7 +942,7 @@ pre {
         <div class="card">
           <div class="card-body">
               <p>
-             <strong><i class="fas fa-images"></i> SCREENSHOTS</strong>
+             <strong><i class="fas fa-images"></i> 截图</strong>
              </p>
                <div >
                 {% for i in screenshots %}
@@ -982,12 +982,12 @@ pre {
 
             <div class="table-responsive">
               {% if domains %}
-              <p></br>This app may communicate with the following OFAC sanctioned list of countries.</p>
+              <p></br>此应用可能与以下 OFAC 制裁国家列表中的服务器通信。</p>
              <table id="table_ofac" class="table table-bordered table-hover table-striped">
                   <thead>
                   <tr>
-                     <th>DOMAIN</th>
-                     <th>COUNTRY/REGION</th>
+                     <th>域名</th>
+                     <th>国家/地区</th>
                   </tr>
                  </thead>
                  <tbody>
@@ -995,10 +995,10 @@ pre {
                  {% if details|key:"ofac" == True %}
                   <tr><td>{{domain}}</td>
                   <td>
-                    <strong>IP: </strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
-                    <strong>Country: </strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
-                    <strong>Region: </strong>{{details|key:"geolocation"|key:"region"}} <br/>
-                    <strong>City: </strong>{{details|key:"geolocation"|key:"city"}} <br/>
+                    <strong>IP：</strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
+                    <strong>国家：</strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
+                    <strong>地区：</strong>{{details|key:"geolocation"|key:"region"}} <br/>
+                    <strong>城市：</strong>{{details|key:"geolocation"|key:"city"}} <br/>
                   </td>
                   </tr>
                   {% endif %}
@@ -1031,8 +1031,8 @@ pre {
                 <table id="table_malware" class="table table-bordered table-hover table-striped">
                   <thead>
                   <tr>
-                     <th>DOMAIN</th>
-                     <th>STATUS</th>
+                     <th>域名</th>
+                     <th>状态</th>
                      <th>GEOLOCATION</th>
                   </tr>
                  </thead>
@@ -1044,8 +1044,8 @@ pre {
                     <span class="badge bg-danger">malware</span><br/>
                       <pre>
                       <strong>URL: </strong>{{details|key:"domain_or_url"}}
-                      <strong>IP: </strong><span class="badge bg-danger">{{details|key:"ip"}}</span>
-                      <strong>Description: </strong>{{details|key:"desc"}}
+                      <strong>IP：</strong><span class="badge bg-danger">{{details|key:"ip"}}</span>
+                      <strong>描述: </strong>{{details|key:"desc"}}
                       </pre>
                   {% else %}
                     <span class="badge bg-success">good</span><br/>
@@ -1053,13 +1053,13 @@ pre {
                   </td>
                   <td>
                     {% if details|key:"geolocation" %}
-                      <strong>IP: </strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
-                      <strong>Country: </strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
-                      <strong>Region: </strong>{{details|key:"geolocation"|key:"region"}} <br/>
-                      <strong>City: </strong>{{details|key:"geolocation"|key:"city"}} <br/>
+                      <strong>IP：</strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
+                      <strong>国家：</strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
+                      <strong>地区：</strong>{{details|key:"geolocation"|key:"region"}} <br/>
+                      <strong>城市：</strong>{{details|key:"geolocation"|key:"city"}} <br/>
                       <strong>Latitude: </strong>{{details|key:"geolocation"|key:"latitude"}} <br/>
                       <strong>Longitude: </strong>{{details|key:"geolocation"|key:"longitude"}} <br/>
-                      <strong>View: <a target="_blank" href="http://maps.google.com/maps?q={{details|key:"geolocation"|key:"latitude"}},{{details|key:"geolocation"|key:"longitude"}}">Google Map</a>
+                      <strong>查看: <a target="_blank" href="http://maps.google.com/maps?q={{details|key:"geolocation"|key:"latitude"}},{{details|key:"geolocation"|key:"longitude"}}">Google Map</a>
 
                     {% else %}
                     No Geolocation information available.
@@ -1189,7 +1189,7 @@ pre {
                     <table class="table table-bordered table-hover table-striped">
                       <thead>
                         <tr>
-                          <th>FILES</th>
+                          <th>文件</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1221,7 +1221,7 @@ pre {
                     <table class="table table-bordered table-hover table-striped">
                       <thead>
                         <tr>
-                          <th>FILES</th>
+                          <th>文件</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1253,7 +1253,7 @@ pre {
                     <table class="table table-bordered table-hover table-striped">
                       <thead>
                         <tr>
-                          <th>FILES</th>
+                          <th>文件</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1433,7 +1433,7 @@ function action(url, data, on_success){
     });
   }
 
-   // Download file using hidden iframe
+   // 下载 file using hidden iframe
    function download_file(path){
     // Create a hidden iframe for the download
     var iframe = document.createElement('iframe');

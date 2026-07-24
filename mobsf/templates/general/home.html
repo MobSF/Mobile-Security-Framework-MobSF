@@ -20,27 +20,27 @@
 
     <div class="d-flex h-100 p-3 mx-auto flex-column">  
         <nav class="nav nav-masthead justify-content-center">
-            <a class="nav-link active" href="{% url 'recent' %}">SCANS</a>
-            <a class="nav-link" href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>
+            <a class="nav-link active" href="{% url 'recent' %}">扫描记录</a>
+            <a class="nav-link" href="{% url 'dynamic' %}">动态分析</a>
             <div class="pad">
                 <img src="{% static "img/mobsf_logo.png" %}" alt="MobSF Logo" height="30" width="90" />
             </div>  
             <a class="nav-link" href="{% url 'api_docs' %}">API</a>
-            <a class="nav-link" href="{% url 'about' %}">ABOUT</a>
+            <a class="nav-link" href="{% url 'about' %}">关于</a>
             {% if user.is_authenticated %}
             <a id="dropdownSubMenu1" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle"><i class="fa fa-user-circle" aria-hidden="true"></i> </a>
             <a class="nav-link"></a>
             <ul aria-labelledby="dropdownSubMenu1" class="dropdown-menu border-0 shadow" style="left: 0px; right: inherit;">
-                <li><a href="#" class="dropdown-item"> <small>{{ request.user.username }} <span class="badge badge-primary"> {% if user.is_staff %} Admin {% else %}{{ request.user.groups.all.0 }} {% endif %}</span></small></a></li>
+                <li><a href="#" class="dropdown-item"> <small>{{ request.user.username }} <span class="badge badge-primary"> {% if user.is_staff %} 管理员 {% else %}{{ request.user.groups.all.0 }} {% endif %}</span></small></a></li>
                 <li class="dropdown-divider"></li>
-                <li><a href="{% url 'change_password' %}" class="dropdown-item"><i class="fa fa-asterisk" aria-hidden="true"></i> Change Password </a></li>
-                {% if user.is_staff %}<li><a href="{% url 'users' %}" class="dropdown-item"><i class="fa fa-users" aria-hidden="true"></i> User Management </a></li>{% endif %}
-                <li><a href="{% url 'logout' %}" class="dropdown-item"><i class="fa fa-power-off" aria-hidden="true"></i> Logout </a></li>
+                <li><a href="{% url 'change_password' %}" class="dropdown-item"><i class="fa fa-asterisk" aria-hidden="true"></i> 修改密码 </a></li>
+                {% if user.is_staff %}<li><a href="{% url 'users' %}" class="dropdown-item"><i class="fa fa-users" aria-hidden="true"></i> 用户管理 </a></li>{% endif %}
+                <li><a href="{% url 'logout' %}" class="dropdown-item"><i class="fa fa-power-off" aria-hidden="true"></i> 退出登录 </a></li>
             </ul>
             {% endif %}
             <a class="nav-link">
                 <form action="/search" method="GET">
-                    <input name="query" type="text" class="form-control form-control-sm" placeholder="Search">
+                    <input name="query" type="text" class="form-control form-control-sm" placeholder="搜索">
                 </form>
             </a>
         </nav>
@@ -53,7 +53,7 @@
         <main role="main" class="inner cover">
             <div class="inner cover">
                 <div style="visibility:hidden; opacity:0" id="drop">
-                <div id="textnode">Drop anywhere!</div>
+                <div id="textnode">拖拽到此处！</div>
                 </div>
                 </br>
                 <form id="upload_form" enctype="multipart/form-data" method="post">
@@ -61,10 +61,10 @@
                 <div class="fileUpload btn btn-lg btn-secondary" id="but">
                     <input type="file" name="file" id="uploadFile" placeholder="Choose File" multiple>
                     <span class="fas fa-cloud-upload-alt"></span>
-                    Upload &amp; Analyze
+                    上传并分析
                 </div>
                 <br />
-                <small><i>Drag &amp; Drop anywhere!</i></small>
+                <small><i>拖拽文件到任意位置！</i></small>
                 <p></p>
                 <h5 class="lead" id="status"></h5>
                 <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;" ></progress>
@@ -73,15 +73,15 @@
         </main>
 
         <footer class="mastfoot mt-auto">
-            <input type="download" id="package" class="form-control form-control-sm" placeholder="Download & Scan Package"/>
+            <input type="download" id="package" class="form-control form-control-sm" placeholder="下载并扫描安装包"/>
             <p></p>
             <div class="inner">
-                <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">API</a>   |  <a href="{% url 'donate' %}">DONATE ♥</a> |  <a target="_blank"
-                    href="https://mobsf.github.io/docs/#/">DOCS</a>  | <a href="{% url 'about' %}">ABOUT</a></h6>
+                <h6> <a href="{% url 'recent' %}">最近扫描</a>  |  <a href="{% url 'dynamic' %}">动态分析</a>  |  <a href="{% url 'api_docs' %}">API</a>   |  <a href="{% url 'donate' %}">捐赠 ♥</a> |  <a target="_blank"
+                    href="https://mobsf.github.io/docs/#/">文档</a>  | <a href="{% url 'about' %}">关于</a></h6>
                 </br>
                 <p>&copy; {% now "Y" %}  Mobile Security Framework - MobSF {{ version }}</p>
             </div>
-            <div id="alert" class="alert-bar">Analysis started! Please wait to be redirected or check recent scans after sometime.</div>
+            <div id="alert" class="alert-bar">分析已开始！请等待跳转，或稍后查看最近扫描。</div>
         </footer>
     </div>
 
@@ -95,7 +95,7 @@
     <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
     <script src="{% static "adminlte/plugins/bootstrap/bootstrap.bundle.min.js" %}"></script>
       <script>
-            let warning = "This is a demo MobSF instance. Anything uploaded here will be publicly available. Do you want to continue?";
+            let warning = "这是一个演示MobSF实例。在此上传的内容都将公开可见。是否继续？";
             // Result View
             function load_result(url){
                 hide_loader();
@@ -116,7 +116,7 @@
             $('#package').keypress(function(event){
                 var keycode = (event.keyCode ? event.keyCode : event.which);
                 if(keycode == '13'){
-                    _("status").innerText = 'Trying to download ...';
+                    _("status").innerText = '正在尝试下载...';
                     show_loader();
                     $.ajax({
                         url : '{% url "download_scan" %}', 
@@ -142,7 +142,7 @@
                         error : function(xhr, ajaxOptions, thrownError) {
                             hide_loader();
                             if (thrownError === 'Forbidden'){
-                                _("status").innerText = "You do not have permission to download and scan!";
+                                _("status").innerText = "您没有下载和扫描的权限！";
                             }
                         }
                     });
@@ -208,11 +208,11 @@
                 var percent = (event.loaded / event.total) * 100;
                 console.log("Uploaded ..." + Math.round(percent));
                 _("progressBar").value = Math.round(percent);
-                _("status").innerText = Math.round(percent) + "% Uploaded ...";
+                _("status").innerText = Math.round(percent) + "% 已上传...";
             }
             function completeHandler(event) {
                 if(event.currentTarget.status === 403){
-                    _("status").innerText = "You do not have permission to upload!";
+                    _("status").innerText = "您没有上传权限！";
                     return;
                 } else {
                     var json = JSON.parse(event.target.responseText);
@@ -220,10 +220,10 @@
                 }
             }
             function errorHandler(event) {
-                _("status").innerText = "Upload Failed!";
+                _("status").innerText = "上传失败！";
             }
             function abortHandler(event) {
-                _("status").innerText = "Upload Aborted!";
+                _("status").innerText = "上传已取消！";
             }
           // Is valid file extensions
           function isValidExt(file_name){
@@ -231,7 +231,7 @@
                 var regex = new RegExp("^(.{1,300}?)\.({{exts}})$");
                 val = val.replace(/^.*[\\\/]/, '');
                 if (!(regex.test(val))) {
-                    _('status').innerText = "MobSF only supports APK, APKS, XAPK, AAB, JAR, AAR, SO, IPA, DYLIB, A, ZIP, and APPX files.";
+                    _('status').innerText = "MobSF 仅支持 APK, APKS, XAPK, AAB, JAR, AAR, SO, IPA, DYLIB, A, ZIP 和 APPX 文件。";
                     return false;
                 }
                 return true;
@@ -244,7 +244,7 @@
                 var supported = [{% for mime in mimes %}'{{mime}}',{% endfor %}];
                 if(supported.indexOf(file_mime) >-1)
                     return true;
-                 _('status').innerText = "MIME type (" + file_mime + ") is not supported!";
+                 _('status').innerText = "MIME 类型 (" + file_mime + ") 不受支持！";
                 return false;
           }
          // File Upload
@@ -267,7 +267,7 @@
                 formdata.append("file", file);
                 xhr.send(formdata)
             } catch (e) {
-                alert("Error:" + e);
+                alert("错误：" + e);
             }
            }
          

@@ -56,7 +56,7 @@
               </div>
               <div class="card-body">
                  <div class="table-responsive">
-                <h4> Apps in Device</h4>
+                <h4> Apps in 设备</h4>
                 <table id="in_device" class="table table-bordered table-hover table-striped">
                   <tbody>
                   </tbody>
@@ -67,7 +67,7 @@
             <table class="dattbl table table-bordered table-hover table-striped">
                 <thead>
                 <tr>
-                    <th>APP</th>
+                    <th>应用</th>
                     <th>FILE NAME</th>
                     <th>BUNDLE ID</th>
                     <th>ACTION</th>
@@ -96,7 +96,7 @@
                               <a class="btn btn-success upload-install-btn disabled" onclick="upload_and_install('{{ e.MD5 }}')" data-checksum="{{ e.MD5 }}"><i class="fab fa-apple"></i> Upload &amp; Install</a>
                           </p>
                           <p>
-                            <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url 'view_report_device' bundle_id=e.BUNDLE_ID %}" onclick="dynamic_loader()"><i class="fa fa-mobile"></i> View Report </a>
+                            <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url 'view_report_device' bundle_id=e.BUNDLE_ID %}" onclick="dynamic_loader()"><i class="fa fa-mobile"></i> 查看 Report </a>
                          </p>
                          {% endif %}
                         </td>
@@ -199,7 +199,7 @@ if (choosen_device){
   // Add text select a device
   $('#ios_dynamic').append($('<option>',{
     value: '',
-    text: 'Select a Jailbroken iOS Device',
+    text: 'Select a Jailbroken iOS 设备',
     selected: true,
   }));
 }
@@ -234,12 +234,12 @@ function list_apps(){
                       stop_loader();
                       Swal.fire(
                                 'Listing apps failed',
-                                'Device is not ready',
+                                '设备 is not ready',
                                 'error'
                                 )
                     }
                     if (json.status==='ok'){
-                      $('#in_device').append('<thead><tr> <th>APP</th> <th>BUNDLE ID</th> <th>APP TYPE</th> <th>ACTION</th> </tr></thead><tbody></tbody>');
+                      $('#in_device').append('<thead><tr> <th>应用</th> <th>BUNDLE ID</th> <th>APP TYPE</th> <th>ACTION</th> </tr></thead><tbody></tbody>');
                       for(var i=0; i < json.apps.length; i++) {
                               let name = json.apps[i].app_name || 'Unknown App';
                               let bundle = json.apps[i].bundle_id || 'Unknown Bundle';
@@ -268,7 +268,7 @@ function list_apps(){
                                   <td>${escapeHtml(type)}</td>
                                   <td><p>
                                       <a class="btn btn-success disable" onclick="dynamic_loader()" href="${url}"><i class="fab fa-apple"></i> Start Dynamic Analysis</a> 
-                                      <a class="btn btn-info ${buttonState}" onclick="dynamic_loader()" href="../../ios/view_report_device/${escapeHtml(bundle)}"><i class="fa fa-mobile"></i> View Report </a>
+                                      <a class="btn btn-info ${buttonState}" onclick="dynamic_loader()" href="../../ios/view_report_device/${escapeHtml(bundle)}"><i class="fa fa-mobile"></i> 查看 Report </a>
                                       </p>
                                   </td></tr>`);
                         }
@@ -307,8 +307,8 @@ function upload_and_install(checksum){
                       if (json.status !== 'ok'){
                           stop_loader();
                           Swal.fire(
-                          'IPA Install Failed',
-                          'Failed to Install IPA: ' + json.message,
+                          'IPA Install 未通过',
+                          '未通过 to Install IPA: ' + json.message,
                           'error'
                           )
                       } else {

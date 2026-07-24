@@ -224,7 +224,7 @@ sidebar-collapse
                     <div class="card-header ui-sortable-handle" >
                       <h3 class="card-title">
                         <i class="fas fa-chart-pie mr-1"></i>
-                        Severity Distribution (%)
+                        严重程度 Distribution (%)
                       </h3>
                     </div><!-- /.card-header -->
                     <div class="card-body">
@@ -258,7 +258,7 @@ sidebar-collapse
                             {% endif %}
                             {{ trackers }} {% else %}"> NA {% endif %}</span>
                         </br>
-                        <h5>{% if total_trackers %} User/Device Trackers {% else %} Not Scanned {% endif %}</h5></p>
+                        <h5>{% if total_trackers %} User/设备 追踪器 {% else %} Not Scanned {% endif %}</h5></p>
                       </div>
                     </div><!-- /.card-body -->
                   </div>
@@ -278,7 +278,7 @@ sidebar-collapse
                     <div class="card">
                         <div class="card-header ui-sortable-handle" >
                           <h3 class="card-title">
-                            <i class="fas fa-file-alt"></i> Findings
+                            <i class="fas fa-file-alt"></i> 发现
                           </h3>
                         </div><!-- /.card-header -->
                         <div class="card-body">
@@ -330,7 +330,7 @@ sidebar-collapse
                                       <span class="info-box-icon bg-success"><i class="fas fa-check"></i></span>
                         
                                       <div class="info-box-content">
-                                        <span class="info-box-text">Secure</span>
+                                        <span class="info-box-text">安全</span>
                                         <span class="info-box-number">{{ secure | length}}</span>
                                       </div>
                                       <!-- /.info-box-content -->
@@ -344,7 +344,7 @@ sidebar-collapse
                                   <span class="info-box-icon bg-secondary"><i class="fab fa-searchengin"></i></span>
                     
                                   <div class="info-box-content">
-                                    <span class="info-box-text"> {% if efr01 %}Need to Investigate{% else %}Hotspot{% endif %}</span>
+                                    <span class="info-box-text"> {% if efr01 %}Need to Investigate{% else %}热点{% endif %}</span>
                                     <span class="info-box-number">{{ hotspot | length}}</span>
                                   </div>
                                   <!-- /.info-box-content -->
@@ -516,7 +516,7 @@ sidebar-collapse
       if(document.readyState=='loaded' || document.readyState=='complete')
         stop_loader();
     }
-    // Severity
+    // 严重程度
 
     const high = {{ high | length }};
     const warn = {{warning | length}};
@@ -535,15 +535,15 @@ sidebar-collapse
         legend: {
             display: true,
             labels: {
-                fontSize: 22,
+                font大小: 22,
             }
         },
         tooltips: {
-            bodyFontSize: 22,
+            bodyFont大小: 22,
         }
     },
     data: {
-        labels: [`High`, `Medium`, `Info`, `Secure`],
+        labels: [`High`, `Medium`, `Info`, `安全`],
         datasets: [{
         backgroundColor: [
             "#dc3545",
@@ -572,7 +572,7 @@ sidebar-collapse
     data: {
       datasets: [{
         value: riskFactor,
-        minValue: 0,
+        min值: 0,
         data: [1, 2, 3, 4],
         backgroundColor: ['#28a745', 'yellow', 'orange', '#dc3545'],
       }]
@@ -591,7 +591,7 @@ sidebar-collapse
         },
         color: 'rgba(255, 255, 255, 1)',
         backgroundColor: 'rgba(0, 0, 0, 1)',
-        fontSize: 20,
+        font大小: 20,
         borderRadius: 5,
         padding: {
           top: 5,

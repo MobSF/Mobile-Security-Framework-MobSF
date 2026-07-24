@@ -196,6 +196,7 @@ MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
     'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -203,7 +204,14 @@ MIDDLEWARE = (
 )
 ROOT_URLCONF = 'mobsf.MobSF.urls'
 WSGI_APPLICATION = 'mobsf.MobSF.wsgi.application'
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh-hans'
+LANGUAGES = (
+    ('zh-hans', '简体中文'),
+    ('en-us', 'English'),
+)
+LOCALE_PATHS = (
+    os.path.join(BASE_DIR, 'locale'),
+)
 TIME_ZONE = os.getenv('TIME_ZONE', 'UTC')
 USE_I18N = True
 USE_L10N = True
@@ -224,6 +232,8 @@ TEMPLATES = [
                     'django.template.context_processors.request',
                     'django.contrib.auth.context_processors.auth',
                     'django.contrib.messages.context_processors.messages',
+                    'django.template.context_processors.i18n',
+                    'mobsf.MobSF.views.i18n.language_context',
                 ],
             },
     },

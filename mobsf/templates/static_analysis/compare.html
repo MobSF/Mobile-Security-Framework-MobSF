@@ -24,7 +24,7 @@
             <a href="#information" class="nav-link">
               <i class="nav-icon fas fa-info-circle"></i>
               <p>
-                Information
+                基本信息
               </p>
             </a>
           </li>
@@ -40,7 +40,7 @@
             <a href="#permissions" class="nav-link">
               <i class="nav-icon fas fa-list"></i>
               <p>
-                Permissions
+                权限
               </p>
             </a>
           </li>
@@ -64,7 +64,7 @@
             <a href="#browsable" class="nav-link">
               <i class="nav-icon fas fa-clone"></i>
               <p>
-                Browsable Activities
+                可浏览 Activity
               </p>
             </a>
           </li>
@@ -104,7 +104,7 @@
             <div class="card">
               <div class="card-body">
                <p>
-                <strong><i class="fas fa-info-circle"></i> APP INFORMATION</strong>
+                <strong><i class="fas fa-info-circle"></i> 应用信息</strong>
                 </p>
                      <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped">
@@ -127,7 +127,7 @@
                                             <td>{{ second_app.md5 }}</td>
                                         </tr>
                                         <tr>
-                                            <td><span class="badge bg-primary">Size</span></td>
+                                            <td><span class="badge bg-primary">大小</span></td>
                                             <td>{{ first_app.size }}</td>
                                             <td>{{ second_app.size }}</td>
                                         </tr>
@@ -262,8 +262,8 @@
                                 <thead>
                                 <tr>
                                     <th>PERMISSION</th>
-                                    <th>STATUS</th>
-                                    <th>INFO</th>
+                                    <th>状态</th>
+                                    <th>信息</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -294,8 +294,8 @@
                                             <thead>
                                             <tr>
                                                 <th>PERMISSION</th>
-                                                <th>STATUS</th>
-                                                <th>INFO</th>
+                                                <th>状态</th>
+                                                <th>信息</th>
                                             </tr>
                                             </thead>
                                             <tbody>
@@ -325,8 +325,8 @@
                                             <thead>
                                             <tr>
                                                 <th>PERMISSION</th>
-                                                <th>STATUS</th>
-                                                <th>INFO</th>
+                                                <th>状态</th>
+                                                <th>信息</th>
                                             </tr>
                                             </thead>
                                             <tbody>
@@ -360,7 +360,7 @@
                 <strong><i class="fas fa-less-than-equal"></i> PERMISSION SUMMARY</strong>
                   <div class="list-group">
                     <p>
-                        <span class="badge bg-primary">Total Common</span>
+                        <span class="badge bg-primary">总计 Common</span>
                         {{ permissions.common | length }}
                     </p>
                     <p>
@@ -634,7 +634,7 @@
                 <div class="card">
                     <div class="card-body">
                         <p>
-                            <strong><i class="fas fa-clone"></i> BROWSABLE ACTIVITIES</strong>
+                            <strong><i class="fas fa-clone"></i> 可浏览 Activity</strong>
                         </p>
                         {% if browsable_activities %}
                         <div class="table-responsive">
@@ -685,19 +685,19 @@
                                                         <br/>
                                                         {% endif %}
                                                         {% if intent_details|key:"paths" %}
-                                                        <strong>Paths:</strong> {% for path in intent_details|key:"paths" %}
+                                                        <strong>路径s:</strong> {% for path in intent_details|key:"paths" %}
                                                         {{path}},
                                                         {% endfor %}
                                                         <br/>
                                                         {% endif %}
                                                         {% if intent_details|key:"path_prefixs" %}
-                                                        <strong>Path Prefixes:</strong> {% for prefix in intent_details|key:"path_prefixs" %}
+                                                        <strong>路径 Prefixes:</strong> {% for prefix in intent_details|key:"path_prefixs" %}
                                                         {{prefix}},
                                                         {% endfor %}
                                                         <br/>
                                                         {% endif %}
                                                         {% if intent_details|key:"path_patterns" %}
-                                                        <strong>Path Patterns:</strong> {% for pattern in intent_details|key:"path_patterns" %}
+                                                        <strong>路径 Patterns:</strong> {% for pattern in intent_details|key:"path_patterns" %}
                                                         {{pattern}},
                                                         {% endfor %}
                                                         <br/>
@@ -750,19 +750,19 @@
                                                         <br/>
                                                         {% endif %}
                                                         {% if intent_details|key:"paths" %}
-                                                        <strong>Paths:</strong> {% for path in intent_details|key:"paths" %}
+                                                        <strong>路径s:</strong> {% for path in intent_details|key:"paths" %}
                                                         {{path}},
                                                         {% endfor %}
                                                         <br/>
                                                         {% endif %}
                                                         {% if intent_details|key:"path_prefixs" %}
-                                                        <strong>Path Prefixes:</strong> {% for prefix in intent_details|key:"path_prefixs" %}
+                                                        <strong>路径 Prefixes:</strong> {% for prefix in intent_details|key:"path_prefixs" %}
                                                         {{prefix}},
                                                         {% endfor %}
                                                         <br/>
                                                         {% endif %}
                                                         {% if intent_details|key:"path_patterns" %}
-                                                        <strong>Path Patterns:</strong> {% for pattern in intent_details|key:"path_patterns" %}
+                                                        <strong>路径 Patterns:</strong> {% for pattern in intent_details|key:"path_patterns" %}
                                                         {{pattern}},
                                                         {% endfor %}
                                                         <br/>
@@ -814,19 +814,19 @@
                                                         <br/>
                                                         {% endif %}
                                                         {% if intent_details|key:"paths" %}
-                                                        <strong>Paths:</strong> {% for path in intent_details|key:"paths" %}
+                                                        <strong>路径s:</strong> {% for path in intent_details|key:"paths" %}
                                                         {{path}},
                                                         {% endfor %}
                                                         <br/>
                                                         {% endif %}
                                                         {% if intent_details|key:"path_prefixs" %}
-                                                        <strong>Path Prefixes:</strong> {% for prefix in intent_details|key:"path_prefixs" %}
+                                                        <strong>路径 Prefixes:</strong> {% for prefix in intent_details|key:"path_prefixs" %}
                                                         {{prefix}},
                                                         {% endfor %}
                                                         <br/>
                                                         {% endif %}
                                                         {% if intent_details|key:"path_patterns" %}
-                                                        <strong>Path Patterns:</strong> {% for pattern in intent_details|key:"path_patterns" %}
+                                                        <strong>路径 Patterns:</strong> {% for pattern in intent_details|key:"path_patterns" %}
                                                         {{pattern}},
                                                         {% endfor %}
                                                         <br/>

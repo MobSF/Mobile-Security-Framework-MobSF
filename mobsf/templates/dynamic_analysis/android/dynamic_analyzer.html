@@ -230,7 +230,7 @@
                             </label> 
                              <label>
                             <input name="auxiliary" type="checkbox" value="string_catch" id="string_catch">
-                               Capture Strings
+                               Capture 字符串
                             </label>
                              <label>
                             <input name="auxiliary" type="checkbox" value="string_compare" id="string_compare">
@@ -245,7 +245,7 @@
 
                              <label>
                               <input onclick="aux_click(this)" name="auxiliary" type="checkbox" value="search_class" id="search_class">
-                              Search Class Pattern
+                              搜索 Class Pattern
                             </label>
                              <input type="text" class="form-control" id="class_search" placeholder="ssl\.Trust*">
                              <label>
@@ -275,15 +275,15 @@
                         </div>
 
                         {% if activities or exported_activities %}
-                        <label class="box-title" for="activities">Activities</label>
+                        <label class="box-title" for="activities">Activity</label>
                         <div class="form-group form-inline" id="start_activity_form">
                           <select style="width: 15rem" class="form-select form-control form-group mb-2 mr-3" name="activities" id="activities">
-                            <optgroup label="Exported Activities">
+                            <optgroup label="Exported Activity">
                               {% for activity in exported_activities %}
                             <option value="{{ activity }}">{{ activity }}</option>
                                       {% endfor %}
                             </optgroup>
-                            <optgroup label="Activities">
+                            <optgroup label="Activity">
                                         {% for activity in activities %}
                               <option value="{{ activity }}">{{ activity }}</option>
                                         {% endfor %}
@@ -318,7 +318,7 @@
                             </select>
                             <select class="form-select form-control form-group mb-2 mr-2" name="paths" id="paths">
                               {% for activity, intent in deeplinks.items %}
-                                <optgroup label="{{ activity }} - Paths/PathPrefixes">
+                                <optgroup label="{{ activity }} - 路径s/路径Prefixes">
                                   {% for path in intent.paths %}
                                     <option value="{{ path }}">{{ path }}</option>
                                   {% endfor %}
@@ -369,7 +369,7 @@
            <div class="col-md-5" id="codeedit">
             <div class="card card-default">
               <div class="card-header">
-                <h3 class="card-title"><i class="fa fa-code"></i> Frida Code Editor </h3>
+                <h3 class="card-title"><i class="fa fa-code"></i> Frida Code 编辑or </h3>
                 <!-- /.card-tools -->
               </div>
               <!-- /.card-header -->
@@ -455,7 +455,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">Attach to a Running Process</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <button type="button" class="close" data-dismiss="modal" aria-label="关闭">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -496,7 +496,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h4 class="modal-title">Run TLS/SSL Security Tests - {{ package }}</h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <button type="button" class="close" data-dismiss="modal" aria-label="关闭">
           <span aria-hidden="true">×</span>
         </button>
       </div>
@@ -507,7 +507,7 @@
                 </p>
                 <p>
                 <strong>TLS Misconfiguration Test </strong> - Enable HTTPS MITM Proxy, Remove Root CA, Run the App for 25 seconds.<br>
-                <code>This test will uncover insecure configurations that allow HTTPS connections bypassing certificate errors or SSL/TLS errors in WebViews. This is equivalent to not having TLS.</code><br>
+                <code>This test will uncover insecure configurations that allow HTTPS connections bypassing certificate errors or SSL/TLS errors in Web查看s. This is equivalent to not having TLS.</code><br>
                 </p>
                 <p>
                 <strong>TLS Pinning/Certificate Transparency Test </strong> - Enable HTTPS MITM Proxy, Install Root CA, Run the App for 25 seconds.<br>
@@ -656,7 +656,7 @@ function load_frida_others(){
   });
 }
 
-// Code Editor
+// Code 编辑or
 var editor = CodeMirror.fromTextArea(document.getElementById("code-js"), {
     lineNumbers: true,
     mode: "javascript",
@@ -672,7 +672,7 @@ restore();
 function restore(){
   var custom_code = window.sessionStorage.getItem("code_android");
   if (custom_code !== null) {
-    setTimeout(function(){ editor.getDoc().setValue(custom_code); }, 2000);
+    setTimeout(function(){ editor.getDoc().set值(custom_code); }, 2000);
   }
 }
 
@@ -770,7 +770,7 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
       myElement.scrollTop = myElement.scrollHeight;
       
       // Ensure the shell element is visible in the viewport
-      myElement.scrollIntoView({ 
+      myElement.scrollInto查看({ 
         block: 'end', 
         behavior: 'smooth',
         inline: 'nearest'
@@ -782,7 +782,7 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
         window.shellObserver = new MutationObserver(function(mutations) {
           // When content changes, scroll to keep shell visible
           myElement.scrollTop = myElement.scrollHeight;
-          myElement.scrollIntoView({ 
+          myElement.scrollInto查看({ 
             block: 'end', 
             behavior: 'smooth',
             inline: 'nearest'
@@ -820,7 +820,7 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
             e.preventDefault();
             // Implement tab suggest.
         } else if (e.keyCode == 13) { // enter
-            // Save shell history.
+            // 保存 shell history.
             if (this.value) {
                 history_[history_.length] = this.value;
                 histpos_ = history_.length;
@@ -940,7 +940,7 @@ $("#start_deeplink").click(function(){
 {% endif %}
 
 
-// Disable Activity Tester and Exported Activity Tester for on Device only apps
+// Disable Activity Tester and Exported Activity Tester for on 设备 only apps
 var loc = location.href;
 if (loc.includes('&install=0')){
     $('#expactt').hide();
@@ -949,7 +949,7 @@ if (loc.includes('&install=0')){
 
 
 
-//Print Status
+//Print 状态
 function print_status(message){
   $('#stat').append(message + '\n');
   $('#stat').scrollTop($('#stat')[0].scrollHeight);
@@ -990,7 +990,7 @@ setInterval( function () {
       get_logs();
 }, 3000 );
 
-// View Screen
+// 查看 Screen
 var screen_width, screen_height;
 var screenfunc;
 $("#screen").click(function() {
@@ -1105,12 +1105,12 @@ $('#container').on('keypress', function(event) {
     }
  });
  $('#container').on('keydown', function(event) {
-    // Detect Backspace etc.
+    // Detect 返回space etc.
     if (touch === "on")
     {
         switch(event.keyCode){
           case 8:
-            // Backspace
+            // 返回space
             android_input('backspace', 0, 0)
             break;
           case 37:
@@ -1171,7 +1171,7 @@ $("#ss").click(function() {
     if (json.status==="ok"){
         print_status("Screenshot taken!");
     } else {
-        print_status("Failed to take screenshot!");
+        print_status("未通过 to take screenshot!");
         print_status(json.message);
     }
   });
@@ -1319,7 +1319,7 @@ $("#run_app").click(function() {
       if (json.status==="ok"){
           print_status("Application launched.");
       } else {
-          print_status("Failed to launch the application.");
+          print_status("未通过 to launch the application.");
       }
     });
     return false;  
@@ -1338,7 +1338,7 @@ $("#loadscript").click(function() {
    var scripts = $('#fd_scs').val();
    action('{% url 'get_script' %}', {scripts: scripts, device: 'android'}, function(json) {
     if (json.status==="ok"){
-        editor.getDoc().setValue(json.content);
+        editor.getDoc().set值(json.content);
     }
   });
   return false;  
@@ -1346,8 +1346,8 @@ $("#loadscript").click(function() {
 
 // Frida Spawn, Session and Ps
 function frida_instrument(frida_action, pid=null, new_pkg=null){
-    // Save Frida Code to Session Storage
-    var code = editor.getDoc().getValue();
+    // 保存 Frida Code to Session Storage
+    var code = editor.getDoc().get值();
     window.sessionStorage.setItem('code_android', code);
     // Show Frida logs
     document.getElementById('frida-logs').style.display = 'block';
@@ -1389,7 +1389,7 @@ function frida_instrument(frida_action, pid=null, new_pkg=null){
       class_name: $('#class_name').val(),
       class_search:  $('#class_search').val(),
       class_trace:  $('#class_trace').val(),
-      frida_code: editor.getDoc().getValue(),
+      frida_code: editor.getDoc().get值(),
     }, function(json) {
       if (json.status !== "ok")
         print_status(json.message);
@@ -1492,10 +1492,10 @@ $("#stop").one( "click", function() {
     if (json.status==="ok"){
       $('#stop').addClass("btn btn-success");
       $('#stop').text("Please Wait...");
-      print_status("Downloading logs.");
+      print_status("下载ing logs.");
       print_status("Stopping Application.");
     } else{
-      print_status('Failed to collect data.')
+      print_status('未通过 to collect data.')
       print_status(json.message)
     }
     dump();

@@ -34,9 +34,9 @@
 
                  <div class="box">
         <div class="box-header with-border">
-            <h3 class="box-title"><i class="fa fa-rocket"></i> Recent Scans</h3>
+            <h3 class="box-title"><i class="fa fa-rocket"></i> 最近扫描</h3>
             {% if async_scans %}
-            <p class="lead">View scan progress in the <strong><a href="{% url 'list_tasks' %}">Scan Queue</a></strong></p>
+            <p class="lead">在<strong><a href="{% url 'list_tasks' %}">扫描队列</a></strong>中查看进度</p>
             {% endif %}
         </div>
 
@@ -45,12 +45,12 @@
                 <table class="table table-bordered table-hover table-striped">
                     <thead>
                     <tr>
-                        <th>APP</th>
-                        <th>FILE</th>
-                        <th>TYPE</th>
-                        <th>HASH</th>
-                        <th>SCAN DATE</th>
-                        <th style="width: 9%">ACTIONS</th>
+                        <th>应用</th>
+                        <th>文件</th>
+                        <th>类型</th>
+                        <th>哈希</th>
+                        <th>扫描日期</th>
+                        <th style="width: 9%">操作</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -65,22 +65,22 @@
                                   {% if e.FILE_NAME|slice:"-5:" != '.appx' %}
                                     {% if e.FILE_NAME|slice:"-3:" != '.so' %}
                                       {% if e.FILE_NAME|slice:"-2:" != '.a' %}
-                                    <p> <a href="{% url "appsec_dashboard" checksum=e.MD5 %}" class="btn btn-sm btn-outline-primary" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
+                                    <p> <a href="{% url "appsec_dashboard" checksum=e.MD5 %}" class="btn btn-sm btn-outline-primary" role="button"><i class="fas fa-user-shield"></i> MobSF 安全评分卡</a></p>
                                       {% endif %}
                                     {% endif %}
                                     {% endif %}
                                   {% endif %}
-                                  <p><a class="btn btn-primary btn-sm" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/"><i class="fas fa-eye"></i> Static Report</a>
+                                  <p><a class="btn btn-primary btn-sm" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/"><i class="fas fa-eye"></i> 静态报告</a>
                                   {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:" or '.aab' == e.FILE_NAME|slice:"-4:" %}
-                                    <a  class="btn btn-success btn-sm {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "dynamic_report" checksum=e.MD5 %}"><i class="fa fa-mobile"></i> Dynamic Report</a>
+                                    <a  class="btn btn-success btn-sm {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "dynamic_report" checksum=e.MD5 %}"><i class="fa fa-mobile"></i> 动态报告</a>
                                   {% elif '.ipa' == e.FILE_NAME|slice:"-4:" %}
                                     {% if e.PACKAGE_NAME %}
-                                        <a  class="btn btn-success btn-sm {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "ios_view_report" bundle_id=e.PACKAGE_NAME %}"><i class="fa fa-mobile"></i> Dynamic Report</a>
+                                        <a  class="btn btn-success btn-sm {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "ios_view_report" bundle_id=e.PACKAGE_NAME %}"><i class="fa fa-mobile"></i> 动态报告</a>
                                     {% endif %}
                                   {% endif %}
                                   </p>
                                 {% else %}
-                                </br><span class="badge bg-warning">scan not completed</span>
+                                </br><span class="badge bg-warning">扫描未完成</span>
                                 {% endif %}
                             </td>
                             <td>{{ e.FILE_NAME }}
@@ -108,10 +108,10 @@
                                    <a class="btn btn-outline-secondary btn-sm" href="{% url "download_binary" checksum=e.MD5%}"><i class="fas fa-download"></i></a>
                                 </p>
                             {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:" or '.aab' == e.FILE_NAME|slice:"-4:"%}
-                                <p><a class="diffButton btn btn-warning btn-sm" id="{{ e.MD5 }}_{{ e.FILE_NAME }}"><i class="fas fa-not-equal"></i> Diff or Compare</a>
+                                <p><a class="diffButton btn btn-warning btn-sm" id="{{ e.MD5 }}_{{ e.FILE_NAME }}"><i class="fas fa-not-equal"></i> 对比/差异</a>
                                 </p>
                             {% endif %}
-                            <p> <a class="btn btn-danger btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="#"><i class="fa fa-trash"></i> Delete Scan</a> </p>
+                            <p> <a class="btn btn-danger btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="#"><i class="fa fa-trash"></i> 删除扫描</a> </p>
                             </td>
                         </tr>
                     {% endfor %}
@@ -123,11 +123,11 @@
                 <ul class="pagination justify-content-center">
                   {% if page_obj.has_previous %}
                   <li class="page-item">
-                    <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.previous_page_number %}">Previous</a>
+                    <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.previous_page_number %}">上一页</a>
                   </li>   
                   {% else %}
                   <li class="page-item">
-                  <a class="page-link">Previous</a>
+                  <a class="page-link">上一页</a>
                   </li>
                   {% endif %}
       
@@ -145,17 +145,17 @@
       
                   {% if page_obj.has_next %}
                   <li class="page-item">
-                    <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.next_page_number %}">Next</a>
+                    <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.next_page_number %}">下一页</a>
                    </li>
                   {% else %}
                   <li class="page-item">
-                    <a class="page-link">Next</a>
+                  <a class="page-link">下一页</a>
                   </li>
                   {% endif %}
                   <li class="page-item">
                     <div class="dropdown">
                         <button class="page-link dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                          Items per page
+                          每页显示
                         </button>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                           <a class="dropdown-item" href="{% url 'scans_paginated' page_size=5 page_number=page_obj.number %}">5</a>
@@ -227,9 +227,9 @@
     function diff_select(item) {
 
         Swal.fire({
-            title: '<strong>Select App to Compare</strong>',
+            title: '<strong>选择要对比的应用</strong>',
             type: 'info',
-            text: 'Please select the second scan result for comparison',
+            text: '请选择第二个扫描结果进行对比',
             timer: 10000
         });
         diff_first_md5 = item.attr('id').slice(0, 32);
@@ -263,15 +263,15 @@
         diff_second_name = rows_tds[1].innerText;
 
         Swal.fire({
-            title: '<strong>Diff confirmation</strong>',
+            title: '<strong>对比确认</strong>',
             type: 'info',
             html:
-                '<strong>Do you want to diff - </strong><br />' + escapeHtml(diff_first_name) +
-                '<br /> <strong>with - <br /> </strong>' + escapeHtml(diff_second_name) + ' <br /> <strong>?</strong>',
+                '<strong>是否要对比 - </strong><br />' + escapeHtml(diff_first_name) +
+                '<br /> <strong>与 - <br /> </strong>' + escapeHtml(diff_second_name) + ' <br /> <strong>?</strong>',
 
             showCancelButton: true,
-            cancelButtonText: 'Cancel',
-            confirmButtonText: 'Start Diffing!',
+            cancelButtonText: '取消',
+            confirmButtonText: '开始对比！',
         }).then((result) => {
             if (result.value) {
                 window.location = '/compare/' + diff_first_md5 + '/' + diff_second_md5 + '/';
@@ -283,12 +283,12 @@
 
     function delete_scan(item){
       Swal.fire({
-      title: 'Are you sure?',
-      text: "This will permanently remove the scan results from MobSF",
+      title: '确定删除吗？',
+      text: "此操作将永久删除MobSF中的扫描结果",
       type: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Yes',
-      cancelButtonText: 'No',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
       confirmButtonColor: '#d33',
       cancelButtonColor: '#2da532',
     }).then((result) => {
@@ -305,8 +305,8 @@
                             success : function(json) {
                                 if (json.deleted ==='yes'){
                                     Swal.fire(
-                                        'Deleted!',
-                                        'The scan result is deleted!',
+                                        '已删除！',
+                                        '扫描结果已删除！',
                                         'success'
                                     ).then(function () {
                                         location.reload();
@@ -314,7 +314,7 @@
                                 }
                                 else {
                                     Swal.fire(
-                                    'Delete Failed',
+                                    '删除失败',
                                     json.deleted,
                                     'error'
                                     )
@@ -322,13 +322,13 @@
                             },
                             error : function(xhr,errmsg,err) {
                                 Swal.fire(
-                                    'Delete Failed',
+                                    '删除失败',
                                     errmsg,
                                     'error'
                                     )
                             }
                 });
-               
+              
         } else {
                 diff_cleanup();
         }

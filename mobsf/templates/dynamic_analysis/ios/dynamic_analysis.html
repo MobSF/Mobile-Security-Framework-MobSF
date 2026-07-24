@@ -44,7 +44,7 @@
                                  <th>VERSION</th>
                                  <th>STATE</th>
                                  <th>PROGRESS</th>
-                                 <th>ACTIONS</th>
+                                 <th>操作</th>
                              </tr>
                              </thead>
                              <tbody>
@@ -61,13 +61,13 @@
                                        {{i.state}}
                                     </td>
                                      <td>
-                                      {% if 'progress' in i.restoreStatus %}
+                                      {% if 'progress' in i.restore状态 %}
                                       <div class="progress">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{i.restoreStatus.progress}}%" aria-valuenow="{{i.restoreStatus.progress}}" aria-valuemin="0" aria-valuemax="100">{{i.restoreStatus.progress| floatformat:"0"}}%</div>
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{i.restore状态.progress}}%" aria-valuenow="{{i.restore状态.progress}}" aria-valuemin="0" aria-valuemax="100">{{i.restore状态.progress| floatformat:"0"}}%</div>
                                       </div>
                                       {% endif %}
-                                      {% if 'stage' in i.restoreStatus %}
-                                      <small><pre> {{ i.restoreStatus.stage}}</pre></small>
+                                      {% if 'stage' in i.restore状态 %}
+                                      <small><pre> {{ i.restore状态.stage}}</pre></small>
                                       {% endif %}
                                      </td>
                                      <td>
@@ -107,7 +107,7 @@
               </div>
               <div class="card-body">
                  <div class="table-responsive">
-                <h4> Apps in Device</h4>
+                <h4> Apps in 设备</h4>
                 <table id="in_device" class="table table-bordered table-hover table-striped">
                   <tbody>
                   </tbody>
@@ -118,7 +118,7 @@
             <table class="dattbl table table-bordered table-hover table-striped">
                 <thead>
                 <tr>
-                    <th>APP</th>
+                    <th>应用</th>
                     <th>FILE NAME</th>
                     <th>BUNDLE ID</th>
                     <th>ACTION</th>
@@ -147,7 +147,7 @@
                               <a class="btn btn-success disable" onclick="upload_and_install('{% url 'setup_environment' checksum=e.MD5 %}')"><i class="fab fa-apple"></i> Upload &amp; Install</a>
                           </p>
                           <p>
-                            <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url 'ios_view_report' bundle_id=e.BUNDLE_ID %}"><i class="fa fa-mobile"></i> View Report </a>
+                            <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url 'ios_view_report' bundle_id=e.BUNDLE_ID %}"><i class="fa fa-mobile"></i> 查看 Report </a>
                          </p>
                          {% endif %}
                         </td>
@@ -180,7 +180,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <h4 class="modal-title">Create a Corellium iOS VM</h4>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button type="button" class="close" data-dismiss="modal" aria-label="关闭">
               <span aria-hidden="true">×</span>
             </button>
           </div>
@@ -191,11 +191,11 @@
                   <input type="text" value="MobSF iOS" class="form-control" id="vm_name">
                 </div>
                 <div class="form-group">
-                    <label>Device</label>
+                    <label>设备</label>
                      <select class="form-control" id="ios_models"></select>
                 </div>
                 <div class="form-group">
-                  <label>iOS Version</label>
+                  <label>i操作系统版本</label>
                    <select class="form-control" id="ios_versions"></select>
                 </div>
 
@@ -235,7 +235,7 @@ function escapeHtml(unsafe){
 }
 
 // Load Modal Data
-// Load Supported Models
+// Load Supported 型号s
 $('#create_instance').on('shown.bs.modal', function () {
     $.ajax({
             url: '{% url 'get_supported_models' %}',
@@ -372,7 +372,7 @@ function list_apps(){
                                 )
                     }
                     if (json.status==='ok'){
-                      $('#in_device').append('<thead><tr> <th>APP</th> <th>BUNDLE ID</th> <th>APP TYPE</th> <th>ACTION</th> </tr></thead><tbody></tbody>');
+                      $('#in_device').append('<thead><tr> <th>应用</th> <th>BUNDLE ID</th> <th>APP TYPE</th> <th>ACTION</th> </tr></thead><tbody></tbody>');
                       for(var i=0; i < json.message.length; i++) {
                               let name = json.message[i].name;
                               let bundle = json.message[i].bundleID;
@@ -402,7 +402,7 @@ function list_apps(){
                                   <td>${escapeHtml(type)}</td>
                                   <td><p>
                                       <a class="btn btn-success disable" onclick="dynamic_loader()" href="${url}"><i class="fab fa-apple"></i> Start Dynamic Analysis</a> 
-                                      <a class="btn btn-info ${buttonState}" href="../../ios/view_report/${escapeHtml(bundle)}"><i class="fa fa-mobile"></i> View Report </a>
+                                      <a class="btn btn-info ${buttonState}" href="../../ios/view_report/${escapeHtml(bundle)}"><i class="fa fa-mobile"></i> 查看 Report </a>
                                       <a class="btn btn-warning" id="${$('#ios_dynamic').val()}" onclick="remove_app(this, '${escapeHtml(bundle)}')"><i class="fas fa-trash-alt"></i>  Uninstall</a>
                                       </p>
                                   </td></tr>`);
@@ -431,7 +431,7 @@ function remove_app(item, bundle_id){
       title: 'Are you sure?',
       text: "This will remove the app from the device",
       type: 'warning',
-      showCancelButton: true,
+      show取消Button: true,
       confirmButtonText: 'Yes',
       cancelButtonText: 'No',
       confirmButtonColor: '#d33',
@@ -460,8 +460,8 @@ function remove_app(item, bundle_id){
                               }
                               else {
                                   Swal.fire(
-                                  'Uninstall Failed',
-                                  'Failed to uninstall the app: ' + json.message,
+                                  'Uninstall 未通过',
+                                  '未通过 to uninstall the app: ' + json.message,
                                   'error'
                                   )
                               }
@@ -484,7 +484,7 @@ function start_vm(item){
       title: 'Are you sure?',
       text: "This will start an iOS VM in Corellium and will incur charges",
       type: 'warning',
-      showCancelButton: true,
+      show取消Button: true,
       confirmButtonText: 'Yes',
       cancelButtonText: 'No',
       confirmButtonColor: '#d33',
@@ -511,7 +511,7 @@ function start_vm(item){
                                 }
                                 else {
                                     Swal.fire(
-                                    'Start Failed',
+                                    'Start 未通过',
                                     'Cannot start the VM: ' + json.message,
                                     'error'
                                     )
@@ -537,7 +537,7 @@ function stop_vm(item){
       title: 'Are you sure?',
       text: "This will stop an iOS VM in Corellium",
       type: 'warning',
-      showCancelButton: true,
+      show取消Button: true,
       confirmButtonText: 'Yes',
       cancelButtonText: 'No',
       confirmButtonColor: '#d33',
@@ -564,7 +564,7 @@ function stop_vm(item){
                                 }
                                 else {
                                     Swal.fire(
-                                    'Stop Failed',
+                                    'Stop 未通过',
                                     'Cannot stop the VM: ' + json.message,
                                     'error'
                                     )
@@ -607,7 +607,7 @@ function unpause_vm(item){
                       }
                       else {
                           Swal.fire(
-                          'Unpause Failed',
+                          'Unpause 未通过',
                           'Cannot unpause the VM: ' + json.message,
                           'error'
                           )
@@ -629,7 +629,7 @@ function reboot_vm(item){
       title: 'Are you sure?',
       text: "This will reboot the iOS VM in Corellium",
       type: 'warning',
-      showCancelButton: true,
+      show取消Button: true,
       confirmButtonText: 'Yes',
       cancelButtonText: 'No',
       confirmButtonColor: '#d33',
@@ -656,7 +656,7 @@ function reboot_vm(item){
                                 }
                                 else {
                                     Swal.fire(
-                                    'Reboot Failed',
+                                    'Reboot 未通过',
                                     'Cannot reboot the VM: ' + json.message,
                                     'error'
                                     )
@@ -681,7 +681,7 @@ function destroy_vm(item){
       title: 'Are you sure?',
       text: "This will remove the iOS VM in Corellium",
       type: 'warning',
-      showCancelButton: true,
+      show取消Button: true,
       confirmButtonText: 'Yes',
       cancelButtonText: 'No',
       confirmButtonColor: '#d33',
@@ -708,7 +708,7 @@ function destroy_vm(item){
                                 }
                                 else {
                                     Swal.fire(
-                                    'Destroy Failed',
+                                    'Destroy 未通过',
                                     'Cannot destroy the VM: ' + json.message,
                                     'error'
                                     )
@@ -733,7 +733,7 @@ $("#create_vm").click(function() {
       title: 'Are you sure?',
       text: "This will create a new iOS VM in Corellium and will incur charges",
       type: 'warning',
-      showCancelButton: true,
+      show取消Button: true,
       confirmButtonText: 'Yes',
       cancelButtonText: 'No',
       confirmButtonColor: '#d33',
@@ -763,7 +763,7 @@ $("#create_vm").click(function() {
                                 }
                                 else {
                                     Swal.fire(
-                                    'Creating iOS VM Failed',
+                                    'Creating iOS VM 未通过',
                                     'Cannot create iOS VM: ' + json.message,
                                     'error'
                                     )
@@ -797,8 +797,8 @@ function upload_and_install(url){
                       if (json.status !== 'ok'){
                           stop_loader();
                           Swal.fire(
-                          'IPA Install Failed',
-                          'Failed to Install IPA: ' + json.message,
+                          'IPA Install 未通过',
+                          '未通过 to Install IPA: ' + json.message,
                           'error'
                           )
                       } else {

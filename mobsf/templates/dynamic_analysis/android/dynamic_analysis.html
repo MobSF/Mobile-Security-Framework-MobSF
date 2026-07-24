@@ -140,11 +140,11 @@ textarea:focus {
               </div>
               <div class="card-body">
                  <div class="table-responsive">
-                  <h4> Apps in Device</h4>
+                  <h4> Apps in 设备</h4>
                   <table class="table table-bordered table-hover table-striped">
                     <thead>
                     <tr>
-                        <th>APP</th>
+                        <th>应用</th>
                         <th>LOCATION IN DEVICE</th>
                         <th>ACTION</th>
                     </tr>
@@ -168,7 +168,7 @@ textarea:focus {
                                 <a class="btn btn-warning disable" onclick="dynamic_loader()" href="{% url "static_scan" checksum=hash %}"><i class="fa fa-download"></i> Pull &amp; Static Analysis</a>
                               </p>
                               <p>
-                                 <a class="btn btn-info" href="{% url "dynamic_report" checksum=hash %}"><i class="fa fa-mobile"></i> View Report </a>
+                                 <a class="btn btn-info" href="{% url "dynamic_report" checksum=hash %}"><i class="fa fa-mobile"></i> 查看 Report </a>
                               </p>
                             </td>
                         </tr>
@@ -181,7 +181,7 @@ textarea:focus {
                 <table class="table table-bordered table-hover table-striped">
                     <thead>
                     <tr>
-                        <th>APP</th>
+                        <th>应用</th>
                         <th>FILE NAME</th>
                         <th>PACKAGE</th>
                         <th>ACTION</th>
@@ -209,7 +209,7 @@ textarea:focus {
                                 <a class="btn btn-primary btn-sm disable" onclick="dynamic_loader()" href="{% url "dynamic_analyzer" checksum=e.MD5 %}?re_install=0"><i class="fab fa-android"></i> Start Dynamic Analysis (No reinstall)</a>
                               </p>
                               <p>
-                                 <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "dynamic_report" checksum=e.MD5 %}"><i class="fa fa-mobile"></i> View Report </a>
+                                 <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "dynamic_report" checksum=e.MD5 %}"><i class="fa fa-mobile"></i> 查看 Report </a>
                               </p>
                             </td>
                         </tr>
@@ -243,7 +243,7 @@ textarea:focus {
         <div class="modal-content">
           <div class="modal-header">
             <h4 class="modal-title">MobSFy Android Runtime</h4>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button type="button" class="close" data-dismiss="modal" aria-label="关闭">
               <span aria-hidden="true">×</span>
             </button>
           </div>
@@ -254,7 +254,7 @@ textarea:focus {
                      <input id="identifier" type="text" class="form-control" value="{{ identifier }}">
                 </div>
                 <div class="form-group">
-                  <label>Status</label>
+                  <label>状态</label>
                   <textarea id="stat" class="form-control" rows="10" placeholder="" disabled=""></textarea>
                 </div>
 
@@ -303,7 +303,7 @@ function dynamic_loader(){
                         if (json.status==="ok"){
                               $('#stat').append("\nSucessfully created MobSF Dynamic Analysis environment.");
                             if (json.android_version  < 5){
-                              $('#stat').append("\n* Download & Install Xposed Framework.\n* Restart the device.");
+                              $('#stat').append("\n* 下载 & Install Xposed Framework.\n* Restart the device.");
                               $('#stat').append("\n* Enable all the Xposed modules.\n* Restart the device once more.");
                             } else{
                                $('#stat').append("\nMobSF agents and Frida server installed.");

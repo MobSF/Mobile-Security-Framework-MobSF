@@ -388,7 +388,7 @@ def compare_apps(request, hash1: str, hash2: str, api=False):
         return print_n_send_error_response(request, error_msg, api)
     # Second Validation for REST API
     if not (is_md5(hash1) and is_md5(hash2)):
-        error_msg = 'Invalid hashes'
+        error_msg = '无效的哈希'
         return print_n_send_error_response(request, error_msg, api)
     logger.info(
         'Starting App compare for %s and %s', hash1, hash2)
@@ -519,7 +519,7 @@ def scan_library(request, checksum):
         if not is_md5(checksum):
             return print_n_send_error_response(
                 request,
-                'Invalid MD5')
+                '无效的 MD5')
         relative_path = request.GET['library']
         lib_dir = Path(settings.UPLD_DIR) / checksum
 

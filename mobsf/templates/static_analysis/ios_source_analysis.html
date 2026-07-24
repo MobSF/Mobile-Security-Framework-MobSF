@@ -36,7 +36,7 @@
         <!-- Sidebar user panel (optional) -->
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
         <div class="info">
-          <a href="#" class="d-block">Static Analyzer</a>
+          <a href="#" class="d-block">静态分析器</a>
         </div>
       </div>
 
@@ -48,7 +48,7 @@
             <a href="#information" class="nav-link">
               <i class="nav-icon fas fa-info-circle"></i>
               <p>
-                Information
+                基本信息
               </p>
             </a>
           </li>
@@ -56,7 +56,7 @@
             <a href="#scan_options" class="nav-link">
               <i class="nav-icon fas fa-cog"></i>
               <p>
-                Scan Options
+                扫描选项
               </p>
             </a>
           </li>
@@ -64,7 +64,7 @@
             <a href="#url_schemes" class="nav-link">
               <i class="nav-icon fas fa-hashtag"></i>
               <p>
-                URL Schemes
+                URL Scheme
               </p>
             </a>
           </li>
@@ -72,7 +72,7 @@
             <a href="#permissions" class="nav-link">
               <i class="nav-icon fas fa-list"></i>
               <p>
-                Permissions
+                权限
               </p>
             </a>
           </li>
@@ -88,7 +88,7 @@
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-shield-alt"></i>
               <p>
-                Security Analysis
+                安全分析
                 <i class="fas fa-angle-left right"></i>
               </p>
             </a>
@@ -97,26 +97,26 @@
                 <a href="#transport_security" class="nav-link">
                   <i class="nav-icon fas fa-lock"></i>
                   <p>
-                    Transport Security
+                    传输安全
                   </p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="#code_analysis" class="nav-link">
                   <i class="fa fa-code nav-icon"></i>
-                  <p>Code Analysis</p>
+                  <p>代码分析</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="#file_analysis" class="nav-link">
                   <i class="fa fa-file nav-icon"></i>
-                  <p>File Analysis</p>
+                  <p>文件分析</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="#firebase" class="nav-link">
                   <i class="fas fa-database nav-icon"></i>
-                  <p>Firebase Analysis</p>
+                  <p>Firebase 分析</p>
                 </a>
               </li>
             </ul>
@@ -125,7 +125,7 @@
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-bug"></i>
               <p>
-                Malware Analysis
+                恶意软件分析
                 <i class="fas fa-angle-left right"></i>
               </p>
             </a>
@@ -133,13 +133,13 @@
               <li class="nav-item">
                 <a href="#serverlocations" class="nav-link">
                   <i class="fas fa-globe-asia nav-icon"></i>
-                  <p>Server Locations</p>
+                  <p>服务器位置</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="#malware_check" class="nav-link">
                   <i class="fab fa-searchengin nav-icon"></i>
-                  <p>Domain Malware Check</p>
+                  <p>域名恶意软件检查</p>
                 </a>
               </li>
             </ul>
@@ -148,7 +148,7 @@
             <a href="#" class="nav-link">
               <i class="nav-icon fa fa-plus"></i>
               <p>
-                Reconnaissance
+                侦察
                 <i class="fas fa-angle-left right"></i>
               </p>
             </a>
@@ -156,31 +156,31 @@
               <li class="nav-item">
                 <a href="#urls" class="nav-link">
                   <i class="fas fa-globe nav-icon"></i>
-                  <p>URLs</p>
+                  <p>URL</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="#emails" class="nav-link">
                   <i class="fas fa-envelope nav-icon"></i>
-                  <p>Emails</p>
+                  <p>邮箱</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="#trackers" class="nav-link">
                   <i class="fas fa-user-secret nav-icon"></i>
-                  <p>Trackers</p>
+                  <p>跟踪器</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="#secrets" class="nav-link">
                   <i class="fas fa-key nav-icon"></i>
-                  <p>Hardcoded Secrets</p>
+                  <p>硬编码密钥</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="#strings" class="nav-link">
                   <i class="fas fa-font nav-icon"></i>
-                  <p>Strings</p>
+                  <p>字符串</p>
                 </a>
               </li>
             </ul>
@@ -189,7 +189,7 @@
             <a href="#files" class="nav-link">
               <i class="nav-icon far fa-copy"></i>
               <p>
-                Files
+                文件
               </p>
             </a>
           </li>
@@ -197,7 +197,7 @@
               <a href="{% url "pdf" checksum=md5 %}" class="nav-link">
               <i class="nav-icon fas fa-file-pdf"></i>
               <p>
-                PDF Report
+                PDF 报告
               </p>
              </a>
             </li>
@@ -205,7 +205,7 @@
               <a href="javascript:window.print()" class="nav-link">
               <i class="nav-icon fa fa-print"></i>
               <p>
-                Print Report
+                打印报告
               </p>
              </a>
             </li>
@@ -243,27 +243,27 @@
               <h5 class="card-title"></h5>
                 <div class="row">
                 <div class="col-2">
-                  <p><strong><i class="fas fa-check-double"></i> APP SCORES</strong></p>
+                  <p><strong><i class="fas fa-check-double"></i> 应用评分</strong></p>
                   <img id="app_icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_path %}/download/{{ icon_path }}{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
                   <p>
                   {% if average_cvss %}
-                  <span class="badge bg-info">Average CVSS</span> <strong>{{ average_cvss }} </strong><br/>
+                  <span class="badge bg-info">平均 CVSS</span> <strong>{{ average_cvss }} </strong><br/>
                   {% endif %}
-                  <span class="badge bg-{% if appsec.security_score < 40 %}danger{% elif appsec.security_score == 100 %}success{% else %}warning{% endif %}">Security Score</span> <strong>{{ appsec.security_score }}/100 </strong><br/>
+                  <span class="badge bg-{% if appsec.security_score < 40 %}danger{% elif appsec.security_score == 100 %}success{% else %}warning{% endif %}">安全评分</span> <strong>{{ appsec.security_score }}/100 </strong><br/>
                   {% if trackers.detected_trackers > 0 %}
-                  <span class="badge bg-warning">Trackers Detection</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
+                  <span class="badge bg-warning">跟踪器检测</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
                   {% else %}
-                    <span class="badge bg-success">Trackers Detection</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
+                    <span class="badge bg-success">跟踪器检测</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
                   {% endif %}
                 </p>
-                  <p> <a href="{% url 'appsec_dashboard' checksum=md5 %}" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
+                  <p> <a href="{% url 'appsec_dashboard' checksum=md5 %}" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF 评分卡</a></p>
                 </div>
 
                 <div class="col-5">
-                  <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION </strong></p>                         
-                  <span class="badge bg-primary">File Name</span>
+                  <p><strong><i class="fas fa-box-open"></i> 文件信息 </strong></p>                         
+                  <span class="badge bg-primary">文件名</span>
                   {{ file_name }}<br/>
-                  <span class="badge bg-primary">Size</span>
+                  <span class="badge bg-primary">大小</span>
                   {{ size }}<br/>
                   <span class="badge bg-primary">MD5</span>
                   {{ md5 }}<br/>
@@ -273,24 +273,24 @@
                   {{ sha256 }}<br/>
                 </div>
                 <div class="col-5">
-                  <p><strong><i class="fas fa-info"></i> APP INFORMATION </strong></p>                                       
-                  <span class="badge bg-primary">App Name</span>
+                  <p><strong><i class="fas fa-info"></i> 应用信息 </strong></p>                                       
+                  <span class="badge bg-primary">应用名称</span>
                   {{ app_name }}<br/>
-                  <span class="badge bg-primary">App Type</span>
+                  <span class="badge bg-primary">应用类型</span>
                   {{ app_type }}<br/>                               
-                  <span class="badge bg-primary">Identifier</span>
+                  <span class="badge bg-primary">标识符</span>
                   {{ bundle_id }}<br/>
-                  <span class="badge bg-primary">SDK Name</span>
+                  <span class="badge bg-primary">SDK 名称</span>
                   {{ sdk_name }}<br/>
-                  <span class="badge bg-primary">Version</span>
+                  <span class="badge bg-primary">版本</span>
                   {{ app_version }}
-                  <span class="badge bg-primary">Build</span>
+                  <span class="badge bg-primary">构建版本</span>
                   {{ build }}
-                  <span class="badge bg-primary">Platform Version</span>
+                  <span class="badge bg-primary">平台版本</span>
                   {{ platform }}
-                  <span class="badge bg-primary">Min OS Version</span>
+                  <span class="badge bg-primary">最低 OS 版本</span>
                   {{ min_os_version }} <br/>
-                  <span class="badge bg-primary">Supported Platforms</span>
+                  <span class="badge bg-primary">支持的平台</span>
                   {% for pl in bundle_supported_platforms %}
                     {{pl}},
                   {% endfor %}
@@ -308,39 +308,39 @@
           <div class="card">
             <div class="card-body">
                 <p>
-                <strong><i class="fab fa-app-store-ios"></i> APP STORE INFORMATION</strong>
+                <strong><i class="fab fa-app-store-ios"></i> App Store 信息</strong>
                 </p>
-                    <span class="badge bg-info">Title</span>
+                    <span class="badge bg-info">标题</span>
                       {{ appstore_details.title }} <br/>                                     
-                    <span class="badge bg-info">Score</span>
+                    <span class="badge bg-info">评分</span>
                       {{ appstore_details.score}}
-                    <span class="badge bg-info">Features</span>
+                    <span class="badge bg-info">特性</span>
                       {% for fea in appstore_details.features %}
                         {{ fea }}, 
                       {% endfor %}
-                      <span class="badge bg-info">Price</span>
+                      <span class="badge bg-info">价格</span>
                         {{ appstore_details.price }}
-                      <span class="badge bg-info">Category</span>
+                      <span class="badge bg-info">分类</span>
                       {% for cat in appstore_details.category %}
                         {{ cat }}, 
                         {% endfor %}
                       <span class="badge bg-info">App Store URL</span>
                         <a target="_blank" href="{{ appstore_details.itunes_url }}" rel="noopener noreferrer">{{ appstore_details.app_id }} </a>
                       <br/>
-                    <span class="badge bg-info">Developer</span>
+                    <span class="badge bg-info">开发者</span>
                         {{appstore_details.developer}},
-                    <span class="badge bg-info">Developer ID</span>
+                    <span class="badge bg-info">开发者 ID</span>
                         {{appstore_details.developer_id}}  <br/>
-                    <span class="badge bg-info">Developer Website</span>
+                    <span class="badge bg-info">开发者网站</span>
                       {{appstore_details.developer_website }} <br/>
-                    <span class="badge bg-info">Developer URL</span>
+                    <span class="badge bg-info">开发者 URL</span>
                       {{appstore_details.developer_url}} <br/>
-                     <span class="badge bg-info">Supported Devices</span>
+                     <span class="badge bg-info">支持的设备</span>
                       {% for dev in appstore_details.supported_devices %}
                       {{ dev }}, 
                       {% endfor %}
                     <br/>                                     
-                      <span class="badge bg-info">Description</span>
+                      <span class="badge bg-info">描述</span>
                       <pre id="pre-wrap">{{ appstore_details.description }}</pre>
             </div>
           </div><!-- /.card -->
@@ -363,14 +363,14 @@
             <div class="card">
               <div class="card-body">
                 <p>
-                <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
+                <strong><i class="fas fa-cog"></i> 扫描选项</strong>
                 </p>
                 <p align="center">
-                  <a href="{% url 'static_analyzer_ios' checksum=md5 %}?rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
-                  <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-table"></i> Manage Suppressions</a>
-                  <a data-target="#mplist" role="button" class="btn btn-primary" data-toggle="modal" href="#"><i class="fa fa-eye"></i> View Info.plist</a>
-                 <button type="button" class="btn btn-warning" data-toggle="modal" data-target=".scan-logs-mdl"><i class="fa fa-list" aria-hidden="true"></i> Scan Logs</button>
-                 <a href="{% url "download_binary" checksum=md5 %}" class="btn btn-warning"> <i class="fa fa-download"></i> Download ZIP</a>
+                  <a href="{% url 'static_analyzer_ios' checksum=md5 %}?rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> 重新扫描</a>
+                  <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-table"></i> 管理抑制</a>
+                  <a data-target="#mplist" role="button" class="btn btn-primary" data-toggle="modal" href="#"><i class="fa fa-eye"></i> 查看 Info.plist</a>
+                 <button type="button" class="btn btn-warning" data-toggle="modal" data-target=".scan-logs-mdl"><i class="fa fa-list" aria-hidden="true"></i> 扫描日志</button>
+                 <a href="{% url "download_binary" checksum=md5 %}" class="btn btn-warning"> <i class="fa fa-download"></i> 下载 ZIP</a>
                </p>
               </div>
             </div><!-- /.card -->
@@ -388,7 +388,7 @@
         <div class="card">
           <div class="card-body">
              <p>
-             <strong><i class="fas fa-hashtag"></i> CUSTOM URL SCHEMES</strong>
+             <strong><i class="fas fa-hashtag"></i> 自定义 URL Scheme</strong>
              <p>
              {% if bundle_url_types|length > 0 %}
              <div class="table-responsive">
@@ -396,8 +396,8 @@
 
                   <thead>
                       <tr>
-                          <th>URL NAME</th>
-                          <th>SCHEMES</th>
+                          <th>URL 名称</th>
+                          <th>Scheme</th>
                       </tr>
                   </thead>
                   <tbody>
@@ -425,7 +425,7 @@
            </div>
             {% else %}
               <p>
-                No URL Schemes found.
+                未找到 URL Scheme。
             </p>
             {% endif %}
           </div>
@@ -444,7 +444,7 @@
         <div class="card">
           <div class="card-body">
              <p>
-             <strong><i class="fa fa-list"></i> APPLICATION PERMISSIONS</strong>
+             <strong><i class="fa fa-list"></i> 应用权限</strong>
              <p>
              {% if permissions %}
              <div class="table-responsive">
@@ -452,10 +452,10 @@
 
                   <thead>
                       <tr>
-                          <th>PERMISSIONS</th>
-                          <th>STATUS</th>
-                          <th>INFO</th>
-                          <th>REASON IN MANIFEST</th>
+                          <th>权限</th>
+                          <th>状态</th>
+                          <th>信息</th>
+                          <th>清单文件中的原因</th>
                       </tr>
                   </thead>
                   <tbody>
@@ -467,9 +467,9 @@
                       </td>
                       <td>
                         {% if desc.status == 'dangerous' %}
-                            <span class="badge bg-danger">dangerous</span>
+                            <span class="badge bg-danger">危险</span>
                           {% else %}
-                            <span class="badge bg-info">normal</span>
+                            <span class="badge bg-info">普通</span>
                         {% endif %}
                       </td>
                       <td>
@@ -485,7 +485,7 @@
            </div>
             {% else %}
               <p>
-                No Permissions required.
+                无需权限。
             </p>
             {% endif %}
           </div>
@@ -512,7 +512,7 @@
                   <thead>
                       <tr>
                         <th>API</th>
-                        <th>FILES</th>
+                        <th>文件</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -523,7 +523,7 @@
                   </td>
                   <td>
                   <a class="btn btn-primary btn-xs" data-toggle="collapse" href="#collapseapi{{forloop.counter}}" role="button" aria-expanded="false" aria-controls="collapseapi{{forloop.counter}}">
-                    Show Files
+                    显示文件
                   </a>
                   <div class="collapse" id="collapseapi{{forloop.counter}}">
                     {% for file_path, lines in details.files.items %}
@@ -556,21 +556,21 @@
         <div class="card">
           <div class="card-body">
               <p>
-             <strong><i class="fas fa-lock"></i> APP TRANSPORT SECURITY (ATS)</strong>
+             <strong><i class="fas fa-lock"></i> 应用传输安全 (ATS)</strong>
              </p>
               <div class="table-responsive">
                 {% if ats_analysis and 'ats_summary' in ats_analysis and ats_analysis.ats_summary|length > 0 %}
           <div class="row">
             <div class="col-sm-2 col-6">
             <div class="description-block border-right">
-            <span class="text-danger">HIGH</span>
+            <span class="text-danger">高</span>
             <h5 class="description-header">{{ ats_analysis.ats_summary.high }}</h5>
             </div>
             </div>
             
             <div class="col-sm-2 col-6">
             <div class="description-block border-right">
-            <span class="text-warning"></i> WARNING</span>
+            <span class="text-warning"></i> 警告</span>
             <h5 class="description-header">{{ ats_analysis.ats_summary.warning }}</h5>
             </div>
             
@@ -578,7 +578,7 @@
             
             <div class="col-sm-2 col-6">
             <div class="description-block border-right">
-            <span class="text-info">INFO</span>
+            <span class="text-info">信息</span>
             <h5 class="description-header">{{ ats_analysis.ats_summary.info }}</h5>
             </div>
             
@@ -586,7 +586,7 @@
             
             <div class="col-sm-2 col-6">
               <div class="description-block">
-              <span class="text-success">SECURE</span>
+              <span class="text-success">安全</span>
               <h5 class="description-header">{{ ats_analysis.ats_summary.secure }}</h5>
               </div>
               
@@ -598,10 +598,10 @@
 
                   <thead>
                       <tr>
-                        <th>NO</th>
-                        <th>ISSUE</th>
-                        <th>SEVERITY</th>
-                        <th>DESCRIPTION</th>
+                        <th>序号</th>
+                        <th>问题</th>
+                        <th>严重程度</th>
+                        <th>描述</th>
                       </tr>
                   </thead>
                   <tbody>
@@ -613,13 +613,13 @@
                         {{findings.issue}}
                         <td>
                           {% if findings.severity == "high" %}
-                          <span class="badge bg-danger"> high</span>
+                          <span class="badge bg-danger"> 高</span>
                           {% elif findings.severity == "secure" %}
-                          <span class="badge bg-success"> secure</span>
+                          <span class="badge bg-success"> 安全</span>
                           {% elif findings.severity == "warning" %}
-                          <span class="badge bg-warning"> warning</span>
+                          <span class="badge bg-warning"> 警告</span>
                           {% elif findings.severity == "info" %}
-                          <span class="badge bg-info"> info</span>
+                          <span class="badge bg-info"> 信息</span>
                           {% endif %}
                           </td>
                         <td>
@@ -651,21 +651,21 @@
         <div class="card">
           <div class="card-body">
             <p>
-             <strong><i class="fa fa-code"></i> CODE ANALYSIS</strong>
+             <strong><i class="fa fa-code"></i> 代码分析</strong>
              </p>
               <div class="table-responsive">
                 {% if code_analysis and 'summary' in code_analysis and code_analysis.summary|length > 0 %}
           <div class="row">
             <div class="col-sm-2 col-6">
             <div class="description-block border-right">
-            <span class="text-danger">HIGH</span>
+            <span class="text-danger">高</span>
             <h5 class="description-header">{{ code_analysis.summary.high }}</h5>
             </div>
             </div>
             
             <div class="col-sm-2 col-6">
             <div class="description-block border-right">
-            <span class="text-warning"></i> WARNING</span>
+            <span class="text-warning"></i> 警告</span>
             <h5 class="description-header">{{ code_analysis.summary.warning }}</h5>
             </div>
             
@@ -673,7 +673,7 @@
             
             <div class="col-sm-2 col-6">
             <div class="description-block border-right">
-            <span class="text-info">INFO</span>
+            <span class="text-info">信息</span>
             <h5 class="description-header">{{ code_analysis.summary.info }}</h5>
             </div>
             
@@ -681,7 +681,7 @@
             
             <div class="col-sm-2 col-6">
               <div class="description-block border-right">
-              <span class="text-success">SECURE</span>
+              <span class="text-success">安全</span>
               <h5 class="description-header">{{ code_analysis.summary.secure }}</h5>
               </div>
               
@@ -689,7 +689,7 @@
 
             <div class="col-sm-2 col-6">
               <div class="description-block">
-              <span class="text-disabled">SUPPRESSED</span>
+              <span class="text-disabled">已抑制</span>
               <h5 class="description-header">{{ code_analysis.summary.suppressed }}</h5>
               </div>
               
@@ -701,12 +701,12 @@
                    <table id="table_code" class="table table-bordered table-hover table-striped">
                   <thead>
                       <tr>
-                          <th>NO</th>
-                          <th>ISSUE</th>
-                          <th>SEVERITY</th>
-                          <th>STANDARDS</th>
-                          <th>FILES</th>
-                          <th>OPTIONS</th>
+                          <th>序号</th>
+                          <th>问题</th>
+                          <th>严重程度</th>
+                          <th>标准</th>
+                          <th>文件</th>
+                          <th>选项</th>
 
                       </tr>
                   </thead>
@@ -735,22 +735,22 @@
                   </td>
                   <td>
                       {% if average_cvss %}
-                        <strong>CVSS V2:</strong>
+                        <strong>CVSS V2：</strong>
                         {{ details.metadata.cvss }}
                         {% if details.metadata.cvss > 6 %}
-                          (high)
+                          (高)
                         {% elif details.metadata.cvss == 0 %}
-                          (info)
+                          (信息)
                         {% elif details.metadata.cvss >= 4 %}
-                          (medium)
+                          (中)
                         {% elif details.metadata.cvss < 4 %}
-                          (low)
+                          (低)
                         {% endif %}
                         </br>
                       {% endif %}
-                      {% if details.metadata.cwe %} <strong>CWE: </strong>{{details.metadata.cwe }}{% endif %}
-                      {% if details.metadata|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
-                      {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs  }}{% endif %}
+                      {% if details.metadata.cwe %} <strong>CWE：</strong>{{details.metadata.cwe }}{% endif %}
+                      {% if details.metadata|key:"owasp-mobile" %}</br> <strong>OWASP Top 10：</strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
+                      {% if details.metadata.masvs %}</br> <strong>OWASP MASVS：</strong>{{ details.metadata.masvs  }}{% endif %}
                   </td>
                   <td>
                   {% if details.files|length < 4 %}
@@ -762,7 +762,7 @@
                     {% endfor %}
                   {% else %}
                     <a class="btn btn-primary btn-xs" data-toggle="collapse" href="#collapsecode{{forloop.counter}}" role="button" aria-expanded="false" aria-controls="collapsecode{{forloop.counter}}">
-                      Show Files
+                      显示文件
                     </a>
                     <div class="collapse" id="collapsecode{{forloop.counter}}">
                       {% for file_path, lines in details.files.items %}
@@ -781,8 +781,8 @@
                         <i class="fa fa-eye-slash"></i>
                       </a>
                       <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                        <a style="cursor:pointer;" class="dropdown-item" onclick="suppress('{{rule | escapejs }}', false, $(this.closest('tr')))">Suppress the rule <b>{{ rule }}</b> in <b>{{bundle_id}}</b></a>
-                        <a style="cursor:pointer;" class="dropdown-item" onclick="suppress('{{rule | escapejs }}', true, $(this.closest('tr')))">Suppress the rule <b>{{ rule }}</b> in <b>{{bundle_id}}</b> only from these files</a>
+                        <a style="cursor:pointer;" class="dropdown-item" onclick="suppress('{{rule | escapejs }}', false, $(this.closest('tr')))">抑制规则 <b>{{ rule }}</b>（<b>{{bundle_id}}</b>）</a>
+                        <a style="cursor:pointer;" class="dropdown-item" onclick="suppress('{{rule | escapejs }}', true, $(this.closest('tr')))">抑制规则 <b>{{ rule }}</b>（<b>{{bundle_id}}</b>）仅在这些文件中</a>
                       </div>
                     </div>
 
@@ -812,15 +812,15 @@
         <div class="card">
           <div class="card-body">
             <p>
-             <strong><i class="fa fa-file"></i> FILE ANALYSIS</strong>
+             <strong><i class="fa fa-file"></i> 文件分析</strong>
              </p>
               <div class="table-responsive">
                  <table class="table table-bordered table-hover table-striped">
                   <thead>
                       <tr>
-                          <th>NO</th>
-                          <th>ISSUE</th>
-                          <th>FILES</th>
+                          <th>序号</th>
+                          <th>问题</th>
+                          <th>文件</th>
                       </tr>
                   </thead>
                   <tbody>
@@ -862,15 +862,15 @@
          <div class="card">
            <div class="card-body">
              <p>
-              <strong><i class="fas fa-database"></i> FIREBASE DATABASE ANALYSIS</strong>
+              <strong><i class="fas fa-database"></i> Firebase 数据库分析</strong>
               </p>
                <div class="table-responsive">
               <table id="table_firebase" class="table table-bordered table-hover table-striped">
                 <thead>
                   <tr>
-                      <th>TITLE</th>
-                      <th>SEVERITY</th>
-                      <th>DESCRIPTION</th>
+                      <th>标题</th>
+                      <th>严重程度</th>
+                      <th>描述</th>
                   </tr>
               </thead>
               <tbody>
@@ -917,7 +917,7 @@
         <div class="card">
           <div class="card-body">
             <p>
-             <strong><i class="fas fa-globe-asia"></i> SERVER LOCATIONS</strong>
+             <strong><i class="fas fa-globe-asia"></i> 服务器位置</strong>
              </p>
               <div class="table-responsive">
                 <div id="chartdiv"></div>
@@ -925,12 +925,12 @@
 
             <div class="table-responsive">
               {% if domains %}
-              <p></br>This app may communicate with the following OFAC sanctioned list of countries.</p>
+              <p></br>此应用可能与以下 OFAC 制裁国家列表进行通信。</p>
              <table id="table_ofac" class="table table-bordered table-hover table-striped">
                   <thead>
                   <tr>
-                     <th>DOMAIN</th>
-                     <th>COUNTRY/REGION</th>
+                     <th>域名</th>
+                     <th>国家/地区</th>
                   </tr>
                  </thead>
                  <tbody>
@@ -938,10 +938,10 @@
                  {% if details|key:"ofac" == True %}
                   <tr><td>{{domain}}</td>
                   <td>
-                    <strong>IP: </strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
-                    <strong>Country: </strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
-                    <strong>Region: </strong>{{details|key:"geolocation"|key:"region"}} <br/>
-                    <strong>City: </strong>{{details|key:"geolocation"|key:"city"}} <br/>
+                    <strong>IP：</strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
+                    <strong>国家：</strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
+                    <strong>地区：</strong>{{details|key:"geolocation"|key:"region"}} <br/>
+                    <strong>城市：</strong>{{details|key:"geolocation"|key:"city"}} <br/>
                   </td>
                   </tr>
                   {% endif %}
@@ -967,16 +967,16 @@
         <div class="card">
           <div class="card-body">
             <p>
-             <strong><i class="fab fa-searchengin"></i> DOMAIN MALWARE CHECK</strong>
+             <strong><i class="fab fa-searchengin"></i> 域名恶意软件检查</strong>
              </p>
               <div class="table-responsive">
               {% if domains %} 
              <table id="table_malware" class="table table-bordered table-hover table-striped">
                   <thead>
                   <tr>
-                     <th>DOMAIN</th>
-                     <th>STATUS</th>
-                     <th>GEOLOCATION</th>
+                     <th>域名</th>
+                     <th>状态</th>
+                     <th>地理位置</th>
                   </tr>
                  </thead>
                  <tbody>
@@ -984,28 +984,28 @@
                   <tr><td>{{domain}}</td><td> 
 
                     {% if details|key:"bad" == "yes" %}
-                    <span class="badge bg-danger">malware</span><br/>
+                    <span class="badge bg-danger">恶意软件</span><br/>
                       <pre>
-                      <strong>URL: </strong>{{details|key:"domain_or_url"}}
-                      <strong>IP: </strong><span class="badge bg-danger">{{details|key:"ip"}}</span>
-                      <strong>Description: </strong>{{details|key:"desc"}}
+                      <strong>URL：</strong>{{details|key:"domain_or_url"}}
+                      <strong>IP：</strong><span class="badge bg-danger">{{details|key:"ip"}}</span>
+                      <strong>描述：</strong>{{details|key:"desc"}}
                       </pre>
                   {% else %}
-                    <span class="badge bg-success">ok</span><br/>
+                    <span class="badge bg-success">正常</span><br/>
                   {% endif %}
                   </td>
                   <td>
                     {% if details|key:"geolocation" %}
-                      <strong>IP: </strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
-                      <strong>Country: </strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
-                      <strong>Region: </strong>{{details|key:"geolocation"|key:"region"}} <br/>
-                      <strong>City: </strong>{{details|key:"geolocation"|key:"city"}} <br/>
-                      <strong>Latitude: </strong>{{details|key:"geolocation"|key:"latitude"}} <br/>
-                      <strong>Longitude: </strong>{{details|key:"geolocation"|key:"longitude"}} <br/>
-                      <strong>View: <a target="_blank" href="http://maps.google.com/maps?q={{details|key:"geolocation"|key:"latitude"}},{{details|key:"geolocation"|key:"longitude"}}">Google Map</a>
+                      <strong>IP：</strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
+                      <strong>国家：</strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
+                      <strong>地区：</strong>{{details|key:"geolocation"|key:"region"}} <br/>
+                      <strong>城市：</strong>{{details|key:"geolocation"|key:"city"}} <br/>
+                      <strong>纬度：</strong>{{details|key:"geolocation"|key:"latitude"}} <br/>
+                      <strong>经度：</strong>{{details|key:"geolocation"|key:"longitude"}} <br/>
+                      <strong>查看：<a target="_blank" href="http://maps.google.com/maps?q={{details|key:"geolocation"|key:"latitude"}},{{details|key:"geolocation"|key:"longitude"}}">Google 地图</a>
 
                     {% else %}
-                    No Geolocation information available.
+                    没有可用的地理位置信息。
                     {% endif %}
                   </td>
                   </tr>
@@ -1030,7 +1030,7 @@
         <div class="card">
           <div class="card-body">
             <p>
-             <strong><i class="fas fa-globe"></i> URLS</strong>
+             <strong><i class="fas fa-globe"></i> URL</strong>
              </p>
               <div class="table-responsive">
               {% if urls %} 
@@ -1038,7 +1038,7 @@
                   <thead>
                   <tr>
                      <th>URL</th>
-                     <th>FILE</th>
+                     <th>文件</th>
                   </tr>
                  </thead>
                  <tbody>
@@ -1074,15 +1074,15 @@
         <div class="card">
           <div class="card-body">
              <p>
-             <strong><i class="fas fa-envelope"></i> EMAILS</strong>
+             <strong><i class="fas fa-envelope"></i> 邮箱</strong>
              </p>
               <div class="table-responsive">
                 {% if emails %} 
              <table id="table_emails" class="table table-bordered table-hover table-striped">
                   <thead>
                   <tr>
-                     <th>EMAIL</th>
-                     <th>FILE</th>
+                     <th>邮箱</th>
+                     <th>文件</th>
                   </tr>
                  </thead>
                  <tbody>
@@ -1118,15 +1118,15 @@
          <div class="card">
            <div class="card-body">
               <p>
-              <strong><i class="fas fa-user-secret"></i> TRACKERS</strong>
+              <strong><i class="fas fa-user-secret"></i> 跟踪器</strong>
               </p>
                <div class="table-responsive">
                {% if trackers %}
                 <table id="table_trackers" class="table table-bordered table-hover table-striped">
                  <thead>
                    <tr>
-                     <th>TRACKER NAME</th>
-                     <th>CATEGORIES</th>
+                     <th>跟踪器名称</th>
+                     <th>分类</th>
                      <th>URL</th>
                    </tr>
                  </thead>
@@ -1164,7 +1164,7 @@
          <div class="card">
            <div class="card-body">
               <p>
-              <strong><i class="fas fa-key"></i> POSSIBLE HARDCODED SECRETS</strong>
+              <strong><i class="fas fa-key"></i> 可能的硬编码密钥</strong>
               </p>
                 <div class="list-group">
                    <p>  
@@ -1189,7 +1189,7 @@
         <div class="card">
           <div class="card-body">
              <p>
-             <strong><i class="fas fa-font"></i> STRINGS</strong>
+             <strong><i class="fas fa-font"></i> 字符串</strong>
              </p>
                <div class="list-group">
                  {% include 'base/list.html' with list=strings type="strings"  limit=100 %}
@@ -1210,7 +1210,7 @@
       <div class="card">
         <div class="card-body">
             <p>
-            <strong><i class="far fa-copy"></i> FILES</strong>
+            <strong><i class="far fa-copy"></i> 文件</strong>
             </p>
               <div class="list-group">
                 {% include 'base/list.html' with list=files type="files"  limit=200 %}
@@ -1233,7 +1233,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <h4 class="modal-title">Info.plist</h4>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button type="button" class="close" data-dismiss="modal" aria-label="关闭">
               <span aria-hidden="true">×</span>
             </button>
           </div>
@@ -1253,8 +1253,8 @@
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Suppression Rules</h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <h4 class="modal-title">抑制规则</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="关闭">
           <span aria-hidden="true">×</span>
         </button>
       </div>
@@ -1262,9 +1262,9 @@
         <table id="sup_table" class="table table-bordered table-hover table-striped">
           <thead>
             <tr>
-                <th>Suppression Type</th>
-                <th>By Rule ID</th>
-                <th>By Files</th>
+                <th>抑制类型</th>
+                <th>按规则 ID</th>
+                <th>按文件</th>
             </tr>
         </thead>
         <tbody>
@@ -1394,9 +1394,9 @@
 <table id="scan_logs" class="table table-bordered table-hover table-striped">
   <thead>
     <tr>
-        <th>Timestamp</th>
-        <th>Event</th>
-        <th>Error</th>
+        <th>时间戳</th>
+        <th>事件</th>
+        <th>错误</th>
     </tr>
   </thead>
 <tbody>

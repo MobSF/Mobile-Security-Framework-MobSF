@@ -28,7 +28,7 @@
         <!-- Sidebar user panel (optional) -->
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
         <div class="info">
-          <a href="#" class="d-block">Static Analyzer</a>
+          <a href="#" class="d-block">静态分析器</a>
         </div>
       </div>
 
@@ -40,7 +40,7 @@
             <a href="#information" class="nav-link">
               <i class="nav-icon fas fa-info-circle"></i>
               <p>
-                Information
+                基本信息
               </p>
             </a>
           </li>
@@ -48,7 +48,7 @@
             <a href="#scan_options" class="nav-link">
               <i class="nav-icon fas fa-cog"></i>
               <p>
-                Scan Options
+                扫描选项
               </p>
             </a>
           </li>
@@ -56,7 +56,7 @@
             <a href="#binary_analysis" class="nav-link">
               <i class="nav-icon fas fa-flag"></i>
               <p>
-                Binary Analysis
+                二进制分析
               </p>
             </a>
           </li>
@@ -64,7 +64,7 @@
             <a href="#malware_lookup" class="nav-link">
               <i class="fa fa-ban nav-icon"></i>
               <p>
-                Malware Lookup
+                恶意软件查询
               </p>
             </a>
           </li>
@@ -72,7 +72,7 @@
               <li class="nav-item">
                 <a href="#virus_total" class="nav-link">
                   <i class="fas fa-spider nav-icon"></i>
-                  <p>VirusTotal</p>
+                  <p>Virus总计</p>
                 </a>
               </li>
             {% endif %}
@@ -80,7 +80,7 @@
             <a href="#files" class="nav-link">
               <i class="nav-icon far fa-copy"></i>
               <p>
-                Files
+                文件
               </p>
             </a>
           </li>
@@ -134,7 +134,7 @@
               <h5 class="card-title"></h5>
                 <div class="row">
                 <div class="col-2">
-                  <p><strong><i class="fas fa-info"></i> APP INFORMATION </strong></p>
+                  <p><strong><i class="fas fa-info"></i> 应用信息 </strong></p>
                     <span class="badge bg-primary">App Name</span>
                     {{ app_name }} <br/>
                     <span class="badge bg-primary">Publisher</span>
@@ -145,17 +145,17 @@
                     {{ architecture }}
                     {% if virus_total and virus_total.items|length > 9 %}
                       {% if virus_total.positives > 0 %} 
-                        <span class="badge bg-danger">VirusTotal Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
+                        <span class="badge bg-danger">Virus总计 Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
                       {% else %}
-                        <span class="badge bg-success">VirusTotal Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
+                        <span class="badge bg-success">Virus总计 Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
                       {% endif %}
                     {% endif %}
                 </div>
                 <div class="col-5">
-                  <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION </strong></p>                         
+                  <p><strong><i class="fas fa-box-open"></i> 文件信息 </strong></p>                         
                       <span class="badge bg-primary">File Name</span>
                       {{ file_name }} <br/>
-                      <span class="badge bg-primary">Size</span>
+                      <span class="badge bg-primary">大小</span>
                       {{ size }} <br/>
                       <span class="badge bg-primary">MD5</span>
                       {{ md5 }} <br/>
@@ -166,12 +166,12 @@
                 </p>
                 </div>
                 <div class="col-5">
-                  <p><strong><i class="fas fa-file-code"></i> XML INFORMATION </strong></p>                                       
+                  <p><strong><i class="fas fa-file-code"></i> XML 信息RMATION </strong></p>                                       
                     <span class="badge bg-primary">Compiler Version</span>
                     {{ compiler_version }}
                   <span class="badge bg-primary">Visual Studio Version</span>
                     {{ visual_studio_version }}  <br/>
-                    <span class="badge bg-primary">Visual Studio Edition</span>
+                    <span class="badge bg-primary">Visual Studio 编辑ion</span>
                     {{ visual_studio_edition }}  <br/>
                     <span class="badge bg-primary">Target OS</span>
                     {{ target_os }}  <br/>
@@ -211,10 +211,10 @@
                 <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
                 </p>
                 <p align="center">
-                   <a href="{% url 'static_analyzer_windows' checksum=md5 %}?rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
-                   <a href="#" data-target="#mstrings" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-table"></i> View Strings</a>
+                   <a href="{% url 'static_analyzer_windows' checksum=md5 %}?rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> 重新扫描</a>
+                   <a href="#" data-target="#mstrings" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-table"></i> 查看 字符串</a>
                    <button type="button" class="btn btn-warning" data-toggle="modal" data-target=".scan-logs-mdl"><i class="fa fa-list" aria-hidden="true"></i> Scan Logs</button>
-                   <a href="{% url "download_binary" checksum=md5 %}" class="btn btn-warning"> <i class="fa fa-download"></i> Download APPX</a>
+                   <a href="{% url "download_binary" checksum=md5 %}" class="btn btn-warning"> <i class="fa fa-download"></i> 下载 APPX</a>
                </p>
               </div>
             </div><!-- /.card -->
@@ -232,16 +232,16 @@
         <div class="card">
           <div class="card-body">
               <p>
-             <strong><i class="fas fa-flag"></i> APPX BINARY ANALYSIS</strong>
+             <strong><i class="fas fa-flag"></i> APPX 二进制分析</strong>
              </p>
               <div class="table-responsive">
                    <table class="table table-bordered table-hover table-striped">
                   <thead>
                       <tr>
                           <th>ISSUE</th>
-                          <th>STATUS</th>
-                          <th>DESCRIPTION</th>
-                          <th>INFO</th>
+                          <th>状态</th>
+                          <th>描述</th>
+                          <th>信息</th>
                       </tr>
                   </thead>
                   <tbody>
@@ -252,7 +252,7 @@
                           {% if result.status == "Insecure" %}
                             <span class='badge bg-danger'>
                           {% endif %}
-                          {% if result.status == "Secure" %}
+                          {% if result.status == "安全" %}
                             <span class='badge bg-success'>
                           {% endif %}
                           {% if result.status == "Info" %}
@@ -289,7 +289,7 @@
     </div>
 </section>
  <!-- ===========================end binary analysis ================================== -->
-  <!---Malware Analysis Section-->
+  <!---恶意软件分析 Section-->
  <a id="malware_lookup" class="anchor"></a>
  <section class="content">
    <div class="container-fluid">
@@ -304,7 +304,7 @@
                <div class="row">
                 <div class="col-sm-3 col-6">
                 <div class="description-block border-right">
-                <span class="text-danger"><a href="https://www.virustotal.com/gui/file/{{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> VirusTotal Report</a></span>
+                <span class="text-danger"><a href="https://www.virustotal.com/gui/file/{{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> Virus总计 Report</a></span>
                 </div>
                 </div>
                 
@@ -346,7 +346,7 @@
         <div class="card">
           <div class="card-body">
             <p>
-             <strong><i class="fas fa-spider"></i> VIRUSTOTAL SCAN</strong>
+             <strong><i class="fas fa-spider"></i> Virus总计 扫描</strong>
              </p>
                <div class="table-responsive">
                  {% if virus_total.items|length < 9 %} {% comment %} Basic check to determine if the response is a msg or a result {% endcomment %}
@@ -422,8 +422,8 @@
       <div class="modal-dialog modal-xl">
         <div class="modal-content">
           <div class="modal-header">
-            <h4 class="modal-title">Strings</h4>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <h4 class="modal-title">字符串</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="关闭">
               <span aria-hidden="true">×</span>
             </button>
           </div>

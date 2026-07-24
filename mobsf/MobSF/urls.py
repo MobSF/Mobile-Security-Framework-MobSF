@@ -31,6 +31,7 @@ from mobsf.MobSF.views import (
     authorization,
     home,
     saml2,
+    i18n as i18n_views,
 )
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.MobSF.views.api import api_android_dynamic_analysis as api_dz
@@ -87,6 +88,10 @@ urlpatterns = [
     re_path(r'^sso/acs/$',
             saml2.saml_acs,
             name='saml_acs'),
+    # Language Switch
+    re_path(r'^i18n/setlang/$',
+            i18n_views.set_language,
+            name='set_language'),
     # REST API
     # Static Analysis
     re_path(r'^api/v1/upload$', api_sz.api_upload),

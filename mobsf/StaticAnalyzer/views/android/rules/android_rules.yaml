@@ -1,7 +1,7 @@
 - id: android_ip_disclosure
-  message: IP Address disclosure
+  message: IP 地址泄露
   type: Regex
-  pattern: '(?<![.\d])(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])(?![.\d])'
+  pattern: (?<![.\d])(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])(?![.\d])
   severity: warning
   input_case: exact
   metadata:
@@ -10,9 +10,7 @@
     owasp-mobile: ''
     masvs: code-2
 - id: android_hiddenui
-  message: >-
-    Hidden elements in view can be used to hide data from user. But this data
-    can be leaked
+  message: 视图中的隐藏元素可用于向用户隐藏数据，但这些数据可能泄露
   type: Regex
   pattern: setVisibility\(View\.GONE\)|setVisibility\(View\.INVISIBLE\)
   severity: high
@@ -23,15 +21,11 @@
     owasp-mobile: m1
     masvs: storage-7
 - id: android_insecure_ssl
-  message: >-
-    Insecure Implementation of SSL. Trusting all the certificates or accepting
-    self signed certificates is a critical Security Hole. This application is
-    vulnerable to MITM attacks
+  message: SSL 实现不安全。信任所有证书或接受自签名证书是严重的安全漏洞。此应用容易受到中间人攻击
   type: RegexAnd
   pattern:
-    - javax\.net\.ssl
-    - >-
-      TrustAllSSLSocket-Factory|AllTrustSSLSocketFactory|NonValidatingSSLSocketFactory|net\.SSLCertificateSocketFactory|ALLOW_ALL_HOSTNAME_VERIFIER|\.setDefaultHostnameVerifier\(|NullHostnameVerifier\(
+  - javax\.net\.ssl
+  - TrustAllSSLSocket-Factory|AllTrustSSLSocketFactory|NonValidatingSSLSocketFactory|net\.SSLCertificateSocketFactory|ALLOW_ALL_HOSTNAME_VERIFIER|\.setDefaultHostnameVerifier\(|NullHostnameVerifier\(
   severity: high
   input_case: exact
   metadata:
@@ -41,13 +35,11 @@
     masvs: network-3
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05g-Testing-Network-Communication.md#android-network-apis
 - id: android_webview_external
-  message: >-
-    WebView load files from external storage. Files in external storage can be
-    modified by any application.
+  message: WebView 从外部存储加载文件。外部存储中的文件可被任何应用修改。
   type: RegexAnd
   pattern:
-    - \.loadUrl\(.{0,48}getExternalStorageDirectory\(
-    - webkit\.WebView
+  - \.loadUrl\(.{0,48}getExternalStorageDirectory\(
+  - webkit\.WebView
   severity: high
   input_case: exact
   metadata:
@@ -57,11 +49,11 @@
     masvs: platform-6
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05h-Testing-Platform-Interaction.md#static-analysis-7
 - id: android_write_app_dir
-  message: App can write to App Directory. Sensitive Information should be encrypted.
+  message: 应用可写入应用目录。敏感信息应当加密。
   type: RegexOr
   pattern:
-    - MODE_PRIVATE
-    - Context\.MODE_PRIVATE
+  - MODE_PRIVATE
+  - Context\.MODE_PRIVATE
   severity: info
   input_case: exact
   metadata:
@@ -70,7 +62,7 @@
     owasp-mobile: ''
     masvs: storage-14
 - id: android_insecure_random
-  message: The App uses an insecure Random Number Generator.
+  message: 应用使用了不安全的随机数生成器。
   type: Regex
   pattern: java\.util\.Random(?!Access)
   severity: warning
@@ -82,7 +74,7 @@
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#weak-random-number-generators
     masvs: crypto-6
 - id: android_logging
-  message: The App logs information. Sensitive information should never be logged.
+  message: 应用记录日志信息。敏感信息不应被记录。
   type: Regex
   pattern: Log\.(v|d|i|w|e|f|s)|System\.out\.print|System\.err\.print
   severity: info
@@ -94,7 +86,7 @@
     masvs: storage-3
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#logs
 - id: android_sql_cipher
-  message: This App uses SQL Cipher. Ensure that secrets are not hardcoded in code.
+  message: 此应用使用 SQLCipher。请确保密钥未硬编码在代码中。
   type: Regex
   pattern: SQLiteOpenHelper\.getWritableDatabase\(
   severity: info
@@ -105,7 +97,7 @@
     owasp-mobile: ''
     masvs: crypto-1
 - id: android_tapjacking
-  message: This app has capabilities to prevent tapjacking attacks.
+  message: 此应用具有防止点击劫持攻击的能力。
   type: Regex
   pattern: setFilterTouchesWhenObscured\(true\)
   severity: good
@@ -117,13 +109,11 @@
     masvs: platform-9
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05h-Testing-Platform-Interaction.md#testing-for-overlay-attacks-mstg-platform-9
 - id: android_read_write_external
-  message: >-
-    App can read/write to External Storage. Any App can read data written to
-    External Storage.
+  message: 应用可读写外部存储。任何应用都可以读取写入外部存储的数据。
   type: RegexOr
   pattern:
-    - \.getExternalStorage
-    - \.getExternalFilesDir\(
+  - \.getExternalStorage
+  - \.getExternalFilesDir\(
   severity: warning
   input_case: exact
   metadata:
@@ -133,9 +123,7 @@
     masvs: storage-2
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#external-storage
 - id: android_temp_file
-  message: >-
-    App creates temp file. Sensitive information should never be written into a
-    temp file.
+  message: 应用创建临时文件。敏感信息不应写入临时文件。
   type: Regex
   pattern: \.createTempFile\(
   severity: warning
@@ -146,13 +134,11 @@
     owasp-mobile: m2
     masvs: storage-2
 - id: android_webview
-  message: >-
-    Insecure WebView Implementation. Execution of user controlled code in
-    WebView is a critical Security Hole.
+  message: WebView 实现不安全。在 WebView 中执行用户可控代码是严重的安全漏洞。
   type: RegexAnd
   pattern:
-    - setJavaScriptEnabled\(true\)
-    - addJavascriptInterface\(
+  - setJavaScriptEnabled\(true\)
+  - addJavascriptInterface\(
   severity: warning
   input_case: exact
   metadata:
@@ -162,14 +148,12 @@
     masvs: platform-7
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05h-Testing-Platform-Interaction.md#testing-javascript-execution-in-webviews-mstg-platform-5
 - id: android_webview_allow_file_from_url
-  message: >-
-    Ensure that user controlled URLs never reaches the Webview. Enabling file access
-    from URLs in WebView can leak sensitive information from the file system.
+  message: 确保用户可控的 URL 不会到达 WebView。在 WebView 中启用 URL 文件访问可能泄露文件系统中的敏感信息。
   type: RegexAndOr
   pattern:
-    - setJavaScriptEnabled\(true\)
-    - - \.setAllowFileAccessFromFileURLs\(true\)
-      - \.setAllowUniversalAccessFromFileURLs\(true\)
+  - setJavaScriptEnabled\(true\)
+  - - \.setAllowFileAccessFromFileURLs\(true\)
+    - \.setAllowUniversalAccessFromFileURLs\(true\)
   severity: warning
   input_case: exact
   metadata:
@@ -179,13 +163,11 @@
     masvs: platform-7
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05h-Testing-Platform-Interaction.md#static-analysis-6
 - id: android_sql_cipher_aes256
-  message: >-
-    This App uses SQL Cipher. SQLCipher provides 256-bit AES encryption to
-    sqlite database files.
+  message: 此应用使用 SQLCipher。SQLCipher 为 SQLite 数据库文件提供 256 位 AES 加密。
   type: RegexAnd
   pattern:
-    - SQLiteDatabase\.loadLibs\(
-    - net\.sqlcipher\.
+  - SQLiteDatabase\.loadLibs\(
+  - net\.sqlcipher\.
   severity: info
   input_case: exact
   metadata:
@@ -194,11 +176,11 @@
     owasp-mobile: ''
     masvs: crypto-1
 - id: android_download_manager
-  message: This App download files using Android Download Manager
+  message: 此应用使用 Android 下载管理器下载文件
   type: RegexAnd
   pattern:
-    - android\.app\.DownloadManager
-    - getSystemService\(DOWNLOAD_SERVICE\)
+  - android\.app\.DownloadManager
+  - getSystemService\(DOWNLOAD_SERVICE\)
   severity: info
   input_case: exact
   metadata:
@@ -207,11 +189,11 @@
     owasp-mobile: ''
     masvs: ''
 - id: android_db_encryption
-  message: This App use Realm Database with encryption.
+  message: 此应用使用带加密的 Realm 数据库。
   type: RegexAnd
   pattern:
-    - io\.realm\.Realm
-    - \.encryptionKey\(
+  - io\.realm\.Realm
+  - \.encryptionKey\(
   severity: good
   input_case: exact
   metadata:
@@ -220,11 +202,11 @@
     owasp-mobile: ''
     masvs: crypto-1
 - id: android_webview_debug
-  message: Remote WebView debugging is enabled.
+  message: 远程 WebView 调试已启用。
   type: RegexAnd
   pattern:
-    - \.setWebContentsDebuggingEnabled\(true\)
-    - WebView
+  - \.setWebContentsDebuggingEnabled\(true\)
+  - WebView
   severity: high
   input_case: exact
   metadata:
@@ -234,11 +216,11 @@
     masvs: resilience-2
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#debugging-and-tracing
 - id: android_aar_jar_debug_enabled
-  message: Debug configuration enabled. Production builds must not be debuggable.
+  message: 调试配置已启用。生产版本不得可调试。
   type: RegexAnd
   pattern:
-    - ' class BuildConfig'
-    - DEBUG.{1,25}?true
+  - ' class BuildConfig'
+  - DEBUG.{1,25}?true
   severity: high
   input_case: exact
   metadata:
@@ -248,13 +230,11 @@
     masvs: resilience-2
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#debugging-and-tracing
 - id: android_clipboard_listen
-  message: >-
-    This app listens to Clipboard changes. Some malware also listen to
-    Clipboard changes.
+  message: 此应用监听剪贴板变化。某些恶意软件也会监听剪贴板变化。
   type: RegexAnd
   pattern:
-    - content\.ClipboardManager
-    - OnPrimaryClipChangedListener
+  - content\.ClipboardManager
+  - OnPrimaryClipChangedListener
   severity: info
   input_case: exact
   metadata:
@@ -264,13 +244,11 @@
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04b-Mobile-App-Security-Testing.md#clipboard
     masvs: platform-4
 - id: android_clipboard_copy
-  message: >-
-    This App copies data to clipboard. Sensitive data should not be copied to
-    clipboard as other applications can access it.
+  message: 此应用将数据复制到剪贴板。敏感数据不应复制到剪贴板，因为其他应用可以访问。
   type: RegexAnd
   pattern:
-    - content\.ClipboardManager
-    - setPrimaryClip\(
+  - content\.ClipboardManager
+  - setPrimaryClip\(
   severity: info
   input_case: exact
   metadata:
@@ -280,13 +258,11 @@
     masvs: storage-10
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04b-Mobile-App-Security-Testing.md#clipboard
 - id: android_webview_ignore_ssl
-  message: >-
-    Insecure WebView Implementation. WebView ignores SSL Certificate errors and
-    accept any SSL Certificate. This application is vulnerable to MITM attacks
+  message: WebView 实现不安全。WebView 忽略 SSL 证书错误并接受任何 SSL 证书。此应用容易受到中间人攻击
   type: RegexAnd
   pattern:
-    - onReceivedSslError\(WebView
-    - \.proceed\(\);
+  - onReceivedSslError\(WebView
+  - \.proceed\(\);
   severity: high
   input_case: exact
   metadata:
@@ -296,11 +272,8 @@
     masvs: network-3
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05g-Testing-Network-Communication.md#webview-server-certificate-verification
 - id: android_webview_mixed_content
-  message: >-
-    Insecure WebView Implementation. WebView is configured with
-    MIXED_CONTENT_ALWAYS_ALLOW, allowing a page loaded over HTTPS to load
-    content from insecure HTTP origins. This exposes the application to
-    man-in-the-middle content injection.
+  message: WebView 实现不安全。WebView 配置了 MIXED_CONTENT_ALWAYS_ALLOW，允许通过 HTTPS 加载的页面从不安全的
+    HTTP 源加载内容。这使应用容易受到中间人内容注入攻击。
   type: Regex
   pattern: setMixedContentMode\(.{0,48}MIXED_CONTENT_ALWAYS_ALLOW
   severity: high
@@ -312,15 +285,12 @@
     masvs: network-1
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05g-Testing-Network-Communication.md
 - id: android_sql_raw_query
-  message: >-
-    App uses SQLite Database and execute raw SQL query. Untrusted user input in
-    raw SQL queries can cause SQL Injection. Also sensitive information should
-    be encrypted and written to the database.
+  message: 应用使用 SQLite 数据库并执行原始 SQL 查询。原始 SQL 查询中的不可信用户输入可能导致 SQL 注入。此外，敏感信息应当加密后写入数据库。
   type: RegexAndOr
   pattern:
-    - android\.database\.sqlite
-    - - rawQuery\(
-      - execSQL\(
+  - android\.database\.sqlite
+  - - rawQuery\(
+    - execSQL\(
   severity: warning
   input_case: exact
   metadata:
@@ -330,13 +300,13 @@
     masvs: ''
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04h-Testing-Code-Quality.md#injection-flaws-mstg-arch-2-and-mstg-platform-2
 - id: android_detect_frida
-  message: This App detects frida server.
+  message: 此应用检测 Frida 服务器。
   type: RegexAndOr
   pattern:
-    - fridaserver
-    - - '27047'
-      - REJECT
-      - LIBFRIDA
+  - fridaserver
+  - - '27047'
+    - REJECT
+    - LIBFRIDA
   severity: good
   input_case: exact
   metadata:
@@ -346,18 +316,16 @@
     masvs: resilience-4
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05j-Testing-Resiliency-Against-Reverse-Engineering.md#testing-reverse-engineering-tools-detection-mstg-resilience-4
 - id: android_ssl_pinning
-  message: >-
-    This App uses SSL certificate pinning to detect or 
-    prevent MITM attacks in secure communication channel.
+  message: 此应用使用 SSL 证书固定来检测或防止安全通信通道中的中间人攻击。
   type: RegexAndOr
   pattern:
-    - org\.thoughtcrime\.ssl\.pinning|\.getTrustManagers\(|TrustManagerFactory\.|CertificatePinner\.Builder\(|Retrofit\.Builder\(|Picasso\.Builder\(|\.setHostnameVerifier\(
-    - - PinningHelper\.getPinnedHttpsURLConnection|PinningHelper\.getPinnedHttpClient|PinningSSLSocketFactory\(
-      - \.setCertificateEntry\(|trustedChain|\.init\(
-      - \.add\(
-      - \.baseUrl\(
-      - \.downloader\(
-      - PinningHostnameVerifier\(|\.verify\(|DynamicPinningHostnameVerifier\(
+  - org\.thoughtcrime\.ssl\.pinning|\.getTrustManagers\(|TrustManagerFactory\.|CertificatePinner\.Builder\(|Retrofit\.Builder\(|Picasso\.Builder\(|\.setHostnameVerifier\(
+  - - PinningHelper\.getPinnedHttpsURLConnection|PinningHelper\.getPinnedHttpClient|PinningSSLSocketFactory\(
+    - \.setCertificateEntry\(|trustedChain|\.init\(
+    - \.add\(
+    - \.baseUrl\(
+    - \.downloader\(
+    - PinningHostnameVerifier\(|\.verify\(|DynamicPinningHostnameVerifier\(
   severity: good
   input_case: exact
   metadata:
@@ -367,15 +335,11 @@
     masvs: network-4
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05g-Testing-Network-Communication.md#testing-custom-certificate-stores-and-certificate-pinning-mstg-network-4
 - id: android_certificate_transparency
-  message: >-
-    This App enforce TLS Certificate Transparency which helps to 
-    detect SSL certificates that have been mistakenly issued by a 
-    certificate authority or maliciously acquired from an otherwise 
-    unimpeachable certificate authority.
+  message: 此应用强制执行 TLS 证书透明度，有助于检测被证书颁发机构错误签发或恶意获取的 SSL 证书。
   type: RegexAnd
   pattern:
-    - CTHostnameVerifierBuilder\(
-    - CTInterceptorBuilder\(
+  - CTHostnameVerifierBuilder\(
+  - CTInterceptorBuilder\(
   severity: good
   input_case: exact
   metadata:
@@ -385,14 +349,12 @@
     masvs: network-4
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05g-Testing-Network-Communication.md#testing-custom-certificate-stores-and-certificate-pinning-mstg-network-4
 - id: android_prevent_screenshot
-  message: >-
-    This App has capabilities to prevent against Screenshots from Recent Task
-    History/ Now On Tap etc.
+  message: 此应用具有防止从最近任务历史/即时屏幕等功能截屏的能力。
   type: RegexAndOr
   pattern:
-    - \.FLAG_SECURE
-    - - getWindow\(\)\.setFlags\(
-      - getWindow\(\)\.addFlags\(
+  - \.FLAG_SECURE
+  - - getWindow\(\)\.setFlags\(
+    - getWindow\(\)\.addFlags\(
   severity: good
   input_case: exact
   metadata:
@@ -402,13 +364,11 @@
     masvs: storage-9
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#finding-sensitive-information-in-auto-generated-screenshots-mstg-storage-9
 - id: android_debuggable
-  message: >-
-    DexGuard Debug Detection code to detect whether an App is debuggable or not
-    is identified.
+  message: 检测到 DexGuard 调试检测代码，用于检测应用是否可调试。
   type: RegexAnd
   pattern:
-    - import dexguard\.util
-    - DebugDetector\.isDebuggable
+  - import dexguard\.util
+  - DebugDetector\.isDebuggable
   severity: good
   input_case: exact
   metadata:
@@ -418,11 +378,11 @@
     masvs: resilience-2
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#debugging-and-tracing
 - id: android_debugger_detect
-  message: DexGuard Debugger Detection code is identified.
+  message: 检测到 DexGuard 调试器检测代码。
   type: RegexAnd
   pattern:
-    - import dexguard\.util
-    - DebugDetector\.isDebuggerConnected
+  - import dexguard\.util
+  - DebugDetector\.isDebuggerConnected
   severity: good
   input_case: exact
   metadata:
@@ -432,11 +392,11 @@
     masvs: resilience-2
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#debugging-and-tracing
 - id: android_emulator_detect
-  message: DexGuard Emulator Detection code is identified.
+  message: 检测到 DexGuard 模拟器检测代码。
   type: RegexAnd
   pattern:
-    - import dexguard\.util
-    - EmulatorDetector\.isRunningInEmulator
+  - import dexguard\.util
+  - EmulatorDetector\.isRunningInEmulator
   severity: good
   input_case: exact
   metadata:
@@ -446,13 +406,11 @@
     masvs: resilience-5
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#debugging-and-tracing
 - id: android_debug_sign
-  message: >-
-    DexGuard code to detect whether the App is signed with a debug key or not is
-    identified.
+  message: 检测到 DexGuard 代码，用于检测应用是否使用调试密钥签名。
   type: RegexAnd
   pattern:
-    - import dexguard\.util
-    - DebugDetector\.isSignedWithDebugKey
+  - import dexguard\.util
+  - DebugDetector\.isSignedWithDebugKey
   severity: good
   input_case: exact
   metadata:
@@ -461,11 +419,11 @@
     owasp-mobile: ''
     masvs: code-2
 - id: android_dexguard_root_detection
-  message: DexGuard Root Detection code is identified.
+  message: 检测到 DexGuard Root 检测代码。
   type: RegexAnd
   pattern:
-    - import dexguard\.util
-    - RootDetector\.isDeviceRooted
+  - import dexguard\.util
+  - RootDetector\.isDeviceRooted
   severity: good
   input_case: exact
   metadata:
@@ -475,11 +433,11 @@
     masvs: resilience-1
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05j-Testing-Resiliency-Against-Reverse-Engineering.md#testing-root-detection-mstg-resilience-1
 - id: android_tamper_detect
-  message: DexGuard App Tamper Detection code is identified.
+  message: 检测到 DexGuard 应用篡改检测代码。
   type: RegexAnd
   pattern:
-    - import dexguard\.util
-    - TamperDetector\.checkApk
+  - import dexguard\.util
+  - TamperDetector\.checkApk
   severity: good
   input_case: exact
   metadata:
@@ -489,11 +447,11 @@
     masvs: resilience-3
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#mobile-app-tampering-and-reverse-engineering
 - id: android_certificate_tamper
-  message: DexGuard Signer Certificate Tamper Detection code is identified.
+  message: 检测到 DexGuard 签名证书篡改检测代码。
   type: RegexAnd
   pattern:
-    - import dexguard\.util
-    - CertificateChecker\.checkCertificate
+  - import dexguard\.util
+  - CertificateChecker\.checkCertificate
   severity: good
   input_case: exact
   metadata:
@@ -503,11 +461,11 @@
     masvs: resilience-3
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#mobile-app-tampering-and-reverse-engineering
 - id: android_package_tamper
-  message: The App may use package signature for tamper detection.
+  message: 应用可能使用包签名进行篡改检测。
   type: RegexAnd
   pattern:
-    - PackageManager\.GET_SIGNATURES
-    - getPackageName\(
+  - PackageManager\.GET_SIGNATURES
+  - getPackageName\(
   severity: good
   input_case: exact
   metadata:
@@ -517,7 +475,7 @@
     masvs: resilience-3
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04c-Tampering-and-Reverse-Engineering.md#mobile-app-tampering-and-reverse-engineering
 - id: android_safetynet
-  message: This App uses SafetyNet API.
+  message: 此应用使用 SafetyNet API。
   type: Regex
   pattern: com.google\.android\.gms\.safetynet\.SafetyNetApi
   severity: good
@@ -529,16 +487,16 @@
     masvs: resilience-7
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05j-Testing-Resiliency-Against-Reverse-Engineering.md#safetynet
 - id: android_su_detect
-  message: This App may request root (Super User) privileges.
+  message: 此应用可能请求 Root（超级用户）权限。
   type: RegexOr
   pattern:
-    - com\.noshufou\.android\.su
-    - com\.thirdparty\.superuser
-    - eu\.chainfire\.supersu
-    - com\.koushikdutta\.superuser
-    - eu\.chainfire\.
-    - com\.saurik\.substrate
-    - de\.robv\.android\.xposed\.installer
+  - com\.noshufou\.android\.su
+  - com\.thirdparty\.superuser
+  - eu\.chainfire\.supersu
+  - com\.koushikdutta\.superuser
+  - eu\.chainfire\.
+  - com\.saurik\.substrate
+  - de\.robv\.android\.xposed\.installer
   severity: warning
   input_case: exact
   metadata:
@@ -548,13 +506,11 @@
     masvs: resilience-1
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05j-Testing-Resiliency-Against-Reverse-Engineering.md#testing-root-detection-mstg-resilience-1
 - id: android_jackson_deserialize
-  message: >-
-    The app uses jackson deserialization library. Deserialization of untrusted
-    input can result in arbitrary code execution.
+  message: 应用使用 Jackson 反序列化库。反序列化不可信输入可能导致任意代码执行。
   type: RegexAnd
   pattern:
-    - com\.fasterxml\.jackson\.databind\.ObjectMapper
-    - \.enableDefaultTyping\(
+  - com\.fasterxml\.jackson\.databind\.ObjectMapper
+  - \.enableDefaultTyping\(
   severity: high
   input_case: exact
   metadata:
@@ -563,10 +519,7 @@
     owasp-mobile: m7
     masvs: platform-8
 - id: android_aes_ecb
-  message: >-
-    The App uses ECB mode in Cryptographic encryption algorithm. ECB mode is
-    known to be weak as it results in the same ciphertext for identical blocks
-    of plaintext.
+  message: 应用在加密算法中使用 ECB 模式。ECB 模式已知存在弱点，因为相同明文块会产生相同密文。
   type: Regex
   pattern: Cipher\.getInstance\(\s*"\s*AES\/ECB
   severity: high
@@ -578,10 +531,7 @@
     masvs: crypto-2
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#weak-block-cipher-mode
 - id: android_aws_ecb_default
-  message: >-
-    Calling Cipher.getInstance("AES") will return AES ECB mode by default. ECB mode is
-    known to be weak as it results in the same ciphertext for identical blocks
-    of plaintext.
+  message: 调用 Cipher.getInstance("AES") 默认返回 AES ECB 模式。ECB 模式已知存在弱点，因为相同明文块会产生相同密文。
   type: Regex
   pattern: Cipher\.getInstance\("AES"\)
   severity: high
@@ -593,10 +543,7 @@
     masvs: crypto-2
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#weak-block-cipher-mode
 - id: android_rsa_no_oaep
-  message: >-
-    This App uses RSA Crypto without OAEP padding. The purpose of the padding
-    scheme is to prevent a number of attacks on RSA that only work when the
-    encryption is performed without padding.
+  message: 此应用使用 RSA 加密但未使用 OAEP 填充。填充方案的目的是防止多种仅在无填充加密时有效的 RSA 攻击。
   type: Regex
   pattern: Cipher\.getinstance\(\"rsa/.{1,48}/nopadding
   severity: high
@@ -608,12 +555,12 @@
     masvs: crypto-3
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#mobile-app-cryptography
 - id: android_world_writable
-  message: The file or SharedPreference is World Writable. Any App can write to the file
+  message: 该文件或 SharedPreference 对所有应用可写。任何应用都可以写入该文件
   type: RegexOr
   pattern:
-    - MODE_WORLD_WRITABLE
-    - \.getSharedPreferences\(.{0,50}?2\)
-    - 'openFileOutput\(\s*".{1,48}"\s*,\s*2\s*\)'
+  - MODE_WORLD_WRITABLE
+  - \.getSharedPreferences\(.{0,50}?2\)
+  - openFileOutput\(\s*".{1,48}"\s*,\s*2\s*\)
   severity: high
   input_case: exact
   metadata:
@@ -623,12 +570,12 @@
     masvs: storage-2
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#testing-local-storage-for-sensitive-data-mstg-storage-1-and-mstg-storage-2
 - id: android_world_readable
-  message: The file or SharedPreference is World Readable. Any App can read from the file
+  message: 该文件或 SharedPreference 对所有应用可读。任何应用都可以读取该文件
   type: RegexOr
   pattern:
-    - MODE_WORLD_READABLE
-    - \.getSharedPreferences\(.{0,50}?1\)
-    - 'openFileOutput\(\s*".{1,48}"\s*,\s*1\s*\)'
+  - MODE_WORLD_READABLE
+  - \.getSharedPreferences\(.{0,50}?1\)
+  - openFileOutput\(\s*".{1,48}"\s*,\s*1\s*\)
   severity: high
   input_case: exact
   metadata:
@@ -638,9 +585,9 @@
     masvs: storage-2
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#testing-local-storage-for-sensitive-data-mstg-storage-1-and-mstg-storage-2
 - id: android_world_read_write
-  message: The file is World Readable and Writable. Any App can read/write to the file
+  message: 该文件对所有应用可读可写。任何应用都可以读写该文件
   type: Regex
-  pattern: 'openFileOutput\(\s*".{1,48}"\s*,\s*3\s*\)'
+  pattern: openFileOutput\(\s*".{1,48}"\s*,\s*3\s*\)
   severity: high
   input_case: exact
   metadata:
@@ -650,12 +597,12 @@
     masvs: storage-2
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#testing-local-storage-for-sensitive-data-mstg-storage-1-and-mstg-storage-2
 - id: android_weak_hash
-  message: Weak Hash algorithm used
+  message: 使用了弱哈希算法
   type: RegexOr
   input_case: exact
   pattern:
-    - \.getInstance\(.{0,48}md4
-    - \.getInstance\(.{0,48}MD4
+  - \.getInstance\(.{0,48}md4
+  - \.getInstance\(.{0,48}MD4
   severity: high
   metadata:
     cvss: 7.4
@@ -664,17 +611,17 @@
     owasp-mobile: m5
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: android_weak_ciphers
-  message: Weak Encryption algorithm used
+  message: 使用了弱加密算法
   input_case: exact
   pattern:
-    - \.getInstance\(.{0,48}rc2
-    - \.getInstance\(.{0,48}RC2
-    - \.getInstance\(.{0,48}rc4
-    - \.getInstance\(.{0,48}RC4
-    - \.getInstance\(.{0,48}blowfish
-    - \.getInstance\(.{0,48}BLOWFISH
-    - Cipher\.getInstance\(.{0,48}DES
-    - Cipher\.getInstance\(.{0,48}des
+  - \.getInstance\(.{0,48}rc2
+  - \.getInstance\(.{0,48}RC2
+  - \.getInstance\(.{0,48}rc4
+  - \.getInstance\(.{0,48}RC4
+  - \.getInstance\(.{0,48}blowfish
+  - \.getInstance\(.{0,48}BLOWFISH
+  - Cipher\.getInstance\(.{0,48}DES
+  - Cipher\.getInstance\(.{0,48}des
   severity: high
   type: RegexOr
   metadata:
@@ -684,11 +631,11 @@
     owasp-mobile: m5
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: cbc_padding_oracle
-  message: The App uses the encryption mode CBC with PKCS5/PKCS7 padding. This configuration is vulnerable to padding oracle attacks.
+  message: 应用使用 CBC 加密模式配合 PKCS5/PKCS7 填充。此配置容易受到 Padding Oracle 攻击。
   input_case: exact
   pattern:
-    - \.getInstance\(.{0,48}\/CBC\/PKCS5Padding
-    - \.getInstance\(.{0,48}\/CBC\/PKCS7Padding
+  - \.getInstance\(.{0,48}\/CBC\/PKCS5Padding
+  - \.getInstance\(.{0,48}\/CBC\/PKCS7Padding
   severity: high
   type: RegexOr
   metadata:
@@ -698,12 +645,12 @@
     owasp-mobile: m5
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: android_md5
-  message: MD5 is a weak hash known to have hash collisions.
+  message: MD5 是已知存在哈希碰撞的弱哈希算法。
   input_case: exact
   pattern:
-    - \.getInstance\(.{0,48}MD5
-    - \.getInstance\(.{0,48}md5
-    - DigestUtils\.md5\(
+  - \.getInstance\(.{0,48}MD5
+  - \.getInstance\(.{0,48}md5
+  - DigestUtils\.md5\(
   severity: warning
   type: RegexOr
   metadata:
@@ -713,14 +660,14 @@
     owasp-mobile: m5
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: android_sha1
-  message: SHA-1 is a weak hash known to have hash collisions.
+  message: SHA-1 是已知存在哈希碰撞的弱哈希算法。
   input_case: exact
   pattern:
-    - \.getInstance\(.{0,48}SHA-1
-    - \.getInstance\(.{0,48}sha-1
-    - \.getInstance\(.{0,48}SHA1
-    - \.getInstance\(.{0,48}sha1
-    - DigestUtils\.sha\(
+  - \.getInstance\(.{0,48}SHA-1
+  - \.getInstance\(.{0,48}sha-1
+  - \.getInstance\(.{0,48}SHA1
+  - \.getInstance\(.{0,48}sha1
+  - DigestUtils\.sha\(
   severity: warning
   type: RegexOr
   metadata:
@@ -730,15 +677,12 @@
     owasp-mobile: m5
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: android_weak_iv
-  message: >-
-    The App may use weak IVs like "0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00" or
-    "0x01,0x02,0x03,0x04,0x05,0x06,0x07". Not using a random IV makes the
-    resulting ciphertext much more predictable and susceptible to a dictionary
-    attack.
+  message: 应用可能使用弱 IV，如 "0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00" 或 "0x01,0x02,0x03,0x04,0x05,0x06,0x07"。不使用随机
+    IV 使生成的密文更可预测，容易受到字典攻击。
   input_case: exact
   pattern:
-    - '0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00'
-    - '0x01,0x02,0x03,0x04,0x05,0x06,0x07'
+  - 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+  - 0x01,0x02,0x03,0x04,0x05,0x06,0x07
   severity: high
   type: RegexOr
   metadata:
@@ -748,19 +692,19 @@
     owasp-mobile: m5
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#mobile-app-cryptography
 - id: android_detect_root
-  message: This App may have root detection capabilities.
+  message: 此应用可能有 Root 检测能力。
   input_case: exact
   pattern:
-    - \.contains\("test-keys"\)
-    - \/system\/app\/Superuser.apk
-    - isDeviceRooted\(\)
-    - \/system\/bin\/failsafe\/su
-    - \/system\/bin\/su
-    - \/system\/xbin\/su
-    - \/sbin\/su
-    - \/system\/sd\/xbin\/su
-    - '"\/system\/xbin\/which", "su"'
-    - RootTools\.isAccessGiven\(\)
+  - \.contains\("test-keys"\)
+  - \/system\/app\/Superuser.apk
+  - isDeviceRooted\(\)
+  - \/system\/bin\/failsafe\/su
+  - \/system\/bin\/su
+  - \/system\/xbin\/su
+  - \/sbin\/su
+  - \/system\/sd\/xbin\/su
+  - '"\/system\/xbin\/which", "su"'
+  - RootTools\.isAccessGiven\(\)
   severity: good
   type: RegexOr
   metadata:
@@ -770,12 +714,9 @@
     owasp-mobile: ''
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05j-Testing-Resiliency-Against-Reverse-Engineering.md#testing-root-detection-mstg-resilience-1
 - id: android_hardcoded
-  message: >-
-    Files may contain hardcoded sensitive information like usernames,
-    passwords, keys etc.
+  message: 文件可能包含硬编码的敏感信息，如用户名、密码、密钥等。
   input_case: lower
-  pattern: >-
-    (password\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(pass\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(username\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(secret\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(key\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})
+  pattern: (password\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(pass\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(username\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(secret\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(key\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})
   severity: warning
   type: Regex
   metadata:

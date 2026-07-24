@@ -80,7 +80,7 @@ function ansiToHtml(input) {
   result = result.replace(/\[96m/g, '<span style="color:lightcyan">');
   result = result.replace(/\[97m/g, '<span style="color:white">');
   
-  // Background colors
+  // 返回ground colors
   result = result.replace(/\[40m/g, '<span style="background-color:black">');
   result = result.replace(/\[41m/g, '<span style="background-color:red">');
   result = result.replace(/\[42m/g, '<span style="background-color:green">');
@@ -90,7 +90,7 @@ function ansiToHtml(input) {
   result = result.replace(/\[46m/g, '<span style="background-color:cyan">');
   result = result.replace(/\[47m/g, '<span style="background-color:white">');
   
-  // Background colors (bright)
+  // 返回ground colors (bright)
   result = result.replace(/\[100m/g, '<span style="background-color:gray">');
   result = result.replace(/\[101m/g, '<span style="background-color:lightcoral">');
   result = result.replace(/\[102m/g, '<span style="background-color:lightgreen">');
@@ -187,7 +187,7 @@ $(document).ready( function () {
                 }
             },
             error: function(xhr, ajaxOptions, thrownError) {
-                console.log('Failed to load process list:', xhr.responseText);
+                console.log('未通过 to load process list:', xhr.responseText);
             }
         });
     }

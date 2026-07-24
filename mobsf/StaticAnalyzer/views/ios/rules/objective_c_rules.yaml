@@ -1,7 +1,7 @@
 - id: ios_ip_disclosure
-  message: IP Address disclosure
+  message: IP 地址泄露
   input_case: exact
-  pattern: '(?<![.\d])(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])(?![.\d])'
+  pattern: (?<![.\d])(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])(?![.\d])
   severity: warning
   type: Regex
   metadata:
@@ -10,8 +10,7 @@
     masvs: code-2
     owasp-mobile: ''
 - id: ios_hardcoded_info
-  message: Files may contain hardcoded sensitive information like usernames,
-    passwords, keys etc.
+  message: 文件可能包含硬编码的敏感信息，如用户名、密码、密钥等。
   input_case: lower
   pattern: (password\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(pass\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(username\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(secret\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})|(key\s*=\s*[\'|\"].{1,100}[\'|\"]\s{0,5})
   severity: high
@@ -23,7 +22,7 @@
     owasp-mobile: m9
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#checking-memory-for-sensitive-data-mstg-storage-10
 - id: ios_sqlite
-  message: App uses SQLite Database. Sensitive Information should be encrypted.
+  message: 应用使用 SQLite 数据库。敏感信息应当加密。
   input_case: exact
   pattern:
   - sqlite3_exec
@@ -37,7 +36,7 @@
     owasp-mobile: ''
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#sqlite-database-unencrypted
 - id: ios_load_html_string
-  message: User input in "loadHTMLString" will result in JavaScript Injection.
+  message: loadHTMLString 中的用户输入将导致 JavaScript 注入。
   input_case: exact
   pattern:
   - loadHTMLString
@@ -51,7 +50,7 @@
     owasp-mobile: m7
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06h-Testing-Platform-Interaction.md#testing-webview-protocol-handlers-mstg-platform-6
 - id: ios_jailbreak_detect
-  message: This App may have Jailbreak detection capabilities.
+  message: 此应用可能有越狱检测能力。
   input_case: exact
   pattern:
   - /Applications/Cydia\.app
@@ -110,11 +109,10 @@
     owasp-mobile: ''
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06j-Testing-Resiliency-Against-Reverse-Engineering.md#jailbreak-detection-mstg-resilience-1
 - id: ios_banned_api
-  message: >-
-    The App may contain banned API(s). These API(s) are insecure and must not be
-    used.
+  message: 应用可能包含被禁止的 API。这些 API 不安全，不应使用。
   input_case: exact
-  pattern: '( strcpy\(| memcpy\(| strcat\(| strncat\(| strncpy\(| sprintf\(| sprintf\(| gets\()'
+  pattern: ( strcpy\(| memcpy\(| strcat\(| strncat\(| strncpy\(| sprintf\(| sprintf\(|
+    gets\()
   severity: high
   type: Regex
   metadata:
@@ -124,12 +122,9 @@
     owasp-mobile: m7
     ref: https://developer.apple.com/library/archive/documentation/Security/Conceptual/SecureCodingGuide/Articles/BufferOverflows.html#//apple_ref/doc/uid/TP40002577-SW1
 - id: ios_self_signed_ssl
-  message: >-
-    App allows self signed or invalid SSL certificates. App is vulnerable to
-    MITM attacks.
+  message: 应用允许自签名或无效的 SSL 证书。应用容易受到中间人攻击。
   input_case: exact
-  pattern: >-
-    canAuthenticateAgainstProtectionSpace|continueWithoutCredentialForAuthenticationChallenge|kCFStreamSSLAllowsExpiredCertificates|kCFStreamSSLAllowsAnyRoot|kCFStreamSSLAllowsExpiredRoots|validatesSecureCertificate\s*=\s*(no|NO)|allowInvalidCertificates\s*=\s*(YES|yes)
+  pattern: canAuthenticateAgainstProtectionSpace|continueWithoutCredentialForAuthenticationChallenge|kCFStreamSSLAllowsExpiredCertificates|kCFStreamSSLAllowsAnyRoot|kCFStreamSSLAllowsExpiredRoots|validatesSecureCertificate\s*=\s*(no|NO)|allowInvalidCertificates\s*=\s*(YES|yes)
   severity: high
   type: Regex
   metadata:
@@ -139,12 +134,9 @@
     owasp-mobile: m3
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06g-Testing-Network-Communication.md#testing-custom-certificate-stores-and-certificate-pinning-mstg-network-3-and-mstg-network-4
 - id: ios_webview_ignore_ssl
-  message: >-
-    UIWebView in App ignore SSL errors and accept any SSL Certificate. App is
-    vulnerable to MITM attacks.
+  message: 应用中的 UIWebView 忽略 SSL 错误并接受任何 SSL 证书。应用容易受到中间人攻击。
   input_case: exact
-  pattern: >-
-    setAllowsAnyHTTPSCertificate:\s*YES|allowsAnyHTTPSCertificateForHost|loadingUnvalidatedHTTPSPage\s*=\s*(YES|yes)
+  pattern: setAllowsAnyHTTPSCertificate:\s*YES|allowsAnyHTTPSCertificateForHost|loadingUnvalidatedHTTPSPage\s*=\s*(YES|yes)
   severity: high
   type: Regex
   metadata:
@@ -154,7 +146,7 @@
     owasp-mobile: m3
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05g-Testing-Network-Communication.md#webview-server-certificate-verification
 - id: ios_app_logging
-  message: The App logs information. Sensitive information should never be logged.
+  message: 应用记录日志信息。敏感信息不应被记录。
   input_case: exact
   pattern: NSLog\(|NSAssert\(|fprintf\(|fprintf\(|Logging\(
   severity: info
@@ -166,11 +158,9 @@
     owasp-mobile: ''
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06i-Testing-Code-Quality-and-Build-Settings.md#finding-debugging-code-and-verbose-error-logging-mstg-code-4
 - id: ios_clipboard_listen
-  message: >-
-    This app listens to Clipboard changes. Some malware also listen to
-    Clipboard changes.
+  message: 此应用监听剪贴板变化。某些恶意软件也会监听剪贴板变化。
   input_case: exact
-  pattern: 'UIPasteboardChangedNotification|generalPasteboard\]\.string'
+  pattern: UIPasteboardChangedNotification|generalPasteboard\]\.string
   severity: warning
   type: Regex
   metadata:
@@ -180,11 +170,9 @@
     owasp-mobile: ''
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04b-Mobile-App-Security-Testing.md#clipboard
 - id: ios_temp_dir
-  message: >-
-    Untrusted user input to "NSTemporaryDirectory()" will result in path
-    traversal vulnerability.
+  message: 不可信用户输入到 NSTemporaryDirectory() 将导致路径遍历漏洞。
   input_case: exact
-  pattern: 'NSTemporaryDirectory\(\),'
+  pattern: NSTemporaryDirectory\(\),
   severity: warning
   type: Regex
   metadata:
@@ -193,9 +181,7 @@
     masvs: platform-2
     owasp-mobile: m10
 - id: ios_file_enc_locked
-  message: >-
-    File is stored in an encrypted format on disk and cannot be read from or
-    written to while the device is locked or booting.
+  message: 文件以加密格式存储在磁盘上，在设备锁定或启动时无法读取或写入。
   input_case: exact
   pattern: NSFileProtectionComplete
   severity: good
@@ -207,7 +193,7 @@
     owasp-mobile: ''
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#ios-data-storage
 - id: ios_file_enc_closed
-  message: File is stored in an encrypted format on disk after it is closed.
+  message: 文件关闭后以加密格式存储在磁盘上。
   input_case: exact
   pattern: NSFileProtectionCompleteUnlessOpen
   severity: good
@@ -219,9 +205,7 @@
     owasp-mobile: ''
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#ios-data-storage
 - id: ios_file_enc_boot
-  message: >-
-    File is stored in an encrypted format on disk and cannot be accessed until
-    after the device has booted.
+  message: 文件以加密格式存储在磁盘上，在设备启动后才能访问。
   input_case: exact
   pattern: NSFileProtectionCompleteUntilFirstUserAuthentication
   severity: good
@@ -233,7 +217,7 @@
     owasp-mobile: ''
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#ios-data-storage
 - id: ios_file_perm
-  message: The file has no special protections associated with it.
+  message: 该文件没有关联的特殊保护。
   input_case: exact
   pattern: NSFileProtectionNone
   severity: warning
@@ -245,12 +229,12 @@
     owasp-mobile: m1
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#ios-data-storage
 - id: ios_jailbreak_check
-  message: SFAntiPiracy Jailbreak checks found
+  message: 检测到 SFAntiPiracy 越狱检测
   input_case: exact
   pattern:
-    - SFAntiPiracy\.h
-    - SFAntiPiracy
-    - isJailbroken
+  - SFAntiPiracy\.h
+  - SFAntiPiracy
+  - isJailbroken
   severity: good
   type: RegexAnd
   metadata:
@@ -260,12 +244,12 @@
     owasp-mobile: ''
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06j-Testing-Resiliency-Against-Reverse-Engineering.md#jailbreak-detection-mstg-resilience-1
 - id: ios_piracy_check
-  message: SFAntiPiracy Piracy checks found
+  message: 检测到 SFAntiPiracy 盗版检测
   input_case: exact
   pattern:
-    - SFAntiPiracy\.h
-    - SFAntiPiracy
-    - isPirated
+  - SFAntiPiracy\.h
+  - SFAntiPiracy
+  - isPirated
   severity: good
   type: RegexAnd
   metadata:
@@ -275,11 +259,11 @@
     owasp-mobile: ''
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06j-Testing-Resiliency-Against-Reverse-Engineering.md#bypassing-jailbreak-detection
 - id: ios_md5_collision
-  message: MD5 is a weak hash known to have hash collisions.
+  message: MD5 是已知存在哈希碰撞的弱哈希算法。
   input_case: exact
   pattern:
-    - CommonDigest\.h
-    - CC_MD5
+  - CommonDigest\.h
+  - CC_MD5
   severity: high
   type: RegexAnd
   metadata:
@@ -289,11 +273,11 @@
     owasp-mobile: m5
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: ios_sha1_collision
-  message: SHA1 is a weak hash known to have hash collisions.
+  message: SHA1 是已知存在哈希碰撞的弱哈希算法。
   input_case: exact
   pattern:
-    - CommonDigest\.h
-    - CC_SHA1
+  - CommonDigest\.h
+  - CC_SHA1
   severity: high
   type: RegexAnd
   metadata:
@@ -303,14 +287,11 @@
     owasp-mobile: m5
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#identifying-insecure-andor-deprecated-cryptographic-algorithms-mstg-crypto-4
 - id: ios_aes_ecb
-  message: >-
-    The App uses ECB mode in Cryptographic encryption algorithm. ECB mode is
-    known to be weak as it results in the same ciphertext for identical blocks
-    of plaintext.
+  message: 应用在加密算法中使用 ECB 模式。ECB 模式已知存在弱点，因为相同明文块会产生相同密文。
   input_case: exact
   pattern:
-    - kCCOptionECBMode
-    - kCCAlgorithmAES
+  - kCCOptionECBMode
+  - kCCAlgorithmAES
   severity: high
   type: RegexAnd
   metadata:
@@ -320,11 +301,11 @@
     owasp-mobile: m5
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04g-Testing-Cryptography.md#weak-block-cipher-mode
 - id: ios_ptrace
-  message: 'The App has anti-debugger code using ptrace() '
+  message: 应用包含使用 ptrace() 的反调试代码
   input_case: exact
   pattern:
-    - ptrace_ptr
-    - PT_DENY_ATTACH
+  - ptrace_ptr
+  - PT_DENY_ATTACH
   severity: info
   type: RegexAnd
   metadata:
@@ -334,12 +315,12 @@
     owasp-mobile: ''
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06j-Testing-Resiliency-Against-Reverse-Engineering.md#using-ptrace
 - id: ios_mach_ports
-  message: This App has anti-debugger code using Mach Exception Ports.
+  message: 此应用包含使用 Mach 异常端口的反调试代码。
   input_case: exact
   pattern:
-    - mach\/mach_init\.h
-    - - MACH_PORT_VALID
-      - mach_task_self\(\)
+  - mach\/mach_init\.h
+  - - MACH_PORT_VALID
+    - mach_task_self\(\)
   severity: info
   type: RegexAndOr
   metadata:
@@ -349,14 +330,12 @@
     owasp-mobile: ''
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#mach-ports
 - id: ios_clipboard_copy
-  message: >-
-    This App copies data to clipboard. Sensitive data should not be copied to
-    clipboard as other applications can access it.
+  message: 此应用将数据复制到剪贴板。敏感数据不应复制到剪贴板，因为其他应用可以访问。
   input_case: exact
   pattern:
-    - UITextField
-    - - '@select\(cut:\)'
-      - '@select\(copy:\)'
+  - UITextField
+  - - '@select\(cut:\)'
+    - '@select\(copy:\)'
   severity: info
   type: RegexAndOr
   metadata:
@@ -366,7 +345,7 @@
     owasp-mobile: ''
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x04b-Mobile-App-Security-Testing.md#clipboard
 - id: ios_realm_db
-  message: App uses Realm Database. Sensitive Information should be encrypted.
+  message: 应用使用 Realm 数据库。敏感信息应当加密。
   input_case: exact
   pattern: '\[realm transactionWithBlock:'
   severity: info
@@ -378,13 +357,13 @@
     owasp-mobile: ''
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x06d-Testing-Data-Storage.md#realm-databases
 - id: ios_biometric_bool
-  message: Biometric authentication should be hardware and keychain backed, local authentication returns a boolean that can be bypassed by runtime instrumentation tools like Frida. This is not applicable if authentication data in keychain is protected with a biometric only access control.
+  message: 生物识别认证应有硬件和 Keychain 支持，本地认证返回的布尔值可被 Frida 等运行时插桩工具绕过。如果 Keychain 中的认证数据受仅生物识别访问控制保护，则不适用此规则。
   input_case: exact
   pattern:
-    - 'evaluatePolicy:'
-    - LAPolicyDeviceOwnerAuthentication
-    - LAContext
-    - 'reply:'
+  - 'evaluatePolicy:'
+  - LAPolicyDeviceOwnerAuthentication
+  - LAContext
+  - 'reply:'
   severity: warning
   type: RegexAnd
   metadata:

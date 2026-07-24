@@ -614,7 +614,7 @@ def is_md5(user_input):
     """Check if string is valid MD5."""
     stat = MD5_REGEX.match(user_input)
     if not stat:
-        logger.error('Invalid scan hash')
+        logger.error('无效的扫描哈希')
     return stat
 
 

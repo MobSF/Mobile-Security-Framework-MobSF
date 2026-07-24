@@ -370,7 +370,7 @@ def appsec_dashboard(request, checksum, api=False):
             # in REST API
             return print_n_send_error_response(
                 request,
-                'Invalid Hash',
+                '无效的哈希',
                 api)
         android_static_db = StaticAnalyzerAndroid.objects.filter(
             MD5=checksum).first()

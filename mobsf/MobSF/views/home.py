@@ -120,7 +120,7 @@ class Upload(object):
             return self.resp_json(response_data)
 
         if not self.form.is_valid():
-            msg = 'Invalid Form Data!'
+            msg = '无效的表单数据！'
             logger.error(msg)
             response_data['description'] = msg
             return self.resp_json(response_data)
@@ -362,7 +362,7 @@ def search(request, api=False):
                 return HttpResponseRedirect(url)
 
     msg = 'You can search by MD5, app name, package name, or file name.'
-    return print_n_send_error_response(request, msg, api, 'Scan not found')
+    return print_n_send_error_response(request, msg, api, '未找到扫描记录')
 
 
 def find_checksum(query):
@@ -390,7 +390,7 @@ def scan_status(request, api=False):
             return invalid_params(api)
         robj = RecentScansDB.objects.filter(MD5=scan_hash)
         if not robj.exists():
-            data = {'status': 'failed', 'error': 'scan hash not found'}
+            data = {'status': 'failed', 'error': '未找到扫描哈希'}
             return send_response(data, api)
         data = {'status': 'ok', 'logs': python_dict(robj[0].SCAN_LOGS)}
     except Exception as exp:
@@ -436,7 +436,7 @@ def download_binary(request, checksum, api=False):
         allowed_exts = settings.ALLOWED_EXTENSIONS
         if not is_md5(checksum):
             return HttpResponse(
-                'Invalid MD5 Hash',
+                '无效的 MD5 哈希',
                 status=HTTP_STATUS_404)
         robj = RecentScansDB.objects.filter(MD5=checksum).first()
         if not robj:
@@ -446,13 +446,13 @@ def download_binary(request, checksum, api=False):
         file_ext = f'.{robj.SCAN_TYPE}'
         if file_ext not in allowed_exts.keys():
             return HttpResponse(
-                'Invalid Scan Type',
+                '无效的扫描类型',
                 status=HTTP_STATUS_404)
         filename = f'{checksum}{file_ext}'
         dwd_file = Path(settings.UPLD_DIR) / checksum / filename
         if not dwd_file.exists():
             return HttpResponse(
-                'File not found',
+                '文件未找到',
                 status=HTTP_STATUS_404)
         return file_download(
             dwd_file,
@@ -503,7 +503,7 @@ def generate_download(request):
         file_type = request.GET['file_type']
         if (not is_md5(md5)
                 or file_type not in ('smali', 'java')):
-            msg = 'Invalid download type or hash'
+            msg = '无效的下载类型或哈希'
             logger.exception(msg)
             return print_n_send_error_response(request, msg)
         app_dir = Path(settings.UPLD_DIR) / md5
@@ -542,12 +542,12 @@ def delete_scan(request, api=False):
             md5_hash = request.POST['md5']
 
         if not re.match(MD5_REGEX, md5_hash):
-            return send_response({'deleted': 'Invalid scan hash'}, api)
+            return send_response({'deleted': '无效的扫描哈希'}, api)
 
         # Delete DB Entries
         scan = RecentScansDB.objects.filter(MD5=md5_hash)
         if not scan.exists():
-            return send_response({'deleted': 'Scan not found in Database'}, api)
+            return send_response({'deleted': '数据库中未找到扫描记录'}, api)
         if settings.ASYNC_ANALYSIS:
             # Handle Async Tasks
             et = EnqueuedTask.objects.filter(checksum=md5_hash).first()
@@ -557,7 +557,7 @@ def delete_scan(request, api=False):
                 if not (et.completed_at or max_time_passed):
                     # Queue is in progress, cannot delete the task
                     return send_response(
-                        {'deleted': 'A scan can only be deleted after it is completed'},
+                        {'deleted': '扫描完成后才能删除'},
                         api)
         # Delete all related DB entries
         EnqueuedTask.objects.filter(checksum=md5_hash).all().delete()

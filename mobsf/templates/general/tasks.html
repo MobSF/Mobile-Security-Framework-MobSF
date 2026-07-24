@@ -40,18 +40,18 @@
                 <div class="card-body">
                    <div class="box">
           <div class="box-header with-border">
-              <h3 class="box-title"><i class="fa fa-rocket"></i> Scan Queue</h3>
-              <p class="lead">The scan results will appear in <strong><a href="{% url 'recent' %}">Recent Scans</a></strong> once completed.</p>
+              <h3 class="box-title"><i class="fa fa-rocket"></i> 扫描队列</h3>
+              <p class="lead">扫描完成后，结果将显示在<strong><a href="{% url 'recent' %}">最近扫描</a></strong>中。</p>
           </div>
           <div class="box-body">
             <div class="table-responsive">
                 <table id="tasks-table" class="table table-bordered table-hover table-striped">
                     <thead>
                         <tr>
-                            <th>Scan Task</th>
-                            <th>Filename</th>
-                            <th>Timeline</th>
-                            <th>Status</th>
+                            <th>扫描任务</th>
+                            <th>文件名</th>
+                            <th>时间线</th>
+                            <th>状态</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -112,7 +112,7 @@
     function addReportLink(task, statusCell) {
         const reportLink = document.createElement("a");
         reportLink.href = `/search?query=${encodeURIComponent(task.checksum)}`;
-        reportLink.textContent = ' View Report';
+        reportLink.textContent = ' 查看报告';
 
         const icon = document.createElement("i");
         icon.classList.add("fa", "fa-eye");
@@ -132,12 +132,12 @@
         const checksumP = document.createElement("p");
 
         const taskLabel = document.createElement("strong");
-        taskLabel.textContent = "Task ID: ";
+        taskLabel.textContent = "任务ID：";
         taskP.appendChild(taskLabel);
         taskP.appendChild(document.createTextNode(task.task_id));
 
         const checksumLabel = document.createElement("strong");
-        checksumLabel.textContent = "Checksum: ";
+        checksumLabel.textContent = "校验码：";
         checksumP.appendChild(checksumLabel);
         checksumP.appendChild(document.createTextNode(task.checksum));
 
@@ -180,25 +180,25 @@
         // Create and append "Queued At"
         const queuedAtElement = document.createElement("p");
         const queuedAtLabel = document.createElement("strong");
-        queuedAtLabel.textContent = "Queued At: ";
+        queuedAtLabel.textContent = "入队时间：";
         queuedAtElement.appendChild(queuedAtLabel);
-        queuedAtElement.appendChild(document.createTextNode(task.created_at ? new Date(task.created_at).toLocaleString() : "N/A"));
+        queuedAtElement.appendChild(document.createTextNode(task.created_at ? new Date(task.created_at).toLocaleString() : "无"));
         timelineCell.appendChild(queuedAtElement);
 
         // Create and append "Started At"
         const startedAtElement = document.createElement("p");
         const startedAtLabel = document.createElement("strong");
-        startedAtLabel.textContent = "Started At: ";
+        startedAtLabel.textContent = "开始时间：";
         startedAtElement.appendChild(startedAtLabel);
-        startedAtElement.appendChild(document.createTextNode(task.started_at ? new Date(task.started_at).toLocaleString() : "N/A"));
+        startedAtElement.appendChild(document.createTextNode(task.started_at ? new Date(task.started_at).toLocaleString() : "无"));
         timelineCell.appendChild(startedAtElement);
 
         // Create and append "Completed At"
         const completedAtElement = document.createElement("p");
         const completedAtLabel = document.createElement("strong");
-        completedAtLabel.textContent = "Completed At: ";
+        completedAtLabel.textContent = "完成时间：";
         completedAtElement.appendChild(completedAtLabel);
-        completedAtElement.appendChild(document.createTextNode(task.completed_at ? new Date(task.completed_at).toLocaleString() : "N/A"));
+        completedAtElement.appendChild(document.createTextNode(task.completed_at ? new Date(task.completed_at).toLocaleString() : "无"));
         timelineCell.appendChild(completedAtElement);
 
         // Add loader or success indicators
@@ -226,7 +226,7 @@
             const noTasksRow = document.createElement("tr");
             const noTasksCell = document.createElement("td");
             noTasksCell.setAttribute("colspan", "4");
-            noTasksCell.textContent = "No tasks in queue.";
+            noTasksCell.textContent = "队列中无任务。";
             noTasksRow.appendChild(noTasksCell);
             tasksTableBody.appendChild(noTasksRow);
         } else {
@@ -274,14 +274,14 @@
 
     if (q && q === 'completed') {
         Swal.fire(
-            'Scan Task Recently Completed!',
-            'The scan was recently processed.',
+            '扫描任务已完成！',
+            '扫描最近已处理。',
             'warning'
         )
     } else if (q && q === 'queued') {
         Swal.fire(
-            'Scan Task Already Added!',
-            'This scan task has already been added to the scan queue.',
+            '扫描任务已添加！',
+            '此扫描任务已添加到扫描队列。',
             'warning'
         )
     }

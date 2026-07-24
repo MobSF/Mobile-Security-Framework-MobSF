@@ -4,7 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>MobSF Static Analysis Report</title>
+    <title>MobSF 静态分析报告</title>
     <meta name="description" content="MobSF Report">
     {% if host_os == 'windows' %}
         <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
@@ -29,6 +29,10 @@
         font-display: swap;
         src: local('Oswald'), local('Oswald'), url('{{base_url}}{% static 'fonts/Oswald/Oswald-Regular.ttf' %}') format('truetype');
       }
+      /* CJK font for Chinese rendering */
+      body, h1, h2, h3, h4, h5, h6, p, td, th, table, div, span {
+        font-family: 'Open Sans', 'Oswald', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', 'WenQuanYi Micro Hei', 'SimHei', sans-serif;
+      }
      
   </style>
   {% endif %}
@@ -40,7 +44,7 @@
     <article id="cover">
       <div class="header">
         <img src="{{base_url}}{% static "img/mobsf_logo.png" %}" class="center logo" alt="MobSF Logo"/>
-        <div class="htext">WINDOWS STATIC ANALYSIS REPORT </div>
+        <div class="htext">Windows 静态分析报告 </div>
       </div>
       </br></br></br>
      <div class="app">
@@ -53,7 +57,7 @@
       <div class="container">
       <table class="basic no_border">
       <tr class="no_border">
-        <td class="no_border"><h3>File Name:</h3></td>
+        <td class="no_border"><h3>文件名：</h3></td>
         <td class="no_border"><h3>{{file_name}}</h3></td>
       </tr>
       <tr>
@@ -63,12 +67,12 @@
      
      {% if virus_total and virus_total.items|length > 9 and 'request successfully queued' not in virus_total.verbose_msg %}
         <tr>
-        <td class="no_border"><h3>VirusTotal Detection:</h3></td>
+        <td class="no_border"><h3>Virus总计 检测：</h3></td>
         <td class="no_border"><h3><span class="{% if virus_total.positives > 0 %}danger{% else %}success{% endif %}"> {{ virus_total.positives }}/{{ virus_total.total }}</span></h3></td>
       </tr>
       {% endif %}
       <tr>
-        <td class="no_border"><h3>Scan Date:</h3></td>
+        <td class="no_border"><h3>扫描日期：</h3></td>
         <td class="no_border"><h3>{{ timestamp }}</h3></td>
       </tr>
     </table>
@@ -85,16 +89,16 @@
     <article id="contents">
 
       
-      <h2><i class="fas fa-box-open"></i> FILE INFORMATION</h2>
+      <h2><i class="fas fa-box-open"></i> 文件信息</h2>
 
-      <h5>File Name:</h5> {{ file_name }}</br>
-      <h5>Size: </h5> {{ size }}</br>
+      <h5>文件名：</h5> {{ file_name }}</br>
+      <h5>大小: </h5> {{ size }}</br>
       <h5>MD5:</h5> {{ md5 }}</br>
       <h5>SHA1:</h5> {{ sha1 }}</br>
       <h5>SHA256:</h5> {{ sha256 }}</br>
      
 
-      <h2><i class="fas fa-info"></i> APP INFORMATION</h2>
+      <h2><i class="fas fa-info"></i> 应用信息</h2>
 
       <h5>App Name:</h5> {{ app_name }}</br>
       <h5>Publisher:</h5> {{ publisher_name }}</br>
@@ -102,11 +106,11 @@
       <h5>Arch:</h5> {{ architecture }}</br>
      
 
-      <h2><i class="fas fa-file-code"></i> XML INFORMATION </h2>
+      <h2><i class="fas fa-file-code"></i> XML 信息RMATION </h2>
 
       <h5>Compiler Version:</h5> {{ compiler_version }}</br>
       <h5>Visual Studio Version:</h5> {{ visual_studio_version }}</br>
-      <h5>Visual Studio Edition:</h5> {{ visual_studio_edition }}</br>
+      <h5>Visual Studio 编辑ion:</h5> {{ visual_studio_edition }}</br>
       <h5>Target OS:</h5> {{ target_os }}</br>
       <h5>APPX DLL Version:</h5> {{ appx_dll_version }}</br>
       <h5>Proj GUID:</h5> {{ proj_guid }}</br>
@@ -115,7 +119,7 @@
 
 
         {% if virus_total and virus_total.items|length > 9 and 'request successfully queued' not in virus_total.verbose_msg %}
-       <h2><i class="fas fa-spider"></i> VIRUSTOTAL SCAN</h2>
+       <h2><i class="fas fa-spider"></i> Virus总计 扫描</h2>
        <p> <h5>{{ virus_total.positives }} / {{ virus_total.total }}</h5> &nbsp; AVs found this file Malicious! </p>
             {% if virus_total.positives %}
           
@@ -144,14 +148,14 @@
             {% endif %}
       {% endif %}
       
-      <h2><i class="fas fa-flag"></i> APPX BINARY ANALYSIS</h2>
+      <h2><i class="fas fa-flag"></i> APPX 二进制分析</h2>
        <table class="basic">
                   <thead>
                       <tr>
                           <th>ISSUE</th>
-                          <th>STATUS</th>
-                          <th>DESCRIPTION</th>
-                          <th>INFO</th>
+                          <th>状态</th>
+                          <th>描述</th>
+                          <th>信息</th>
 
                       </tr>
                   </thead>
@@ -163,7 +167,7 @@
                           {% if result.status == "Insecure" %}
                             <span class='danger'>
                           {% endif %}
-                          {% if result.status == "Secure" %}
+                          {% if result.status == "安全" %}
                             <span class='success'>
                           {% endif %}
                           {% if result.status == "Info" %}

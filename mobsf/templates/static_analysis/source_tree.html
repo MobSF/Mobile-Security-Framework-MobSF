@@ -53,7 +53,7 @@ pre {
                     <!-- BEGIN: File Frame. -->
                     <div id="fileframe">
                         <div id="loading-div"><img src="{% static "jsTree/themes/default/throbber.gif" %}" /></div>
-                        <div id="no-results"><strong>No results found</strong></div>
+                        <div id="no-results"><strong>未找到结果</strong></div>
                         <!-- BEGIN: File Tree. -->
                         <div id="filetree" class="transparent-effect">
                             <ul>
@@ -99,7 +99,7 @@ pre {
 var curr_selected;
 
 // In the first load, check if a specific file should be shown in parallel to the tree load
-var searchParams = new URLSearchParams(window.location.search);
+var searchParams = new URL搜索Params(window.location.search);
 var supplied_path = searchParams.get('file');
 if (supplied_path){
         var filename = supplied_path.replace(/^.*[\\\/]/, '');
@@ -259,7 +259,7 @@ $('#filetree').click(function(){
 
 const get_lines = function() {
 	const pat = new RegExp(/^[\d,]{1,1000}$/);
-	const urlParams = new URLSearchParams(window.location.search);
+	const urlParams = new URL搜索Params(window.location.search);
 	var lines = urlParams.get("lines");
 	if(!pat.test(lines)) {
 		return 0;
@@ -273,10 +273,10 @@ const get_lines = function() {
 	return 0;
 }
 
-function show_file(strPath) {
+function show_file(str路径) {
     $.ajax({
         type: "GET",
-        url: "{% url "view_source" %}?json=1&md5={{ hash }}&type={{ source_type }}&file=" + strPath,
+        url: "{% url "view_source" %}?json=1&md5={{ hash }}&type={{ source_type }}&file=" + str路径,
         dataType: 'json',
         success: function(strFileData) {
             var code_block = $("pre#fileoutput")

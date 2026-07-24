@@ -58,10 +58,10 @@ def pdf(request, checksum, api=False, jsonres=False):
     try:
         if not is_md5(checksum):
             if api:
-                return {'error': 'Invalid Hash'}
+                return {'error': '无效的哈希'}
             else:
                 return HttpResponse(
-                    json.dumps({'md5': 'Invalid Hash'}),
+                    json.dumps({'md5': '无效的哈希'}),
                     content_type=ctype, status=500)
         # Do Lookups
         android_static_db = StaticAnalyzerAndroid.objects.filter(
@@ -79,10 +79,10 @@ def pdf(request, checksum, api=False, jsonres=False):
             context, template = handle_pdf_win(win_static_db)
         else:
             if api:
-                return {'report': 'Report not Found'}
+                return {'report': '未找到报告'}
             else:
                 return HttpResponse(
-                    json.dumps({'report': 'Report not Found'}),
+                    json.dumps({'report': '未找到报告'}),
                     content_type=ctype,
                     status=500)
         # Do VT Scan only on binaries
@@ -140,11 +140,11 @@ def pdf(request, checksum, api=False, jsonres=False):
             logger.exception('Error Generating PDF Report')
             if api:
                 return {
-                    'error': 'Cannot Generate PDF/JSON',
+                    'error': '无法生成 PDF/JSON',
                     'err_details': str(exp)}
             else:
                 err = {
-                    'pdf_error': 'Cannot Generate PDF',
+                    'pdf_error': '无法生成 PDF',
                     'err_details': str(exp)}
                 return HttpResponse(
                     json.dumps(err),  # lgtm [py/stack-trace-exposure]
