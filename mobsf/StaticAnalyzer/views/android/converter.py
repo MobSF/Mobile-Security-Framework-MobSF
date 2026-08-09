@@ -163,7 +163,7 @@ def run_apktool(app_path, app_dir, tools_dir):
                 and Path(settings.APKTOOL_BINARY).exists()):
             apktool_path = Path(settings.APKTOOL_BINARY)
         else:
-            apktool_path = tools_dir / 'apktool_3.0.2.jar'
+            apktool_path = tools_dir / 'apktool_3.0.3.jar'
 
         # Prepare output directory and manifest file paths
         output_dir = app_dir / 'apktool_out'

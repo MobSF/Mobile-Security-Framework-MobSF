@@ -133,8 +133,30 @@ def get_pub_key_details(data):
     return certlist
 
 
-def get_signature_versions(checksum, app_path: str, tools_dir: str) -> dict[str, bool]:
-    """Get signature versions using apksigner."""
+# Always present in cert_data so callers never KeyError on missing schemes.
+BASE_SIGNATURE_VERSIONS = ('v1', 'v2', 'v3', 'v4')
+
+
+def base_signature_versions(default=False):
+    """Return a fixed v1–v4 signature map."""
+    return dict.fromkeys(BASE_SIGNATURE_VERSIONS, default)
+
+
+def merge_signature_versions(base, updates):
+    """Merge detected schemes into base without dropping required keys."""
+    merged = dict(base)
+    if updates:
+        merged.update(updates)
+    return merged
+
+
+def get_signature_versions(checksum, app_path, tools_dir):
+    """Get signature versions using apksigner.
+
+    Always returns a dict with at least v1–v4. Never raises — callers rely on
+    soft-fail + apksigtool/androguard fallbacks.
+    """
+    signatures = base_signature_versions(False)
     try:
         logger.info('Getting Signature Versions')
         apksigner = Path(tools_dir) / 'apksigner.jar'
@@ -156,17 +178,16 @@ def get_signature_versions(checksum, app_path: str, tools_dir: str) -> dict[str,
             re.IGNORECASE | re.MULTILINE,
         )
 
-        signatures = {
+        found = {
             match.group('version'): match.group('value').lower() == 'true'
             for match in pattern.finditer(out)
         }
+        signatures = merge_signature_versions(signatures, found)
     except Exception as exp:
         msg = 'Failed to get signature versions with apksigner'
         logger.error(msg)
         append_scan_status(checksum, msg, repr(exp))
-        raise
-    else:
-        return signatures
+    return signatures
 
 
 def apksigtool_cert(checksum, apk_path, tools_dir):
@@ -178,7 +199,7 @@ def apksigtool_cert(checksum, apk_path, tools_dir):
     certs_no = 0
     min_sdk = None
 
-    signature_versions = dict.fromkeys(['v1', 'v2', 'v3', 'v4'], None)
+    signature_versions = base_signature_versions(None)
     try:
         from apksigtool import (
             APKSignatureSchemeBlock,
@@ -223,24 +244,26 @@ def apksigtool_cert(checksum, apk_path, tools_dir):
         certlist.append('Binary is signed' if signed else 'Binary is not signed')
 
         if not signed:
-            signature_versions = dict.fromkeys(signature_versions.keys(), False)
+            signature_versions = base_signature_versions(False)
         else:
-            try:
-                apksigner_versions = get_signature_versions(
-                    checksum,
-                    apk_path,
-                    tools_dir,
+            # Prefer apksigner; keep apksigtool results if apksigner finds nothing.
+            apksigner_versions = get_signature_versions(
+                checksum,
+                apk_path,
+                tools_dir,
+            )
+            if any(apksigner_versions.values()):
+                signature_versions = merge_signature_versions(
+                    base_signature_versions(False),
+                    apksigner_versions,
                 )
+            else:
+                logger.info(
+                    'Keeping signature versions with apksigtool '
+                    'since apksigner.jar could not find them')
 
-                if any(apksigner_versions.values()):
-                    signature_versions = apksigner_versions
-                else:
-                    logger.info('Keeping signature versions with apksigtool'
-                                ' since apksigner.jar could not find them')
-            except Exception:
-                logger.info('Fetching signature versions with apksigtool')
-
-        certlist.extend(f'{k} signature: {v}' for k, v in signature_versions.items())
+        certlist.extend(
+            f'{k} signature: {v}' for k, v in signature_versions.items())
         certlist.extend(certs)
         certlist.extend(pub_keys)
         certlist.append(f'Found {certs_no} unique certificates')
@@ -262,7 +285,7 @@ def get_cert_data(checksum, a, app_path, tools_dir):
     """Get Human readable certificate."""
     certlist = []
     signed = a.is_signed() or False
-    signature_versions = dict.fromkeys(['v1', 'v2', 'v3', 'v4'], False)
+    signature_versions = base_signature_versions(False)
 
     if signed:
         certlist.append('Binary is signed')
@@ -271,24 +294,28 @@ def get_cert_data(checksum, a, app_path, tools_dir):
         certlist.append('Missing certificate')
 
     if signed:
-        try:
-            apksigner_versions = get_signature_versions(
-                checksum,
-                app_path,
-                tools_dir,
+        apksigner_versions = get_signature_versions(
+            checksum,
+            app_path,
+            tools_dir,
+        )
+        if any(apksigner_versions.values()):
+            signature_versions = merge_signature_versions(
+                signature_versions,
+                apksigner_versions,
             )
-        except Exception:
-            apksigner_versions = {}
-            logger.info('Fetching signature versions with apksigtool')
-
-        signature_versions = apksigner_versions \
-            if any(apksigner_versions.values()) \
-            else {
-                'v1': a.is_signed_v1(), 'v2': a.is_signed_v2(),
-                'v3': a.is_signed_v3(), 'v4': None,
+        else:
+            # apksigner failed or found nothing — fall back to androguard.
+            logger.info('Fetching signature versions with androguard')
+            signature_versions = {
+                'v1': a.is_signed_v1(),
+                'v2': a.is_signed_v2(),
+                'v3': a.is_signed_v3(),
+                'v4': None,
             }
 
-    certlist.extend(f'{k} signature: {v}' for k, v in signature_versions.items())
+    certlist.extend(
+        f'{k} signature: {v}' for k, v in signature_versions.items())
     certs = set(a.get_certificates_der_v3() + a.get_certificates_der_v2()
                 + [a.get_certificate_der(x)
                     for x in a.get_signature_names()])
