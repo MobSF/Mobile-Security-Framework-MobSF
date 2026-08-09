@@ -15,8 +15,9 @@ from django.contrib.auth.models import (
     User,
 )
 from django.contrib.auth import login
-from django.urls import reverse
 from django.shortcuts import redirect
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from mobsf.MobSF.views.authorization import (
@@ -154,6 +155,9 @@ def saml_login(request):
             False)
 
 
+# IdP browser POSTs cannot carry Django's CSRF token; SAML
+# signature validation is the security boundary for ACS.
+@csrf_exempt
 @require_http_methods(['POST'])
 def saml_acs(request):
     """Handle SSO Assertion Consumer Service."""
