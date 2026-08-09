@@ -18,6 +18,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     rsa,
 )
 
+from django.conf import settings
 from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
@@ -107,6 +108,7 @@ def get_pub_key_details(data):
         backend=default_backend())
     alg = 'unknown'
     fingerprint = ''
+    to_hash = None
     if isinstance(x509_public_key, rsa.RSAPublicKey):
         alg = 'rsa'
         modulus = x509_public_key.public_numbers().n
@@ -126,11 +128,32 @@ def get_pub_key_details(data):
         to_hash = to_hash.encode('utf-8')
         # Untested, possibly wrong key size and fingerprint
         to_hash += data[25:]
-    fingerprint = gen_sha256_hash(to_hash)
+    if to_hash:
+        fingerprint = gen_sha256_hash(to_hash)
+    # Edwards curve keys do not expose a key size.
+    bit_size = getattr(x509_public_key, 'key_size', None)
     certlist.append(f'PublicKey Algorithm: {alg}')
-    certlist.append(f'Bit Size: {x509_public_key.key_size}')
+    certlist.append(f'Bit Size: {bit_size}')
     certlist.append(f'Fingerprint: {fingerprint}')
     return certlist
+
+
+def safe_cert_details(data):
+    """Get certificate details, skipping the entry if it is malformed."""
+    try:
+        return get_cert_details(data)
+    except Exception:
+        logger.warning('Failed to parse a certificate, skipping it')
+        return []
+
+
+def safe_pub_key_details(data):
+    """Get public key details, skipping the entry if it is malformed."""
+    try:
+        return get_pub_key_details(data)
+    except Exception:
+        logger.warning('Failed to parse a public key, skipping it')
+        return []
 
 
 # Always present in cert_data so callers never KeyError on missing schemes.
@@ -167,7 +190,10 @@ def get_signature_versions(checksum, app_path, tools_dir):
             'verify', '--verbose', app_path,
         ]
 
-        out = subprocess.check_output(args, stderr=subprocess.STDOUT)
+        out = subprocess.check_output(
+            args,
+            stderr=subprocess.STDOUT,
+            timeout=settings.BINARY_ANALYSIS_TIMEOUT)
         out = out.decode('utf-8', 'ignore')
 
         pattern = re.compile(
@@ -229,13 +255,14 @@ def apksigtool_cert(checksum, apk_path, tools_dir):
                         for cert in signer.signed_data.certificates:
                             certs.extend(
                                 x
-                                for x in get_cert_details(cert.data)
+                                for x in safe_cert_details(cert.data)
                                 if x not in certs
                             )
 
                         pub_keys.extend(
                             x
-                            for x in get_pub_key_details(signer.public_key.data)
+                            for x in safe_pub_key_details(
+                                signer.public_key.data)
                             if x not in pub_keys
                         )
         except Exception:
@@ -316,16 +343,23 @@ def get_cert_data(checksum, a, app_path, tools_dir):
 
     certlist.extend(
         f'{k} signature: {v}' for k, v in signature_versions.items())
-    certs = set(a.get_certificates_der_v3() + a.get_certificates_der_v2()
-                + [a.get_certificate_der(x)
-                    for x in a.get_signature_names()])
-    pkeys = set(a.get_public_keys_der_v3() + a.get_public_keys_der_v2())
+    certs = set()
+    pkeys = set()
+    try:
+        certs = set(a.get_certificates_der_v3() + a.get_certificates_der_v2()
+                    + [a.get_certificate_der(x)
+                        for x in a.get_signature_names()])
+        pkeys = set(a.get_public_keys_der_v3() + a.get_public_keys_der_v2())
+    except Exception as exp:
+        msg = 'Failed to extract certificates with androguard'
+        logger.warning(msg)
+        append_scan_status(checksum, msg, repr(exp))
 
     for cert in certs:
-        certlist.extend(get_cert_details(cert))
+        certlist.extend(safe_cert_details(cert))
 
     for public_key in pkeys:
-        certlist.extend(get_pub_key_details(public_key))
+        certlist.extend(safe_pub_key_details(public_key))
 
     if len(certs) > 0:
         certlist.append(f'Found {len(certs)} unique certificates')
@@ -336,6 +370,19 @@ def get_cert_data(checksum, a, app_path, tools_dir):
         **signature_versions,
         'min_sdk': None,
     }
+
+
+def get_api_level(man_dict, cert_data):
+    """Get the API level from the manifest or the signing block."""
+    for min_sdk in (man_dict.get('min_sdk'), cert_data.get('min_sdk')):
+        if not min_sdk:
+            continue
+        try:
+            return int(min_sdk)
+        except (TypeError, ValueError):
+            logger.warning('Invalid minSdkVersion, ignoring it')
+    # API level unknown
+    return None
 
 
 def cert_info(app_dic, man_dict):
@@ -370,7 +417,8 @@ def cert_info(app_dic, man_dict):
         if 'MANIFEST.MF' in files:
             manifestfile = os.path.join(cert_path, 'MANIFEST.MF')
         if manifestfile:
-            with open(manifestfile, 'r', encoding='utf-8') as manifile:
+            with open(manifestfile, 'r',
+                      encoding='utf-8', errors='ignore') as manifile:
                 manidat = manifile.read()
         sha256_digest = bool(re.findall(r'SHA-256-Digest', manidat))
         findings = []
@@ -388,13 +436,7 @@ def cert_info(app_dic, man_dict):
                 'Code signing certificate not found',
                 'Missing Code Signing certificate'))
 
-        if man_dict['min_sdk']:
-            api_level = int(man_dict['min_sdk'])
-        elif cert_data['min_sdk']:
-            api_level = int(cert_data['min_sdk'])
-        else:
-            # API Level unknown
-            api_level = None
+        api_level = get_api_level(man_dict, cert_data)
 
         if cert_data['v1'] and api_level:
             status = HIGH
@@ -457,4 +499,9 @@ def cert_info(app_dic, man_dict):
         msg = 'Reading Code Signing Certificate'
         logger.exception(msg)
         append_scan_status(app_dic['md5'], msg, repr(exp))
-        return {}
+        # Keep the shape consumers expect, even when analysis fails.
+        return {
+            'certificate_info': '',
+            'certificate_findings': [],
+            'certificate_summary': {},
+        }
