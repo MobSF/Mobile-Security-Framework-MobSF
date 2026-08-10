@@ -25,6 +25,9 @@ from mobsf.StaticAnalyzer.views.ios.kb.permission_analysis import (
 from mobsf.StaticAnalyzer.views.ios.app_transport_security import (
     check_transport_security,
 )
+from mobsf.StaticAnalyzer.views.common.secret_detection import (
+    detect_known_secrets,
+)
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     is_secret_key,
 )
@@ -247,6 +250,7 @@ def get_plist_secrets(checksum, app_dir):
 
     for i in Path(app_dir).rglob('*.plist'):
         xml_string = i.read_text('utf-8', 'ignore')
+        result_list.update(detect_known_secrets(xml_string))
         xml_list = xml_string.split('\n')
         for index, line in enumerate(xml_list):
             if '<key>' in line and is_secret_key(_remove_tags(line)):

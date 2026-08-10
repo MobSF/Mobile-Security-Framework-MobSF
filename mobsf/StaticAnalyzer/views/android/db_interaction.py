@@ -13,6 +13,9 @@ from mobsf.MobSF.utils import (
 from mobsf.MobSF.views.home import update_scan_timestamp
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.models import RecentScansDB
+from mobsf.StaticAnalyzer.views.common.secret_detection import (
+    sort_secrets,
+)
 from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression,
     process_suppression_manifest,
@@ -86,7 +89,8 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
             'behaviour': python_dict(db_entry[0].QUARK),
             'trackers': python_dict(db_entry[0].TRACKERS),
             'playstore_details': python_dict(db_entry[0].PLAYSTORE_DETAILS),
-            'secrets': python_list(db_entry[0].SECRETS),
+            'secrets': sort_secrets(
+                python_list(db_entry[0].SECRETS)),
             'logs': get_scan_logs(db_entry[0].MD5),
             'sbom': python_dict(db_entry[0].SBOM),
         }
@@ -161,7 +165,7 @@ def get_context_from_analysis(app_dic,
             'behaviour': code_an_dic['behaviour'],
             'trackers': trackers,
             'playstore_details': app_dic['playstore'],
-            'secrets': code_an_dic['secrets'],
+            'secrets': sort_secrets(code_an_dic['secrets']),
             'logs': get_scan_logs(app_dic['md5']),
             'sbom': code_an_dic['sbom'],
         }

@@ -12,6 +12,9 @@ from mobsf.MobSF.utils import (
 from mobsf.MobSF.views.home import update_scan_timestamp
 from mobsf.StaticAnalyzer.models import StaticAnalyzerIOS
 from mobsf.StaticAnalyzer.models import RecentScansDB
+from mobsf.StaticAnalyzer.views.common.secret_detection import (
+    sort_secrets,
+)
 from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression,
 )
@@ -70,7 +73,8 @@ def get_context_from_db_entry(db_entry):
             'strings': python_list(db_entry[0].STRINGS),
             'firebase_urls': python_list(db_entry[0].FIREBASE_URLS),
             'appstore_details': python_dict(db_entry[0].APPSTORE_DETAILS),
-            'secrets': python_list(db_entry[0].SECRETS),
+            'secrets': sort_secrets(
+                python_list(db_entry[0].SECRETS)),
             'trackers': python_dict(db_entry[0].TRACKERS),
             'logs': get_scan_logs(db_entry[0].MD5),
         }
@@ -134,7 +138,7 @@ def get_context_from_analysis(app_dict,
             'strings': bin_dict['strings'],
             'firebase_urls': code_dict['firebase'],
             'appstore_details': app_dict['appstore'],
-            'secrets': app_dict['secrets'],
+            'secrets': sort_secrets(app_dict['secrets']),
             'trackers': code_dict['trackers'],
             'logs': get_scan_logs(app_dict['md5_hash']),
         }
