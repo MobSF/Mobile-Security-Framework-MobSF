@@ -176,12 +176,12 @@ KNOWN_SECRET_PREFIXES = tuple(
 
 
 def _strings(data):
-    """Normalize a string or iterable of strings."""
+    """Normalize a string or iterable of strings to a tuple."""
     if data is None:
         return ()
     if isinstance(data, str):
         return (data,)
-    return data
+    return tuple(data)
 
 
 def detect_known_secrets(data):
