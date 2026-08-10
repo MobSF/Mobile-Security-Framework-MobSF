@@ -16,10 +16,10 @@ jobs:
             uses: actions/checkout@v7
         -
             name: Set up QEMU
-            uses: docker/setup-qemu-action@v4
+            uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
         -
             name: Set up Docker Buildx
-            uses: docker/setup-buildx-action@v4
+            uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
         -
             name: Build AMD64 image
             id: docker_build_amd
