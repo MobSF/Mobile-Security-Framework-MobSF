@@ -1,7 +1,7 @@
 services:
 
   postgres:
-    image: "postgres:14"
+    image: "postgres:latest"
     restart: always
     deploy:
       resources:
@@ -10,7 +10,7 @@ services:
         reservations:
           memory: 512M
     volumes:
-      - $HOME/MobSF/postgresql_data:/var/lib/postgresql/data
+      - $HOME/MobSF/postgresql_data:/var/lib/postgresql
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
