@@ -130,7 +130,7 @@ API_ONLY = os.getenv('MOBSF_API_ONLY', '0')
 MALWARE_DB_URL = 'https://www.malwaredomainlist.com/mdlcsv.php'
 MALTRAIL_DB_URL = ('https://raw.githubusercontent.com/stamparm/aux/'
                    'master/maltrail-malware-domains.txt')
-VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/vtapi/v2/file/'
+VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/api/v3/files'
 EXODUS_URL = 'https://reports.exodus-privacy.eu.org'
 APPMONSTA_URL = 'https://api.appmonsta.com/v1/stores/android/details/'
 ITUNES_URL = 'https://itunes.apple.com/lookup'
@@ -510,7 +510,7 @@ else:
     # ========DISABLED BY DEFAULT COMPONENTS=========
     # Get AppMonsta API from https://appmonsta.com/dashboard/get_api_key/
     APPMONSTA_API = os.getenv('MOBSF_APPMONSTA_API', '')
-    # ----------VirusTotal--------------------------
+    # ----------VirusTotal (API v3)-----------------
     VT_ENABLED = bool(os.getenv('MOBSF_VT_ENABLED', ''))
     VT_API_KEY = os.getenv('MOBSF_VT_API_KEY', '')
     VT_UPLOAD = bool(os.getenv('MOBSF_VT_UPLOAD', ''))
@@ -518,9 +518,10 @@ else:
     # Make sure VT_API_KEY is set to your VirusTotal API key
     # register at: https://www.virustotal.com/#/join-us
     # You can get your API KEY from:
-    # https://www.virustotal.com/en/user/<username>/apikey/
-    # Files will be uploaded to VirusTotal
-    # if VT_UPLOAD is set to True.
+    # https://www.virustotal.com/gui/user/<username>/apikey/
+    # Files will be uploaded to VirusTotal if VT_UPLOAD is True.
+    # Files <=32MB use /files; larger files use /files/upload_url
+    # (up to 650MB).
     # ===============================================
     # =======IOS DYNAMIC ANALYSIS SETTINGS===========
     # Should be SSH IP:PORT, example: 192.168.1.100:22
