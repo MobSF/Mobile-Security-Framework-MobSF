@@ -1,6 +1,9 @@
 
-Change logs are not updated here anymore, see changelogs here: https://github.com/MobSF/Mobile-Security-Framework-MobSF/releases
+Changelogs are not updated here anymore
 ===========================
+
+see changelogs from v4.5.2 onwards here: https://github.com/MobSF/Mobile-Security-Framework-MobSF/releases
+
 
 ### v4.5.1 Changelog
 
