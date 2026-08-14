@@ -43,8 +43,8 @@ from mobsf.MobSF.views.scanning import (
 from mobsf.StaticAnalyzer.views.comparer import (
     generic_compare,
 )
-from mobsf.StaticAnalyzer.views.common.entropy import (
-    get_entropies,
+from mobsf.StaticAnalyzer.views.common.secret_detection import (
+    get_secrets,
 )
 from mobsf.MobSF.views.authentication import (
     login_required,
@@ -494,7 +494,7 @@ def strings_and_entropies(checksum, src, exts):
                     continue
                 data['strings'].add(string)
         if data['strings']:
-            data['secrets'] = get_entropies(data['strings'])
+            data['secrets'] = get_secrets(data['strings'])
     except Exception as exp:
         msg = 'Failed to extract String values and entropies from Code'
         logger.exception(msg)

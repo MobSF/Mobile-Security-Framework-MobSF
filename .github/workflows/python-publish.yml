@@ -2,30 +2,29 @@ name: Upload Python Package
 
 on:
   release:
-    types: [created]
+    types: [published]
 
 permissions:
   contents: read
 
 jobs:
   deploy:
-
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v7
       with:
         python-version: '3.x'
-    - name: Install dependencies
+    - name: Install Poetry
       run: |
         python -m pip install --upgrade pip
         pip install poetry==1.8.4
-    - name: Build and publish
-      env:
-        PYPI_TOKEN: ${{ secrets.PYPI_PASSWORD }}
-      run: |
-        poetry config pypi-token.pypi ${PYPI_TOKEN}
-        poetry build
-        poetry publish
+    - name: Build package
+      run: poetry build
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
