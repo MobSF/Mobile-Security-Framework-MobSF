@@ -283,33 +283,24 @@ class MachOChecksec:
         except Exception:
             # Based on issues/1917#issuecomment-1238078359
             # and issues/2233#issue-1846914047
-            stripped_sym = 'radr://5614542'
-            # radr://5614542 symbol is added back for
-            # debug symbols stripped binaries
+            # Since LIEF 0.14, Symbol.type returns n_type & N_TYPE
+            # (0x0e bitmask). The full n_type byte is only available
+            # through Symbol.raw_type, which is required to detect
+            # N_STAB entries.
+            # https://github.com/lief-project/LIEF/blob/main/include/
+            # LIEF/MachO/Symbol.hpp
             for i in self.macho.symbols:
-                if i.name.lower().strip() in (
-                        '__mh_execute_header', stripped_sym):
-                    # __mh_execute_header is present in both
-                    # stripped and unstripped binaries
-                    # also ignore radr://5614542
-                    continue
-                if (i.type.value & 0xe0) > 0 or i.type.value in (0x0e, 0x1e):
-                    # N_STAB set or 14, 30
-
+                if i.raw_type & 0xe0:
                     # N_STAB	0xe0  /* if any of these bits set,
                     # a symbolic debugging entry */ -> 224
                     # https://opensource.apple.com/source/xnu/xnu-201/
                     # EXTERNAL_HEADERS/mach-o/nlist.h
-                    # Only symbolic debugging entries have
-                    # some of the N_STAB bits set and if any
-                    # of these bits are set then it is a
-                    # symbolic debugging entry (a stab).
+                    # Only symbolic debugging entries (STABs) have
+                    # the N_STAB bits set.
 
                     # Identified a debugging symbol
                     return False
-            if stripped_sym in self.get_symbols():
-                return True
-            return False
+            return True
 
     def get_libraries(self):
         libs = []

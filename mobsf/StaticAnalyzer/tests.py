@@ -3,12 +3,22 @@ import json
 import logging
 import os
 import platform
+import tempfile
+from pathlib import Path
+from unittest.mock import patch
 
 from mobsf.MobSF.init import api_key
+from mobsf.StaticAnalyzer.test_binaries import (
+    MACHO_DEBUG_STRIPPED,
+    MACHO_UNSTRIPPED,
+)
+from mobsf.StaticAnalyzer.views.common.binary.macho import (
+    MachOChecksec,
+)
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.test import Client, TestCase
+from django.test import Client, SimpleTestCase, TestCase
 
 logger = logging.getLogger(__name__)
 
@@ -599,3 +609,32 @@ class StaticAnalyzerAndAPI(TestCase):
     def test_rest_api(self):
         resp = self.http_client.post('/tests/?module=api')
         self.assertEqual(resp.status_code, 200)
+
+
+class MachoChecksecTests(SimpleTestCase):
+    """Mach-O Checksec Unit Tests."""
+
+    @patch(
+        'mobsf.StaticAnalyzer.views.common.binary.macho.'
+        'objdump_is_debug_symbol_stripped',
+        side_effect=OSError('objdump not available'))
+    def test_macho_is_symbols_stripped(self, _mocked_objdump):
+        # LIEF fallback path, used on hosts without macOS objdump.
+        with tempfile.TemporaryDirectory() as tmp:
+            # MACHO_DEBUG_STRIPPED is compiled without debug info and
+            # has no STAB (N_STAB) entries, so debug symbols are
+            # stripped.
+            stripped_path = (
+                Path(tmp) / 'macho_analysis_stripped.bin')
+            stripped_path.write_bytes(MACHO_DEBUG_STRIPPED)
+            stripped = MachOChecksec(stripped_path)
+            self.assertTrue(stripped.is_symbols_stripped())
+            # MACHO_UNSTRIPPED is compiled with -g and contains STAB
+            # debug entries, so debug symbols are not stripped.
+            # Regression test for issue #2502 where an AttributeError
+            # was raised instead.
+            unstripped_path = (
+                Path(tmp) / 'macho_analysis_unstripped.bin')
+            unstripped_path.write_bytes(MACHO_UNSTRIPPED)
+            unstripped = MachOChecksec(unstripped_path)
+            self.assertFalse(unstripped.is_symbols_stripped())
