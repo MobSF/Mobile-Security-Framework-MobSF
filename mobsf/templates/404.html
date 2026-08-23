@@ -1,48 +1,64 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Not Found</title>
+  <title>404 — Not Found | MobSF</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Mobile Security Framework - MobSF">
-  <meta name="author" content="Ajin Abraham">
   <link rel="icon" href="{% static "img/favicon.ico" %}">
-
-  <!-- Tell the browser to be responsive to screen width -->
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
   <link rel="stylesheet" href="{% static "adminlte/dashboard/css/adminlte.min.css" %}">
-  <!-- Google Font: Source Sans Pro -->
-  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+  <link rel="stylesheet" href="{% static "others/css/error-pages.css" %}">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent-code: #58a6ff;
+      --accent-code-rgb: 88,166,255;
+    }
+
+    .error-path {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-sub);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 10px 16px;
+      margin-bottom: 24px;
+    }
+  </style>
 </head>
-<body class="hold-transition sidebar-collapse layout-fixed layout-navbar-fixed">
-<div class="wrapper">
- {% include "base/nav.html" %}    
- <div class="content-wrapper">
-  <div class="content-header">
+<body>
+
+  <div class="nav-bar">
+    <a href="{% url 'home' %}" class="nav-logo">
+      <img src="{% static "img/mobsf_icon.png" %}" alt="MobSF" style="width:24px;height:24px;border-radius:5px;">
+      <span>Mob</span>SF
+    </a>
+    <a href="{% url 'recent' %}" class="nav-link-muted">RECENT SCANS</a>
   </div>
-   <div class="container-fluid">
-        <div class="row">
-            <div class="col-lg-12">
-            <div class="card">
-              <div class="card-body">
-                 <h3>Not Found</h3>
-                    <p class="lead">We couldn't find the resource you are looking for.</p>
-          </div>
-        </div>
-       </div>
-     </div>
+
+  <div class="error-wrap">
+    <div class="error-code">404</div>
+
+    <div class="error-card">
+      <div class="error-icon"><i class="fas fa-search"></i></div>
+      <h1 class="error-title">Page Not Found</h1>
+      <p class="error-desc">
+        We couldn't locate the resource you're looking for. It may have been moved, deleted, or never existed.
+      </p>
+      <div class="error-path">{{ request.path|default:"/ unknown path" }}</div>
+      <div>
+        <a href="{% url 'home' %}" class="btn-home">
+          <i class="fas fa-home"></i> Go to Dashboard
+        </a>
+        <a onclick="history.back();return false;" href="#" class="btn-back">
+          <i class="fas fa-arrow-left"></i> Go Back
+        </a>
+      </div>
     </div>
-</div>
-  <!-- /.content-wrapper -->
-  <footer class="main-footer">
-    <strong>© {% now "Y" %} Mobile Security Framework - MobSF | <a href="https://ajinabraham.com">Ajin Abraham</a> | <a href="https://opensecurity.in">OpenSecurity</a>.</strong>
-  </footer>
- 
-</div>
-<!-- ./wrapper -->
+  </div>
 
 </body>
 </html>
