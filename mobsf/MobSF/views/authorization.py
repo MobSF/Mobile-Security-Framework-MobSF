@@ -10,6 +10,7 @@ from django.contrib.auth.models import (
     Permission,
     User,
 )
+from django.db import IntegrityError
 from django.shortcuts import (
     redirect,
     render,
@@ -136,7 +137,14 @@ def create_user(request):
             if not USERNAME_REGEX.match(username):
                 messages.error(request, 'Invalid Username')
                 return redirect('create_user')
-            user = form.save()
+            try:
+                user = form.save()
+            except IntegrityError:
+                # form.is_valid() already checks username uniqueness, but a
+                # concurrent request (e.g. a double-submitted form) can still
+                # race past that check before either commits.
+                messages.error(request, 'Username already exists')
+                return redirect('create_user')
             user.is_staff = False
             if role == 'maintainer':
                 user.groups.add(Group.objects.get(name=MAINTAINER_GROUP))
