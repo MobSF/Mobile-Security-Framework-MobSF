@@ -1,355 +1,811 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <meta name="description" content="Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis.">
-      <meta name="author" content="Ajin Abraham">
-      <link rel="icon" href="{% static "img/favicon.ico" %}">
-      <title>Mobile Security Framework - MobSF</title>
-      <link rel="stylesheet" href="{% static "adminlte/dashboard/css/adminlte.min.css" %}">
-      <link rel="stylesheet" href="{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
-      <link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
-      <link rel="stylesheet" href="{% static "landing/css/home.css" %}">
-      <!-- Google Font: Source Sans Pro -->
-      <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
-   </head>
-   <body class="text-center">
+<head>
+  <script>
+    /* Apply the saved theme before any stylesheet loads, so the page
+       never flashes the wrong theme on load. */
+    (function () {
+      try {
+        if (localStorage.getItem('mobsf-theme') === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Mobile Security Framework (MobSF) — Automated mobile application security analysis platform.">
+  <meta name="author" content="Ajin Abraham">
+  <link rel="icon" href="{% static "img/favicon.ico" %}">
+  <title>Mobile Security Framework - MobSF</title>
 
-    <div class="d-flex h-100 p-3 mx-auto flex-column">  
-        <nav class="nav nav-masthead justify-content-center">
-            <a class="nav-link active" href="{% url 'recent' %}">SCANS</a>
-            <a class="nav-link" href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>
-            <div class="pad">
-                <img src="{% static "img/mobsf_logo.png" %}" alt="MobSF Logo" height="30" width="90" />
-            </div>  
-            <a class="nav-link" href="{% url 'api_docs' %}">API</a>
-            <a class="nav-link" href="{% url 'about' %}">ABOUT</a>
-            {% if user.is_authenticated %}
-            <a id="dropdownSubMenu1" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle"><i class="fa fa-user-circle" aria-hidden="true"></i> </a>
-            <a class="nav-link"></a>
-            <ul aria-labelledby="dropdownSubMenu1" class="dropdown-menu border-0 shadow" style="left: 0px; right: inherit;">
-                <li><a href="#" class="dropdown-item"> <small>{{ request.user.username }} <span class="badge badge-primary"> {% if user.is_staff %} Admin {% else %}{{ request.user.groups.all.0 }} {% endif %}</span></small></a></li>
-                <li class="dropdown-divider"></li>
-                <li><a href="{% url 'change_password' %}" class="dropdown-item"><i class="fa fa-asterisk" aria-hidden="true"></i> Change Password </a></li>
-                {% if user.is_staff %}<li><a href="{% url 'users' %}" class="dropdown-item"><i class="fa fa-users" aria-hidden="true"></i> User Management </a></li>{% endif %}
-                <li><a href="{% url 'logout' %}" class="dropdown-item"><i class="fa fa-power-off" aria-hidden="true"></i> Logout </a></li>
-            </ul>
-            {% endif %}
-            <a class="nav-link">
-                <form action="/search" method="GET">
-                    <input name="query" type="text" class="form-control form-control-sm" placeholder="Search">
-                </form>
-            </a>
-        </nav>
+  <!-- Same CSS stack as base_layout so the shared nav renders identically -->
+  <link rel="stylesheet" href="{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
+  <link rel="stylesheet" href="{% static "others/css/mobsf-modern.css" %}">
+  <link rel="stylesheet" href="{% static "adminlte/dashboard/css/adminlte.min.css" %}">
+  <link rel="stylesheet" href="{% static "adminlte/plugins/overlayScrollbars/css/OverlayScrollbars.min.css" %}">
+  <link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-        <header class="masthead mb-auto">
-            <div class="inner">
-            </div>
-        </header>
+  <style>
+    /* Design tokens (--bg-*, --text-*, --accent-*, etc.) are defined once in
+       others/css/mobsf-modern.css, linked above - do not redeclare them here. */
 
-        <main role="main" class="inner cover">
-            <div class="inner cover">
-                <div style="visibility:hidden; opacity:0" id="drop">
-                <div id="textnode">Drop anywhere!</div>
-                </div>
-                </br>
-                <form id="upload_form" enctype="multipart/form-data" method="post">
-                {% csrf_token %}
-                <div class="fileUpload btn btn-lg btn-secondary" id="but">
-                    <input type="file" name="file" id="uploadFile" placeholder="Choose File" multiple>
-                    <span class="fas fa-cloud-upload-alt"></span>
-                    Upload &amp; Analyze
-                </div>
-                <br />
-                <small><i>Drag &amp; Drop anywhere!</i></small>
-                <p></p>
-                <h5 class="lead" id="status"></h5>
-                <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;" ></progress>
-                </form>
-            </div>
-        </main>
+    *, *::before, *::after { box-sizing: border-box; }
 
-        <footer class="mastfoot mt-auto">
-            <input type="download" id="package" class="form-control form-control-sm" placeholder="Download & Scan Package"/>
-            <p></p>
-            <div class="inner">
-                <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">API</a>   |  <a href="{% url 'donate' %}">DONATE ♥</a> |  <a target="_blank"
-                    href="https://mobsf.github.io/docs/#/">DOCS</a>  | <a href="{% url 'about' %}">ABOUT</a></h6>
-                </br>
-                <p>&copy; {% now "Y" %}  Mobile Security Framework - MobSF {{ version }}</p>
-            </div>
-            <div id="alert" class="alert-bar">Analysis started! Please wait to be redirected or check recent scans after sometime.</div>
-        </footer>
+    html, body {
+      margin: 0; padding: 0;
+      min-height: 100%;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-family: var(--font-main);
+      font-size: 14px;
+      overflow-x: hidden;
+    }
+
+    /* Same rationale as base_layout.html: this standalone page never has
+       real sidebar content, so the pushmenu hamburger has nothing to
+       reveal. Keyed off actual content (.nav-sidebar), not the
+       sidebar-collapse class - see base_layout.html for why. */
+    body:not(:has(.nav-sidebar)) #nbar { display: none !important; }
+
+    /* ── Background grid (matches other pages) ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(88,166,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(88,166,255,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 400px;
+      background:
+        radial-gradient(ellipse 700px 300px at 50% -50px, rgba(35,134,54,0.07) 0%, transparent 100%),
+        radial-gradient(ellipse 400px 200px at 20% 100px, rgba(88,166,255,0.04) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Wrapper ── */
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Navbar overrides so base nav.html looks right on this standalone page ── */
+    .main-header {
+      background: var(--bg-surface) !important;
+      border-bottom: 1px solid var(--border-subtle) !important;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.4) !important;
+      position: sticky !important;
+      top: 0;
+      z-index: 100;
+      width: 100%;
+    }
+    .navbar-dark .nav-link {
+      color: var(--text-secondary) !important;
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      letter-spacing: 0.6px !important;
+      text-transform: uppercase;
+      transition: color var(--transition);
+    }
+    .navbar-dark .nav-link:hover { color: var(--accent-blue) !important; }
+    #nbar { color: var(--text-secondary) !important; }
+    .form-control-navbar {
+      background: var(--bg-input) !important;
+      border: 1px solid var(--border-default) !important;
+      color: var(--text-primary) !important;
+      border-radius: 8px !important;
+      font-size: 12.5px !important;
+      padding: 6px 12px !important;
+    }
+    .form-control-navbar:focus {
+      border-color: var(--accent-blue) !important;
+      box-shadow: 0 0 0 3px var(--glow-blue) !important;
+    }
+    .btn-navbar { background: none !important; color: var(--text-secondary) !important; }
+    .btn-navbar:hover { color: var(--accent-blue) !important; }
+    /* Dropdown */
+    .dropdown-menu {
+      background: var(--bg-elevated) !important;
+      border: 1px solid var(--border-default) !important;
+      border-radius: 14px !important;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5) !important;
+      padding: 6px !important;
+      animation: dropIn 0.15s ease;
+    }
+    @keyframes dropIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+    .dropdown-item {
+      color: var(--text-primary) !important;
+      border-radius: 7px !important;
+      padding: 8px 12px !important;
+      font-size: 13px !important;
+      transition: all var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dropdown-item:hover { background: rgba(88,166,255,0.1) !important; color: var(--accent-blue) !important; }
+    .dropdown-divider { border-color: var(--border-subtle) !important; margin: 4px 0 !important; }
+    .badge.bg-info {
+      background: rgba(88,166,255,0.12) !important;
+      color: var(--accent-blue) !important;
+      border: 1px solid rgba(88,166,255,0.25) !important;
+      font-size: 10px !important;
+      padding: 3px 8px !important;
+      border-radius: 20px !important;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 64px 20px 48px;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(63,185,80,0.08);
+      border: 1px solid rgba(63,185,80,0.2);
+      border-radius: 20px;
+      color: var(--accent-green);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 16px;
+      margin-bottom: 26px;
+      letter-spacing: 0.3px;
+    }
+
+    .hero-title {
+      font-size: clamp(34px, 5vw, 54px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -1.2px;
+      margin-bottom: 18px;
+      background: linear-gradient(135deg, var(--text-primary) 0%, rgba(230,237,243,0.55) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      color: var(--text-secondary);
+      font-size: 16px;
+      max-width: 500px;
+      line-height: 1.65;
+      margin-bottom: 48px;
+    }
+
+    /* ── Drop zone wrapper ── */
+    .drop-zone-wrapper {
+      width: 100%;
+      max-width: 600px;
+      position: relative;
+    }
+
+    /* ── Full-page drag overlay ── */
+    #page-drop-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      background: rgba(8,11,15,0.82);
+      backdrop-filter: blur(6px);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      border: 3px dashed rgba(88,166,255,0.4);
+      animation: overlayIn 0.15s ease;
+      pointer-events: none;
+    }
+    #page-drop-overlay.active {
+      display: flex;
+      pointer-events: all;
+    }
+    @keyframes overlayIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    #page-drop-overlay i {
+      font-size: 52px;
+      color: var(--accent-blue);
+      animation: bounce 0.8s ease infinite alternate;
+    }
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to   { transform: translateY(-10px); }
+    }
+    #page-drop-overlay p {
+      color: var(--accent-blue);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      margin: 0;
+    }
+    #page-drop-overlay small {
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    /* ── Upload button ── */
+    .upload-area { position: relative; width: 100%; }
+
+    .upload-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent-green-dim) 0%, #2ea043 100%);
+      border: none;
+      border-radius: 16px;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      padding: 20px 28px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+      letter-spacing: 0.2px;
+      box-shadow: 0 4px 24px rgba(35,134,54,0.25);
+    }
+    .upload-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+      pointer-events: none;
+    }
+    .upload-btn::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+      transition: left 0.6s ease;
+    }
+    .upload-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 40px rgba(35,134,54,0.4), 0 0 0 1px rgba(63,185,80,0.3);
+    }
+    .upload-btn:hover::after { left: 100%; }
+    .upload-btn:active { transform: translateY(0); box-shadow: 0 4px 16px rgba(35,134,54,0.25); }
+
+    .upload-btn input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      z-index: 2;
+    }
+
+    .upload-icon {
+      width: 38px; height: 38px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    /* ── Drag hint strip ── */
+    .upload-hint {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      margin-top: 12px;
+    }
+    .upload-hint .hint-divider {
+      width: 40px; height: 1px;
+      background: var(--border-subtle);
+    }
+
+    /* ── Package input ── */
+    .pkg-row { margin-top: 16px; width: 100%; position: relative; }
+
+    .pkg-input {
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 13.5px;
+      padding: 12px 16px 12px 44px;
+      outline: none;
+      transition: all 0.18s;
+    }
+    .pkg-input:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px var(--glow-blue);
+    }
+    .pkg-input::placeholder { color: var(--text-muted); }
+
+    .pkg-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    /* ── Status / progress ── */
+    .upload-status { margin-top: 14px; min-height: 24px; text-align: center; }
+    #status {
+      color: var(--accent-blue);
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      letter-spacing: 0.3px;
+    }
+    #progressBar {
+      width: 100%; height: 4px;
+      border-radius: 4px;
+      background: var(--border-default);
+      border: none; outline: none;
+      margin-top: 8px;
+      appearance: none; -webkit-appearance: none;
+    }
+    #progressBar::-webkit-progress-bar { background: var(--border-default); border-radius: 4px; }
+    #progressBar::-webkit-progress-value {
+      background: linear-gradient(90deg, var(--accent-green-dim), var(--accent-green));
+      border-radius: 4px;
+    }
+
+    /* ── Format pills ── */
+    .formats-section { margin-top: 28px; }
+    .formats-label {
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .formats-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+    }
+    .format-pill {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+      padding: 4px 10px;
+      transition: all 0.15s ease;
+    }
+    .format-pill:hover {
+      border-color: var(--border-default);
+      color: var(--text-secondary);
+    }
+
+    /* ── Alert bar ── */
+    #alert {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: linear-gradient(135deg, var(--accent-green-dim), #2ea043);
+      color: #fff;
+      border-radius: 12px;
+      padding: 13px 26px;
+      font-size: 13.5px;
+      font-weight: 600;
+      box-shadow: 0 8px 32px rgba(35,134,54,0.4);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+      z-index: 10000;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #alert.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Footer ── */
+    .main-footer {
+      background: var(--bg-surface) !important;
+      border-top: 1px solid var(--border-subtle) !important;
+      color: var(--text-muted) !important;
+      font-size: 12px !important;
+      padding: 14px 24px !important;
+      text-align: center;
+      z-index: 1;
+      position: relative;
+    }
+    .main-footer a { color: var(--text-secondary) !important; text-decoration: none; transition: color var(--transition); margin: 0 8px; }
+    .main-footer a:hover { color: var(--accent-blue) !important; }
+    .footer-links { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 2px; margin-bottom: 8px; }
+    .footer-links .sep { color: var(--border-default); font-size: 10px; }
+
+    /* ── Loading overlay ── */
+    .loading {
+      position: fixed;
+      inset: 0;
+      background: rgba(8,11,15,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(6px);
+    }
+    .hidden { display: none !important; }
+
+    /* ── Scrollbar ── */
+    html { scrollbar-width: thin; scrollbar-color: var(--border-default) var(--bg-base); }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-base); }
+    ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
+  </style>
+</head>
+<body class="hold-transition sidebar-collapse layout-fixed layout-navbar-fixed">
+<div class="wrapper">
+
+  <!-- ── Shared Navbar (identical to all other pages) ── -->
+  {% include "base/nav.html" %}
+
+  <!-- ── Hero ── -->
+  <main class="hero">
+    <div class="hero-badge">
+      <i class="fas fa-circle" style="font-size:8px;"></i>
+      Automated Mobile Security Analysis
     </div>
 
-    <!--Loading Ring-->
-    <div class="hidden loading">
-        <div class='uil-ring-css' style='transform:scale(0.79);'>
-          <div></div>
+    <h1 class="hero-title">Analyze. Detect. Secure.</h1>
+    <p class="hero-sub">Upload any Android, iOS or Windows mobile application for automated static and dynamic security analysis.</p>
+
+    <div class="drop-zone-wrapper">
+
+      <!-- Upload button -->
+      <form id="upload_form" enctype="multipart/form-data" method="post">
+        {% csrf_token %}
+        <div class="upload-area">
+          <label class="upload-btn" id="but" for="uploadFile">
+            <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+            <span>Upload &amp; Analyze</span>
+            <input type="file" name="file" id="uploadFile" placeholder="Choose File" multiple>
+          </label>
         </div>
+      </form>
+
+      <!-- Drag hint -->
+      <div class="upload-hint">
+        <span class="hint-divider"></span>
+        <i class="fas fa-arrows-alt" style="font-size:11px;"></i>
+        Drag &amp; drop files anywhere on this page
+        <span class="hint-divider"></span>
+      </div>
+
+      <!-- Package / URL download -->
+      <div class="pkg-row">
+        <i class="fas fa-download pkg-icon"></i>
+        <input id="package" class="pkg-input" type="text"
+               placeholder="Or paste package name / URL to download &amp; scan…">
+      </div>
+
+      <!-- Status -->
+      <div class="upload-status">
+        <h5 id="status"></h5>
+        <progress id="progressBar" value="0" max="100" style="visibility:hidden;"></progress>
+      </div>
+
+      <!-- Supported formats -->
+      <div class="formats-section">
+        <p class="formats-label">Supported formats</p>
+        <div class="formats-row">
+          <span class="format-pill">.APK</span>
+          <span class="format-pill">.APKS</span>
+          <span class="format-pill">.XAPK</span>
+          <span class="format-pill">.AAB</span>
+          <span class="format-pill">.JAR</span>
+          <span class="format-pill">.AAR</span>
+          <span class="format-pill">.SO</span>
+          <span class="format-pill">.IPA</span>
+          <span class="format-pill">.DYLIB</span>
+          <span class="format-pill">.A</span>
+          <span class="format-pill">.ZIP</span>
+          <span class="format-pill">.APPX</span>
+        </div>
+      </div>
+
+    </div><!-- /.drop-zone-wrapper -->
+  </main>
+
+  <!-- ── Full-page drag & drop overlay ── -->
+  <div id="page-drop-overlay">
+    <i class="fas fa-cloud-upload-alt"></i>
+    <p>Drop your file to analyze</p>
+    <small>APK · IPA · APPX · ZIP · AAB and more</small>
+  </div>
+
+  <!-- ── Alert toast ── -->
+  <div id="alert">
+    <i class="fas fa-check-circle"></i>
+    Analysis started! Redirecting to results…
+  </div>
+
+  <!-- ── Loading spinner ── -->
+  <div class="hidden loading">
+    <div class="uil-ring-css" style="transform:scale(0.79);">
+      <div></div>
     </div>
+  </div>
 
-    <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
-    <script src="{% static "adminlte/plugins/bootstrap/bootstrap.bundle.min.js" %}"></script>
-      <script>
-            let warning = "This is a demo MobSF instance. Anything uploaded here will be publicly available. Do you want to continue?";
-            // Result View
-            function load_result(url){
-                hide_loader();
-                // Display alert notification
-                var x = document.getElementById("alert");
-                x.className = "alert-bar show slide-up";
-                setTimeout(function () {
-                    x.className = x.className.replace("show", "");
-                }, 10000);
+  <!-- ── Footer ── -->
+  <footer class="main-footer">
+    <div class="footer-links">
+      <a href="{% url 'recent' %}"><i class="fas fa-history" style="margin-right:4px;font-size:10px;"></i>Recent Scans</a>
+      <span class="sep">·</span>
+      <a href="{% url 'dynamic' %}"><i class="fas fa-play-circle" style="margin-right:4px;font-size:10px;"></i>Dynamic Analyzer</a>
+      <span class="sep">·</span>
+      <a href="{% url 'api_docs' %}">API</a>
+      <span class="sep">·</span>
+      <a href="{% url 'donate' %}" style="color:var(--accent-red) !important;"><i class="fas fa-heart" style="margin-right:4px;font-size:10px;"></i>Donate</a>
+      <span class="sep">·</span>
+      <a href="https://mobsf.github.io/docs/#/" target="_blank" rel="noopener">Docs</a>
+      <span class="sep">·</span>
+      <a href="{% url 'about' %}">About</a>
+    </div>
+    <strong>© {% now "Y" %} Mobile Security Framework — MobSF &nbsp;|&nbsp;
+      <a href="https://ajinabraham.com">Ajin Abraham</a> &nbsp;|&nbsp;
+      <a href="https://opensecurity.in">OpenSecurity</a>
+    </strong>
+    <div style="color:var(--text-muted);margin-top:4px;">v{{ version }}</div>
+  </footer>
 
-                // Redirect after showing alertbar
-                setTimeout(function () {
-                    window.location.href = url;
-                }, 1000); // Adjust delay as needed
-            }
+</div><!-- /.wrapper -->
 
-            //Download and scan APK
-            $('#package').keypress(function(event){
-                var keycode = (event.keyCode ? event.keyCode : event.which);
-                if(keycode == '13'){
-                    _("status").innerText = 'Trying to download ...';
-                    show_loader();
-                    $.ajax({
-                        url : '{% url "download_scan" %}', 
-                        type : "POST",
-                        dataType: "json", 
-                        data : {
-                            package: $('#package').val(),
-                            csrfmiddlewaretoken: '{{ csrf_token }}',
-                        },
-                        success : function(json){
-                            if (json.status === 'ok'){
-                                setInterval(function() {
-                                    get_status(json.hash);
-                                }, 500);
+<script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
+<script src="{% static "adminlte/plugins/bootstrap/bootstrap.bundle.min.js" %}"></script>
+<script src="{% static "adminlte/dashboard/js/adminlte.min.js" %}"></script>
+<script src="{% static "others/js/theme-toggle.js" %}"></script>
+<script>
+  /* ────────────────────────────────────────────────
+     Helpers
+  ──────────────────────────────────────────────── */
+  const _  = (id) => document.getElementById(id);
+  const overlay = _('page-drop-overlay');
 
-                                url = json.analyzer + '/' + json.hash + '/';
-                                load_result(url);
-                            } else {
-                                hide_loader();
-                                _("status").innerText = json.description;
-                            }
-                        },
-                        error : function(xhr, ajaxOptions, thrownError) {
-                            hide_loader();
-                            if (thrownError === 'Forbidden'){
-                                _("status").innerText = "You do not have permission to download and scan!";
-                            }
-                        }
-                    });
-                }
-            });
-            function show_loader(){
-                var loadingOverlay = document.querySelector('.loading');
-                loadingOverlay.classList.remove('hidden');
-            }
+  let warning = "This is a demo MobSF instance. Anything uploaded here will be publicly available. Do you want to continue?";
 
-            function hide_loader(){
-                var loadingOverlay = document.querySelector('.loading');
-                loadingOverlay.classList.add('hidden');
-            }
-            // Existing
-            function _(el){
-                return document.getElementById(el);
-            }
+  function show_loader() { document.querySelector('.loading').classList.remove('hidden'); }
+  function hide_loader() { document.querySelector('.loading').classList.add('hidden'); }
 
-            // Response Handler     
-            function responseHandler(json, isbutton) {
-                if (json.status === 'error') {
-                    _("status").innerText = json.description;
-                } else {
-                    setInterval(function() {
-                        get_status(json.hash);
-                    }, 500);
-                    var url = json.analyzer + '/' + json.hash + '/';
-                    load_result(url);
-                }
-            }
+  function load_result(url) {
+    hide_loader();
+    const alert_el = _('alert');
+    alert_el.classList.add('show');
+    setTimeout(() => { alert_el.classList.remove('show'); }, 10000);
+    setTimeout(() => { window.location.href = url; }, 1000);
+  }
 
-
-           // Get Scan status
-           function get_status(checksum){
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", '{% url "status" %}', true);
-                xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
-                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
-                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-                xhr.onload = function() {
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        var response = JSON.parse(xhr.responseText);
-                        if (response.status === 'ok') {
-                            const last_log = response.logs[response.logs.length - 1];
-                            _("status").innerText = last_log.status + ' .';
-                            var number = Math.ceil((Math.floor(Math.random() * 5)));
-                            for (i=0;i<number;i++){
-                                _("status").innerText += '.';
-                            }
-                        }
-                    } else {
-                        console.log("Error:", xhr.statusText);
-                    }
-                };
-                xhr.onerror = function() {
-                    console.log("Failed to get scan status");
-                };
-                xhr.send('hash=' + checksum);
-           }
-
-            function progressHandler(event) {
-                var percent = (event.loaded / event.total) * 100;
-                console.log("Uploaded ..." + Math.round(percent));
-                _("progressBar").value = Math.round(percent);
-                _("status").innerText = Math.round(percent) + "% Uploaded ...";
-            }
-            function completeHandler(event) {
-                if(event.currentTarget.status === 403){
-                    _("status").innerText = "You do not have permission to upload!";
-                    return;
-                } else {
-                    var json = JSON.parse(event.target.responseText);
-                    responseHandler(json);
-                }
-            }
-            function errorHandler(event) {
-                _("status").innerText = "Upload Failed!";
-            }
-            function abortHandler(event) {
-                _("status").innerText = "Upload Aborted!";
-            }
-          // Is valid file extensions
-          function isValidExt(file_name){
-                var val = file_name.toLowerCase();
-                var regex = new RegExp("^(.{1,300}?)\.({{exts}})$");
-                val = val.replace(/^.*[\\\/]/, '');
-                if (!(regex.test(val))) {
-                    _('status').innerText = "MobSF only supports APK, APKS, XAPK, AAB, JAR, AAR, SO, IPA, DYLIB, A, ZIP, and APPX files.";
-                    return false;
-                }
-                return true;
+  /* ────────────────────────────────────────────────
+     Status polling
+  ──────────────────────────────────────────────── */
+  function get_status(checksum) {
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", '{% url "status" %}', true);
+    xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhr.onload = function() {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          var response = JSON.parse(xhr.responseText);
+          if (response.status === 'ok') {
+            var last_log = response.logs[response.logs.length - 1];
+            _('status').innerText = last_log.status + ' …';
           }
-          // Is allowed mimetype
-          function isValidMime(file_mime){
-                if (file_mime.length < 1)
-                    // bypass if mime is not available
-                    return true; 
-                var supported = [{% for mime in mimes %}'{{mime}}',{% endfor %}];
-                if(supported.indexOf(file_mime) >-1)
-                    return true;
-                 _('status').innerText = "MIME type (" + file_mime + ") is not supported!";
-                return false;
-          }
-         // File Upload
-         function uploadFile(file, i) {
-           try {
-                if (!isValidExt(file.name) || !isValidMime(file.type)){
-                    return;
-                }
-                _("progressBar").style.visibility = "visible";
-                var url = '{% url "upload" %}'
-                var xhr = new XMLHttpRequest()
-                xhr.open('POST', url, true)
-                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
-                xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
-                xhr.upload.addEventListener("progress", progressHandler, false);
-                xhr.addEventListener("load", completeHandler, false);
-                xhr.addEventListener("error", errorHandler, false);
-                xhr.addEventListener("abort", abortHandler, false);
-                var formdata = new FormData();
-                formdata.append("file", file);
-                xhr.send(formdata)
-            } catch (e) {
-                alert("Error:" + e);
-            }
-           }
-         
-           function handleFiles(files) {
-               files = [...files]
-               files.forEach(uploadFile)
-           }
-         
-           // Full Screen Drag & Drop File Upload
-           var lastTarget = null;
-           function isFile(evt) {
-               var dt = evt.dataTransfer;
-         
-               for (var i = 0; i < dt.types.length; i++) {
-                   if (dt.types[i] === "Files") {
-                       return true;
-                   }
-               }
-               return false;
-           }
-         
-           window.addEventListener("dragenter", function (e) {
-               if (isFile(e)) {
-                   lastTarget = e.target;
-                   document.querySelector("#drop").style.visibility = "";
-                   document.querySelector("#drop").style.opacity = 1;
-                   document.querySelector("#textnode").style.fontSize = "48px";
-               }
-           });
-         
-           window.addEventListener("dragleave", function (e) {
-               e.preventDefault();
-               if (e.target === document || e.target === lastTarget) {
-                   document.querySelector("#drop").style.visibility = "hidden";
-                   document.querySelector("#drop").style.opacity = 0;
-                   document.querySelector("#textnode").style.fontSize = "42px";
-               }
-           });
-         
-           window.addEventListener("dragover", function (e) {
-               e.preventDefault();
-           });
-         
-           window.addEventListener("drop", function (e) {
-               e.preventDefault();
-               document.querySelector("#drop").style.visibility = "hidden";
-               document.querySelector("#drop").style.opacity = 0;
-               document.querySelector("#textnode").style.fontSize = "42px";
-               if(e.dataTransfer.files.length > 0) {
-                if (document.location.host === 'mobsf.live'){
-                    if (confirm(warning) == true) {
-                        handleFiles(e.dataTransfer.files);
-                    } else {
-                        return;
-                    }
-                } else {
-                    handleFiles(e.dataTransfer.files);
-                }
-               }
-           });
+        } catch(e) {}
+      }
+    };
+    xhr.send('hash=' + checksum);
+  }
 
-            $(document).ready(function() {
-                // Button File Upload
-                $('input[type=file]').change(function() {
-                    _('status').innerText = "";
-                    if (_("uploadFile").files.length === 0) {
-                        return;
-                    }
-                    var files = _("uploadFile").files;
-                    if (document.location.host === 'mobsf.live'){
-                        if (confirm(warning) == true) {
-                            _("uploadFile").style.display = "none";
-                            handleFiles(files);
-                        } else {
-                            return;
-                        }
-                    } else {
-                        _("uploadFile").style.display = "none";
-                        handleFiles(files);
-                    }
-                });
-            });
-      </script>
-   </body>
+  /* ────────────────────────────────────────────────
+     Response handler
+  ──────────────────────────────────────────────── */
+  function responseHandler(json) {
+    if (json.status === 'error') {
+      _('status').innerText = json.description;
+    } else {
+      setInterval(() => { get_status(json.hash); }, 500);
+      load_result(json.analyzer + '/' + json.hash + '/');
+    }
+  }
+
+  /* ────────────────────────────────────────────────
+     Progress
+  ──────────────────────────────────────────────── */
+  function progressHandler(event) {
+    if (!event.lengthComputable) return;
+    var pct = Math.round((event.loaded / event.total) * 100);
+    _('progressBar').value = pct;
+    _('status').innerText = pct + '% uploaded…';
+  }
+  function completeHandler(event) {
+    if (event.currentTarget.status === 403) {
+      _('status').innerText = "You do not have permission to upload!";
+      return;
+    }
+    try { responseHandler(JSON.parse(event.target.responseText)); }
+    catch(e) { _('status').innerText = "Upload error."; }
+  }
+  function errorHandler() { _('status').innerText = "Upload failed."; }
+  function abortHandler() { _('status').innerText = "Upload aborted."; }
+
+  /* ────────────────────────────────────────────────
+     Validation
+  ──────────────────────────────────────────────── */
+  function isValidExt(file_name) {
+    var val = file_name.toLowerCase().replace(/^.*[\\\/]/, '');
+    var regex = new RegExp("^(.{1,300}?)\\.({{exts}})$");
+    if (!regex.test(val)) {
+      _('status').innerText = "MobSF supports APK, APKS, XAPK, AAB, JAR, AAR, SO, IPA, DYLIB, A, ZIP, and APPX files.";
+      return false;
+    }
+    return true;
+  }
+
+  function isValidMime(file_mime) {
+    if (!file_mime || file_mime.length < 1) return true;
+    var supported = [{% for mime in mimes %}'{{mime}}',{% endfor %}];
+    if (supported.indexOf(file_mime) > -1) return true;
+    _('status').innerText = "MIME type (" + file_mime + ") is not supported!";
+    return false;
+  }
+
+  /* ────────────────────────────────────────────────
+     Upload
+  ──────────────────────────────────────────────── */
+  function uploadFile(file) {
+    try {
+      if (!isValidExt(file.name) || !isValidMime(file.type)) return;
+      _('progressBar').style.visibility = 'visible';
+      _('status').innerText = 'Uploading…';
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '{% url "upload" %}', true);
+      xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+      xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+      xhr.upload.addEventListener('progress', progressHandler, false);
+      xhr.addEventListener('load', completeHandler, false);
+      xhr.addEventListener('error', errorHandler, false);
+      xhr.addEventListener('abort', abortHandler, false);
+      var formdata = new FormData();
+      formdata.append('file', file);
+      show_loader();
+      xhr.send(formdata);
+    } catch(e) { alert("Error: " + e); }
+  }
+
+  function handleFiles(files) {
+    [...files].forEach(uploadFile);
+  }
+
+  /* ────────────────────────────────────────────────
+     File input change
+  ──────────────────────────────────────────────── */
+  document.getElementById('uploadFile').addEventListener('change', function() {
+    _('status').innerText = '';
+    if (this.files.length === 0) return;
+    var files = this.files;
+    if (document.location.host === 'mobsf.live') {
+      if (confirm(warning)) { this.style.display = 'none'; handleFiles(files); }
+    } else {
+      this.style.display = 'none';
+      handleFiles(files);
+    }
+  });
+
+  /* ────────────────────────────────────────────────
+     Drag & Drop — full page listener
+  ──────────────────────────────────────────────── */
+  var dragCounter = 0; // track nested dragenter/dragleave pairs
+
+  function hasDragFiles(e) {
+    if (!e.dataTransfer) return false;
+    for (var i = 0; i < e.dataTransfer.types.length; i++) {
+      if (e.dataTransfer.types[i] === 'Files') return true;
+    }
+    return false;
+  }
+
+  document.addEventListener('dragenter', function(e) {
+    if (!hasDragFiles(e)) return;
+    e.preventDefault();
+    dragCounter++;
+    if (dragCounter === 1) overlay.classList.add('active');
+  });
+
+  document.addEventListener('dragleave', function(e) {
+    if (!hasDragFiles(e) && dragCounter === 0) return;
+    dragCounter--;
+    if (dragCounter <= 0) {
+      dragCounter = 0;
+      overlay.classList.remove('active');
+    }
+  });
+
+  document.addEventListener('dragover', function(e) {
+    if (!hasDragFiles(e)) return;
+    e.preventDefault(); // required to allow drop
+    e.dataTransfer.dropEffect = 'copy';
+  });
+
+  document.addEventListener('drop', function(e) {
+    e.preventDefault();
+    dragCounter = 0;
+    overlay.classList.remove('active');
+    if (!e.dataTransfer || !e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
+    if (document.location.host === 'mobsf.live') {
+      if (confirm(warning)) handleFiles(e.dataTransfer.files);
+    } else {
+      handleFiles(e.dataTransfer.files);
+    }
+  });
+
+  /* ────────────────────────────────────────────────
+     Package / URL download on Enter
+  ──────────────────────────────────────────────── */
+  document.getElementById('package').addEventListener('keypress', function(event) {
+    if (event.key !== 'Enter') return;
+    _('status').innerText = 'Downloading…';
+    show_loader();
+    $.ajax({
+      url: '{% url "download_scan" %}',
+      type: 'POST',
+      dataType: 'json',
+      data: { package: this.value, csrfmiddlewaretoken: '{{ csrf_token }}' },
+      success: function(json) {
+        if (json.status === 'ok') {
+          setInterval(() => { get_status(json.hash); }, 500);
+          load_result(json.analyzer + '/' + json.hash + '/');
+        } else {
+          hide_loader();
+          _('status').innerText = json.description;
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        hide_loader();
+        if (thrownError === 'Forbidden') _('status').innerText = "You do not have permission to download and scan!";
+        else _('status').innerText = "Download failed.";
+      }
+    });
+  });
+</script>
+</body>
 </html>

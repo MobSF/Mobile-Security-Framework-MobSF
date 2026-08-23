@@ -1,23 +1,81 @@
 {% extends "base/base_layout.html" %}
- {% block sidebar_option %}
-      sidebar-collapse
+{% block sidebar_option %}sidebar-collapse{% endblock %}
+{% block extra_css %}
+<style>
+  .error-page-wrap {
+    padding: 32px 24px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .error-page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .error-page-actions a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 20px;
+    text-decoration: none;
+    transition: all .18s ease;
+  }
+
+  .error-page-actions .action-new {
+    background: rgba(63,185,80,0.1);
+    border: 1px solid rgba(63,185,80,0.25);
+    color: var(--accent-green,#3fb950);
+  }
+  .error-page-actions .action-new:hover {
+    background: rgba(63,185,80,0.18);
+    transform: translateY(-1px);
+  }
+
+  .error-page-actions .action-recent {
+    background: rgba(88,166,255,0.08);
+    border: 1px solid rgba(88,166,255,0.2);
+    color: var(--accent-blue,#58a6ff);
+  }
+  .error-page-actions .action-recent:hover {
+    background: rgba(88,166,255,0.15);
+    transform: translateY(-1px);
+  }
+
+  .error-page-actions .action-docs {
+    background: rgba(139,148,158,0.08);
+    border: 1px solid rgba(139,148,158,0.15);
+    color: var(--text-secondary,#8b949e);
+  }
+  .error-page-actions .action-docs:hover {
+    background: rgba(139,148,158,0.15);
+    color: var(--text-primary,#e6edf3);
+  }
+</style>
 {% endblock %}
 {% block content %}
 <div class="content-wrapper">
-  <div class="content-header">
-  </div>
-   <div class="container-fluid">
-        <div class="row">
-            <div class="col-lg-12">
-            <div class="card">
-              <div class="card-body">
-                <h2>Error</h2>
-                  <p class="lead">{{ exp }}</p>
-                  <p>{{ doc }}</p>
-          </div>
-        </div>
-       </div>
-     </div>
+  <div class="error-page-wrap">
+
+    {% include "components/error_card.html" with error_title="Analysis Error" error_summary=exp error_suggestion=doc error_type="error" %}
+
+    <div class="error-page-actions">
+      <a href="{% url 'home' %}" class="action-new">
+        <i class="fas fa-upload"></i> New Analysis
+      </a>
+      <a href="{% url 'recent' %}" class="action-recent">
+        <i class="fas fa-history"></i> Recent Scans
+      </a>
+      <a href="https://mobsf.github.io/docs/#/" target="_blank" rel="noopener" class="action-docs">
+        <i class="fas fa-book"></i> Documentation
+      </a>
     </div>
+
+  </div>
 </div>
 {% endblock %}

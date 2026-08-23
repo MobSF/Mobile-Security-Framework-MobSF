@@ -1,57 +1,105 @@
 {% extends "base/base_layout.html" %}
- {% block sidebar_option %}
-      sidebar-collapse
-{% endblock %}
+{% block sidebar_option %}sidebar-collapse{% endblock %}
 {% block content %}
 <div class="content-wrapper">
-  <div class="content-header">
-  </div>
-   <div class="container-fluid">
-        <div class="row">
-        
+  <div style="padding:32px 24px;max-width:860px;margin:0 auto;">
 
-            <div class="col-lg-12">
-            <div class="card">
-              <div class="card-body">
-                <h1>MobSF Dynamic Analyzer</h1>
-              </br></br>
-                  <div class="h-100 d-flex align-items-center justify-content-center">
-                    <div class="card justify-content-center" style="width: 25rem;">
+    <!-- Header -->
+    <div style="margin-bottom:32px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+        <div style="width:42px;height:42px;background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-play-circle" style="color:var(--accent-blue,#58a6ff);font-size:18px;"></i>
+        </div>
+        <div>
+          <h1 style="margin:0;font-size:22px;font-weight:700;color:var(--text-primary,#e6edf3);">Dynamic Analyzer</h1>
+          <p style="margin:0;color:var(--text-secondary,#8b949e);font-size:13px;">Runtime analysis and instrumented testing</p>
+        </div>
+      </div>
+    </div>
 
-                      
-                        <i style="color:#A4C639;" class="fab fa-android fa-10x d-flex justify-content-center"></i>
-                        <div class="card-body">
-                          <h4 class="d-flex justify-content-center">Android Dynamic Analyzer</h4>
-                          <p class="card-text">Perform Dynamic Analysis of Android Applications.</p>
-                          <a href="{% url 'dynamic_android' %}" class="btn btn-primary d-flex justify-content-center">Android Dynamic Analyzer</a>
-                        </div>
-                      </div>
-                      <div class="h-100 d-flex align-items-center justify-content-center">&nbsp;&nbsp;&nbsp;</div>
-                      <div class="card justify-content-center" style="width: 25rem;">
-                        <i style="color:#cccccc;" class="fab fa-apple fa-10x d-flex justify-content-center"></i>
-                        <div class="card-body">
-                          <h4 class="d-flex justify-content-center">iOS Dynamic Analyzer</h4>
-                          <p class="card-text">Perform Dynamic Analysis of iOS Applications.</p>
-                          <div class="dropdown d-flex justify-content-center">
-                            <button class="btn btn-primary dropdown-toggle" type="button" id="iosDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                              iOS Dynamic Analyzer
-                            </button>
-                            <div class="dropdown-menu" aria-labelledby="iosDropdown">
-                              <a class="dropdown-item" href="{% url 'dynamic_ios' %}">
-                                <i class="fa fa-microchip mr-2"></i>Corellium VM
-                              </a>
-                              <a class="dropdown-item" href="{% url 'dynamic_ios_device' %}">
-                                <i class="fas fa-mobile-alt mr-2"></i>Jailbroken Device
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+    <!-- Platform cards -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+      <!-- Android -->
+      <div class="card" style="border-color:rgba(164,198,57,0.2) !important;transition:all 0.2s ease;"
+           onmouseover="this.style.borderColor='rgba(164,198,57,0.4)';this.style.transform='translateY(-2px)';"
+           onmouseout="this.style.borderColor='rgba(164,198,57,0.2)';this.style.transform='translateY(0)';">
+        <div class="card-body" style="padding:36px 28px !important;text-align:center;">
+          <div style="width:80px;height:80px;background:rgba(164,198,57,0.08);border:1px solid rgba(164,198,57,0.2);border-radius:20px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px;">
+            <i class="fab fa-android" style="font-size:38px;color:#A4C639;"></i>
+          </div>
+          <h3 style="margin:0 0 8px;font-size:17px;font-weight:700;color:var(--text-primary,#e6edf3);">Android Dynamic Analyzer</h3>
+          <p style="color:var(--text-secondary,#8b949e);font-size:13.5px;line-height:1.6;margin:0 0 24px;">
+            Perform runtime analysis of Android applications with instrumented testing and network traffic inspection.
+          </p>
+
+          <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:24px;">
+            <span style="background:rgba(164,198,57,0.08);border:1px solid rgba(164,198,57,0.15);border-radius:6px;color:#A4C639;font-size:11px;font-weight:700;padding:3px 9px;">APK</span>
+            <span style="background:rgba(164,198,57,0.08);border:1px solid rgba(164,198,57,0.15);border-radius:6px;color:#A4C639;font-size:11px;font-weight:700;padding:3px 9px;">APKS</span>
+            <span style="background:rgba(164,198,57,0.08);border:1px solid rgba(164,198,57,0.15);border-radius:6px;color:#A4C639;font-size:11px;font-weight:700;padding:3px 9px;">XAPK</span>
+          </div>
+
+          <a href="{% url 'dynamic_android' %}"
+             style="display:inline-flex;align-items:center;gap:8px;background:rgba(164,198,57,0.1);border:1px solid rgba(164,198,57,0.3);border-radius:10px;color:#A4C639;font-size:13.5px;font-weight:700;padding:11px 24px;text-decoration:none;transition:all 0.18s ease;width:100%;justify-content:center;"
+             onmouseover="this.style.background='rgba(164,198,57,0.18)';this.style.boxShadow='0 4px 16px rgba(164,198,57,0.15)';"
+             onmouseout="this.style.background='rgba(164,198,57,0.1)';this.style.boxShadow='none';">
+            <i class="fas fa-play"></i> Launch Android Analyzer
+          </a>
+        </div>
+      </div>
+
+      <!-- iOS -->
+      <div class="card" style="border-color:rgba(200,200,200,0.15) !important;transition:all 0.2s ease;"
+           onmouseover="this.style.borderColor='rgba(200,200,200,0.3)';this.style.transform='translateY(-2px)';"
+           onmouseout="this.style.borderColor='rgba(200,200,200,0.15)';this.style.transform='translateY(0)';">
+        <div class="card-body" style="padding:36px 28px !important;text-align:center;">
+          <div style="width:80px;height:80px;background:rgba(200,200,200,0.06);border:1px solid rgba(200,200,200,0.12);border-radius:20px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px;">
+            <i class="fab fa-apple" style="font-size:38px;color:#cccccc;"></i>
+          </div>
+          <h3 style="margin:0 0 8px;font-size:17px;font-weight:700;color:var(--text-primary,#e6edf3);">iOS Dynamic Analyzer</h3>
+          <p style="color:var(--text-secondary,#8b949e);font-size:13.5px;line-height:1.6;margin:0 0 24px;">
+            Analyze iOS applications on Corellium virtual machines or physical jailbroken devices with full instrumentation support.
+          </p>
+
+          <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:24px;">
+            <span style="background:rgba(200,200,200,0.06);border:1px solid rgba(200,200,200,0.12);border-radius:6px;color:#cccccc;font-size:11px;font-weight:700;padding:3px 9px;">IPA</span>
+            <span style="background:rgba(200,200,200,0.06);border:1px solid rgba(200,200,200,0.12);border-radius:6px;color:#cccccc;font-size:11px;font-weight:700;padding:3px 9px;">DYLIB</span>
+            <span style="background:rgba(200,200,200,0.06);border:1px solid rgba(200,200,200,0.12);border-radius:6px;color:#cccccc;font-size:11px;font-weight:700;padding:3px 9px;">.A</span>
+          </div>
+
+          <!-- Dropdown buttons -->
+          <div class="dropdown" style="width:100%;">
+            <button class="btn btn-secondary"
+                    style="width:100%;display:flex;align-items:center;justify-content:center;background:rgba(200,200,200,0.06) !important;border-color:rgba(200,200,200,0.2) !important;color:#cccccc !important;font-size:13.5px;font-weight:700;padding:11px 24px !important;"
+                    type="button" id="iosDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <i class="fas fa-play" style="margin-right:8px;"></i>
+              <span>Launch iOS Analyzer</span>
+              <i class="fas fa-chevron-down" style="margin-left:8px;font-size:10px;"></i>
+            </button>
+            <div class="dropdown-menu" aria-labelledby="iosDropdown" style="width:100%;">
+              <a class="dropdown-item" href="{% url 'dynamic_ios' %}">
+                <i class="fa fa-microchip" style="width:18px;opacity:.7;color:var(--accent-blue,#58a6ff);"></i>
+                Corellium VM
+              </a>
+              <a class="dropdown-item" href="{% url 'dynamic_ios_device' %}">
+                <i class="fas fa-mobile-alt" style="width:18px;opacity:.7;color:var(--accent-green,#3fb950);"></i>
+                Jailbroken Device
+              </a>
+            </div>
           </div>
         </div>
-       </div>
-     </div>
+      </div>
     </div>
+
+    <!-- Info bar -->
+    <div style="margin-top:20px;background:rgba(88,166,255,0.05);border:1px solid rgba(88,166,255,0.12);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:12px;">
+      <i class="fas fa-info-circle" style="color:var(--accent-blue,#58a6ff);font-size:16px;flex-shrink:0;"></i>
+      <p style="margin:0;color:var(--text-secondary,#8b949e);font-size:13px;line-height:1.5;">
+        Dynamic analysis requires a connected Android emulator/device or iOS VM/jailbroken device. Ensure your environment is properly configured before proceeding.
+        <a href="https://mobsf.github.io/docs/#/" target="_blank" style="color:var(--accent-blue,#58a6ff);margin-left:4px;">View Setup Guide →</a>
+      </p>
+    </div>
+
+  </div>
 </div>
 {% endblock %}

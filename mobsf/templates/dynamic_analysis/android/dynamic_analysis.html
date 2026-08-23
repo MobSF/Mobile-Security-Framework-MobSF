@@ -10,32 +10,74 @@
 <link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
 <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
 <style>
-   #app_icon{
-            width: 64px;
-            height: 64px;
-          }
-
+   #app_icon {
+     width: 64px;
+     height: 64px;
+   }
+   /* Enhanced device info card */
+   .device-info-card {
+     background: var(--grad-blue);
+     border: 1px solid var(--border-subtle);
+     border-radius: 12px;
+     padding: 24px;
+     color: var(--text-primary);
+     margin-bottom: 20px;
+   }
+   .device-info-card h4 {
+     margin-bottom: 16px;
+     font-weight: 600;
+   }
+   .device-info-item {
+     display: flex;
+     align-items: center;
+     gap: 12px;
+     padding: 8px 0;
+     border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
+   }
+   .device-info-item:last-child {
+     border-bottom: none;
+   }
+   .device-info-label {
+     font-size: 0.8rem;
+     color: var(--text-secondary);
+     min-width: 120px;
+   }
+   .device-info-value {
+     font-weight: 600;
+   }
+   .device-badge {
+     display: inline-block;
+     padding: 4px 12px;
+     border-radius: 20px;
+     font-size: 0.75rem;
+     font-weight: 600;
+   }
+   .badge-success { background: color-mix(in srgb, var(--accent-green) 20%, transparent); color: var(--accent-green); }
+   .badge-warning { background: color-mix(in srgb, var(--accent-yellow) 20%, transparent); color: var(--accent-yellow); }
+   .badge-danger { background: color-mix(in srgb, var(--accent-red) 20%, transparent); color: var(--accent-red); }
+   .badge-info { background: color-mix(in srgb, var(--accent-blue) 20%, transparent); color: var(--accent-blue); }
+   
    textarea {
  
-  width: 100%;
-  height: 500px;
-  -moz-border-bottom-colors: none;
-  -moz-border-left-colors: none;
-  -moz-border-right-colors: none;
-  -moz-border-top-colors: none;
-  background: none repeat scroll 0 0 rgba(0, 0, 0, 0.07);
-  border-color: -moz-use-text-color #FFFFFF #FFFFFF -moz-use-text-color;
-  border-image: none;
-  border-radius: 6px 6px 6px 6px;
-  border-style: none solid solid none;
-  border-width: medium 1px 1px medium;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12) inset;
-  color: #555555;
-  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-  font-size: 1em;
-  line-height: 1.4em;
-  padding: 5px 8px;
-  transition: background-color 0.2s ease 0s;
+    width: 100%;
+    height: 500px;
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background: none repeat scroll 0 0 rgba(0, 0, 0, 0.07);
+    border-color: -moz-use-text-color #FFFFFF #FFFFFF -moz-use-text-color;
+    border-image: none;
+    border-radius: 6px 6px 6px 6px;
+    border-style: none solid solid none;
+    border-width: medium 1px 1px medium;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12) inset;
+    color: #555555;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 1em;
+    line-height: 1.4em;
+    padding: 5px 8px;
+    transition: background-color 0.2s ease 0s;
 }
 
 
@@ -92,6 +134,35 @@ textarea:focus {
                           <strong>• Android Emulator AVD</strong> (non production) version 5.0 - 11.0 (arm, arm64, x86, and x86_64 upto API 30)<br/>
                           <strong>• Corellium Android VM</strong> (userdebug builds) version 7.1.2 - 11.0 (arm64 upto API 30)
                         </h5>
+                        
+                        <!-- Device Info Card -->
+                        {% if identifier %}
+                        <div class="device-info-card" style="margin-top: 16px;">
+                          <h4><i class="fas fa-mobile-alt"></i> Connected Device</h4>
+                          <div class="device-info-item">
+                            <span class="device-info-label">Instance:</span>
+                            <span class="device-info-value">{{ identifier }}</span>
+                          </div>
+                          {% if android_version %}
+                          <div class="device-info-item">
+                            <span class="device-info-label">Android:</span>
+                            <span class="device-info-value">{{ android_version }} (API {{ android_sdk }})</span>
+                          </div>
+                          {% endif %}
+                          {% if android_version and android_version >= 5 %}
+                          <div class="device-info-item">
+                            <span class="device-info-label">Instrumentation:</span>
+                            <span class="device-badge badge-success">Frida</span>
+                          </div>
+                          {% elif android_version %}
+                          <div class="device-info-item">
+                            <span class="device-info-label">Instrumentation:</span>
+                            <span class="device-badge badge-warning">Xposed</span>
+                          </div>
+                          {% endif %}
+                        </div>
+                        {% endif %}
+                        
                         <p>
                           {% if android_version %}
                             Android version >= <strong>9.0</strong> recommended<br/>
@@ -122,7 +193,7 @@ textarea:focus {
                      <br/>
                      <br/>
                      <p>
-                        <button class="btn btn-info disable" role="button"  data-toggle="modal" data-target="#mmobsfy">MobSFy Android Runtime</button> <p>Android instance: <strong>{{ identifier }}</strong></p></div>
+                        <button class="btn btn-info disable" role="button"  data-toggle="modal" data-target="#mmobsfy"><i class="fas fa-android"></i> MobSFy Android Runtime</button> <p>Android instance: <strong>{{ identifier }}</strong></p></div>
                       </p>
                     </div>
                      </div>

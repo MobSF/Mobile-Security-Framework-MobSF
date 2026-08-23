@@ -1,0 +1,391 @@
+/**
+ * MobSF Modern UI/UX Styles
+ * A professional, security-tool oriented design system
+ * Inspired by Burp Suite, Android Studio, and modern SOC dashboards
+ */
+
+/* ============================================
+   Global Design Tokens - single source of truth.
+   Do not redeclare these in base_layout.html or
+   any individual template.
+
+   Dark is the default (no data-theme attribute).
+   Light is opted into via <html data-theme="light">,
+   toggled by others/js/theme-toggle.js.
+   ============================================ */
+:root {
+  --bg-void:       #080b0f;
+  --bg-deep:       #0a0e14;
+  --bg-base:       #0d1117;
+  --bg-surface:    #111820;
+  --bg-card:       #161d27;
+  --bg-elevated:   #1a2233;
+  --bg-input:      #0d1117;
+  --border-subtle: rgba(48,54,61,0.6);
+  --border-default:#30363d;
+  --border-strong: #484f58;
+  --border-accent: rgba(88,166,255,0.3);
+  --text-primary:  #e6edf3;
+  --text-secondary:#8b949e;
+  --text-muted:    #484f58;
+  --text-link:     #58a6ff;
+  --accent-blue:   #58a6ff;
+  --accent-green:  #3fb950;
+  --accent-green-dim:#238636;
+  --accent-orange: #f0883e;
+  --accent-red:    #f85149;
+  --accent-purple: #bc8cff;
+  --accent-yellow: #e3b341;
+  --accent-cyan:   #39c5cf;
+  --glow-blue:     rgba(88,166,255,0.12);
+  --glow-green:    rgba(63,185,80,0.1);
+  --grad-blue:     linear-gradient(135deg,#1c3a5e 0%,#0d1117 100%);
+  --radius-sm:     6px;
+  --radius-md:     10px;
+  --radius-lg:     14px;
+  --radius-xl:     20px;
+  --shadow-card:   0 4px 24px rgba(0,0,0,0.4);
+  --shadow-glow:   0 0 20px rgba(88,166,255,0.08);
+  --font-main:     'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:     'JetBrains Mono', 'Fira Code', monospace;
+  --transition:    0.2s cubic-bezier(0.4,0,0.2,1);
+
+  /* Terminal/code-block surfaces intentionally stay dark in both themes
+     (matches how most code blocks/diffs behave even on light pages). */
+  --code-bg:       #0d1117;
+  --code-text:     #e6edf3;
+}
+
+:root[data-theme="light"] {
+  --bg-void:       #f6f8fa;
+  --bg-deep:       #eaeef2;
+  --bg-base:       #ffffff;
+  --bg-surface:    #f6f8fa;
+  --bg-card:       #ffffff;
+  --bg-elevated:   #ffffff;
+  --bg-input:      #ffffff;
+  --border-subtle: rgba(31,35,40,0.15);
+  --border-default:#d0d7de;
+  --border-strong: #8c959f;
+  --border-accent: rgba(9,105,218,0.35);
+  --text-primary:  #1f2328;
+  --text-secondary:#59636e;
+  --text-muted:    #8c959f;
+  --text-link:     #0969da;
+  --accent-blue:   #0969da;
+  --accent-green:  #1a7f37;
+  --accent-green-dim:#2da44e;
+  --accent-orange: #bc4c00;
+  --accent-red:    #cf222e;
+  --accent-purple: #8250df;
+  --accent-yellow: #9a6700;
+  --accent-cyan:   #1b7c83;
+  --glow-blue:     rgba(9,105,218,0.12);
+  --glow-green:    rgba(26,127,55,0.1);
+  --grad-blue:     linear-gradient(135deg,#dbeafe 0%,#ffffff 100%);
+  --shadow-card:   0 4px 24px rgba(140,149,159,0.25);
+  --shadow-glow:   0 0 20px rgba(9,105,218,0.1);
+}
+
+/* ============================================
+   Modern Error Display
+   (uses the main theme tokens above - fully
+   theme-aware, no separate palette needed)
+   ============================================ */
+.mobsf-error-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  border-left: 4px solid var(--accent-red);
+  margin-bottom: 1.5rem;
+}
+
+.mobsf-error-card.error-warning {
+  border-left-color: var(--accent-yellow);
+}
+
+.mobsf-error-card.error-info {
+  border-left-color: var(--accent-blue);
+  border-left-width: 4px;
+}
+
+.mobsf-error-card .error-header {
+  background: color-mix(in srgb, var(--accent-red) 10%, var(--bg-card));
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.error-warning .error-header {
+  background: color-mix(in srgb, var(--accent-yellow) 10%, var(--bg-card));
+}
+
+.error-info .error-header {
+  background: color-mix(in srgb, var(--accent-blue) 10%, var(--bg-card));
+}
+
+.mobsf-error-card .error-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent-red);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.error-warning .error-icon {
+  background: var(--accent-yellow);
+}
+
+.error-info .error-icon {
+  background: var(--accent-blue);
+}
+
+.mobsf-error-card .error-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.mobsf-error-card .error-body {
+  padding: 1.5rem;
+}
+
+.mobsf-error-card .error-summary {
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.mobsf-error-card .error-cause {
+  background: var(--bg-surface);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-subtle);
+}
+
+.mobsf-error-card .error-cause-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.mobsf-error-card .error-cause-text {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.mobsf-error-card .error-suggestion {
+  background: color-mix(in srgb, var(--accent-green) 8%, var(--bg-card));
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+  border: 1px solid var(--accent-green);
+}
+
+.error-warning .error-suggestion {
+  background: color-mix(in srgb, var(--accent-yellow) 8%, var(--bg-card));
+  border-color: var(--accent-yellow);
+}
+
+.mobsf-error-card .error-suggestion-label {
+  font-weight: 600;
+  color: var(--accent-green);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.error-warning .error-suggestion-label {
+  color: var(--accent-yellow);
+}
+
+.mobsf-error-card .error-suggestion-text {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.mobsf-error-card .error-suggestion-code {
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  overflow-x: auto;
+}
+
+.mobsf-error-card .error-technical {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.mobsf-error-card .error-toggle {
+  background: none;
+  border: none;
+  color: var(--accent-blue);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0;
+}
+
+.mobsf-error-card .error-toggle:hover {
+  text-decoration: underline;
+}
+
+.mobsf-error-card .error-technical-details {
+  display: none;
+  margin-top: 1rem;
+  background: var(--code-bg);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--code-text);
+  overflow-x: auto;
+}
+
+.mobsf-error-card .error-technical-details.show {
+  display: block;
+}
+
+/* ============================================
+   Responsive Utilities
+   ============================================ */
+@media (max-width: 768px) {
+  /* .workflow-step is also used by dynamic_analyzer.html's own dashboard */
+  .workflow-step {
+    min-width: 100%;
+  }
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* ============================================
+   Responsive Navbar (mobile link menu)
+   ============================================ */
+@media (max-width: 575.98px) {
+  #navLinksCollapse.show {
+    background: var(--bg-surface, #111820);
+    border-top: 1px solid var(--border-subtle, rgba(48,54,61,0.6));
+    padding: 4px 8px 10px;
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  #navLinksCollapse .navbar-nav,
+  #navLinksCollapse .nav-item {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+  #navLinksCollapse .nav-item {
+    border-bottom: 1px solid var(--border-subtle, rgba(48,54,61,0.6));
+  }
+  #navLinksCollapse .nav-item:last-child {
+    border-bottom: none;
+  }
+  #navLinksCollapse .nav-link {
+    padding: 10px 8px !important;
+  }
+  #navLinksCollapse .dropdown-toggle {
+    border-radius: 0 !important;
+    background: none !important;
+    border: none !important;
+  }
+  #navLinksCollapse .dropdown-menu {
+    position: static !important;
+    width: 100%;
+    box-shadow: none !important;
+    margin-top: 4px;
+  }
+  #navLinksCollapse form.d-flex {
+    width: 100%;
+    margin: 8px 0;
+  }
+  #navLinksCollapse form .input-group {
+    width: 100% !important;
+  }
+}
+
+/* ============================================
+   Sidebar-mini pages (report/compare views) on
+   mobile: force the sidebar fully off-canvas by
+   default and only bring it on screen once the
+   pushmenu toggle adds body.sidebar-open (AdminLTE
+   already manages that class; this just guarantees
+   the visual result regardless of the exact pixel
+   width AdminLTE's own off-canvas margin assumes).
+   ============================================ */
+@media (max-width: 767.98px) {
+  body:not(.sidebar-open) .main-sidebar {
+    transform: translateX(-100%) !important;
+    margin-left: 0 !important;
+    box-shadow: none !important;
+  }
+  body.sidebar-open .main-sidebar {
+    transform: translateX(0) !important;
+    margin-left: 0 !important;
+    width: 250px !important;
+    box-shadow: 2px 0 20px rgba(0,0,0,0.6) !important;
+  }
+  body.sidebar-open #sidebar-overlay {
+    display: block !important;
+  }
+  body:not(.sidebar-open) #sidebar-overlay {
+    display: none !important;
+  }
+}
+
+/* ============================================
+   Theme toggle button
+   ============================================ */
+.theme-toggle-btn {
+  color: var(--text-secondary) !important;
+  font-size: 15px !important;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition), background var(--transition);
+}
+.theme-toggle-btn:hover {
+  color: var(--accent-yellow) !important;
+  background: rgba(227,179,65,0.08);
+}
+

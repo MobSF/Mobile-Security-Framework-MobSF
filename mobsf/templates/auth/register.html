@@ -3,105 +3,280 @@
 {% block sidebar_option %}
 sidebar-collapse
 {% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static "others/css/auth-pages.css" %}">
+<style>
+  .auth-page::after {
+    content: '';
+    position: fixed;
+    top: -30%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 500px;
+    background: radial-gradient(ellipse at center, rgba(88,166,255,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .auth-card {
+    max-width: 640px;
+  }
+
+  .auth-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 520px) {
+    .auth-form-row { grid-template-columns: 1fr; }
+  }
+
+  .auth-icon-wrap {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #1a2a3a 0%, #0d1a2e 100%);
+    border: 1px solid rgba(88,166,255,0.25);
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    color: var(--accent-blue, #58a6ff);
+    margin-bottom: 16px;
+  }
+
+  .auth-input:focus {
+    border-color: var(--accent-blue, #58a6ff) !important;
+    box-shadow: 0 0 0 3px rgba(88,166,255,0.12) !important;
+  }
+
+  .auth-select {
+    width: 100%;
+    background: var(--bg-input, #0d1117) !important;
+    border: 1px solid var(--border-default, #30363d) !important;
+    color: var(--text-primary, #e6edf3) !important;
+    border-radius: 10px !important;
+    padding: 10px 40px 10px 14px !important;
+    font-size: 13.5px !important;
+    transition: all 0.2s ease;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+  }
+
+  .auth-select:focus {
+    border-color: var(--accent-blue, #58a6ff) !important;
+    box-shadow: 0 0 0 3px rgba(88,166,255,0.12) !important;
+  }
+
+  .auth-select option {
+    background: var(--bg-elevated, #1a2233);
+    color: var(--text-primary, #e6edf3);
+  }
+
+  .auth-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #1a3a5e 0%, #1e4a7a 100%);
+    border: 1px solid rgba(88,166,255,0.3);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: all 0.2s ease;
+    letter-spacing: 0.3px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .auth-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .auth-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(88,166,255,0.2);
+    border-color: rgba(88,166,255,0.5);
+  }
+
+  .auth-btn:hover::before { left: 100%; }
+  .auth-btn:active { transform: translateY(0); }
+
+  .auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    color: var(--text-muted, #484f58);
+    font-size: 12px;
+  }
+
+  .role-pills {
+    display: flex;
+    gap: 8px;
+  }
+
+  .role-pill-label {
+    flex: 1;
+    cursor: pointer;
+  }
+
+  .role-pill-label input[type="radio"] {
+    display: none;
+  }
+
+  .role-pill-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 1px solid var(--border-default, #30363d);
+    border-radius: 10px;
+    background: var(--bg-input, #0d1117);
+    color: var(--text-secondary, #8b949e);
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.18s ease;
+    cursor: pointer;
+  }
+
+  .role-pill-label input[type="radio"]:checked + .role-pill-content {
+    border-color: rgba(88,166,255,0.5);
+    background: rgba(88,166,255,0.08);
+    color: var(--accent-blue, #58a6ff);
+  }
+
+  .role-pill-content:hover {
+    border-color: rgba(88,166,255,0.3);
+    color: var(--text-primary, #e6edf3);
+  }
+</style>
+{% endblock %}
 {% block content %}
-<div class="content-wrapper">
-   <div class="content-header">
-   </div>
-   <div class="container-fluid">
-      <div class="row">
-         <div class="col-lg-12">
-            <div class="card">
-               <div class="card-body">
-                  <div class="h-100 d-flex align-items-center justify-content-center">
-                     <div class="login-box">
-                        <div class="login-logo">
-                           <a href="">Create a User</a>
-                        </div>
-                        <div class="card">
-                           <div class="card-body login-card-body">
-                              <form method="post">
-                                 {% csrf_token %}
-                                 {% if messages %}
-                                <ul class="messages">
-                                    {% for message in messages %}
-                                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                                    {% endfor %}
-                                </ul>
-                                {% endif %}
-                                 {{ form.non_field_errors }}
-                                 <div class="input-group mb-3">
-                                    <input type="text" name="username" maxlength="150" autofocus="" required class="form-control" placeholder="Username"  aria-describedby="id_username_helptext" id="id_username">
-                                    <div class="input-group-append">
-                                       <div class="input-group-text">
-                                          <span class="fas fa-user"></span>
-                                       </div>
-                                    </div>
-                                 </div>
-                                 {% for err in form.username.errors %}
-                                 <small> {{ err }} </small><br>
-                                 {% endfor %}
-                                 <div class="input-group mb-3">
-                                    <input type="password" name="password1" class="form-control" placeholder="New Password" autocomplete="new-password" required id="id_password1">
-                                    <div class="input-group-append">
-                                       <div class="input-group-text">
-                                          <span class="fas fa-lock"></span>
-                                       </div>
-                                    </div>
-                                 </div>
-                                 {% for err in form.password1.errors %}
-                                 <small> {{ err }} </small><br>
-                                 {% endfor %}
-                                 <div class="input-group mb-3">
-                                    <input type="password" name="password2" class="form-control" placeholder="Confirm Password" autocomplete="new-password" required id="id_password2">
-                                    <div class="input-group-append">
-                                       <div class="input-group-text">
-                                          <span class="fas fa-lock"></span>
-                                       </div>
-                                    </div>
-                                 </div>
-                                 {% for err in form.password2.errors %}
-                                 <small> {{ err }} </small><br>
-                                 {% endfor %}
-                                 <div class="input-group mb-3">
-                                    <input type="email" name="email" maxlength="254" class="form-control" placeholder="Email" required id="id_email">
-                                    <div class="input-group-append">
-                                       <div class="input-group-text">
-                                          <span class="fa fa-envelope"></span>
-                                       </div>
-                                    </div>
-                                 </div>
-                                 {% for err in form.email.errors %}
-                                 <small> {{ err }} </small><br>
-                                 {% endfor %}
-                                 <div class="input-group mb-3">
-                                    <select name="role" class="form-control"  aria-describedby="id_role_helptext" id="id_role" required>
-                                       <option value="" disabled selected>Select Role</option>
-                                       <option value="viewer">Viewer</option>
-                                       <option value="maintainer">Maintainer</option>
-                                     </select>
-                                    <div class="input-group-append">
-                                       <div class="input-group-text">
-                                          <span class="fa fa-user-tie"></span>
-                                       </div>
-                                    </div>
-                                 </div>
-                                 {% for err in form.role.errors %}
-                                 <small> {{ err }} </small><br>
-                                 {% endfor %}
-                                 <div class="row">
-                                    <div class="col-6">
-                                       <button type="submit" class="btn btn-primary btn-block">Create User</button>
-                                    </div>
-                                 </div>
-                              </form>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </div>
+<div class="auth-page">
+  <div class="content-wrapper" style="background:transparent;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;">
+    <div class="auth-card">
+
+      <div class="auth-brand">
+        <div class="auth-icon-wrap">
+          <i class="fas fa-user-plus"></i>
+        </div>
+        <h1 class="auth-title">Create New User</h1>
+        <p class="auth-subtitle">Add a new user account to MobSF</p>
       </div>
-   </div>
+
+      <form method="post" onsubmit="this.querySelector('button[type=submit]').disabled = true;">
+        {% csrf_token %}
+
+        {% if messages %}
+        <ul class="messages">
+          {% for message in messages %}
+          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+            <i class="fas fa-info-circle"></i> {{ message }}
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% if form.non_field_errors %}
+        <div class="error-box">
+          <i class="fas fa-exclamation-circle"></i>
+          {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <div class="auth-form-row">
+          <!-- Username -->
+          <div class="auth-input-group">
+            <label class="auth-label">Username</label>
+            <input type="text" name="username" maxlength="150" autofocus required
+                   class="auth-input" placeholder="Enter username"
+                   aria-describedby="id_username_helptext" id="id_username">
+            <i class="fas fa-user auth-input-icon"></i>
+            {% for err in form.username.errors %}
+            <small class="field-error"><i class="fas fa-exclamation-circle"></i> {{ err }}</small>
+            {% endfor %}
+          </div>
+
+          <!-- Email -->
+          <div class="auth-input-group">
+            <label class="auth-label">Email Address</label>
+            <input type="email" name="email" maxlength="254" required
+                   class="auth-input" placeholder="user@example.com" id="id_email">
+            <i class="fas fa-envelope auth-input-icon"></i>
+            {% for err in form.email.errors %}
+            <small class="field-error"><i class="fas fa-exclamation-circle"></i> {{ err }}</small>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="auth-divider"></div>
+
+        <div class="auth-form-row">
+          <!-- New Password -->
+          <div class="auth-input-group">
+            <label class="auth-label">Password</label>
+            <input type="password" name="password1" required autocomplete="new-password"
+                   class="auth-input" placeholder="Create a strong password" id="id_password1">
+            <i class="fas fa-lock auth-input-icon"></i>
+            {% for err in form.password1.errors %}
+            <small class="field-error"><i class="fas fa-exclamation-circle"></i> {{ err }}</small>
+            {% endfor %}
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="auth-input-group">
+            <label class="auth-label">Confirm Password</label>
+            <input type="password" name="password2" required autocomplete="new-password"
+                   class="auth-input" placeholder="Repeat the password" id="id_password2">
+            <i class="fas fa-lock auth-input-icon"></i>
+            {% for err in form.password2.errors %}
+            <small class="field-error"><i class="fas fa-exclamation-circle"></i> {{ err }}</small>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="auth-divider"></div>
+
+        <!-- Role -->
+        <div style="margin-bottom:20px;">
+          <label class="auth-label">Assign Role</label>
+          <div class="role-pills">
+            <label class="role-pill-label">
+              <input type="radio" name="role" value="viewer" required>
+              <div class="role-pill-content">
+                <i class="fas fa-eye" style="font-size:14px;"></i>
+                Viewer
+              </div>
+            </label>
+            <label class="role-pill-label">
+              <input type="radio" name="role" value="maintainer" required>
+              <div class="role-pill-content">
+                <i class="fas fa-tools" style="font-size:14px;"></i>
+                Maintainer
+              </div>
+            </label>
+          </div>
+          {% for err in form.role.errors %}
+          <small class="field-error"><i class="fas fa-exclamation-circle"></i> {{ err }}</small>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="auth-btn">
+          <i class="fas fa-user-plus" style="margin-right:8px;"></i>Create User Account
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p style="margin:0;">MobSF &nbsp;·&nbsp; User Management</p>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
