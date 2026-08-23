@@ -193,11 +193,6 @@
   /* ── Pagination ── */
   .pagination-wrap { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 16px 0 4px; flex-wrap: wrap; }
 
-  /* The page-size dropdown menu was getting clipped by .card's
-     overflow:hidden (used elsewhere to clip rounded corners). Only this
-     card needs to allow it to escape. */
-  .card { overflow: visible; }
-
   /* ── SweetAlert2 dark theme patches ── */
   .swal2-popup { background: var(--bg-elevated, #1a2233) !important; border: 1px solid var(--border-def, #30363d) !important; border-radius: 16px !important; }
   .swal2-title { color: var(--text-primary, #e6edf3) !important; }

@@ -166,7 +166,20 @@
       border: 1px solid var(--border-subtle) !important;
       border-radius: var(--radius-lg) !important;
       box-shadow: var(--shadow-card) !important;
-      overflow: hidden;
+      /* No overflow:hidden here - it would clip any dropdown/popover that
+         opens inside a card. Corners are rounded on the header/body/footer
+         directly instead (below), which achieves the same visual result
+         without breaking anything that needs to render outside the box. */
+    }
+    .card > .card-header:first-child,
+    .card > .card-body:first-child {
+      border-top-left-radius: var(--radius-lg);
+      border-top-right-radius: var(--radius-lg);
+    }
+    .card > .card-body:last-child,
+    .card > .card-footer:last-child {
+      border-bottom-left-radius: var(--radius-lg);
+      border-bottom-right-radius: var(--radius-lg);
     }
     .card-header {
       background: var(--bg-surface) !important;
