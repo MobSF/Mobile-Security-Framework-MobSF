@@ -33,8 +33,16 @@
       font-family: var(--font-main);
       font-size: 14px;
       line-height: 1.6;
-      zoom: 0.85;
     }
+
+    /* The pushmenu hamburger toggles the sidebar. Pages with no real
+       sidebar content have nothing meaningful to reveal, so hide it -
+       but key this off actual sidebar content (.nav-sidebar), not the
+       sidebar-collapse body class: AdminLTE's own JS adds that class
+       dynamically on small screens even for sidebar-mini pages that DO
+       have real content, and hiding the toggle there would strand the
+       user with no way to reopen the sidebar. */
+    body:not(:has(.nav-sidebar)) #nbar { display: none !important; }
 
     /* ── Sidebar ── */
     .main-sidebar {
@@ -195,15 +203,21 @@
     .table-hover tbody tr {
       transition: background var(--transition);
     }
-    .table-hover tbody tr:hover {
+    .table-hover tbody tr:hover,
+    .table-hover tbody tr:hover td,
+    .table-hover tbody tr:hover th {
       background: rgba(88,166,255,0.05) !important;
+      color: var(--text-primary) !important;
     }
     .table-striped tbody tr:nth-of-type(odd) {
       background: rgba(255,255,255,0.015) !important;
     }
     .table-bordered { border: 1px solid var(--border-subtle) !important; }
     .table-bordered td, .table-bordered th { border: 1px solid var(--border-subtle) !important; }
-    .table-responsive { border-radius: var(--radius-md); overflow: hidden; }
+    /* overflow-x:auto (not hidden) so wide tables scroll horizontally on
+       narrow screens instead of being clipped or forced to crush their
+       columns down to fit. */
+    .table-responsive { border-radius: var(--radius-md); overflow-x: auto; overflow-y: hidden; }
 
     /* ── Badges ── */
     .badge { font-size: 10.5px !important; font-weight: 700 !important; letter-spacing: 0.4px !important; padding: 3px 8px !important; border-radius: 20px !important; }
@@ -534,9 +548,6 @@
 <script src="{% static "adminlte/plugins/bootstrap/bootstrap.bundle.min.js" %}"></script>
 <script src="{% static "adminlte/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js" %}"></script>
 <script src="{% static "adminlte/dashboard/js/adminlte.min.js" %}"></script>
-<script>
-  if ($(".sidebar-collapse")[0]) document.getElementById("nbar").style.display = "none";
-</script>
 {% block extra_scripts %}{% endblock %}
 </body>
 </html>

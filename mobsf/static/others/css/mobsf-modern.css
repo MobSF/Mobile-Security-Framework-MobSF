@@ -336,3 +336,77 @@
   animation: slideUp 0.3s ease-out;
 }
 
+/* ============================================
+   Responsive Navbar (mobile link menu)
+   ============================================ */
+@media (max-width: 575.98px) {
+  #navLinksCollapse.show {
+    background: var(--bg-surface, #111820);
+    border-top: 1px solid var(--border-subtle, rgba(48,54,61,0.6));
+    padding: 4px 8px 10px;
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  #navLinksCollapse .navbar-nav,
+  #navLinksCollapse .nav-item {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+  #navLinksCollapse .nav-item {
+    border-bottom: 1px solid var(--border-subtle, rgba(48,54,61,0.6));
+  }
+  #navLinksCollapse .nav-item:last-child {
+    border-bottom: none;
+  }
+  #navLinksCollapse .nav-link {
+    padding: 10px 8px !important;
+  }
+  #navLinksCollapse .dropdown-toggle {
+    border-radius: 0 !important;
+    background: none !important;
+    border: none !important;
+  }
+  #navLinksCollapse .dropdown-menu {
+    position: static !important;
+    width: 100%;
+    box-shadow: none !important;
+    margin-top: 4px;
+  }
+  #navLinksCollapse form.d-flex {
+    width: 100%;
+    margin: 8px 0;
+  }
+  #navLinksCollapse form .input-group {
+    width: 100% !important;
+  }
+}
+
+/* ============================================
+   Sidebar-mini pages (report/compare views) on
+   mobile: force the sidebar fully off-canvas by
+   default and only bring it on screen once the
+   pushmenu toggle adds body.sidebar-open (AdminLTE
+   already manages that class; this just guarantees
+   the visual result regardless of the exact pixel
+   width AdminLTE's own off-canvas margin assumes).
+   ============================================ */
+@media (max-width: 767.98px) {
+  body:not(.sidebar-open) .main-sidebar {
+    transform: translateX(-100%) !important;
+    margin-left: 0 !important;
+    box-shadow: none !important;
+  }
+  body.sidebar-open .main-sidebar {
+    transform: translateX(0) !important;
+    margin-left: 0 !important;
+    width: 250px !important;
+    box-shadow: 2px 0 20px rgba(0,0,0,0.6) !important;
+  }
+  body.sidebar-open #sidebar-overlay {
+    display: block !important;
+  }
+  body:not(.sidebar-open) #sidebar-overlay {
+    display: none !important;
+  }
+}
+

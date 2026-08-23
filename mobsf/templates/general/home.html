@@ -32,8 +32,13 @@
       font-family: var(--font-main);
       font-size: 14px;
       overflow-x: hidden;
-      zoom: 0.85;
     }
+
+    /* Same rationale as base_layout.html: this standalone page never has
+       real sidebar content, so the pushmenu hamburger has nothing to
+       reveal. Keyed off actual content (.nav-sidebar), not the
+       sidebar-collapse class - see base_layout.html for why. */
+    body:not(:has(.nav-sidebar)) #nbar { display: none !important; }
 
     /* ── Background grid (matches other pages) ── */
     body::before {
