@@ -1,124 +1,250 @@
-
 {% extends "base/base_layout.html" %}
 {% load static %}
-{% block sidebar_option %}
-      sidebar-collapse
-{% endblock %}
+{% block sidebar_option %}sidebar-collapse{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static "enlighterjs/enlighterjs.min.css" %}" />
 <style>
-pre {
-  white-space: pre-wrap;       /* css-3 */
-  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-  white-space: -pre-wrap;      /* Opera 4-6 */
-  white-space: -o-pre-wrap;    /* Opera 7 */
-  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  .view-page {
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
   }
 
-  /* custom yellow line highlight */
-  .enlighter-t-enlighter div.enlighter>div.enlighter-special {
-    background-color: #fff8bb;
+  .view-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-subtle, rgba(48,54,61,0.6));
   }
 
+  .view-file-icon {
+    width: 38px; height: 38px;
+    background: rgba(88,166,255,0.1);
+    border: 1px solid rgba(88,166,255,0.2);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .view-filename {
+    color: var(--text-primary, #e6edf3);
+    font-size: 16px;
+    font-weight: 700;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    word-break: break-all;
+    margin: 0;
+  }
+
+  .view-card {
+    background: var(--bg-card, #161d27);
+    border: 1px solid var(--border-subtle, rgba(48,54,61,0.6));
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .view-card-header {
+    background: var(--bg-surface, #111820);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .lang-badge {
+    background: rgba(88,166,255,0.08);
+    border: 1px solid rgba(88,166,255,0.2);
+    border-radius: 6px;
+    color: var(--accent-blue, #58a6ff);
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+
+  .view-body {
+    padding: 0;
+  }
+
+  /* EnlighterJS overrides */
+  pre {
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    background: var(--bg-card, #161d27) !important;
+    font-size: 13px !important;
+    line-height: 1.7 !important;
+    padding: 20px 24px !important;
+  }
+
+  .enlighter-t-enlighter div.enlighter > div.enlighter-special {
+    background-color: rgba(227,179,65,0.12) !important;
+  }
+
+  /* SQLite table styles */
+  .sqlite-section { padding: 20px 24px; }
+
+  .sqlite-table-wrap {
+    margin-bottom: 24px;
+  }
+
+  .sqlite-table-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .sqlite-table-name {
+    color: var(--text-primary, #e6edf3);
+    font-size: 14px;
+    font-weight: 700;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  }
+
+  .sqlite-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .sqlite-table thead th {
+    background: var(--bg-surface, #111820);
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-secondary, #8b949e);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.6px;
+    text-transform: uppercase;
+    padding: 10px 14px;
+    white-space: nowrap;
+  }
+
+  .sqlite-table tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(48,54,61,0.4);
+    color: var(--text-primary, #e6edf3);
+    word-break: break-word;
+    max-width: 200px;
+  }
+
+  .sqlite-table tbody tr:last-child td { border-bottom: none; }
+  .sqlite-table tbody tr:hover { background: rgba(88,166,255,0.03); }
 </style>
 {% endblock %}
 {% block content %}
 <div class="content-wrapper">
-  <div class="content-header">
-  </div>
-   <div class="container-fluid">
-        <div class="row">
-            <div class="col-lg-12">
-            <div class="card">
-              <div class="card-body">
-                 <div class="box box-default">
-                   <div class="box-body">
-                      <h3>{{file}} </h3>
-                      <br />
-                      {% if sqlite %}
-                      {% for table, data in sqlite.items %}
-                      <div class="box">
-                          <div class="box-header">
-                            <h4 class="box-title"><b>{{table}}</b></h4>
-                          </div>
-                          <!-- /.box-header -->
-                          <div class="box-body no-padding">
-                            <div class="table-responsive">
-                            <table class="table table-striped">
-                              <tbody><tr>
-                              {% for head in data|key:"head" %}
-                                <th>{{ head }}</th>
-                              {% endfor %}
-                              </tr>
-                              {% for dat in data|key:"data" %}
-                                <tr>
-                                  {% for item in dat %}
-                                    <td style="word-wrap: break-word;min-width: 160px;max-width: 160px;">{{ item }}</td>
-                                  {% endfor %}
-                                </tr>
-                              {% endfor %}
-                          
-                            </tbody></table>
-                            </div>
-                          </div>
-                          <!-- /.box-body -->
-                        </div>
-                      {% endfor %}
-                      {% else %}
-                        <pre id="code_block">{{ data }}</pre>
-                      {% endif %}
-                        </div>
-                        <!-- /.box-body -->
-                      </div>
+  <div class="view-page">
+
+    <div class="view-header">
+      <div class="view-file-icon">
+        <i class="fas fa-file-code" style="color:var(--accent-blue,#58a6ff);font-size:16px;"></i>
+      </div>
+      <div>
+        <h3 class="view-filename">{{ file }}</h3>
+      </div>
+    </div>
+
+    <div class="view-card">
+
+      {% if sqlite %}
+      <div class="view-card-header">
+        <span style="color:var(--text-primary);font-size:14px;font-weight:600;">
+          <i class="fas fa-database" style="margin-right:8px;opacity:.7;color:var(--accent-blue,#58a6ff);"></i>SQLite Database
+        </span>
+        <span class="lang-badge">SQLite</span>
+      </div>
+      <div class="sqlite-section">
+        {% for table, data in sqlite.items %}
+        <div class="sqlite-table-wrap">
+          <div class="sqlite-table-title">
+            <i class="fas fa-table" style="color:var(--accent-blue,#58a6ff);font-size:13px;opacity:.8;"></i>
+            <span class="sqlite-table-name">{{ table }}</span>
+          </div>
+          <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--border-subtle);">
+            <table class="sqlite-table">
+              <thead>
+                <tr>
+                  {% for head in data|key:"head" %}
+                  <th>{{ head }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for dat in data|key:"data" %}
+                <tr>
+                  {% for item in dat %}
+                  <td>{{ item }}</td>
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
         </div>
-       </div>
-     </div>
+        {% endfor %}
+      </div>
+
+      {% else %}
+      <div class="view-card-header">
+        <span style="color:var(--text-primary);font-size:14px;font-weight:600;">
+          <i class="fas fa-code" style="margin-right:8px;opacity:.7;color:var(--accent-blue,#58a6ff);"></i>Source Code
+        </span>
+        <span class="lang-badge">{{ type }}</span>
+      </div>
+      <div class="view-body">
+        <pre id="code_block">{{ data }}</pre>
+      </div>
+      {% endif %}
+
     </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
 <script type="text/javascript" src="{% static "enlighterjs/enlighterjs.min.js" %}"></script>
-
-<!-- Init Code -->
 <script type="text/javascript">
-    const get_lines = function(){
-        const pat = new RegExp(/^[\d,]{1,1000}$/);
-        const urlParams = new URLSearchParams(window.location.search);
-        var i;
-        var lines = urlParams.get("lines");
-        if (!pat.test(lines)){
-          return 0;
-        } else {
-          const parts = lines.split(",");
-          for (i = 0; i < parts.length; i++) {
-             if (parseInt(parts[i]) > 50000)
-               return 0;
-          }
-          return lines;
-        }
+  const get_lines = function() {
+    const pat = new RegExp(/^[\d,]{1,1000}$/);
+    const urlParams = new URLSearchParams(window.location.search);
+    var i;
+    var lines = urlParams.get("lines");
+    if (!pat.test(lines)) { return 0; }
+    else {
+      const parts = lines.split(",");
+      for (i = 0; i < parts.length; i++) {
+        if (parseInt(parts[i]) > 50000) return 0;
+      }
+      return lines;
     }
-    code_blk = document.getElementById('code_block');
-    if (code_blk){
-        EnlighterJS.enlight(code_blk, {
-          theme: 'enlighter',
-          linehover: false,
-          textOverflow: 'scroll',
-          highlight: get_lines(),
-          language: '{{ type }}',
-        });
-    }
-    const toolbar = document.getElementsByClassName("enlighter-toolbar")[0];
-    if (toolbar)
-      toolbar.style.display = 'none';
-    const hcls = document.getElementsByClassName("enlighter-special")[0];
-    if (hcls){
-      if (hcls.scrollIntoViewIfNeeded)
-        hcls.scrollIntoViewIfNeeded();
-      else
-        hcls.scrollIntoView();
-    }
-    
+  };
+
+  const code_blk = document.getElementById('code_block');
+  if (code_blk) {
+    EnlighterJS.enlight(code_blk, {
+      theme: 'enlighter',
+      linehover: false,
+      textOverflow: 'scroll',
+      highlight: get_lines(),
+      language: '{{ type }}',
+    });
+  }
+  const toolbar = document.getElementsByClassName("enlighter-toolbar")[0];
+  if (toolbar) toolbar.style.display = 'none';
+  const hcls = document.getElementsByClassName("enlighter-special")[0];
+  if (hcls) {
+    if (hcls.scrollIntoViewIfNeeded) hcls.scrollIntoViewIfNeeded();
+    else hcls.scrollIntoView();
+  }
 </script>
 {% endblock %}

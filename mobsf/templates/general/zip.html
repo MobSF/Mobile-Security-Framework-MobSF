@@ -1,31 +1,97 @@
 {% extends "base/base_layout.html" %}
- {% block sidebar_option %}
-      sidebar-collapse
-{% endblock %}
+{% block sidebar_option %}sidebar-collapse{% endblock %}
 {% block content %}
 <div class="content-wrapper">
-  <div class="content-header">
-  </div>
-   <div class="container-fluid">
-        <div class="row">
-            <div class="col-lg-12">
-            <div class="card">
-              <div class="card-body">
-                  <h1>Zipped Source Code Instruction</h1>
-                      <p class="lead">Mobile Security Framework supports iOS and Android (eclipse and Android Studio) project files.</p>  
-                      <p>
-                        <strong>Eclipse Project:</strong> The file AndroidManifest.xml and the directory 'src' must exist in the root directory of ZIPPED Source files for eclipse projects.
-                      </p>
-                      <p>
-                        <strong> Android Studio Project:</strong> AndroidManifest.xml must be located at 'app/src/main/AndroidManifest.xml' and the directory 'app/src/main/java/' must exist for Android Studio projects. 
-                      </p>
-                      <p>
-                        <strong>iOS Project:</strong> For iOS projects, the .xcodeproj file must exist in the root directory of the ZIPPED Source files.
-                      </p>
+  <div style="padding:32px 24px;max-width:860px;margin:0 auto;">
+
+    <!-- Header -->
+    <div style="margin-bottom:28px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:42px;height:42px;background:rgba(227,179,65,0.1);border:1px solid rgba(227,179,65,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-file-archive" style="color:var(--accent-yellow,#e3b341);font-size:18px;"></i>
+        </div>
+        <div>
+          <h1 style="margin:0;font-size:22px;font-weight:700;color:var(--text-primary,#e6edf3);">Zipped Source Code</h1>
+          <p style="margin:0;color:var(--text-secondary,#8b949e);font-size:13px;">Requirements for ZIP-based project uploads</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Intro -->
+    <div style="background:rgba(227,179,65,0.05);border:1px solid rgba(227,179,65,0.15);border-radius:12px;padding:16px 20px;display:flex;gap:12px;align-items:flex-start;margin-bottom:24px;">
+      <i class="fas fa-lightbulb" style="color:var(--accent-yellow,#e3b341);font-size:15px;flex-shrink:0;margin-top:2px;"></i>
+      <p style="margin:0;color:var(--text-secondary,#8b949e);font-size:13.5px;line-height:1.65;">
+        MobSF supports iOS and Android (Eclipse and Android Studio) project files uploaded as ZIP archives.
+        Each project type has specific structural requirements described below.
+      </p>
+    </div>
+
+    <!-- Cards -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+
+      <!-- Eclipse -->
+      <div class="card">
+        <div class="card-body" style="padding:24px !important;">
+          <div style="display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:40px;height:40px;background:rgba(164,198,57,0.08);border:1px solid rgba(164,198,57,0.18);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fab fa-android" style="color:#A4C639;font-size:18px;"></i>
+            </div>
+            <div>
+              <h3 style="margin:0 0 8px;font-size:14px;font-weight:700;color:var(--text-primary,#e6edf3);">Eclipse Project</h3>
+              <p style="margin:0;color:var(--text-secondary,#8b949e);font-size:13px;line-height:1.65;">
+                The file <code>AndroidManifest.xml</code> and the directory <code>src/</code> must exist in the <strong>root directory</strong> of the zipped source files.
+              </p>
+              <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;">
+                <span style="background:var(--bg-surface,#111820);border:1px solid var(--border-subtle,rgba(48,54,61,0.6));border-radius:6px;color:var(--text-secondary,#8b949e);font-size:11.5px;font-family:var(--font-mono,'JetBrains Mono',monospace);padding:3px 10px;">/ AndroidManifest.xml</span>
+                <span style="background:var(--bg-surface,#111820);border:1px solid var(--border-subtle,rgba(48,54,61,0.6));border-radius:6px;color:var(--text-secondary,#8b949e);font-size:11.5px;font-family:var(--font-mono,'JetBrains Mono',monospace);padding:3px 10px;">/ src/</span>
+              </div>
+            </div>
           </div>
         </div>
-       </div>
-     </div>
+      </div>
+
+      <!-- Android Studio -->
+      <div class="card">
+        <div class="card-body" style="padding:24px !important;">
+          <div style="display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:40px;height:40px;background:rgba(63,185,80,0.08);border:1px solid rgba(63,185,80,0.18);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas fa-mobile-alt" style="color:var(--accent-green,#3fb950);font-size:18px;"></i>
+            </div>
+            <div>
+              <h3 style="margin:0 0 8px;font-size:14px;font-weight:700;color:var(--text-primary,#e6edf3);">Android Studio Project</h3>
+              <p style="margin:0;color:var(--text-secondary,#8b949e);font-size:13px;line-height:1.65;">
+                <code>AndroidManifest.xml</code> must be located at <code>app/src/main/AndroidManifest.xml</code> and the directory <code>app/src/main/java/</code> must exist.
+              </p>
+              <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;">
+                <span style="background:var(--bg-surface,#111820);border:1px solid var(--border-subtle,rgba(48,54,61,0.6));border-radius:6px;color:var(--text-secondary,#8b949e);font-size:11.5px;font-family:var(--font-mono,'JetBrains Mono',monospace);padding:3px 10px;">app/src/main/AndroidManifest.xml</span>
+                <span style="background:var(--bg-surface,#111820);border:1px solid var(--border-subtle,rgba(48,54,61,0.6));border-radius:6px;color:var(--text-secondary,#8b949e);font-size:11.5px;font-family:var(--font-mono,'JetBrains Mono',monospace);padding:3px 10px;">app/src/main/java/</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- iOS -->
+      <div class="card">
+        <div class="card-body" style="padding:24px !important;">
+          <div style="display:flex;gap:14px;align-items:flex-start;">
+            <div style="width:40px;height:40px;background:rgba(200,200,200,0.06);border:1px solid rgba(200,200,200,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fab fa-apple" style="color:#cccccc;font-size:18px;"></i>
+            </div>
+            <div>
+              <h3 style="margin:0 0 8px;font-size:14px;font-weight:700;color:var(--text-primary,#e6edf3);">iOS Project</h3>
+              <p style="margin:0;color:var(--text-secondary,#8b949e);font-size:13px;line-height:1.65;">
+                The <code>.xcodeproj</code> file must exist in the <strong>root directory</strong> of the zipped source files.
+              </p>
+              <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;">
+                <span style="background:var(--bg-surface,#111820);border:1px solid var(--border-subtle,rgba(48,54,61,0.6));border-radius:6px;color:var(--text-secondary,#8b949e);font-size:11.5px;font-family:var(--font-mono,'JetBrains Mono',monospace);padding:3px 10px;">/ YourProject.xcodeproj</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
+  </div>
 </div>
 {% endblock %}

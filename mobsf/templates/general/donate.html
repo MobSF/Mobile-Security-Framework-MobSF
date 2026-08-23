@@ -1,62 +1,79 @@
 {% extends "base/base_layout.html" %}
- {% block sidebar_option %}
-      sidebar-collapse
-{% endblock %}
+{% block sidebar_option %}sidebar-collapse{% endblock %}
 {% block content %}
 <div class="content-wrapper">
-  <div class="content-header">
-  </div>
-   <div class="container-fluid">
-        <div class="row">
-            <div class="col-lg-12">
-            <div class="card">
-              <div class="card-body">
-                <h1>Donate to MobSF Project</h1>
-                <p class="lead">
-                    You're Awesome! Thank you for your support ♥
-                </p>
-                <div class="row">
+  <div style="padding:32px 24px;max-width:860px;margin:0 auto;">
 
-                    <div class="col-lg-6">
-                      
-                        <div class="card">
-                            <div class="card-header ui-sortable-handle" >
-                              <h3 class="card-title">
-                            Github Sponsors
-                              </h3>
-                            </div><!-- /.card-header -->
-                            <div class="card-body">
-                                <p style="text-align: center;">
-                                    Donate to MobSF project through Github Sponsors. Github will match the first $5000 in donations.
-                                </br>
-                                </br>
-                                <iframe src="https://github.com/sponsors/ajinabraham/button" title="Sponsor ajinabraham" height="35" width="116" style="border: 0;"></iframe>
-                                </p>
-                            </div><!-- /.card-body -->
-                          </div>
-                    </div>
-                    <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header ui-sortable-handle" >
-                          <h3 class="card-title">
-                          Paypal Donations
-                          </h3>
-                        </div><!-- /.card-header -->
-                        <div class="card-body">
-                            <p style="text-align: center;">
-                         You can also donate to MobSF project through PayPal.
-                         </br>
-                         </br>
-                           <a href="https://www.paypal.com/paypalme/ajinabraham" rel="noopener noreferrer"><input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" /></a>
-                        </p>
-                        </div><!-- /.card-body -->
-                    </div>
-                    </div>
-                </div>
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:40px;">
+      <div style="width:64px;height:64px;background:rgba(248,81,73,0.1);border:1px solid rgba(248,81,73,0.2);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
+        <i class="fas fa-heart" style="color:var(--accent-red,#f85149);font-size:26px;"></i>
+      </div>
+      <h1 style="margin:0 0 8px;font-size:26px;font-weight:800;color:var(--text-primary,#e6edf3);letter-spacing:-0.5px;">Support MobSF</h1>
+      <p style="margin:0;color:var(--text-secondary,#8b949e);font-size:15px;max-width:440px;margin:0 auto;line-height:1.6;">
+        You're awesome! Your support keeps MobSF free and open source for the security community. ♥
+      </p>
+    </div>
+
+    <!-- Donation cards -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px;">
+
+      <!-- GitHub Sponsors -->
+      <div class="card" style="border-color:rgba(88,166,255,0.15) !important;">
+        <div class="card-header" style="background:linear-gradient(135deg,rgba(88,166,255,0.08),var(--bg-surface,#111820)) !important;">
+          <span class="card-title">
+            <i class="fab fa-github" style="color:var(--text-primary,#e6edf3);"></i>
+            GitHub Sponsors
+          </span>
+        </div>
+        <div class="card-body" style="padding:28px !important;text-align:center;">
+          <div style="width:52px;height:52px;background:rgba(139,148,158,0.08);border:1px solid rgba(139,148,158,0.15);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
+            <i class="fab fa-github" style="font-size:24px;color:var(--text-primary,#e6edf3);"></i>
+          </div>
+          <p style="color:var(--text-secondary,#8b949e);font-size:13.5px;line-height:1.6;margin:0 0 20px;">
+            Donate through GitHub Sponsors. GitHub matches the first $5,000 in donations — double the impact!
+          </p>
+          <div style="display:flex;justify-content:center;">
+            <iframe src="https://github.com/sponsors/ajinabraham/button"
+                    title="Sponsor ajinabraham" height="35" width="116"
+                    style="border:0;border-radius:6px;"></iframe>
           </div>
         </div>
-       </div>
-     </div>
+      </div>
+
+      <!-- PayPal -->
+      <div class="card" style="border-color:rgba(248,81,73,0.15) !important;">
+        <div class="card-header" style="background:linear-gradient(135deg,rgba(248,81,73,0.06),var(--bg-surface,#111820)) !important;">
+          <span class="card-title">
+            <i class="fab fa-paypal" style="color:#009cde;"></i>
+            PayPal Donation
+          </span>
+        </div>
+        <div class="card-body" style="padding:28px !important;text-align:center;">
+          <div style="width:52px;height:52px;background:rgba(0,156,222,0.08);border:1px solid rgba(0,156,222,0.15);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
+            <i class="fab fa-paypal" style="font-size:24px;color:#009cde;"></i>
+          </div>
+          <p style="color:var(--text-secondary,#8b949e);font-size:13.5px;line-height:1.6;margin:0 0 20px;">
+            Make a one-time or recurring donation to MobSF via PayPal — fast, secure and simple.
+          </p>
+          <a href="https://www.paypal.com/paypalme/ajinabraham" rel="noopener noreferrer" target="_blank"
+             style="display:inline-flex;align-items:center;gap:8px;background:rgba(0,156,222,0.1);border:1px solid rgba(0,156,222,0.25);border-radius:10px;color:#009cde;font-size:13px;font-weight:700;padding:10px 20px;text-decoration:none;transition:all 0.18s ease;"
+             onmouseover="this.style.background='rgba(0,156,222,0.18)';this.style.transform='translateY(-1px)';"
+             onmouseout="this.style.background='rgba(0,156,222,0.1)';this.style.transform='translateY(0)';">
+            <i class="fab fa-paypal"></i> Donate via PayPal
+          </a>
+        </div>
+      </div>
     </div>
+
+    <!-- Thank you note -->
+    <div style="background:rgba(63,185,80,0.05);border:1px solid rgba(63,185,80,0.15);border-radius:14px;padding:24px;text-align:center;">
+      <i class="fas fa-heart" style="color:var(--accent-red,#f85149);font-size:20px;margin-bottom:12px;display:block;"></i>
+      <p style="color:var(--text-secondary,#8b949e);font-size:13.5px;margin:0;line-height:1.7;max-width:520px;margin:0 auto;">
+        Every donation — big or small — directly funds development, server costs, and keeps MobSF free for the global security community. Thank you for your generosity.
+      </p>
+    </div>
+
+  </div>
 </div>
 {% endblock %}

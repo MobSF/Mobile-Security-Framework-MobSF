@@ -1,82 +1,110 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Internal Server Error</title>
+  <title>500 — Server Error | MobSF</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Mobile Security Framework - MobSF">
-  <meta name="author" content="Ajin Abraham">
   <link rel="icon" href="{% static "img/favicon.ico" %}">
-
-  <!-- Tell the browser to be responsive to screen width -->
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
   <link rel="stylesheet" href="{% static "adminlte/dashboard/css/adminlte.min.css" %}">
-  <!-- Google Font: Source Sans Pro -->
-  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+  <link rel="stylesheet" href="{% static "others/css/error-pages.css" %}">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent-code: #e3b341;
+      --accent-code-rgb: 227,179,65;
+      --card-border: rgba(227,179,65,0.2);
+      --card-glow: 0 0 40px rgba(227,179,65,0.03);
+      --card-max-width: 520px;
+    }
+
+    .debug-tip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-sub);
+      border-left: 3px solid var(--accent-code);
+      border-radius: 8px;
+      padding: 14px 16px;
+      text-align: left;
+      margin-bottom: 24px;
+    }
+
+    .debug-tip p {
+      color: var(--text-sec);
+      font-size: 12.5px;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .debug-tip code {
+      background: rgba(var(--accent-code-rgb),0.08);
+      border: 1px solid rgba(var(--accent-code-rgb),0.15);
+      border-radius: 5px;
+      color: var(--accent-code);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 1px 6px;
+    }
+
+    .btn-reload {
+      display: inline-flex;
+      align-items: center; gap: 8px;
+      background: rgba(var(--accent-code-rgb),0.08);
+      border: 1px solid rgba(var(--accent-code-rgb),0.2);
+      border-radius: 10px;
+      color: var(--accent-code);
+      font-size: 13.5px; font-weight: 700;
+      padding: 11px 24px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      margin: 4px;
+    }
+    .btn-reload:hover {
+      background: rgba(var(--accent-code-rgb),0.15);
+      color: var(--accent-code);
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+  </style>
 </head>
-<body class="hold-transition sidebar-collapse layout-fixed layout-navbar-fixed">
-<div class="wrapper">
+<body>
 
-    <!-- Navbar -->
-    <nav class="main-header navbar navbar-expand navbar-dark navbar-primary">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-            <a id="nbar" class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
-          </li>
-      </ul>
-      <!-- Right navbar links -->
-      <ul class="navbar-nav ml-auto">
-          <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'recent' %}" class="nav-link">RECENT SCANS</a></li>
-          <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'home' %}" class="nav-link">STATIC ANALYZER</a></li>
-          <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'dynamic' %}" class="nav-link">DYNAMIC ANALYZER</a></li>
-          <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'api_docs' %}" class="nav-link">API</a></li>
-          <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'donate' %}" class="nav-link">DONATE ♥</a></li>
-          <li class="nav-item d-none d-sm-inline-block"><a target="_blank" href="https://mobsf.github.io/docs/#/" class="nav-link">DOCS</a></li>
-          <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'about' %}" class="nav-link">ABOUT</a></li>
-  
-      <!-- SEARCH FORM -->
-      <form class="form-inline ml-3" action="/search" method="GET">
-        <div class="input-group input-group-sm">
-          <input class="form-control form-control-navbar" id="navbar-search-input" type="search" placeholder="Search" name="query" aria-label="Search">
-          <div class="input-group-append">
-            <button class="btn btn-navbar" type="submit">
-              <i class="fas fa-search"></i>
-            </button>
-          </div>
-        </div>
-      </form>
-  
-    </ul>
-    </nav>
-    <!-- /.navbar -->
-  
-
- <div class="content-wrapper">
-  <div class="content-header">
+  <div class="nav-bar">
+    <a href="{% url 'home' %}" class="nav-logo">
+      <img src="{% static "img/mobsf_icon.png" %}" alt="MobSF" style="width:24px;height:24px;border-radius:5px;">
+      <span>Mob</span>SF
+    </a>
   </div>
-   <div class="container-fluid">
-        <div class="row">
-            <div class="col-lg-12">
-            <div class="card">
-              <div class="card-body">
-                 <h3>Server Error (500)</h3>
-                    <p class="lead">This request caused an Internal Server error. Check the server logs for more details. For debugging, try setting <code>DEBUG=True</code> in settings.py</p>
-          </div>
-        </div>
-       </div>
-     </div>
+
+  <div class="error-wrap">
+    <div class="error-code">500</div>
+
+    <div class="error-card">
+      <div class="error-icon"><i class="fas fa-exclamation-triangle"></i></div>
+      <h1 class="error-title">Internal Server Error</h1>
+      <p class="error-desc">
+        Something went wrong on our end while processing your request. The server encountered an unexpected condition.
+      </p>
+
+      <div class="debug-tip">
+        <p>
+          <strong style="color:var(--text-pri);">For debugging:</strong> check the server logs for more details.
+          You can also enable verbose output by setting <code>DEBUG=True</code> in <code>settings.py</code>.
+        </p>
+      </div>
+
+      <div>
+        <a href="{% url 'home' %}" class="btn-home">
+          <i class="fas fa-home"></i> Go to Dashboard
+        </a>
+        <a onclick="location.reload();return false;" href="#" class="btn-reload">
+          <i class="fas fa-redo"></i> Retry
+        </a>
+      </div>
     </div>
-</div>
-  <!-- /.content-wrapper -->
-  <footer class="main-footer">
-    <strong>© {% now "Y" %} Mobile Security Framework - MobSF | <a href="https://ajinabraham.com">Ajin Abraham</a> | <a href="https://opensecurity.in">OpenSecurity</a>.</strong>
-  </footer>
- 
-</div>
-<!-- ./wrapper -->
+  </div>
 
 </body>
 </html>

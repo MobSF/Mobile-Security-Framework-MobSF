@@ -1,0 +1,151 @@
+/**
+ * Shared structural CSS for the auth pages (login, register, change_password).
+ * Each page keeps its own accent color, icon, and button treatment inline;
+ * only the byte-identical layout/card/typography rules live here.
+ */
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-base, #0d1117);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(88,166,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(88,166,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-card, #161d27);
+  border: 1px solid var(--border-default, #30363d);
+  border-radius: 20px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+  padding: 40px;
+  position: relative;
+  z-index: 1;
+  animation: auth-slide-up 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+
+@keyframes auth-slide-up {
+  from { opacity:0; transform: translateY(20px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+.auth-brand {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.auth-title {
+  color: var(--text-primary, #e6edf3);
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  letter-spacing: -0.3px;
+}
+
+.auth-subtitle {
+  color: var(--text-secondary, #8b949e);
+  font-size: 13px;
+  margin: 0;
+}
+
+.auth-label {
+  display: block;
+  color: var(--text-secondary, #8b949e);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.auth-input {
+  width: 100%;
+  background: var(--bg-input, #0d1117) !important;
+  border: 1px solid var(--border-default, #30363d) !important;
+  color: var(--text-primary, #e6edf3) !important;
+  border-radius: 10px !important;
+  padding: 10px 40px 10px 14px !important;
+  font-size: 13.5px !important;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.auth-input::placeholder { color: var(--text-muted, #484f58) !important; }
+
+.auth-input-group {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.auth-input-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted, #484f58);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.auth-divider {
+  height: 1px;
+  background: var(--border-subtle, rgba(48,54,61,0.6));
+  margin: 20px 0;
+}
+
+.error-box {
+  background: rgba(248,81,73,0.08);
+  border: 1px solid rgba(248,81,73,0.25);
+  border-left: 3px solid var(--accent-red, #f85149);
+  color: var(--accent-red, #f85149);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.messages { list-style: none; padding: 0; margin: 0 0 16px; }
+.messages li {
+  background: rgba(63,185,80,0.08);
+  border: 1px solid rgba(63,185,80,0.2);
+  border-left: 3px solid var(--accent-green, #3fb950);
+  color: var(--accent-green, #3fb950);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.messages li.error {
+  background: rgba(248,81,73,0.08);
+  border-color: rgba(248,81,73,0.25);
+  border-left-color: var(--accent-red, #f85149);
+  color: var(--accent-red, #f85149);
+}
+
+.field-error {
+  color: var(--accent-red, #f85149);
+  font-size: 11.5px;
+  margin-top: 4px;
+  margin-bottom: 6px;
+  display: block;
+}

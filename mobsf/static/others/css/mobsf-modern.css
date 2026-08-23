@@ -1,0 +1,412 @@
+/**
+ * MobSF Modern UI/UX Styles
+ * A professional, security-tool oriented design system
+ * Inspired by Burp Suite, Android Studio, and modern SOC dashboards
+ */
+
+/* ============================================
+   Global Design Tokens (dark theme used app-wide)
+   Single source of truth - do not redeclare these
+   in base_layout.html or any individual template.
+   ============================================ */
+:root {
+  --bg-void:       #080b0f;
+  --bg-deep:       #0a0e14;
+  --bg-base:       #0d1117;
+  --bg-surface:    #111820;
+  --bg-card:       #161d27;
+  --bg-elevated:   #1a2233;
+  --bg-input:      #0d1117;
+  --border-subtle: rgba(48,54,61,0.6);
+  --border-default:#30363d;
+  --border-strong: #484f58;
+  --border-accent: rgba(88,166,255,0.3);
+  --text-primary:  #e6edf3;
+  --text-secondary:#8b949e;
+  --text-muted:    #484f58;
+  --text-link:     #58a6ff;
+  --accent-blue:   #58a6ff;
+  --accent-green:  #3fb950;
+  --accent-green-dim:#238636;
+  --accent-orange: #f0883e;
+  --accent-red:    #f85149;
+  --accent-purple: #bc8cff;
+  --accent-yellow: #e3b341;
+  --accent-cyan:   #39c5cf;
+  --glow-blue:     rgba(88,166,255,0.12);
+  --glow-green:    rgba(63,185,80,0.1);
+  --grad-blue:     linear-gradient(135deg,#1c3a5e 0%,#0d1117 100%);
+  --radius-sm:     6px;
+  --radius-md:     10px;
+  --radius-lg:     14px;
+  --radius-xl:     20px;
+  --shadow-card:   0 4px 24px rgba(0,0,0,0.4);
+  --shadow-glow:   0 0 20px rgba(88,166,255,0.08);
+  --font-main:     'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:     'JetBrains Mono', 'Fira Code', monospace;
+  --transition:    0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ============================================
+   CSS Custom Properties (Design Tokens)
+   ============================================ */
+:root {
+  /* Primary Colors - Security Tool Palette */
+  --mobsf-primary: #1a73e8;
+  --mobsf-primary-dark: #1557b0;
+  --mobsf-primary-light: #4a90e8;
+  
+  /* Background Colors */
+  --mobsf-bg-dark: #1e1e1e;
+  --mobsf-bg-darker: #121212;
+  --mobsf-bg-light: #2d2d2d;
+  --mobsf-bg-card: #ffffff;
+  --mobsf-bg-card-alt: #f8f9fa;
+  
+  /* Text Colors */
+  --mobsf-text-primary: #212529;
+  --mobsf-text-secondary: #6c757d;
+  --mobsf-text-muted: #adb5bd;
+  --mobsf-text-light: #f8f9fa;
+  --mobsf-text-dark: #000000;
+  
+  /* Status Colors */
+  --mobsf-success: #28a745;
+  --mobsf-success-light: #d4edda;
+  --mobsf-warning: #ffc107;
+  --mobsf-warning-light: #fff3cd;
+  --mobsf-danger: #dc3545;
+  --mobsf-danger-light: #f8d7da;
+  --mobsf-info: #17a2b8;
+  --mobsf-info-light: #d1ecf1;
+  
+  /* Log Level Colors */
+  --log-info: #6bb3f8;
+  --log-warning: #f5c242;
+  --log-error: #ff6b6b;
+  --log-debug: #a0a0a0;
+  --log-success: #4cd964;
+  
+  /* Device Status Colors */
+  --device-connected: #4cd964;
+  --device-disconnected: #ff6b6b;
+  --device-emulator: #ffcc00;
+  --device-rooted: #ff9500;
+  --device-frida-active: #30d158;
+  
+  /* Borders */
+  --mobsf-border: #dee2e6;
+  --mobsf-border-dark: #343a40;
+  
+  /* Shadows */
+  --mobsf-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --mobsf-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --mobsf-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Spacing */
+  --mobsf-spacing-xs: 0.25rem;
+  --mobsf-spacing-sm: 0.5rem;
+  --mobsf-spacing-md: 1rem;
+  --mobsf-spacing-lg: 1.5rem;
+  --mobsf-spacing-xl: 2rem;
+  
+  /* Border Radius */
+  --mobsf-radius-sm: 4px;
+  --mobsf-radius-md: 6px;
+  --mobsf-radius-lg: 8px;
+  --mobsf-radius-xl: 12px;
+  
+  /* Typography */
+  --mobsf-font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;
+  --mobsf-font-sans: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  
+  /* Transitions */
+  --mobsf-transition: all 0.2s ease-in-out;
+}
+
+/* ============================================
+   Modern Error Display
+   ============================================ */
+.mobsf-error-card {
+  background: var(--mobsf-bg-card);
+  border-radius: var(--mobsf-radius-lg);
+  box-shadow: var(--mobsf-shadow-md);
+  overflow: hidden;
+  border-left: 4px solid var(--mobsf-danger);
+  margin-bottom: var(--mobsf-spacing-lg);
+}
+
+.mobsf-error-card.error-warning {
+  border-left-color: var(--mobsf-warning);
+}
+
+.mobsf-error-card.error-info {
+  border-left-color: var(--mobsf-info);
+  border-left-width: 4px;
+}
+
+.mobsf-error-card .error-header {
+  background: var(--mobsf-danger-light);
+  padding: var(--mobsf-spacing-md) var(--mobsf-spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--mobsf-spacing-md);
+}
+
+.error-warning .error-header {
+  background: var(--mobsf-warning-light);
+}
+
+.error-info .error-header {
+  background: var(--mobsf-info-light);
+}
+
+.mobsf-error-card .error-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--mobsf-danger);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.error-warning .error-icon {
+  background: var(--mobsf-warning);
+}
+
+.error-info .error-icon {
+  background: var(--mobsf-info);
+}
+
+.mobsf-error-card .error-title {
+  font-weight: 600;
+  color: var(--mobsf-text-primary);
+  font-size: 1rem;
+}
+
+.mobsf-error-card .error-body {
+  padding: var(--mobsf-spacing-lg);
+}
+
+.mobsf-error-card .error-summary {
+  color: var(--mobsf-text-primary);
+  margin-bottom: var(--mobsf-spacing-md);
+  line-height: 1.6;
+}
+
+.mobsf-error-card .error-cause {
+  background: var(--mobsf-bg-card-alt);
+  padding: var(--mobsf-spacing-md);
+  border-radius: var(--mobsf-radius-md);
+  margin-bottom: var(--mobsf-spacing-md);
+  border: 1px solid var(--mobsf-border);
+}
+
+.mobsf-error-card .error-cause-label {
+  font-weight: 600;
+  color: var(--mobsf-text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--mobsf-spacing-xs);
+}
+
+.mobsf-error-card .error-cause-text {
+  color: var(--mobsf-text-primary);
+  font-size: 0.9rem;
+}
+
+.mobsf-error-card .error-suggestion {
+  background: #e8f5e9;
+  padding: var(--mobsf-spacing-md);
+  border-radius: var(--mobsf-radius-md);
+  margin-bottom: var(--mobsf-spacing-md);
+  border: 1px solid var(--mobsf-success);
+}
+
+.error-warning .error-suggestion {
+  background: #fff8e1;
+  border-color: var(--mobsf-warning);
+}
+
+.mobsf-error-card .error-suggestion-label {
+  font-weight: 600;
+  color: var(--mobsf-success);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--mobsf-spacing-xs);
+}
+
+.error-warning .error-suggestion-label {
+  color: var(--mobsf-warning);
+}
+
+.mobsf-error-card .error-suggestion-text {
+  color: var(--mobsf-text-primary);
+  font-size: 0.9rem;
+}
+
+.mobsf-error-card .error-suggestion-code {
+  background: var(--mobsf-bg-darker);
+  color: var(--mobsf-text-light);
+  padding: var(--mobsf-spacing-sm) var(--mobsf-spacing-md);
+  border-radius: var(--mobsf-radius-sm);
+  font-family: var(--mobsf-font-mono);
+  font-size: 0.85rem;
+  margin-top: var(--mobsf-spacing-sm);
+  overflow-x: auto;
+}
+
+.mobsf-error-card .error-technical {
+  border-top: 1px solid var(--mobsf-border);
+  padding-top: var(--mobsf-spacing-md);
+  margin-top: var(--mobsf-spacing-md);
+}
+
+.mobsf-error-card .error-toggle {
+  background: none;
+  border: none;
+  color: var(--mobsf-primary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--mobsf-spacing-xs);
+  padding: 0;
+}
+
+.mobsf-error-card .error-toggle:hover {
+  text-decoration: underline;
+}
+
+.mobsf-error-card .error-technical-details {
+  display: none;
+  margin-top: var(--mobsf-spacing-md);
+  background: var(--mobsf-bg-dark);
+  padding: var(--mobsf-spacing-md);
+  border-radius: var(--mobsf-radius-md);
+  font-family: var(--mobsf-font-mono);
+  font-size: 0.8rem;
+  color: var(--mobsf-text-light);
+  overflow-x: auto;
+}
+
+.mobsf-error-card .error-technical-details.show {
+  display: block;
+}
+
+/* ============================================
+   Responsive Utilities
+   ============================================ */
+@media (max-width: 768px) {
+  /* .workflow-step is also used by dynamic_analyzer.html's own dashboard */
+  .workflow-step {
+    min-width: 100%;
+  }
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* ============================================
+   Responsive Navbar (mobile link menu)
+   ============================================ */
+@media (max-width: 575.98px) {
+  #navLinksCollapse.show {
+    background: var(--bg-surface, #111820);
+    border-top: 1px solid var(--border-subtle, rgba(48,54,61,0.6));
+    padding: 4px 8px 10px;
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  #navLinksCollapse .navbar-nav,
+  #navLinksCollapse .nav-item {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+  #navLinksCollapse .nav-item {
+    border-bottom: 1px solid var(--border-subtle, rgba(48,54,61,0.6));
+  }
+  #navLinksCollapse .nav-item:last-child {
+    border-bottom: none;
+  }
+  #navLinksCollapse .nav-link {
+    padding: 10px 8px !important;
+  }
+  #navLinksCollapse .dropdown-toggle {
+    border-radius: 0 !important;
+    background: none !important;
+    border: none !important;
+  }
+  #navLinksCollapse .dropdown-menu {
+    position: static !important;
+    width: 100%;
+    box-shadow: none !important;
+    margin-top: 4px;
+  }
+  #navLinksCollapse form.d-flex {
+    width: 100%;
+    margin: 8px 0;
+  }
+  #navLinksCollapse form .input-group {
+    width: 100% !important;
+  }
+}
+
+/* ============================================
+   Sidebar-mini pages (report/compare views) on
+   mobile: force the sidebar fully off-canvas by
+   default and only bring it on screen once the
+   pushmenu toggle adds body.sidebar-open (AdminLTE
+   already manages that class; this just guarantees
+   the visual result regardless of the exact pixel
+   width AdminLTE's own off-canvas margin assumes).
+   ============================================ */
+@media (max-width: 767.98px) {
+  body:not(.sidebar-open) .main-sidebar {
+    transform: translateX(-100%) !important;
+    margin-left: 0 !important;
+    box-shadow: none !important;
+  }
+  body.sidebar-open .main-sidebar {
+    transform: translateX(0) !important;
+    margin-left: 0 !important;
+    width: 250px !important;
+    box-shadow: 2px 0 20px rgba(0,0,0,0.6) !important;
+  }
+  body.sidebar-open #sidebar-overlay {
+    display: block !important;
+  }
+  body:not(.sidebar-open) #sidebar-overlay {
+    display: none !important;
+  }
+}
+

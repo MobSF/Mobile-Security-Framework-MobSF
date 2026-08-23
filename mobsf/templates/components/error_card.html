@@ -1,0 +1,101 @@
+{% comment %}
+  Modern Error Card Component
+  
+  A structured error display with problem summary, possible cause, 
+  suggested fix, and expandable technical details.
+  
+  Usage:
+  {% include "components/error_card.html" with 
+    error_title="Error Title"
+    error_summary="What happened"
+    error_cause="Why it happened"
+    error_suggestion="How to fix"
+    error_type="error" %}
+  
+  Parameters:
+  - error_title: Main title of the error
+  - error_summary: Brief description of the problem
+  - error_cause: Explanation of why it happened  
+  - error_suggestion: Steps to fix the issue
+  - error_code: Optional command/code snippet
+  - error_doc_link: Optional documentation link
+  - error_type: "error" (default), "warning", or "info"
+  - error_details: Technical details (hidden by default)
+{% endcomment %}
+
+<div class="mobsf-error-card {% if error_type %}error-{{ error_type }}{% else %}error-error{% endif %}">
+  <div class="error-header">
+    <div class="error-icon">
+      {% if error_type == "warning" %}
+        <i class="fas fa-exclamation-triangle"></i>
+      {% elif error_type == "info" %}
+        <i class="fas fa-info-circle"></i>
+      {% else %}
+        <i class="fas fa-times-circle"></i>
+      {% endif %}
+    </div>
+    <div class="error-title">{{ error_title|default:"Error" }}</div>
+  </div>
+  
+  <div class="error-body">
+    <!-- Problem Summary -->
+    {% if error_summary %}
+    <div class="error-summary">
+      {{ error_summary }}
+    </div>
+    {% endif %}
+    
+    <!-- Possible Cause -->
+    {% if error_cause %}
+    <div class="error-cause">
+      <div class="error-cause-label">
+        <i class="fas fa-question-circle"></i> Possible Cause
+      </div>
+      <div class="error-cause-text">{{ error_cause }}</div>
+    </div>
+    {% endif %}
+    
+    <!-- Suggested Fix -->
+    {% if error_suggestion %}
+    <div class="error-suggestion">
+      <div class="error-suggestion-label">
+        <i class="fas fa-lightbulb"></i> Suggested Fix
+      </div>
+      <div class="error-suggestion-text">{{ error_suggestion }}</div>
+      {% if error_code %}
+      <pre class="error-suggestion-code"><code>{{ error_code }}</code></pre>
+      {% endif %}
+      {% if error_doc_link %}
+      <div style="margin-top: 10px;">
+        <a href="{{ error_doc_link }}" target="_blank" class="btn btn-sm btn-outline-primary">
+          <i class="fas fa-book"></i> View Documentation
+        </a>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+    
+    <!-- Technical Details (Expandable) -->
+    {% if error_details %}
+    <div class="error-technical">
+      <button class="error-toggle" onclick="toggleTechnicalDetails(this)">
+        <i class="fas fa-chevron-down"></i> Technical Details
+      </button>
+      <div class="error-technical-details">
+        <pre>{{ error_details }}</pre>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+function toggleTechnicalDetails(btn) {
+  const details = btn.nextElementSibling;
+  const icon = btn.querySelector('i');
+  
+  details.classList.toggle('show');
+  icon.classList.toggle('fa-chevron-down');
+  icon.classList.toggle('fa-chevron-up');
+}
+</script>
