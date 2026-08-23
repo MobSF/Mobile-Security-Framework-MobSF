@@ -5,120 +5,420 @@ sidebar-collapse
 {% endblock %}
 {% block extra_css %}
 <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
+<style>
+  .users-page {
+    min-height: 100vh;
+    background: var(--bg-base, #0d1117);
+    padding: 32px 20px;
+  }
+
+  .users-container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .page-header-left { display: flex; flex-direction: column; gap: 4px; }
+
+  .page-title {
+    color: var(--text-primary, #e6edf3);
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .page-title i {
+    width: 36px;
+    height: 36px;
+    background: rgba(88,166,255,0.1);
+    border: 1px solid rgba(88,166,255,0.2);
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--accent-blue, #58a6ff);
+  }
+
+  .page-subtitle {
+    color: var(--text-secondary, #8b949e);
+    font-size: 13px;
+    margin: 0;
+  }
+
+  .add-user-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(63,185,80,0.1);
+    border: 1px solid rgba(63,185,80,0.25);
+    border-radius: 10px;
+    color: var(--accent-green, #3fb950);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 18px;
+    text-decoration: none;
+    transition: all 0.18s ease;
+  }
+
+  .add-user-btn:hover {
+    background: rgba(63,185,80,0.18);
+    border-color: rgba(63,185,80,0.4);
+    color: var(--accent-green, #3fb950);
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  .users-card {
+    background: var(--bg-card, #161d27);
+    border: 1px solid var(--border-subtle, rgba(48,54,61,0.6));
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
+
+  .users-card-header {
+    background: var(--bg-surface, #111820);
+    border-bottom: 1px solid var(--border-subtle, rgba(48,54,61,0.6));
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .users-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(88,166,255,0.08);
+    border: 1px solid rgba(88,166,255,0.2);
+    border-radius: 20px;
+    color: var(--accent-blue, #58a6ff);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 10px;
+  }
+
+  .users-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .users-table thead tr {
+    background: var(--bg-surface, #111820);
+  }
+
+  .users-table thead th {
+    padding: 12px 20px;
+    color: var(--text-secondary, #8b949e);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-subtle, rgba(48,54,61,0.6));
+    white-space: nowrap;
+  }
+
+  .users-table tbody tr {
+    border-bottom: 1px solid rgba(48,54,61,0.4);
+    transition: background 0.15s ease;
+  }
+
+  .users-table tbody tr:last-child { border-bottom: none; }
+
+  .users-table tbody tr:hover {
+    background: rgba(88,166,255,0.03);
+  }
+
+  .users-table td {
+    padding: 16px 20px;
+    vertical-align: middle;
+  }
+
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--border-default, #30363d);
+    object-fit: cover;
+  }
+
+  .user-name {
+    color: var(--text-primary, #e6edf3);
+    font-weight: 600;
+    font-size: 13.5px;
+  }
+
+  .user-email {
+    color: var(--text-secondary, #8b949e);
+    font-size: 12.5px;
+    margin-top: 2px;
+  }
+
+  .role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+
+  .role-admin {
+    background: rgba(248,81,73,0.1);
+    border: 1px solid rgba(248,81,73,0.25);
+    color: var(--accent-red, #f85149);
+  }
+
+  .role-maintainer {
+    background: rgba(88,166,255,0.1);
+    border: 1px solid rgba(88,166,255,0.2);
+    color: var(--accent-blue, #58a6ff);
+  }
+
+  .role-viewer {
+    background: rgba(139,148,158,0.1);
+    border: 1px solid rgba(139,148,158,0.2);
+    color: var(--text-secondary, #8b949e);
+  }
+
+  .delete-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(248,81,73,0.08);
+    border: 1px solid rgba(248,81,73,0.2);
+    border-radius: 8px;
+    color: var(--accent-red, #f85149);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    text-decoration: none;
+  }
+
+  .delete-btn:hover {
+    background: rgba(248,81,73,0.15);
+    border-color: rgba(248,81,73,0.35);
+    color: var(--accent-red, #f85149);
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  .empty-state {
+    padding: 60px 24px;
+    text-align: center;
+  }
+
+  .empty-icon {
+    width: 64px;
+    height: 64px;
+    background: rgba(139,148,158,0.08);
+    border: 1px solid rgba(139,148,158,0.15);
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--text-muted, #484f58);
+    margin-bottom: 16px;
+  }
+
+  .empty-title {
+    color: var(--text-primary, #e6edf3);
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+
+  .empty-sub {
+    color: var(--text-secondary, #8b949e);
+    font-size: 13px;
+    margin: 0 0 20px;
+  }
+</style>
 {% endblock %}
 {% block content %}
 <div class="content-wrapper">
-   <div class="content-header">
-   </div>
-   <div class="container-fluid">
-      <div class="row">
-         <div class="col-lg-12">
-            <div class="card">
-               <div class="card-body">
-                  <div class="h-100 d-flex align-items-center justify-content-center">
-                     <div class="">
-                        <div class="login-logo">
-                           <a href="">User Management</a>  <a href="{% url 'create_user' %}" id="add_user" class="btn btn-success" role="button"><i class="fa fa-user"></i> Add User</a>
-                        </div>
-                        <div class="card">
-                           <div class="card-body login-card-body">
-                            {% if not users %}
-                            <h3>No Users Available</h3>
-                            {% else %}
-                            <div class="table-responsive">
-                                <table class="table table-responsive-md">
-                                    <thead>
-                                        <tr>
-                                            <th><strong>#</strong></th>
-                                            <th><strong>Username</strong></th>
-                                            <th><strong>Email</strong></th>
-                                            <th><strong>Role</strong></th>
-                                            <th><strong>Manage</strong></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for user in users %}
-                                                <tr>
-                                                    <td>
-                                                        <div class="profile-photo">
-                                                            <img src="https://www.gravatar.com/avatar/{{ user.email | md5}}" width="30" class="img-fluid rounded-circle" alt="">
-                                                        </div>
-                                                     </td>
-                                                    <td>{{user.username}}</td>
-                                                    <td>{{user.email}}</td>
-                                                    <td> {% if user.is_staff %}Admin{% else %} {{user.groups.all.0}}  {% endif %}</td>
-                                                    <td> {% if not user.is_staff %}
-                                                      <a class="btn btn-danger btn-sm" id="{{ user.username }}" onclick="delete_user(this)" href="#"><i class="fa fa-trash"></i> Delete </a>
-                                                      {% endif %}</td>
-                                                </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                            {% endif %}
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </div>
+  <div class="users-page">
+    <div class="users-container">
+
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1 class="page-title">
+            <i class="fas fa-users"></i>
+            User Management
+          </h1>
+          <p class="page-subtitle">Manage MobSF user accounts and permissions</p>
+        </div>
+        <a href="{% url 'create_user' %}" class="add-user-btn">
+          <i class="fas fa-user-plus"></i> Add New User
+        </a>
       </div>
-   </div>
+
+      <div class="users-card">
+        <div class="users-card-header">
+          <span style="color:var(--text-primary);font-weight:600;font-size:14px;">
+            <i class="fas fa-list" style="margin-right:8px;opacity:.6;"></i>All Accounts
+          </span>
+          {% if users %}
+          <span class="users-count">
+            <i class="fas fa-circle" style="font-size:7px;"></i>
+            {{ users|length }} user{{ users|length|pluralize }}
+          </span>
+          {% endif %}
+        </div>
+
+        {% if not users %}
+        <div class="empty-state">
+          <div class="empty-icon"><i class="fas fa-users"></i></div>
+          <p class="empty-title">No Users Found</p>
+          <p class="empty-sub">Get started by adding the first user account.</p>
+          <a href="{% url 'create_user' %}" class="add-user-btn">
+            <i class="fas fa-user-plus"></i> Create First User
+          </a>
+        </div>
+        {% else %}
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+            <tr>
+              <td>
+                <img src="https://www.gravatar.com/avatar/{{ user.email|md5 }}?d=identicon&s=80"
+                     class="user-avatar" alt="{{ user.username }}">
+              </td>
+              <td>
+                <div class="user-name">{{ user.username }}</div>
+              </td>
+              <td>
+                <div class="user-email">{{ user.email }}</div>
+              </td>
+              <td>
+                {% if user.is_staff %}
+                <span class="role-badge role-admin">
+                  <i class="fas fa-crown" style="font-size:10px;"></i> Admin
+                </span>
+                {% else %}
+                <span class="role-badge {% if user.groups.all.0|stringformat:'s' == 'maintainer' %}role-maintainer{% else %}role-viewer{% endif %}">
+                  {% if user.groups.all.0|stringformat:'s' == 'maintainer' %}
+                  <i class="fas fa-tools" style="font-size:10px;"></i>
+                  {% else %}
+                  <i class="fas fa-eye" style="font-size:10px;"></i>
+                  {% endif %}
+                  {{ user.groups.all.0 }}
+                </span>
+                {% endif %}
+              </td>
+              <td>
+                {% if not user.is_staff %}
+                <a class="delete-btn" id="{{ user.username }}" onclick="delete_user(this)" href="#">
+                  <i class="fas fa-trash-alt"></i> Remove
+                </a>
+                {% else %}
+                <span style="color:var(--text-muted);font-size:12px;">Protected</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
 </div>
 {% endblock %}
 {% block extra_scripts %}
 <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script>
-    function delete_user(item){
-      Swal.fire({
-      title: 'Are you sure?',
-      text: "This will permanently remove the user from MobSF",
-      type: 'warning',
+  function delete_user(item) {
+    Swal.fire({
+      title: 'Remove User?',
+      html: `This will permanently remove <strong>${item.id}</strong> from MobSF.`,
+      icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Yes',
-      cancelButtonText: 'No',
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#2da532',
+      confirmButtonText: 'Yes, remove',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#f85149',
+      cancelButtonColor: '#238636',
+      background: '#161d27',
+      color: '#e6edf3',
+      iconColor: '#e3b341',
+      customClass: {
+        popup: 'swal-dark-popup',
+        confirmButton: 'swal-confirm-btn',
+        cancelButton: 'swal-cancel-btn',
+      }
     }).then((result) => {
-        if (result.value) {
-            $.ajax({
-                    url: '{% url "delete_user" %}',
-                        type : 'POST',
-                    dataType: 'json',
-                        data : {
-                                csrfmiddlewaretoken: '{{ csrf_token }}',
-                                username: item.id,
-                                },
-                            success : function(json) {
-                                if (json.deleted==='yes'){
-                                    Swal.fire(
-                                        'Deleted!',
-                                        'The user is deleted!',
-                                        'success'
-                                    ).then(function () {
-                                        location.reload();
-                                    })
-                                }
-                                else {
-                                    Swal.fire(
-                                    'Delete Failed',
-                                    'Cannot delete the user',
-                                    'error'
-                                    )
-                                }
-                            },
-                            error : function(xhr,errmsg,err) {
-                                Swal.fire(
-                                    'Delete Failed',
-                                    errmsg,
-                                    'error'
-                                    )
-                            }
-                });
-               
-        }
+      if (result.isConfirmed) {
+        $.ajax({
+          url: '{% url "delete_user" %}',
+          type: 'POST',
+          dataType: 'json',
+          data: {
+            csrfmiddlewaretoken: '{{ csrf_token }}',
+            username: item.id,
+          },
+          success: function(json) {
+            if (json.deleted === 'yes') {
+              Swal.fire({
+                title: 'Removed!',
+                text: 'The user has been removed successfully.',
+                icon: 'success',
+                background: '#161d27',
+                color: '#e6edf3',
+                iconColor: '#3fb950',
+                confirmButtonColor: '#238636',
+              }).then(function() { location.reload(); });
+            } else {
+              Swal.fire({
+                title: 'Failed',
+                text: 'Could not remove the user.',
+                icon: 'error',
+                background: '#161d27',
+                color: '#e6edf3',
+                confirmButtonColor: '#f85149',
+              });
+            }
+          },
+          error: function(xhr, errmsg) {
+            Swal.fire({
+              title: 'Error',
+              text: errmsg,
+              icon: 'error',
+              background: '#161d27',
+              color: '#e6edf3',
+              confirmButtonColor: '#f85149',
+            });
+          }
         });
-}
+      }
+    });
+  }
 </script>
 {% endblock %}

@@ -1,84 +1,207 @@
 {% extends "base/base_layout.html" %}
 {% load static %}
-{% block sidebar_option %}
-sidebar-collapse
+{% block sidebar_option %}sidebar-collapse{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static "others/css/auth-pages.css" %}">
+<style>
+  /* Radial glow spot (page-specific accent) */
+  .auth-page::after {
+    content: '';
+    position: fixed;
+    top: -30%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 500px;
+    background: radial-gradient(ellipse at center, rgba(35,134,54,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .auth-icon-wrap {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, #1a3a28 0%, #0d2618 100%);
+    border: 1px solid rgba(63,185,80,0.25);
+    border-radius: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    color: var(--accent-green, #3fb950);
+    margin-bottom: 18px;
+    position: relative;
+  }
+
+  .auth-icon-wrap::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(63,185,80,0.2), transparent);
+    z-index: -1;
+  }
+
+  .auth-input:focus {
+    border-color: var(--accent-blue, #58a6ff) !important;
+    box-shadow: 0 0 0 3px rgba(88,166,255,0.12) !important;
+  }
+
+  .auth-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+    border: none;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s ease;
+    letter-spacing: 0.3px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .auth-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(35,134,54,0.35); }
+  .auth-btn:hover::before { left: 100%; }
+  .auth-btn:active { transform: translateY(0); }
+
+  .sso-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 22px 0;
+    color: var(--text-muted, #484f58);
+    font-size: 12px;
+  }
+  .sso-divider::before, .sso-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-subtle, rgba(48,54,61,0.6));
+  }
+
+  .sso-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    background: var(--bg-surface, #111820);
+    border: 1px solid var(--border-default, #30363d);
+    color: var(--text-primary, #e6edf3);
+    font-weight: 600;
+    font-size: 13.5px;
+    padding: 11px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .sso-btn:hover {
+    background: var(--bg-elevated, #1a2233);
+    border-color: var(--accent-blue, #58a6ff);
+    color: var(--accent-blue, #58a6ff);
+    text-decoration: none;
+  }
+
+  .auth-footer {
+    text-align: center;
+    margin-top: 24px;
+    color: var(--text-muted, #484f58);
+    font-size: 12px;
+  }
+
+  .auth-footer a { color: var(--text-secondary, #8b949e); text-decoration: none; }
+  .auth-footer a:hover { color: var(--accent-blue, #58a6ff); }
+
+  /* Security indicator dots */
+  .security-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 20px;
+  }
+  .security-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border-default, #30363d);
+  }
+  .security-dots span.active { background: var(--accent-green, #3fb950); }
+</style>
 {% endblock %}
 {% block content %}
-<div class="content-wrapper">
-   <div class="content-header">
-   </div>
-   <div class="container-fluid">
-      <div class="row">
-         <div class="col-lg-12">
-            <div class="card">
-               <div class="card-body">
-                  <div class="h-100 d-flex align-items-center justify-content-center">
-                     <div class="login-box">
-                        <div class="login-logo">
-                           <a href="">Sign in to access</a>
-                        </div>
-                        <div class="card">
-                           <div class="card-body login-card-body">
-                              <h1 class="display-2 h-100 d-flex align-items-center justify-content-center">
-                                 Mob<strong>SF</strong>
-                              </h1>
-                              {% if allow_pwd %}
-                              <form method="post" action="{% url 'login' %}?next={{next}}">
-                                 {% csrf_token %}
-                                 {{ form.non_field_errors }}
-                                 <div class="input-group mb-3">
-                                    <input type="username" name="username" class="form-control" placeholder="Username">
-                                    <div class="input-group-append">
-                                       <div class="input-group-text">
-                                          <span class="fas fa-user"></span>
-                                       </div>
-                                    </div>
-                                 </div>
-                                 {% for err in form.username.errors %}
-                                 <small> {{ err }} </small><br>
-                                 {% endfor %}
-                                 <div class="input-group mb-3">
-                                    <input type="password" name="password" class="form-control" placeholder="Password">
-                                    <div class="input-group-append">
-                                       <div class="input-group-text">
-                                          <span class="fas fa-lock"></span>
-                                       </div>
-                                    </div>
-                                 </div>
-                                 {% for err in form.password.errors %}
-                                 <small> {{ err }} </small><br>
-                                 {% endfor %}
-                                 <div class="row">
-                                    <!-- <div class="col-8">
-                                       <div class="icheck-primary">
-                                       <input type="checkbox" id="remember">
-                                       <label for="remember">
-                                       Remember Me
-                                       </label>
-                                       </div>
-                                       </div> -->
-                                 </div>
-                                 <div class="col-12">
-                                    <button type="submit" class="btn btn-primary btn-block">Sign In</button>
-                                 </div>
-                              </form>
-                              {% endif %}
-                              {% if sso %}
-                              <hr>
-                              <p>
-                              <div class="col-12">
-                                 <a href="{% url 'saml_login' %}?next={{next}}" class="btn btn-primary btn-block">Sign in with SSO</a>
-                              </div>
-                              </p>
-                              {% endif %}
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </div>
+<div class="auth-page">
+  <div class="content-wrapper" style="background:transparent;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="auth-icon-wrap">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <h1 class="auth-title">Mobile Security Framework</h1>
+        <p class="auth-subtitle">Sign in to access the security analyzer</p>
       </div>
-   </div>
+
+      {% if allow_pwd %}
+      <form method="post" action="{% url 'login' %}?next={{next}}">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="error-box">
+          <i class="fas fa-exclamation-circle"></i>
+          {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <div class="auth-input-group">
+          <label class="auth-label">Username</label>
+          <input type="text" name="username" class="auth-input" placeholder="Enter your username" required autocomplete="username">
+          <i class="fas fa-user auth-input-icon"></i>
+          {% for err in form.username.errors %}<small class="field-error"><i class="fas fa-exclamation-circle"></i> {{ err }}</small>{% endfor %}
+        </div>
+
+        <div class="auth-input-group" style="margin-bottom:20px;">
+          <label class="auth-label">Password</label>
+          <input type="password" name="password" class="auth-input" placeholder="Enter your password" required autocomplete="current-password">
+          <i class="fas fa-lock auth-input-icon"></i>
+          {% for err in form.password.errors %}<small class="field-error"><i class="fas fa-exclamation-circle"></i> {{ err }}</small>{% endfor %}
+        </div>
+
+        <button type="submit" class="auth-btn">
+          <i class="fas fa-sign-in-alt" style="margin-right:8px;"></i>Sign In
+        </button>
+      </form>
+      {% endif %}
+
+      {% if sso %}
+      <div class="sso-divider"><span>or continue with</span></div>
+      <a href="{% url 'saml_login' %}?next={{next}}" class="sso-btn">
+        <i class="fas fa-id-card"></i> Single Sign-On (SSO)
+      </a>
+      {% endif %}
+
+      <div class="auth-footer">
+        <p style="margin:0;">MobSF v{{ version|default:"3.0" }} &nbsp;·&nbsp; © {% now "Y" %} OpenSecurity</p>
+      </div>
+
+      <div class="security-dots">
+        <span class="active"></span>
+        <span class="active"></span>
+        <span class="active"></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
