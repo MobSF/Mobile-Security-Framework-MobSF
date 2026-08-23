@@ -66,7 +66,7 @@
   }
 
   .tasks-table tbody tr {
-    border-bottom: 1px solid rgba(48,54,61,0.4);
+    border-bottom: 1px solid var(--border-subtle);
     transition: background 0.15s ease;
   }
 
@@ -333,10 +333,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const q = new URLSearchParams(window.location.search).get('q');
   if (q === 'completed') {
     Swal.fire({ title: 'Scan Completed!', text: 'The scan was recently processed.', icon: 'success',
-      background: '#161d27', color: '#e6edf3', confirmButtonColor: '#238636' });
+      background: 'var(--bg-card)', color: 'var(--text-primary)', confirmButtonColor: 'var(--accent-green-dim)' });
   } else if (q === 'queued') {
     Swal.fire({ title: 'Already Queued', text: 'This scan task has already been added to the queue.', icon: 'info',
-      background: '#161d27', color: '#e6edf3', confirmButtonColor: '#58a6ff' });
+      background: 'var(--bg-card)', color: 'var(--text-primary)', confirmButtonColor: 'var(--accent-blue)' });
   }
 });
 </script>

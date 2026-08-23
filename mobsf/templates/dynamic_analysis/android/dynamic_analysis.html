@@ -16,10 +16,11 @@
    }
    /* Enhanced device info card */
    .device-info-card {
-     background: linear-gradient(135deg, #1e3a5f 0%, #0d47a1 100%);
+     background: var(--grad-blue);
+     border: 1px solid var(--border-subtle);
      border-radius: 12px;
      padding: 24px;
-     color: white;
+     color: var(--text-primary);
      margin-bottom: 20px;
    }
    .device-info-card h4 {
@@ -31,14 +32,14 @@
      align-items: center;
      gap: 12px;
      padding: 8px 0;
-     border-bottom: 1px solid rgba(255,255,255,0.1);
+     border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
    }
    .device-info-item:last-child {
      border-bottom: none;
    }
    .device-info-label {
      font-size: 0.8rem;
-     opacity: 0.8;
+     color: var(--text-secondary);
      min-width: 120px;
    }
    .device-info-value {
@@ -51,10 +52,10 @@
      font-size: 0.75rem;
      font-weight: 600;
    }
-   .badge-success { background: rgba(76, 217, 100, 0.2); color: #4cd964; }
-   .badge-warning { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
-   .badge-danger { background: rgba(255, 107, 107, 0.2); color: #ff6b6b; }
-   .badge-info { background: rgba(107, 179, 248, 0.2); color: #6bb3f8; }
+   .badge-success { background: color-mix(in srgb, var(--accent-green) 20%, transparent); color: var(--accent-green); }
+   .badge-warning { background: color-mix(in srgb, var(--accent-yellow) 20%, transparent); color: var(--accent-yellow); }
+   .badge-danger { background: color-mix(in srgb, var(--accent-red) 20%, transparent); color: var(--accent-red); }
+   .badge-info { background: color-mix(in srgb, var(--accent-blue) 20%, transparent); color: var(--accent-blue); }
    
    textarea {
  

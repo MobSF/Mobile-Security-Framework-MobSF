@@ -364,11 +364,11 @@ sidebar-collapse
       showCancelButton: true,
       confirmButtonText: 'Yes, remove',
       cancelButtonText: 'Cancel',
-      confirmButtonColor: '#f85149',
-      cancelButtonColor: '#238636',
-      background: '#161d27',
-      color: '#e6edf3',
-      iconColor: '#e3b341',
+      confirmButtonColor: 'var(--accent-red)',
+      cancelButtonColor: 'var(--accent-green-dim)',
+      background: 'var(--bg-card)',
+      color: 'var(--text-primary)',
+      iconColor: 'var(--accent-yellow)',
       customClass: {
         popup: 'swal-dark-popup',
         confirmButton: 'swal-confirm-btn',
@@ -390,19 +390,19 @@ sidebar-collapse
                 title: 'Removed!',
                 text: 'The user has been removed successfully.',
                 icon: 'success',
-                background: '#161d27',
-                color: '#e6edf3',
-                iconColor: '#3fb950',
-                confirmButtonColor: '#238636',
+                background: 'var(--bg-card)',
+                color: 'var(--text-primary)',
+                iconColor: 'var(--accent-green)',
+                confirmButtonColor: 'var(--accent-green-dim)',
               }).then(function() { location.reload(); });
             } else {
               Swal.fire({
                 title: 'Failed',
                 text: 'Could not remove the user.',
                 icon: 'error',
-                background: '#161d27',
-                color: '#e6edf3',
-                confirmButtonColor: '#f85149',
+                background: 'var(--bg-card)',
+                color: 'var(--text-primary)',
+                confirmButtonColor: 'var(--accent-red)',
               });
             }
           },
@@ -411,9 +411,9 @@ sidebar-collapse
               title: 'Error',
               text: errmsg,
               icon: 'error',
-              background: '#161d27',
-              color: '#e6edf3',
-              confirmButtonColor: '#f85149',
+              background: 'var(--bg-card)',
+              color: 'var(--text-primary)',
+              confirmButtonColor: 'var(--accent-red)',
             });
           }
         });

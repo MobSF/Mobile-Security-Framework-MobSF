@@ -24,13 +24,13 @@
   grid-template-rows: auto 1fr;
   gap: 0;
   min-height: calc(100vh - 130px);
-  background: #0d1117;
+  background: var(--bg-base);
 }
 
 /* Device Status Sidebar */
 .device-sidebar {
-  background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
-  border-right: 1px solid #30363d;
+  background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-base) 100%);
+  border-right: 1px solid var(--border-default);
   padding: 20px;
   grid-row: 1 / -1;
   overflow-y: auto;
@@ -41,11 +41,11 @@
 }
 
 .device-sidebar::-webkit-scrollbar-track {
-  background: #161b22;
+  background: var(--bg-card);
 }
 
 .device-sidebar::-webkit-scrollbar-thumb {
-  background: #30363d;
+  background: var(--border-default);
   border-radius: 3px;
 }
 
@@ -55,14 +55,14 @@
   align-items: center;
   gap: 12px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #30363d;
+  border-bottom: 1px solid var(--border-default);
   margin-bottom: 20px;
 }
 
 .sidebar-header .device-icon {
   width: 48px;
   height: 48px;
-  background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+  background: linear-gradient(135deg, var(--accent-green-dim) 0%, var(--accent-green) 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -74,21 +74,21 @@
 
 .sidebar-header .device-info h3 {
   margin: 0;
-  color: #f0f6fc;
+  color: var(--text-primary);
   font-size: 16px;
   font-weight: 600;
 }
 
 .sidebar-header .device-info p {
   margin: 4px 0 0;
-  color: #8b949e;
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
 /* Status Cards in Sidebar */
 .status-card {
-  background: #21262d;
-  border: 1px solid #30363d;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   padding: 14px;
   margin-bottom: 12px;
@@ -96,7 +96,7 @@
 }
 
 .status-card:hover {
-  border-color: #58a6ff;
+  border-color: var(--accent-blue);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
@@ -112,7 +112,7 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #8b949e;
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
@@ -120,29 +120,29 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #238636;
+  background: var(--accent-green-dim);
   box-shadow: 0 0 8px rgba(35, 134, 54, 0.6);
 }
 
 .status-card .status-indicator.disconnected {
-  background: #f85149;
+  background: var(--accent-red);
   box-shadow: 0 0 8px rgba(248, 81, 73, 0.6);
 }
 
 .status-card .status-indicator.warning {
-  background: #d29922;
+  background: var(--accent-yellow);
   box-shadow: 0 0 8px rgba(210, 153, 34, 0.6);
 }
 
 .status-card .status-value {
   font-size: 18px;
   font-weight: 700;
-  color: #f0f6fc;
+  color: var(--text-primary);
 }
 
 .status-card .status-subvalue {
   font-size: 12px;
-  color: #8b949e;
+  color: var(--text-secondary);
   margin-top: 4px;
 }
 
@@ -159,34 +159,34 @@
 
 .status-badge.connected {
   background: rgba(35, 134, 54, 0.2);
-  color: #3fb950;
+  color: var(--accent-green);
 }
 
 .status-badge.disconnected {
   background: rgba(248, 81, 73, 0.2);
-  color: #f85149;
+  color: var(--accent-red);
 }
 
 .status-badge.frida-active {
   background: rgba(188, 140, 255, 0.2);
-  color: #bc8cff;
+  color: var(--accent-purple);
 }
 
 .status-badge.rooted {
   background: rgba(210, 153, 34, 0.2);
-  color: #d29922;
+  color: var(--accent-yellow);
 }
 
 .status-badge.emulator {
   background: rgba(56, 139, 253, 0.2);
-  color: #58a6ff;
+  color: var(--accent-blue);
 }
 
 /* Main Content Area */
 .dashboard-main {
   padding: 20px;
   overflow-y: auto;
-  background: #0d1117;
+  background: var(--bg-base);
 }
 
 /* Page Header */
@@ -195,13 +195,13 @@
   align-items: center;
   justify-content: space-between;
   padding-bottom: 20px;
-  border-bottom: 1px solid #30363d;
+  border-bottom: 1px solid var(--border-default);
   margin-bottom: 24px;
 }
 
 .page-header h1 {
   margin: 0;
-  color: #f0f6fc;
+  color: var(--text-primary);
   font-size: 24px;
   font-weight: 700;
 }
@@ -213,19 +213,19 @@
 }
 
 .page-header .package-name {
-  color: #58a6ff;
+  color: var(--accent-blue);
   font-family: 'SF Mono', monospace;
   font-size: 14px;
-  background: #21262d;
+  background: var(--bg-surface);
   padding: 8px 14px;
   border-radius: 6px;
-  border: 1px solid #30363d;
+  border: 1px solid var(--border-default);
 }
 
 /* Workflow Progress Section */
 .workflow-section {
-  background: #161b22;
-  border: 1px solid #30363d;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 24px;
@@ -242,13 +242,13 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #f0f6fc;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
 }
 
 .workflow-section .workflow-title i {
-  color: #58a6ff;
+  color: var(--accent-blue);
 }
 
 .workflow-progress {
@@ -263,8 +263,8 @@
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  background: #21262d;
-  border: 1px solid #30363d;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   transition: all 0.3s ease;
 }
@@ -282,23 +282,23 @@
 }
 
 .workflow-step.pending .step-icon {
-  background: #30363d;
-  color: #8b949e;
+  background: var(--border-default);
+  color: var(--text-secondary);
 }
 
 .workflow-step.running .step-icon {
-  background: #388bfd;
+  background: var(--accent-blue);
   color: white;
   animation: pulse 1.5s infinite;
 }
 
 .workflow-step.success .step-icon {
-  background: #238636;
+  background: var(--accent-green-dim);
   color: white;
 }
 
 .workflow-step.failed .step-icon {
-  background: #f85149;
+  background: var(--accent-red);
   color: white;
 }
 
@@ -309,20 +309,20 @@
 
 .workflow-step .step-label {
   font-size: 12px;
-  color: #f0f6fc;
+  color: var(--text-primary);
   font-weight: 500;
 }
 
 .workflow-step .step-status {
   font-size: 10px;
-  color: #8b949e;
+  color: var(--text-secondary);
   margin-left: auto;
 }
 
 /* Terminal Logs Section */
 .terminal-section {
-  background: #161b22;
-  border: 1px solid #30363d;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 24px;
@@ -333,21 +333,21 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px;
-  background: linear-gradient(180deg, #21262d 0%, #161b22 100%);
-  border-bottom: 1px solid #30363d;
+  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-card) 100%);
+  border-bottom: 1px solid var(--border-default);
 }
 
 .terminal-title {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #f0f6fc;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
 }
 
 .terminal-title .terminal-icon {
-  color: #3fb950;
+  color: var(--accent-green);
 }
 
 .terminal-controls {
@@ -357,9 +357,9 @@
 }
 
 .terminal-btn {
-  background: #30363d;
+  background: var(--border-default);
   border: none;
-  color: #8b949e;
+  color: var(--text-secondary);
   padding: 6px 12px;
   border-radius: 6px;
   font-size: 12px;
@@ -368,42 +368,42 @@
 }
 
 .terminal-btn:hover {
-  background: #484f58;
-  color: #f0f6fc;
+  background: var(--text-muted);
+  color: var(--text-primary);
 }
 
 .terminal-btn.active {
-  background: #238636;
+  background: var(--accent-green-dim);
   color: white;
 }
 
 .terminal-btn.danger {
   background: rgba(248, 81, 73, 0.2);
-  color: #f85149;
+  color: var(--accent-red);
 }
 
 .terminal-btn.danger:hover {
-  background: #f85149;
+  background: var(--accent-red);
   color: white;
 }
 
 .terminal-search {
-  background: #0d1117;
-  border: 1px solid #30363d;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   padding: 6px 12px;
-  color: #f0f6fc;
+  color: var(--text-primary);
   font-size: 12px;
   width: 180px;
 }
 
 .terminal-search:focus {
   outline: none;
-  border-color: #58a6ff;
+  border-color: var(--accent-blue);
 }
 
 .terminal-search::placeholder {
-  color: #484f58;
+  color: var(--text-muted);
 }
 
 .terminal-body {
@@ -413,7 +413,7 @@
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
   font-size: 12px;
   line-height: 1.7;
-  background: #0d1117;
+  background: var(--bg-base);
 }
 
 .terminal-body::-webkit-scrollbar {
@@ -421,11 +421,11 @@
 }
 
 .terminal-body::-webkit-scrollbar-track {
-  background: #0d1117;
+  background: var(--bg-base);
 }
 
 .terminal-body::-webkit-scrollbar-thumb {
-  background: #30363d;
+  background: var(--border-default);
   border-radius: 4px;
 }
 
@@ -442,7 +442,7 @@
 }
 
 .log-timestamp {
-  color: #484f58;
+  color: var(--text-muted);
   flex-shrink: 0;
   width: 85px;
 }
@@ -455,14 +455,14 @@
   font-size: 10px;
 }
 
-.log-level.info { color: #58a6ff; }
-.log-level.warning { color: #d29922; }
-.log-level.error { color: #f85149; }
-.log-level.debug { color: #8b949e; }
-.log-level.success { color: #3fb950; }
+.log-level.info { color: var(--accent-blue); }
+.log-level.warning { color: var(--accent-yellow); }
+.log-level.error { color: var(--accent-red); }
+.log-level.debug { color: var(--text-secondary); }
+.log-level.success { color: var(--accent-green); }
 
 .log-message {
-  color: #c9d1d9;
+  color: var(--text-secondary);
   word-break: break-word;
 }
 
@@ -475,8 +475,8 @@
 }
 
 .action-card {
-  background: #21262d;
-  border: 1px solid #30363d;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 18px;
   text-align: center;
@@ -485,7 +485,7 @@
 }
 
 .action-card:hover {
-  border-color: #58a6ff;
+  border-color: var(--accent-blue);
   transform: translateY(-3px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
@@ -493,7 +493,7 @@
 .action-card .action-icon {
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, #388bfd 0%, #1f6feb 100%);
+  background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue) 100%);
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -504,30 +504,30 @@
 }
 
 .action-card .action-label {
-  color: #f0f6fc;
+  color: var(--text-primary);
   font-size: 13px;
   font-weight: 600;
 }
 
 /* Code Editor Section */
 .editor-section {
-  background: #161b22;
-  border: 1px solid #30363d;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   overflow: hidden;
 }
 
 .editor-header {
   padding: 14px 20px;
-  background: linear-gradient(180deg, #21262d 0%, #161b22 100%);
-  border-bottom: 1px solid #30363d;
+  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-card) 100%);
+  border-bottom: 1px solid var(--border-default);
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .editor-title {
-  color: #f0f6fc;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
 }
@@ -539,8 +539,8 @@
 
 /* Device Screen Section */
 .screen-section {
-  background: #161b22;
-  border: 1px solid #30363d;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 20px;
 }
@@ -553,19 +553,19 @@
 }
 
 .screen-title {
-  color: #f0f6fc;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
 }
 
 /* Phone Frame */
 .phone-frame {
-  background: #0d1117;
+  background: var(--bg-base);
   border-radius: 40px;
   padding: 12px;
   max-width: 280px;
   margin: 0 auto;
-  border: 3px solid #30363d;
+  border: 3px solid var(--border-default);
 }
 
 .phone-screen {
@@ -591,29 +591,29 @@
 .text-input {
   flex: 1;
   min-width: 0;
-  background: #0d1117;
-  border: 1px solid #30363d;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   padding: 12px 16px;
-  color: #f0f6fc;
+  color: var(--text-primary);
   font-size: 14px;
 }
 
 .text-input:focus {
   outline: none;
-  border-color: #58a6ff;
+  border-color: var(--accent-blue);
 }
 
 /* Frida Hooks Panel */
 .frida-hooks-panel {
   margin-top: 16px;
-  border-top: 1px solid #30363d;
+  border-top: 1px solid var(--border-default);
   padding-top: 16px;
 }
 
 .frida-hooks-panel summary {
   cursor: pointer;
-  color: #f0f6fc;
+  color: var(--text-primary);
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 12px;
@@ -624,7 +624,7 @@
 }
 
 .hooks-group h5 {
-  color: #8b949e;
+  color: var(--text-secondary);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -633,7 +633,7 @@
 
 .hooks-group label {
   display: block;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   font-size: 13px;
   font-weight: 400;
   margin-bottom: 6px;
@@ -641,11 +641,11 @@
 
 .hooks-group input[type="text"] {
   width: 100%;
-  background: #0d1117;
-  border: 1px solid #30363d;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   padding: 6px 10px;
-  color: #f0f6fc;
+  color: var(--text-primary);
   font-size: 12px;
   margin: 4px 0 10px;
 }
@@ -655,11 +655,11 @@
   margin-top: 16px;
   max-height: 240px;
   overflow-y: auto;
-  background: #0d1117;
-  border: 1px solid #30363d;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   padding: 12px;
-  color: #c9d1d9;
+  color: var(--text-secondary);
   font-family: "SF Mono", monospace;
   font-size: 12px;
   white-space: pre-wrap;
@@ -667,15 +667,15 @@
 
 /* Manual Activity / Deeplink Tester */
 .tester-section {
-  background: #161b22;
-  border: 1px solid #30363d;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 24px;
 }
 
 .tester-section h4 {
-  color: #f0f6fc;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 12px;
@@ -695,11 +695,11 @@
 
 .tester-row select,
 .tester-row input[type="text"] {
-  background: #0d1117;
-  border: 1px solid #30363d;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   padding: 8px 10px;
-  color: #f0f6fc;
+  color: var(--text-primary);
   font-size: 13px;
 }
 
@@ -709,7 +709,7 @@
 }
 
 .shell-section h4 {
-  color: #f0f6fc;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 12px;
@@ -740,7 +740,7 @@
   
   .device-sidebar {
     border-right: none;
-    border-bottom: 1px solid #30363d;
+    border-bottom: 1px solid var(--border-default);
   }
   
   .dashboard-grid {
@@ -869,7 +869,7 @@
     <section class="workflow-section animate-in">
       <div class="workflow-header">
         <span class="workflow-title"><i class="fas fa-tasks"></i> Analysis Progress</span>
-        <span style="color: #8b949e; font-size: 12px;">Step 3 of 6</span>
+        <span style="color: var(--text-secondary); font-size: 12px;">Step 3 of 6</span>
       </div>
       <div class="workflow-progress">
         <div class="workflow-step success">
@@ -997,7 +997,7 @@
         <div class="action-icon"><i class="fas fa-water"></i></div>
         <div class="action-label">Logcat</div>
       </div>
-      <div class="action-card" id="stop" style="background: linear-gradient(135deg, #238636 0%, #1a7f37 100%);">
+      <div class="action-card" id="stop" style="background: linear-gradient(135deg, var(--accent-green-dim) 0%, var(--accent-green-dim) 100%);">
         <div class="action-icon"><i class="fas fa-file-alt"></i></div>
         <div class="action-label">Generate Report</div>
       </div>
@@ -1152,33 +1152,33 @@
 <!-- TLS Modal -->
 <div class="modal" id="tls_modal" tabindex="-1">
   <div class="modal-dialog modal-lg">
-    <div class="modal-content" style="background: #161b22; border: 1px solid #30363d;">
-      <div class="modal-header" style="background: #21262d; border-bottom: 1px solid #30363d;">
-        <h4 class="modal-title" style="color: #f0f6fc;"><i class="fas fa-lock"></i> TLS/SSL Security Tester</h4>
-        <button type="button" class="close" data-dismiss="modal" style="color: #8b949e;">&times;</button>
+    <div class="modal-content" style="background: var(--bg-card); border: 1px solid var(--border-default);">
+      <div class="modal-header" style="background: var(--bg-surface); border-bottom: 1px solid var(--border-default);">
+        <h4 class="modal-title" style="color: var(--text-primary);"><i class="fas fa-lock"></i> TLS/SSL Security Tester</h4>
+        <button type="button" class="close" data-dismiss="modal" style="color: var(--text-secondary);">&times;</button>
       </div>
-      <div class="modal-body" style="background: #0d1117;">
-        <textarea id="tls_text" class="form-control" rows="15" readonly style="background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; font-family: 'SF Mono', monospace; font-size: 12px;"></textarea>
+      <div class="modal-body" style="background: var(--bg-base);">
+        <textarea id="tls_text" class="form-control" rows="15" readonly style="background: var(--bg-base); color: var(--text-secondary); border: 1px solid var(--border-default); font-family: 'SF Mono', monospace; font-size: 12px;"></textarea>
         <div style="margin-top: 15px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
           <div class="status-card" style="text-align: center;">
             <div class="status-label">TLS Misconfiguration</div>
-            <div id="tls_1" style="font-size: 24px; color: #8b949e;">-</div>
+            <div id="tls_1" style="font-size: 24px; color: var(--text-secondary);">-</div>
           </div>
           <div class="status-card" style="text-align: center;">
             <div class="status-label">No TLS Pin</div>
-            <div id="tls_2" style="font-size: 24px; color: #8b949e;">-</div>
+            <div id="tls_2" style="font-size: 24px; color: var(--text-secondary);">-</div>
           </div>
           <div class="status-card" style="text-align: center;">
             <div class="status-label">Pin Bypass</div>
-            <div id="tls_3" style="font-size: 24px; color: #8b949e;">-</div>
+            <div id="tls_3" style="font-size: 24px; color: var(--text-secondary);">-</div>
           </div>
           <div class="status-card" style="text-align: center;">
             <div class="status-label">Cleartext</div>
-            <div id="tls_4" style="font-size: 24px; color: #8b949e;">-</div>
+            <div id="tls_4" style="font-size: 24px; color: var(--text-secondary);">-</div>
           </div>
         </div>
       </div>
-      <div class="modal-footer" style="background: #161b22; border-top: 1px solid #30363d;">
+      <div class="modal-footer" style="background: var(--bg-card); border-top: 1px solid var(--border-default);">
         <button id="run_tls_tests" type="button" class="terminal-btn active"><i class="fas fa-bolt"></i> Run TLS/SSL Tests</button>
       </div>
     </div>
@@ -1188,15 +1188,15 @@
 <!-- Frida Attach-to-Process Modal -->
 <div class="modal fade" id="frida_attach_mdl" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog" role="document">
-    <div class="modal-content" style="background: #161b22; border: 1px solid #30363d;">
-      <div class="modal-header" style="background: #21262d; border-bottom: 1px solid #30363d;">
-        <h5 class="modal-title" style="color: #f0f6fc;">Attach to a Running Process</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #8b949e;">&times;</button>
+    <div class="modal-content" style="background: var(--bg-card); border: 1px solid var(--border-default);">
+      <div class="modal-header" style="background: var(--bg-surface); border-bottom: 1px solid var(--border-default);">
+        <h5 class="modal-title" style="color: var(--text-primary);">Attach to a Running Process</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: var(--text-secondary);">&times;</button>
       </div>
-      <div class="modal-body" style="background: #0d1117;">
-        <select id="process_select" class="form-control" style="background: #0d1117; color: #f0f6fc; border: 1px solid #30363d;" aria-label="Select a process"></select>
+      <div class="modal-body" style="background: var(--bg-base);">
+        <select id="process_select" class="form-control" style="background: var(--bg-base); color: var(--text-primary); border: 1px solid var(--border-default);" aria-label="Select a process"></select>
       </div>
-      <div class="modal-footer" style="background: #161b22; border-top: 1px solid #30363d;">
+      <div class="modal-footer" style="background: var(--bg-card); border-top: 1px solid var(--border-default);">
         <button id="attach_to_pid" type="button" class="terminal-btn active"><i class="fas fa-bug"></i> Attach</button>
       </div>
     </div>
@@ -1206,12 +1206,12 @@
 <!-- Injected Frida Script Modal -->
 <div class="modal fade" id="get_code_modal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-xl">
-    <div class="modal-content" style="background: #161b22; border: 1px solid #30363d;">
-      <div class="modal-header" style="background: #21262d; border-bottom: 1px solid #30363d;">
-        <h4 class="modal-title" style="color: #f0f6fc;">Injected Frida Script</h4>
-        <button type="button" class="close" data-dismiss="modal" style="color: #8b949e;">&times;</button>
+    <div class="modal-content" style="background: var(--bg-card); border: 1px solid var(--border-default);">
+      <div class="modal-header" style="background: var(--bg-surface); border-bottom: 1px solid var(--border-default);">
+        <h4 class="modal-title" style="color: var(--text-primary);">Injected Frida Script</h4>
+        <button type="button" class="close" data-dismiss="modal" style="color: var(--text-secondary);">&times;</button>
       </div>
-      <div class="modal-body" id="injected_content" style="background: #0d1117;"></div>
+      <div class="modal-body" id="injected_content" style="background: var(--bg-base);"></div>
     </div>
   </div>
 </div>

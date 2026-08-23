@@ -135,7 +135,7 @@
   .btn-static-action:hover {
     background: rgba(88,166,255,0.22);
     border-color: rgba(88,166,255,0.5);
-    color: #fff !important;
+    color: var(--text-primary) !important;
     box-shadow: 0 0 10px rgba(88,166,255,0.2);
     transform: translateY(-1px);
   }
@@ -149,7 +149,7 @@
   .btn-score-action:hover {
     background: rgba(188,140,255,0.22);
     border-color: rgba(188,140,255,0.5);
-    color: #fff !important;
+    color: var(--text-primary) !important;
     box-shadow: 0 0 10px rgba(188,140,255,0.2);
     transform: translateY(-1px);
   }
@@ -163,7 +163,7 @@
   .btn-report-action:hover {
     background: rgba(63,185,80,0.22);
     border-color: rgba(63,185,80,0.5);
-    color: #fff !important;
+    color: var(--text-primary) !important;
     box-shadow: 0 0 10px rgba(63,185,80,0.2);
     transform: translateY(-1px);
   }
@@ -177,7 +177,7 @@
   .btn-dynamic-action:hover {
     background: rgba(240,136,62,0.22);
     border-color: rgba(240,136,62,0.5);
-    color: #fff !important;
+    color: var(--text-primary) !important;
     box-shadow: 0 0 10px rgba(240,136,62,0.2);
     transform: translateY(-1px);
   }
@@ -447,8 +447,8 @@
       showCancelButton: true,
       confirmButtonText: 'Delete',
       cancelButtonText: 'Cancel',
-      confirmButtonColor: '#f85149',
-      cancelButtonColor: '#30363d',
+      confirmButtonColor: 'var(--accent-red)',
+      cancelButtonColor: 'var(--border-default)',
     }).then((result) => {
       if (result.value) {
         $.ajax({
