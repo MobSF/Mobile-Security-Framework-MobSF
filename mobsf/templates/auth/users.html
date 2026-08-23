@@ -375,7 +375,7 @@ sidebar-collapse
         cancelButton: 'swal-cancel-btn',
       }
     }).then((result) => {
-      if (result.isConfirmed) {
+      if (result.value) {
         $.ajax({
           url: '{% url "delete_user" %}',
           type: 'POST',
