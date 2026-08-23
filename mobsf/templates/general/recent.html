@@ -1,343 +1,456 @@
-
 {% extends "base/base_layout.html" %}
 {% load static %}
- {% block sidebar_option %}
-      sidebar-collapse
-{% endblock %}
- {% block extra_css %}
+{% block sidebar_option %}sidebar-collapse{% endblock %}
+{% block extra_css %}
 <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
-
 <style>
-#app_icon{
-        width: 64px;
-        height: 64px;
-    }
-.selected {
-    background-color: lightgreen !important;
-}
+  .page-header-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0 14px;
+    border-bottom: 1px solid var(--border-sub, rgba(48,54,61,0.5));
+    margin-bottom: 20px;
+  }
+  .page-header-strip h2 {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-primary, #e6edf3) !important;
+  }
+  .page-header-strip h2 i { color: var(--accent-blue, #58a6ff); font-size: 16px; }
 
-.selectable_table tr:hover {
-    background-color: lightgreen !important;
-}
+  .scan-queue-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(88,166,255,0.08);
+    border: 1px solid rgba(88,166,255,0.2);
+    border-radius: 8px;
+    color: var(--accent-blue, #58a6ff);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 6px 14px;
+    text-decoration: none;
+    transition: all 0.18s;
+  }
+  .scan-queue-link:hover { background: rgba(88,166,255,0.14); color: var(--accent-blue, #58a6ff); }
+
+  /* ── App icon cell ── */
+  .app-icon-cell { text-align: center; }
+  .app-icon-cell img { width: 52px; height: 52px; border-radius: 12px; border: 1px solid var(--border-sub, rgba(48,54,61,0.5)); object-fit: contain; background: var(--bg-surface, #111820); }
+  .app-name { font-weight: 600; font-size: 13px; color: var(--text-primary, #e6edf3); margin-top: 5px; }
+  .app-pkg  { font-size: 11.5px; color: var(--text-secondary, #8b949e); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+
+  .scan-complete-badge {
+    display: inline-block;
+    background: rgba(248,81,73,0.1);
+    border: 1px solid rgba(248,81,73,0.2);
+    border-radius: 6px;
+    color: var(--accent-red, #f85149);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    margin-top: 4px;
+  }
+
+  /* ── Type icons ── */
+  .type-icon-cell { text-align: center; vertical-align: middle !important; }
+  .type-icon-cell i { font-size: 28px; }
+  .type-icon-cell .fa-android { color: #78c257; }
+  .type-icon-cell .fa-apple { color: #b0b8c1; }
+  .type-icon-cell .fa-java { color: #e76f00; }
+  .type-icon-cell .fa-windows { color: #00adef; }
+  .type-icon-cell .fa-file-archive { color: var(--accent-yellow, #e3b341); }
+  .type-icon-cell .fa-th-large { color: var(--text-secondary, #8b949e); }
+
+  /* ── Hash ── */
+  .hash-cell {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--text-secondary, #8b949e);
+    max-width: 140px;
+    word-break: break-all;
+  }
+
+  /* ── Timestamp ── */
+  .ts-cell { font-size: 12px; color: var(--text-secondary, #8b949e); white-space: nowrap; }
+
+  /* ── Action buttons ── */
+  .action-cell { white-space: nowrap; }
+  .action-cell .btn { margin: 2px; }
+
+  /* ── Report button row ── */
+  .report-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin-top: 8px;
+    width: 100%;
+  }
+
+  /* ── Scan action buttons ── */
+  .scan-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px 8px;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    text-decoration: none !important;
+    border: 1px solid transparent;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .scan-action-btn i { font-size: 11px; flex-shrink: 0; }
+  .scan-action-btn span { line-height: 1; }
+
+  /* Static — blue */
+  .btn-static-action {
+    background: rgba(88,166,255,0.1);
+    border-color: rgba(88,166,255,0.25);
+    color: var(--accent-blue, #58a6ff) !important;
+  }
+  .btn-static-action:hover {
+    background: rgba(88,166,255,0.22);
+    border-color: rgba(88,166,255,0.5);
+    color: #fff !important;
+    box-shadow: 0 0 10px rgba(88,166,255,0.2);
+    transform: translateY(-1px);
+  }
+
+  /* Scorecard — purple */
+  .btn-score-action {
+    background: rgba(188,140,255,0.1);
+    border-color: rgba(188,140,255,0.25);
+    color: var(--accent-purple, #bc8cff) !important;
+  }
+  .btn-score-action:hover {
+    background: rgba(188,140,255,0.22);
+    border-color: rgba(188,140,255,0.5);
+    color: #fff !important;
+    box-shadow: 0 0 10px rgba(188,140,255,0.2);
+    transform: translateY(-1px);
+  }
+
+  /* Report — green */
+  .btn-report-action {
+    background: rgba(63,185,80,0.1);
+    border-color: rgba(63,185,80,0.25);
+    color: var(--accent-green, #3fb950) !important;
+  }
+  .btn-report-action:hover {
+    background: rgba(63,185,80,0.22);
+    border-color: rgba(63,185,80,0.5);
+    color: #fff !important;
+    box-shadow: 0 0 10px rgba(63,185,80,0.2);
+    transform: translateY(-1px);
+  }
+
+  /* Dynamic — orange */
+  .btn-dynamic-action {
+    background: rgba(240,136,62,0.1);
+    border-color: rgba(240,136,62,0.25);
+    color: var(--accent-orange, #f0883e) !important;
+  }
+  .btn-dynamic-action:hover {
+    background: rgba(240,136,62,0.22);
+    border-color: rgba(240,136,62,0.5);
+    color: #fff !important;
+    box-shadow: 0 0 10px rgba(240,136,62,0.2);
+    transform: translateY(-1px);
+  }
+  .btn-dynamic-disabled {
+    opacity: 0.35 !important;
+    pointer-events: none;
+  }
+
+  /* ── Diff selected row ── */
+  .selected td { background: rgba(63,185,80,0.06) !important; border-top: 1px solid rgba(63,185,80,0.2) !important; }
+  .selectable_table tr:hover td { background: rgba(88,166,255,0.04) !important; }
+
+  /* ── Pagination ── */
+  .pagination-wrap { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 16px 0 4px; flex-wrap: wrap; }
+
+  /* ── SweetAlert2 dark theme patches ── */
+  .swal2-popup { background: var(--bg-elevated, #1a2233) !important; border: 1px solid var(--border-def, #30363d) !important; border-radius: 16px !important; }
+  .swal2-title { color: var(--text-primary, #e6edf3) !important; }
+  .swal2-content, .swal2-html-container { color: var(--text-secondary, #8b949e) !important; }
+  .swal2-styled.swal2-confirm { border-radius: 8px !important; }
+  .swal2-styled.swal2-cancel { border-radius: 8px !important; }
+
 </style>
 {% endblock %}
 {% block content %}
 <div class="content-wrapper">
-  <div class="content-header">
-  </div>
-   <div class="container-fluid">
-        <div class="row">
-            <div class="col-lg-12">
-            <div class="card">
-              <div class="card-body">
-                
+  <div class="content-header"></div>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
 
-                 <div class="box">
-        <div class="box-header with-border">
-            <h3 class="box-title"><i class="fa fa-rocket"></i> Recent Scans</h3>
-            {% if async_scans %}
-            <p class="lead">View scan progress in the <strong><a href="{% url 'list_tasks' %}">Scan Queue</a></strong></p>
-            {% endif %}
+        <div class="page-header-strip">
+          <h2>
+            <i class="fas fa-history"></i>
+            Recent Scans
+          </h2>
+          {% if async_scans %}
+          <a href="{% url 'list_tasks' %}" class="scan-queue-link">
+            <i class="fas fa-tasks"></i> View Scan Queue
+          </a>
+          {% endif %}
         </div>
 
-        <div class="box-body">
+        <div class="card">
+          <div class="card-body" style="padding:0 !important;">
             <div class="table-responsive">
-                <table class="table table-bordered table-hover table-striped">
-                    <thead>
-                    <tr>
-                        <th>APP</th>
-                        <th>FILE</th>
-                        <th>TYPE</th>
-                        <th>HASH</th>
-                        <th>SCAN DATE</th>
-                        <th style="width: 9%">ACTIONS</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for e in entries %}
-                        <tr>
-                            <td style="text-align: center;">
-                                <img id="app_icon" src="{% if e.ICON_PATH %}/download/{{ e.ICON_PATH }}{% else %}{% static 'img/no_icon.png' %}{% endif %}">
-                                {% if e.PACKAGE_NAME or e.APP_NAME %}
-                                  <br/><strong>{{ e.APP_NAME }} {% if e.VERSION_NAME %} - {{ e.VERSION_NAME }} {% endif %}</strong>
-                                  </br>{{ e.PACKAGE_NAME }}
-                                  {% if e.FILE_NAME|slice:"-6:" != '.dylib' %}
-                                  {% if e.FILE_NAME|slice:"-5:" != '.appx' %}
-                                    {% if e.FILE_NAME|slice:"-3:" != '.so' %}
-                                      {% if e.FILE_NAME|slice:"-2:" != '.a' %}
-                                    <p> <a href="{% url "appsec_dashboard" checksum=e.MD5 %}" class="btn btn-sm btn-outline-primary" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
-                                      {% endif %}
-                                    {% endif %}
-                                    {% endif %}
-                                  {% endif %}
-                                  <p><a class="btn btn-primary btn-sm" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/"><i class="fas fa-eye"></i> Static Report</a>
-                                  {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:" or '.aab' == e.FILE_NAME|slice:"-4:" %}
-                                    <a  class="btn btn-success btn-sm {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "dynamic_report" checksum=e.MD5 %}"><i class="fa fa-mobile"></i> Dynamic Report</a>
-                                  {% elif '.ipa' == e.FILE_NAME|slice:"-4:" %}
-                                    {% if e.PACKAGE_NAME %}
-                                        <a  class="btn btn-success btn-sm {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "ios_view_report" bundle_id=e.PACKAGE_NAME %}"><i class="fa fa-mobile"></i> Dynamic Report</a>
-                                    {% endif %}
-                                  {% endif %}
-                                  </p>
-                                {% else %}
-                                </br><span class="badge bg-warning">scan not completed</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ e.FILE_NAME }}
-                            </td>
-                            <td style="text-align: center;">
-                                {% if '.apk' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-android fa-3x"></i>
-                                {% elif '.xapk' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-android fa-3x"></i>
-                                {% elif '.apks' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-android fa-3x"></i>
-                                {% elif '.aab' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-android fa-3x"></i>
-                                {% elif '.jar' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-java fa-3x"></i>
-                                {% elif '.aar' == e.FILE_NAME|slice:"-4:"%}<i class="fas fa-table fa-3x"></i>
-                                {% elif '.so' == e.FILE_NAME|slice:"-3:"%}<i class="fa fa-th-large fa-3x"></i>
-                                {% elif '.ipa' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-apple fa-3x"></i>
-                                {% elif '.dylib' == e.FILE_NAME|slice:"-6:"%}<i class="fa fa-th-large fa-3x"></i>
-                                {% elif '.a' == e.FILE_NAME|slice:"-2:"%}<i class="fa fa-th-large fa-3x"></i>
-                                {% elif '.zip' == e.FILE_NAME|slice:"-4:"%}<i class="fas fa-file-archive fa-3x"></i>
-                                {% elif '.appx' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-windows fa-3x"></i>
-                                {% endif %}
-                            </td>
-                            <td>{{ e.MD5 }}</td>
-                            <td>{{ e.TIMESTAMP }}</td>
-                            <td><p>
-                                   <a class="btn btn-outline-primary btn-sm" href="{% url "pdf" checksum=e.MD5%}"><i class="fas fa-file-pdf"></i></a>
-                                   <a class="btn btn-outline-info btn-sm" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/?rescan=1"><i class="fas fa-sync-alt"></i></a>
-                                   <a class="btn btn-outline-secondary btn-sm" href="{% url "download_binary" checksum=e.MD5%}"><i class="fas fa-download"></i></a>
-                                </p>
-                            {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:" or '.aab' == e.FILE_NAME|slice:"-4:"%}
-                                <p><a class="diffButton btn btn-warning btn-sm" id="{{ e.MD5 }}_{{ e.FILE_NAME }}"><i class="fas fa-not-equal"></i> Diff or Compare</a>
-                                </p>
+              <table class="table table-hover table-striped" style="margin:0;">
+                <thead>
+                  <tr>
+                    <th style="width:200px;">App</th>
+                    <th>File</th>
+                    <th style="width:60px;text-align:center;">Type</th>
+                    <th style="width:150px;">Hash</th>
+                    <th style="width:140px;">Scan Date</th>
+                    <th style="width:130px;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for e in entries %}
+                  <tr>
+                    <td class="app-icon-cell">
+                      <img src="{% if e.ICON_PATH %}/download/{{ e.ICON_PATH }}{% else %}{% static 'img/no_icon.png' %}{% endif %}" alt="icon">
+                      {% if e.PACKAGE_NAME or e.APP_NAME %}
+                        <div class="app-name">{{ e.APP_NAME }}{% if e.VERSION_NAME %} <span style="font-weight:400;color:var(--text-secondary,#8b949e);font-size:11px;">{{ e.VERSION_NAME }}</span>{% endif %}</div>
+                        <div class="app-pkg">{{ e.PACKAGE_NAME }}</div>
+                        <div class="report-btns">
+                          {% if e.FILE_NAME|slice:"-6:" != '.dylib' and e.FILE_NAME|slice:"-5:" != '.appx' and e.FILE_NAME|slice:"-3:" != '.so' and e.FILE_NAME|slice:"-2:" != '.a' %}
+                          <a class="scan-action-btn btn-score-action" href="{% url "appsec_dashboard" checksum=e.MD5 %}" title="Security Scorecard">
+                            <i class="fas fa-user-shield"></i><span>Scorecard</span>
+                          </a>
+                          {% endif %}
+                          <a class="scan-action-btn btn-report-action" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/" title="Full Report">
+                            <i class="fas fa-file-alt"></i><span>Static Report</span>
+                          </a>
+                          {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:" or '.aab' == e.FILE_NAME|slice:"-4:" %}
+                          <a class="scan-action-btn btn-dynamic-action {% if not e.DYNAMIC_REPORT_EXISTS %}btn-dynamic-disabled{% endif %}" href="{% url "dynamic_report" checksum=e.MD5 %}" title="Dynamic Analysis">
+                            <i class="fa fa-mobile-alt"></i><span>Dynamic</span>
+                          </a>
+                          {% elif '.ipa' == e.FILE_NAME|slice:"-4:" %}
+                            {% if e.PACKAGE_NAME %}
+                            <a class="scan-action-btn btn-dynamic-action {% if not e.DYNAMIC_REPORT_EXISTS %}btn-dynamic-disabled{% endif %}" href="{% url "ios_view_report" bundle_id=e.PACKAGE_NAME %}" title="Dynamic Analysis">
+                              <i class="fa fa-mobile-alt"></i><span>Dynamic</span>
+                            </a>
                             {% endif %}
-                            <p> <a class="btn btn-danger btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="#"><i class="fa fa-trash"></i> Delete Scan</a> </p>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <!--pagination-->
-            <nav aria-label="Pagination">
-                <ul class="pagination justify-content-center">
-                  {% if page_obj.has_previous %}
-                  <li class="page-item">
-                    <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.previous_page_number %}">Previous</a>
-                  </li>   
-                  {% else %}
-                  <li class="page-item">
-                  <a class="page-link">Previous</a>
-                  </li>
-                  {% endif %}
-      
-                  {% for i in page_obj.paginator.page_range %}
-                  {% if page_obj.number == i %}
-                  <li class="page-item active">
-                      <a class="page-link" href="#">{{ i }} </a>
-                  </li>
-                  {% else %}
-                  <li class="page-item">
-                      <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=i %}">{{ i }}</a>
-                  </li>
-                  {% endif %}
-                  {% endfor %}
-      
-                  {% if page_obj.has_next %}
-                  <li class="page-item">
-                    <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.next_page_number %}">Next</a>
-                   </li>
-                  {% else %}
-                  <li class="page-item">
-                    <a class="page-link">Next</a>
-                  </li>
-                  {% endif %}
-                  <li class="page-item">
-                    <div class="dropdown">
-                        <button class="page-link dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                          Items per page
-                        </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=5 page_number=page_obj.number %}">5</a>
-                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=10 page_number=page_obj.number %}">10</a>
-                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=20 page_number=page_obj.number %}">20</a>
-                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=50 page_number=page_obj.number %}">50</a>
-                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=100 page_number=page_obj.number %}">100</a>
-                          <a class="dropdown-item" href="{% url 'scans_paginated' page_size=250 page_number=page_obj.number %}">250</a>
+                          {% endif %}
                         </div>
-                      </div>
-                </ul>
-              </nav>
-            <!--end pagination-->
-        </div>
-        <!-- /.box-body -->
-    </div>
+                      {% else %}
+                        <span class="scan-complete-badge"><i class="fas fa-exclamation-triangle" style="margin-right:4px;"></i>Scan incomplete</span>
+                      {% endif %}
+                    </td>
 
+                    <td style="vertical-align:middle;font-size:12.5px;font-family:'JetBrains Mono',monospace;color:var(--text-secondary,#8b949e);max-width:200px;word-break:break-all;">
+                      {{ e.FILE_NAME }}
+                    </td>
+
+                    <td class="type-icon-cell">
+                      {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:" or '.aab' == e.FILE_NAME|slice:"-4:" %}
+                        <i class="fab fa-android"></i>
+                      {% elif '.jar' == e.FILE_NAME|slice:"-4:" %}
+                        <i class="fab fa-java"></i>
+                      {% elif '.aar' == e.FILE_NAME|slice:"-4:" %}
+                        <i class="fas fa-table" style="color:var(--text-secondary,#8b949e);font-size:22px;"></i>
+                      {% elif '.so' == e.FILE_NAME|slice:"-3:" or '.a' == e.FILE_NAME|slice:"-2:" or '.dylib' == e.FILE_NAME|slice:"-6:" %}
+                        <i class="fas fa-th-large"></i>
+                      {% elif '.ipa' == e.FILE_NAME|slice:"-4:" %}
+                        <i class="fab fa-apple"></i>
+                      {% elif '.zip' == e.FILE_NAME|slice:"-4:" %}
+                        <i class="fas fa-file-archive"></i>
+                      {% elif '.appx' == e.FILE_NAME|slice:"-5:" %}
+                        <i class="fab fa-windows"></i>
+                      {% endif %}
+                    </td>
+
+                    <td class="hash-cell">{{ e.MD5 }}</td>
+                    <td class="ts-cell">{{ e.TIMESTAMP }}</td>
+
+                    <td class="action-cell" style="vertical-align:middle;">
+                      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">
+                        <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                          <a class="btn btn-secondary btn-xs" href="{% url "pdf" checksum=e.MD5 %}" title="PDF Report">
+                            <i class="fas fa-file-pdf"></i>
+                          </a>
+                          <a class="btn btn-info btn-xs" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/?rescan=1" title="Rescan">
+                            <i class="fas fa-sync-alt"></i>
+                          </a>
+                          <a class="btn btn-warning btn-xs" href="{% url "download_binary" checksum=e.MD5 %}" title="Download">
+                            <i class="fas fa-download"></i>
+                          </a>
+                        </div>
+                        {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:" or '.aab' == e.FILE_NAME|slice:"-4:" %}
+                        <button class="diffButton btn btn-secondary btn-xs" id="{{ e.MD5 }}_{{ e.FILE_NAME }}">
+                          <i class="fas fa-not-equal"></i> Diff
+                        </button>
+                        {% endif %}
+                        <button class="btn btn-danger btn-xs" id="{{ e.MD5 }}" onclick="delete_scan(this)">
+                          <i class="fa fa-trash"></i> Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-wrap">
+              {% if page_obj.has_previous %}
+              <a class="btn btn-secondary btn-sm" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.previous_page_number %}">
+                <i class="fas fa-chevron-left"></i>
+              </a>
+              {% else %}
+              <button class="btn btn-secondary btn-sm" disabled><i class="fas fa-chevron-left"></i></button>
+              {% endif %}
+
+              {% for i in page_obj.paginator.page_range %}
+              {% if page_obj.number == i %}
+              <a class="btn btn-primary btn-sm" href="#">{{ i }}</a>
+              {% else %}
+              <a class="btn btn-secondary btn-sm" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=i %}">{{ i }}</a>
+              {% endif %}
+              {% endfor %}
+
+              {% if page_obj.has_next %}
+              <a class="btn btn-secondary btn-sm" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.next_page_number %}">
+                <i class="fas fa-chevron-right"></i>
+              </a>
+              {% else %}
+              <button class="btn btn-secondary btn-sm" disabled><i class="fas fa-chevron-right"></i></button>
+              {% endif %}
+
+              <div class="dropdown" style="margin-left:8px;">
+                <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
+                  <i class="fas fa-list" style="margin-right:4px;"></i>{{ page_obj.page_size }} / page
+                </button>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="{% url 'scans_paginated' page_size=5 page_number=page_obj.number %}">5 per page</a>
+                  <a class="dropdown-item" href="{% url 'scans_paginated' page_size=10 page_number=page_obj.number %}">10 per page</a>
+                  <a class="dropdown-item" href="{% url 'scans_paginated' page_size=20 page_number=page_obj.number %}">20 per page</a>
+                  <a class="dropdown-item" href="{% url 'scans_paginated' page_size=50 page_number=page_obj.number %}">50 per page</a>
+                  <a class="dropdown-item" href="{% url 'scans_paginated' page_size=100 page_number=page_obj.number %}">100 per page</a>
+                  <a class="dropdown-item" href="{% url 'scans_paginated' page_size=250 page_number=page_obj.number %}">250 per page</a>
+                </div>
+              </div>
+            </div>
 
           </div>
         </div>
-       </div>
-     </div>
+
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}
+
 {% block extra_scripts %}
 <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script>
+  function escapeHtml(unsafe) {
+    return unsafe.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+  }
 
-    // Escape HTML
-    function escapeHtml(unsafe)
-    {
-        return unsafe
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
+  var diff_first_md5 = '', diff_first_name = '';
 
-    // Diff functions
-    var diff_first_md5 = '';
-    var diff_first_name = '';
+  function enable_partner_select() {
+    $('table tr').on('click', function(e) {
+      e.preventDefault();
+      if (diff_first_md5 == '') return;
+      diff_confirmation($(this));
+    });
+  }
 
-    // When a row is clicked, we check if we already have first scan, if so, ask for confirmation
-    function enable_partner_select() {
-        $('table tr').on('click', function (e) {
-            e.preventDefault();
-            if (diff_first_md5 == '') {
-                return;
-            }
-            diff_confirmation($(this));
-        })
-    }
+  function enable_diff_button() {
+    $(".diffButton").on('click', function(e) {
+      e.stopPropagation();
+      diff_select($(this));
+    });
+  }
 
+  function disable_diff_button() { $('.diffButton').off('click'); }
 
-    function enable_diff_button(){
-        $(".diffButton").on('click', function(e){
-            e.stopPropagation();
-            diff_select($(this));
-        });
-    }
+  function diff_select(item) {
+    Swal.fire({ title: 'Select Second App', icon: 'info', text: 'Please select the second scan result for comparison', timer: 10000 });
+    diff_first_md5 = item.attr('id').slice(0, 32);
+    diff_first_name = item.attr('id').slice(33);
+    item.closest("tr").addClass("selected");
+    item.closest("tbody").addClass("selectable_table");
+    enable_partner_select();
+    disable_diff_button();
+  }
 
-    function disable_diff_button() {
-        $('.diffButton').off('click');
-    }
+  function diff_cleanup() {
+    var id = diff_first_md5 + '_' + escapeHtml(diff_first_name);
+    $('[id="' + id + '"]').closest("tr").removeClass("selected");
+    $('[id="' + id + '"]').closest("tbody").removeClass("selectable_table");
+    diff_first_md5 = ""; diff_first_name = "";
+    enable_diff_button();
+  }
 
-    // First pop up only saves the first scan to diff and tells the user to select a partner
-    function diff_select(item) {
-
-        Swal.fire({
-            title: '<strong>Select App to Compare</strong>',
-            type: 'info',
-            text: 'Please select the second scan result for comparison',
-            timer: 10000
-        });
-        diff_first_md5 = item.attr('id').slice(0, 32);
-        diff_first_name = item.attr('id').slice(33);
-        item.closest("tr").addClass("selected");
-        item.closest("tbody").addClass("selectable_table");
-
-        // Enable the second partner selection
-        enable_partner_select();
-        disable_diff_button();
-    }
-
-    function diff_cleanup() {
-        first_td_id = diff_first_md5 + '_' + escapeHtml(diff_first_name);
-        $('[id="' + first_td_id + '"]').closest("tr").removeClass("selected");
-        $('[id="' + first_td_id + '"]').closest("tbody").removeClass("selectable_table");
-        diff_first_md5 = "";
-        diff_first_name = "";
-        enable_diff_button();
-    }
-
-    // Here we get jquery row
-    function diff_confirmation(item) {
-        // First we need the id which has the md5 and name
-        rows_tds = item.find('td');
-        selected_md5 = rows_tds[3].innerText;
-        if (diff_first_md5 == selected_md5) {
-            return;
-        }
-        diff_second_md5 = selected_md5;
-        diff_second_name = rows_tds[1].innerText;
-
-        Swal.fire({
-            title: '<strong>Diff confirmation</strong>',
-            type: 'info',
-            html:
-                '<strong>Do you want to diff - </strong><br />' + escapeHtml(diff_first_name) +
-                '<br /> <strong>with - <br /> </strong>' + escapeHtml(diff_second_name) + ' <br /> <strong>?</strong>',
-
-            showCancelButton: true,
-            cancelButtonText: 'Cancel',
-            confirmButtonText: 'Start Diffing!',
-        }).then((result) => {
-            if (result.value) {
-                window.location = '/compare/' + diff_first_md5 + '/' + diff_second_md5 + '/';
-            } else {
-                 diff_cleanup();
-            }
-        })
-    }
-
-    function delete_scan(item){
-      Swal.fire({
-      title: 'Are you sure?',
-      text: "This will permanently remove the scan results from MobSF",
-      type: 'warning',
+  function diff_confirmation(item) {
+    var rows_tds = item.find('td');
+    var selected_md5 = rows_tds[3] ? rows_tds[3].innerText : '';
+    if (diff_first_md5 == selected_md5) return;
+    var diff_second_md5 = selected_md5;
+    var diff_second_name = rows_tds[1] ? rows_tds[1].innerText : '';
+    Swal.fire({
+      title: 'Compare Scans',
+      icon: 'info',
+      html: '<strong>' + escapeHtml(diff_first_name) + '</strong><br>vs<br><strong>' + escapeHtml(diff_second_name) + '</strong>',
       showCancelButton: true,
-      confirmButtonText: 'Yes',
-      cancelButtonText: 'No',
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#2da532',
+      cancelButtonText: 'Cancel',
+      confirmButtonText: 'Start Diff',
     }).then((result) => {
-        if (result.value) {
-            var md5_hash = item.id;
-            $.ajax({
-                    url: '{% url "delete_scan" %}',
-                        type : 'POST',
-                    dataType: 'json',
-                        data : {
-                                csrfmiddlewaretoken: '{{ csrf_token }}',
-                                md5: md5_hash,
-                                },
-                            success : function(json) {
-                                if (json.deleted ==='yes'){
-                                    Swal.fire(
-                                        'Deleted!',
-                                        'The scan result is deleted!',
-                                        'success'
-                                    ).then(function () {
-                                        location.reload();
-                                    })
-                                }
-                                else {
-                                    Swal.fire(
-                                    'Delete Failed',
-                                    json.deleted,
-                                    'error'
-                                    )
-                                }
-                            },
-                            error : function(xhr,errmsg,err) {
-                                Swal.fire(
-                                    'Delete Failed',
-                                    errmsg,
-                                    'error'
-                                    )
-                            }
-                });
-               
-        } else {
-                diff_cleanup();
-        }
+      if (result.value) window.location = '/compare/' + diff_first_md5 + '/' + diff_second_md5 + '/';
+      else diff_cleanup();
+    });
+  }
+
+  function delete_scan(item) {
+    Swal.fire({
+      title: 'Delete Scan?',
+      text: "This will permanently remove the scan results from MobSF.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Delete',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#f85149',
+      cancelButtonColor: '#30363d',
+    }).then((result) => {
+      if (result.value) {
+        $.ajax({
+          url: '{% url "delete_scan" %}',
+          type: 'POST',
+          dataType: 'json',
+          data: { csrfmiddlewaretoken: '{{ csrf_token }}', md5: item.id },
+          success: function(json) {
+            if (json.deleted === 'yes') {
+              Swal.fire('Deleted!', 'The scan result has been removed.', 'success').then(function(){ location.reload(); });
+            } else {
+              Swal.fire('Error', 'Could not delete the scan.', 'error');
+            }
+          },
+          error: function(xhr, errmsg) { Swal.fire('Error', errmsg, 'error'); }
         });
-}
-    
+      } else { diff_cleanup(); }
+    });
+  }
 
-enable_diff_button();
-
+  enable_diff_button();
 </script>
-
 {% endblock %}
