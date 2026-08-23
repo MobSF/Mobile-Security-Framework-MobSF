@@ -79,8 +79,23 @@
   .ts-cell { font-size: 12px; color: var(--text-secondary, #8b949e); white-space: nowrap; }
 
   /* ── Action buttons ── */
-  .action-cell { white-space: nowrap; }
-  .action-cell .btn { margin: 2px; }
+  .action-cell { text-align: center; vertical-align: middle !important; }
+  .action-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .action-toolbar .btn {
+    margin: 0;
+    width: 30px;
+    height: 30px;
+    padding: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 
   /* ── Report button row ── */
   .report-btns {
@@ -178,6 +193,11 @@
   /* ── Pagination ── */
   .pagination-wrap { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 16px 0 4px; flex-wrap: wrap; }
 
+  /* The page-size dropdown menu was getting clipped by .card's
+     overflow:hidden (used elsewhere to clip rounded corners). Only this
+     card needs to allow it to escape. */
+  .card { overflow: visible; }
+
   /* ── SweetAlert2 dark theme patches ── */
   .swal2-popup { background: var(--bg-elevated, #1a2233) !important; border: 1px solid var(--border-def, #30363d) !important; border-radius: 16px !important; }
   .swal2-title { color: var(--text-primary, #e6edf3) !important; }
@@ -209,15 +229,15 @@
         <div class="card">
           <div class="card-body" style="padding:0 !important;">
             <div class="table-responsive">
-              <table class="table table-hover table-striped" style="margin:0;">
+              <table class="table table-hover table-striped" style="margin:0;min-width:960px;">
                 <thead>
                   <tr>
-                    <th style="width:200px;">App</th>
-                    <th>File</th>
-                    <th style="width:60px;text-align:center;">Type</th>
-                    <th style="width:150px;">Hash</th>
+                    <th style="width:210px;">App</th>
+                    <th style="width:210px;">File</th>
+                    <th style="width:70px;text-align:center;">Type</th>
+                    <th style="width:170px;">Hash</th>
                     <th style="width:140px;">Scan Date</th>
-                    <th style="width:130px;">Actions</th>
+                    <th style="width:160px;text-align:center;">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -279,26 +299,24 @@
                     <td class="hash-cell">{{ e.MD5 }}</td>
                     <td class="ts-cell">{{ e.TIMESTAMP }}</td>
 
-                    <td class="action-cell" style="vertical-align:middle;">
-                      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">
-                        <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                          <a class="btn btn-secondary btn-xs" href="{% url "pdf" checksum=e.MD5 %}" title="PDF Report">
-                            <i class="fas fa-file-pdf"></i>
-                          </a>
-                          <a class="btn btn-info btn-xs" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/?rescan=1" title="Rescan">
-                            <i class="fas fa-sync-alt"></i>
-                          </a>
-                          <a class="btn btn-warning btn-xs" href="{% url "download_binary" checksum=e.MD5 %}" title="Download">
-                            <i class="fas fa-download"></i>
-                          </a>
-                        </div>
+                    <td class="action-cell">
+                      <div class="action-toolbar">
+                        <a class="btn btn-secondary" href="{% url "pdf" checksum=e.MD5 %}" title="PDF Report">
+                          <i class="fas fa-file-pdf"></i>
+                        </a>
+                        <a class="btn btn-info" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/?rescan=1" title="Rescan">
+                          <i class="fas fa-sync-alt"></i>
+                        </a>
+                        <a class="btn btn-warning" href="{% url "download_binary" checksum=e.MD5 %}" title="Download">
+                          <i class="fas fa-download"></i>
+                        </a>
                         {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:" or '.aab' == e.FILE_NAME|slice:"-4:" %}
-                        <button class="diffButton btn btn-secondary btn-xs" id="{{ e.MD5 }}_{{ e.FILE_NAME }}">
-                          <i class="fas fa-not-equal"></i> Diff
+                        <button class="diffButton btn btn-secondary" id="{{ e.MD5 }}_{{ e.FILE_NAME }}" title="Diff Against Another Scan">
+                          <i class="fas fa-not-equal"></i>
                         </button>
                         {% endif %}
-                        <button class="btn btn-danger btn-xs" id="{{ e.MD5 }}" onclick="delete_scan(this)">
-                          <i class="fa fa-trash"></i> Delete
+                        <button class="btn btn-danger" id="{{ e.MD5 }}" onclick="delete_scan(this)" title="Delete Scan">
+                          <i class="fa fa-trash"></i>
                         </button>
                       </div>
                     </td>
