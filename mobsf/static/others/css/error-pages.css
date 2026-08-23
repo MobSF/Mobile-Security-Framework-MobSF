@@ -17,6 +17,23 @@
   --card-max-width: 480px;
 }
 
+/* Light theme - toggled the same way as the rest of the app (see
+   others/js/theme-toggle.js). Kept local rather than pulling in
+   mobsf-modern.css, so these pages stay fully self-contained. */
+:root {
+  --navbar-bg: rgba(13,17,23,0.8);
+  --card-shadow-color: rgba(0,0,0,0.4);
+}
+
+:root[data-theme="light"] {
+  --bg-base:#ffffff; --bg-card:#ffffff; --bg-surface:#f6f8fa;
+  --border-sub:rgba(31,35,40,0.15); --border-def:#d0d7de;
+  --text-pri:#1f2328; --text-sec:#59636e; --text-muted:#8c959f;
+  --accent-b:#0969da;
+  --navbar-bg: rgba(255,255,255,0.8);
+  --card-shadow-color: rgba(140,149,159,0.3);
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
@@ -74,7 +91,7 @@ body::before {
   max-width: var(--card-max-width);
   width: 100%;
   text-align: center;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.4), var(--card-glow, 0 0 0 rgba(0,0,0,0));
+  box-shadow: 0 24px 60px var(--card-shadow-color), var(--card-glow, 0 0 0 rgba(0,0,0,0));
   animation: slideUp 0.4s 0.1s both cubic-bezier(0.4,0,0.2,1);
 }
 
@@ -143,7 +160,7 @@ body::before {
   margin: 4px;
 }
 .btn-back:hover {
-  background: rgba(255,255,255,0.04);
+  background: color-mix(in srgb, var(--text-pri) 6%, transparent);
   color: var(--text-pri);
   text-decoration: none;
 }
@@ -152,7 +169,7 @@ body::before {
   position: fixed; top: 0; left: 0; right: 0;
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px 24px;
-  background: rgba(13,17,23,0.8);
+  background: var(--navbar-bg);
   border-bottom: 1px solid var(--border-sub);
   backdrop-filter: blur(12px);
   z-index: 100;
@@ -172,5 +189,14 @@ body::before {
 }
 .nav-link-muted:hover {
   color: var(--accent-b);
+  background: rgba(88,166,255,0.06);
+}
+
+.theme-toggle-btn {
+  border-radius: 7px;
+  transition: all .15s ease;
+}
+.theme-toggle-btn:hover {
+  color: var(--accent-b) !important;
   background: rgba(88,166,255,0.06);
 }

@@ -2,6 +2,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem('mobsf-theme') === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>403 — Forbidden | MobSF</title>
@@ -40,7 +49,12 @@
       <img src="{% static "img/mobsf_icon.png" %}" alt="MobSF" style="width:24px;height:24px;border-radius:5px;">
       <span>Mob</span>SF
     </a>
-    <a href="{% url 'home' %}" class="nav-link-muted">DASHBOARD</a>
+    <div style="display:flex;align-items:center;gap:4px;">
+      <a href="{% url 'home' %}" class="nav-link-muted">DASHBOARD</a>
+      <button type="button" class="theme-toggle-btn" style="background:none;border:none;cursor:pointer;padding:6px 10px;color:var(--text-sec);font-size:15px;">
+        <i class="fas fa-sun"></i>
+      </button>
+    </div>
   </div>
 
   <div class="error-wrap">
@@ -67,5 +81,6 @@
     </div>
   </div>
 
+  <script src="{% static "others/js/theme-toggle.js" %}"></script>
 </body>
 </html>

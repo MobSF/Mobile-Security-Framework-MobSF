@@ -2,6 +2,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    /* Apply the saved theme before any stylesheet loads, so the page
+       never flashes the wrong theme on load. */
+    (function () {
+      try {
+        if (localStorage.getItem('mobsf-theme') === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>{{title}}</title>
@@ -548,6 +559,7 @@
 <script src="{% static "adminlte/plugins/bootstrap/bootstrap.bundle.min.js" %}"></script>
 <script src="{% static "adminlte/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js" %}"></script>
 <script src="{% static "adminlte/dashboard/js/adminlte.min.js" %}"></script>
+<script src="{% static "others/js/theme-toggle.js" %}"></script>
 {% block extra_scripts %}{% endblock %}
 </body>
 </html>

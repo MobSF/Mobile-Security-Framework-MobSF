@@ -5,9 +5,13 @@
  */
 
 /* ============================================
-   Global Design Tokens (dark theme used app-wide)
-   Single source of truth - do not redeclare these
-   in base_layout.html or any individual template.
+   Global Design Tokens - single source of truth.
+   Do not redeclare these in base_layout.html or
+   any individual template.
+
+   Dark is the default (no data-theme attribute).
+   Light is opted into via <html data-theme="light">,
+   toggled by others/js/theme-toggle.js.
    ============================================ */
 :root {
   --bg-void:       #080b0f;
@@ -45,127 +49,88 @@
   --font-main:     'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono:     'JetBrains Mono', 'Fira Code', monospace;
   --transition:    0.2s cubic-bezier(0.4,0,0.2,1);
+
+  /* Terminal/code-block surfaces intentionally stay dark in both themes
+     (matches how most code blocks/diffs behave even on light pages). */
+  --code-bg:       #0d1117;
+  --code-text:     #e6edf3;
 }
 
-/* ============================================
-   CSS Custom Properties (Design Tokens)
-   ============================================ */
-:root {
-  /* Primary Colors - Security Tool Palette */
-  --mobsf-primary: #1a73e8;
-  --mobsf-primary-dark: #1557b0;
-  --mobsf-primary-light: #4a90e8;
-  
-  /* Background Colors */
-  --mobsf-bg-dark: #1e1e1e;
-  --mobsf-bg-darker: #121212;
-  --mobsf-bg-light: #2d2d2d;
-  --mobsf-bg-card: #ffffff;
-  --mobsf-bg-card-alt: #f8f9fa;
-  
-  /* Text Colors */
-  --mobsf-text-primary: #212529;
-  --mobsf-text-secondary: #6c757d;
-  --mobsf-text-muted: #adb5bd;
-  --mobsf-text-light: #f8f9fa;
-  --mobsf-text-dark: #000000;
-  
-  /* Status Colors */
-  --mobsf-success: #28a745;
-  --mobsf-success-light: #d4edda;
-  --mobsf-warning: #ffc107;
-  --mobsf-warning-light: #fff3cd;
-  --mobsf-danger: #dc3545;
-  --mobsf-danger-light: #f8d7da;
-  --mobsf-info: #17a2b8;
-  --mobsf-info-light: #d1ecf1;
-  
-  /* Log Level Colors */
-  --log-info: #6bb3f8;
-  --log-warning: #f5c242;
-  --log-error: #ff6b6b;
-  --log-debug: #a0a0a0;
-  --log-success: #4cd964;
-  
-  /* Device Status Colors */
-  --device-connected: #4cd964;
-  --device-disconnected: #ff6b6b;
-  --device-emulator: #ffcc00;
-  --device-rooted: #ff9500;
-  --device-frida-active: #30d158;
-  
-  /* Borders */
-  --mobsf-border: #dee2e6;
-  --mobsf-border-dark: #343a40;
-  
-  /* Shadows */
-  --mobsf-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --mobsf-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --mobsf-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-  
-  /* Spacing */
-  --mobsf-spacing-xs: 0.25rem;
-  --mobsf-spacing-sm: 0.5rem;
-  --mobsf-spacing-md: 1rem;
-  --mobsf-spacing-lg: 1.5rem;
-  --mobsf-spacing-xl: 2rem;
-  
-  /* Border Radius */
-  --mobsf-radius-sm: 4px;
-  --mobsf-radius-md: 6px;
-  --mobsf-radius-lg: 8px;
-  --mobsf-radius-xl: 12px;
-  
-  /* Typography */
-  --mobsf-font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace;
-  --mobsf-font-sans: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  
-  /* Transitions */
-  --mobsf-transition: all 0.2s ease-in-out;
+:root[data-theme="light"] {
+  --bg-void:       #f6f8fa;
+  --bg-deep:       #eaeef2;
+  --bg-base:       #ffffff;
+  --bg-surface:    #f6f8fa;
+  --bg-card:       #ffffff;
+  --bg-elevated:   #ffffff;
+  --bg-input:      #ffffff;
+  --border-subtle: rgba(31,35,40,0.15);
+  --border-default:#d0d7de;
+  --border-strong: #8c959f;
+  --border-accent: rgba(9,105,218,0.35);
+  --text-primary:  #1f2328;
+  --text-secondary:#59636e;
+  --text-muted:    #8c959f;
+  --text-link:     #0969da;
+  --accent-blue:   #0969da;
+  --accent-green:  #1a7f37;
+  --accent-green-dim:#2da44e;
+  --accent-orange: #bc4c00;
+  --accent-red:    #cf222e;
+  --accent-purple: #8250df;
+  --accent-yellow: #9a6700;
+  --accent-cyan:   #1b7c83;
+  --glow-blue:     rgba(9,105,218,0.12);
+  --glow-green:    rgba(26,127,55,0.1);
+  --grad-blue:     linear-gradient(135deg,#dbeafe 0%,#ffffff 100%);
+  --shadow-card:   0 4px 24px rgba(140,149,159,0.25);
+  --shadow-glow:   0 0 20px rgba(9,105,218,0.1);
 }
 
 /* ============================================
    Modern Error Display
+   (uses the main theme tokens above - fully
+   theme-aware, no separate palette needed)
    ============================================ */
 .mobsf-error-card {
-  background: var(--mobsf-bg-card);
-  border-radius: var(--mobsf-radius-lg);
-  box-shadow: var(--mobsf-shadow-md);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
-  border-left: 4px solid var(--mobsf-danger);
-  margin-bottom: var(--mobsf-spacing-lg);
+  border-left: 4px solid var(--accent-red);
+  margin-bottom: 1.5rem;
 }
 
 .mobsf-error-card.error-warning {
-  border-left-color: var(--mobsf-warning);
+  border-left-color: var(--accent-yellow);
 }
 
 .mobsf-error-card.error-info {
-  border-left-color: var(--mobsf-info);
+  border-left-color: var(--accent-blue);
   border-left-width: 4px;
 }
 
 .mobsf-error-card .error-header {
-  background: var(--mobsf-danger-light);
-  padding: var(--mobsf-spacing-md) var(--mobsf-spacing-lg);
+  background: color-mix(in srgb, var(--accent-red) 10%, var(--bg-card));
+  padding: 1rem 1.5rem;
   display: flex;
   align-items: center;
-  gap: var(--mobsf-spacing-md);
+  gap: 1rem;
 }
 
 .error-warning .error-header {
-  background: var(--mobsf-warning-light);
+  background: color-mix(in srgb, var(--accent-yellow) 10%, var(--bg-card));
 }
 
 .error-info .error-header {
-  background: var(--mobsf-info-light);
+  background: color-mix(in srgb, var(--accent-blue) 10%, var(--bg-card));
 }
 
 .mobsf-error-card .error-icon {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--mobsf-danger);
+  background: var(--accent-red);
   color: white;
   display: flex;
   align-items: center;
@@ -174,108 +139,108 @@
 }
 
 .error-warning .error-icon {
-  background: var(--mobsf-warning);
+  background: var(--accent-yellow);
 }
 
 .error-info .error-icon {
-  background: var(--mobsf-info);
+  background: var(--accent-blue);
 }
 
 .mobsf-error-card .error-title {
   font-weight: 600;
-  color: var(--mobsf-text-primary);
+  color: var(--text-primary);
   font-size: 1rem;
 }
 
 .mobsf-error-card .error-body {
-  padding: var(--mobsf-spacing-lg);
+  padding: 1.5rem;
 }
 
 .mobsf-error-card .error-summary {
-  color: var(--mobsf-text-primary);
-  margin-bottom: var(--mobsf-spacing-md);
+  color: var(--text-primary);
+  margin-bottom: 1rem;
   line-height: 1.6;
 }
 
 .mobsf-error-card .error-cause {
-  background: var(--mobsf-bg-card-alt);
-  padding: var(--mobsf-spacing-md);
-  border-radius: var(--mobsf-radius-md);
-  margin-bottom: var(--mobsf-spacing-md);
-  border: 1px solid var(--mobsf-border);
+  background: var(--bg-surface);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-subtle);
 }
 
 .mobsf-error-card .error-cause-label {
   font-weight: 600;
-  color: var(--mobsf-text-secondary);
+  color: var(--text-secondary);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: var(--mobsf-spacing-xs);
+  margin-bottom: 0.25rem;
 }
 
 .mobsf-error-card .error-cause-text {
-  color: var(--mobsf-text-primary);
+  color: var(--text-primary);
   font-size: 0.9rem;
 }
 
 .mobsf-error-card .error-suggestion {
-  background: #e8f5e9;
-  padding: var(--mobsf-spacing-md);
-  border-radius: var(--mobsf-radius-md);
-  margin-bottom: var(--mobsf-spacing-md);
-  border: 1px solid var(--mobsf-success);
+  background: color-mix(in srgb, var(--accent-green) 8%, var(--bg-card));
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+  border: 1px solid var(--accent-green);
 }
 
 .error-warning .error-suggestion {
-  background: #fff8e1;
-  border-color: var(--mobsf-warning);
+  background: color-mix(in srgb, var(--accent-yellow) 8%, var(--bg-card));
+  border-color: var(--accent-yellow);
 }
 
 .mobsf-error-card .error-suggestion-label {
   font-weight: 600;
-  color: var(--mobsf-success);
+  color: var(--accent-green);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: var(--mobsf-spacing-xs);
+  margin-bottom: 0.25rem;
 }
 
 .error-warning .error-suggestion-label {
-  color: var(--mobsf-warning);
+  color: var(--accent-yellow);
 }
 
 .mobsf-error-card .error-suggestion-text {
-  color: var(--mobsf-text-primary);
+  color: var(--text-primary);
   font-size: 0.9rem;
 }
 
 .mobsf-error-card .error-suggestion-code {
-  background: var(--mobsf-bg-darker);
-  color: var(--mobsf-text-light);
-  padding: var(--mobsf-spacing-sm) var(--mobsf-spacing-md);
-  border-radius: var(--mobsf-radius-sm);
-  font-family: var(--mobsf-font-mono);
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
   font-size: 0.85rem;
-  margin-top: var(--mobsf-spacing-sm);
+  margin-top: 0.5rem;
   overflow-x: auto;
 }
 
 .mobsf-error-card .error-technical {
-  border-top: 1px solid var(--mobsf-border);
-  padding-top: var(--mobsf-spacing-md);
-  margin-top: var(--mobsf-spacing-md);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 1rem;
+  margin-top: 1rem;
 }
 
 .mobsf-error-card .error-toggle {
   background: none;
   border: none;
-  color: var(--mobsf-primary);
+  color: var(--accent-blue);
   font-size: 0.85rem;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: var(--mobsf-spacing-xs);
+  gap: 0.25rem;
   padding: 0;
 }
 
@@ -285,13 +250,13 @@
 
 .mobsf-error-card .error-technical-details {
   display: none;
-  margin-top: var(--mobsf-spacing-md);
-  background: var(--mobsf-bg-dark);
-  padding: var(--mobsf-spacing-md);
-  border-radius: var(--mobsf-radius-md);
-  font-family: var(--mobsf-font-mono);
+  margin-top: 1rem;
+  background: var(--code-bg);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
   font-size: 0.8rem;
-  color: var(--mobsf-text-light);
+  color: var(--code-text);
   overflow-x: auto;
 }
 
@@ -408,5 +373,19 @@
   body:not(.sidebar-open) #sidebar-overlay {
     display: none !important;
   }
+}
+
+/* ============================================
+   Theme toggle button
+   ============================================ */
+.theme-toggle-btn {
+  color: var(--text-secondary) !important;
+  font-size: 15px !important;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition), background var(--transition);
+}
+.theme-toggle-btn:hover {
+  color: var(--accent-yellow) !important;
+  background: rgba(227,179,65,0.08);
 }
 
