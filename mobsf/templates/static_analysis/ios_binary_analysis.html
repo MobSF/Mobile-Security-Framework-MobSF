@@ -302,7 +302,7 @@
             <div class="card-body">
               <h5 class="card-title"></h5>
                 <div class="row">
-                <div class="col-2">
+                <div class="col-12 col-md-2">
                   <p><strong><i class="fas fa-check-double"></i> APP SCORES</strong></p>
               {% if app_type not in 'Dylib,A' %}
                   <img id="app_icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_path %}/download/{{ icon_path }}{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
@@ -329,7 +329,7 @@
                   <p> <a href="{% url 'appsec_dashboard' checksum=md5 %}" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
                 {% endif %}
                 </div>
-                <div class="col-4">
+                <div class="col-12 col-md-4">
                   <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION </strong></p>                         
                   <span class="badge bg-primary">File Name</span>
                   {{ file_name }}<br/>
@@ -343,7 +343,7 @@
                   {{ sha256 }}<br/>
                 </div>
                 {% if app_type not in 'Dylib,A' %}
-                <div class="col-3">
+                <div class="col-12 col-md-3">
                   <p><strong><i class="fas fa-info"></i> APP INFORMATION </strong></p>                                       
                   <span class="badge bg-primary">App Name</span>
                   {{ app_name }}<br/>
@@ -367,7 +367,7 @@
                   {% endfor %}
                 </div>
                 {% endif %}
-                 <div class="col-3">
+                 <div class="col-12 col-md-3">
                   <p><strong><i class="fas fa-ad"></i> BINARY INFORMATION </strong></p>                                       
                   <span class="badge bg-primary">Arch</span>
                   {{ binary_info.arch }}<br/>
