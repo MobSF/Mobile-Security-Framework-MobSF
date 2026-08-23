@@ -171,7 +171,7 @@ sidebar-collapse
         <p class="auth-subtitle">Add a new user account to MobSF</p>
       </div>
 
-      <form method="post">
+      <form method="post" onsubmit="this.querySelector('button[type=submit]').disabled = true;">
         {% csrf_token %}
 
         {% if messages %}
