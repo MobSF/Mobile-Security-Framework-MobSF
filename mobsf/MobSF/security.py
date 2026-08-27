@@ -6,6 +6,7 @@ import re
 import socket
 import ipaddress
 import sys
+from contextlib import contextmanager
 from shutil import which
 from pathlib import Path
 from platform import system
@@ -13,8 +14,11 @@ import os
 import stat
 import string
 import unicodedata
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote, urljoin, urlparse, urlunsplit
 from concurrent.futures import ThreadPoolExecutor
+
+import requests
+from requests.adapters import HTTPAdapter
 
 from mobsf.MobSF.utils import (
     find_aapt,
@@ -262,78 +266,302 @@ def sanitize_for_logging(filename: str, max_length: int = 255) -> str:
     return filename[:max_length]
 
 
+# IPv4 ranges that must never be contacted by SSRF-sensitive fetches.
+_DISALLOWED_IPV4_NETWORKS = (
+    '127.0.0.0/8',
+    '169.254.0.0/16',
+    '172.16.0.0/12',
+    '192.168.0.0/16',
+    '10.0.0.0/8',
+    '100.64.0.0/10',
+)
+_IPV6_TRANSLATION_NETWORKS = (
+    ipaddress.IPv6Network('64:ff9b::/96'),
+    ipaddress.IPv6Network('64:ff9b:1::/48'),
+)
+_INTERNAL_HOST_SUFFIXES = (
+    '.home.arpa',
+    '.internal',
+    '.lan',
+    '.local',
+    '.localdomain',
+    '.localhost',
+)
+MAX_PUBLIC_DNS_ADDRESSES = 8
+
+
+def is_disallowed_ip(ip_str):
+    """Return True if an IP must not be contacted (SSRF)."""
+    try:
+        ip_obj = ipaddress.ip_address(ip_str)
+    except ValueError:
+        return True
+
+    # Unwrap IPv4-mapped IPv6 (::ffff:127.0.0.1) before classification.
+    if isinstance(ip_obj, ipaddress.IPv6Address) and ip_obj.ipv4_mapped:
+        ip_obj = ip_obj.ipv4_mapped
+    elif isinstance(ip_obj, ipaddress.IPv6Address):
+        # Reject transition addresses that can tunnel an otherwise-blocked
+        # IPv4 destination through an apparently public IPv6 literal.
+        if ip_obj.sixtofour and is_disallowed_ip(str(ip_obj.sixtofour)):
+            return True
+        if ip_obj.teredo and is_disallowed_ip(str(ip_obj.teredo[1])):
+            return True
+        for network in _IPV6_TRANSLATION_NETWORKS:
+            if ip_obj in network:
+                embedded = ipaddress.IPv4Address(ip_obj.packed[-4:])
+                if is_disallowed_ip(str(embedded)):
+                    return True
+
+    if (not ip_obj.is_global
+        or ip_obj.is_private
+        or ip_obj.is_loopback
+        or ip_obj.is_link_local
+        or ip_obj.is_reserved
+        or ip_obj.is_multicast
+            or ip_obj.is_unspecified):
+        return True
+
+    if isinstance(ip_obj, ipaddress.IPv4Address):
+        for network in _DISALLOWED_IPV4_NETWORKS:
+            if ip_obj in ipaddress.IPv4Network(network):
+                return True
+    return False
+
+
+def resolve_public_ips(hostname, port=None):
+    """Resolve hostname and return public addresses, or an empty tuple.
+
+    The entire answer is rejected if any address is non-public. Callers must
+    connect to one of the returned literals instead of resolving the hostname
+    again, otherwise DNS rebinding remains possible.
+    """
+    try:
+        normalized_host = hostname.rstrip('.').lower()
+        try:
+            ipaddress.ip_address(normalized_host)
+        except ValueError:
+            normalized_host = normalized_host.encode(
+                'idna',
+            ).decode('ascii')
+            # Avoid even querying common local-only names. The resulting IP is
+            # checked below as well, but that would still permit DNS probing.
+            if ('.' not in normalized_host
+                    or normalized_host == 'localhost'
+                    or normalized_host.endswith(_INTERNAL_HOST_SUFFIXES)):
+                return ()
+        addresses = []
+        addrinfos = socket.getaddrinfo(
+            hostname,
+            port,
+            type=socket.SOCK_STREAM,
+        )
+        for addrinfo in addrinfos:
+            address = addrinfo[4][0]
+            if is_disallowed_ip(address):
+                return ()
+            if (address not in addresses
+                    and len(addresses) < MAX_PUBLIC_DNS_ADDRESSES):
+                addresses.append(address)
+        return tuple(addresses)
+    except (OSError, TypeError, UnicodeError):
+        return ()
+
+
+def _validated_host(host):
+    """Parse a host-only value accepted by valid_host()."""
+    if not isinstance(host, str) or not host or len(host) > 2083:
+        return None
+    if not host.startswith(('http://', 'https://')):
+        host = f'http://{host}'
+    try:
+        parsed = urlparse(host)
+        port = parsed.port
+    except ValueError:
+        return None
+    if (parsed.scheme not in ('http', 'https')
+        or not parsed.hostname
+        or '@' in parsed.netloc
+        or parsed.path
+        or parsed.query
+        or parsed.params
+        or parsed.fragment
+            or (port and port not in (80, 443))):
+        return None
+    return parsed
+
+
+def resolve_public_ip(host):
+    """Resolve a host-only value and return one public address."""
+    parsed = _validated_host(host)
+    if not parsed:
+        return None
+    addresses = resolve_public_ips(parsed.hostname, parsed.port)
+    return addresses[0] if addresses else None
+
+
 def valid_host(host):
     """Check if host is valid, run SSRF checks."""
-    default_timeout = socket.getdefaulttimeout()
+    return resolve_public_ip(host) is not None
+
+
+class _PinnedTLSAdapter(HTTPAdapter):
+    """Use the original hostname for TLS while the URL contains an IP."""
+
+    def __init__(self, hostname, **kwargs):
+        self.hostname = hostname
+        super().__init__(**kwargs)
+
+    def init_poolmanager(self, connections, maxsize, block=False, **pool_kwargs):
+        pool_kwargs['server_hostname'] = self.hostname
+        pool_kwargs['assert_hostname'] = self.hostname
+        super().init_poolmanager(
+            connections,
+            maxsize,
+            block=block,
+            **pool_kwargs,
+        )
+
+
+def _upstream_proxy_enabled(proxies):
+    """Return True if an actual upstream proxy URL is configured."""
+    return bool(proxies) and any(proxies.values())
+
+
+def _validated_public_url(url, allowed_ports):
+    """Parse an HTTP URL and resolve every hostname answer as public."""
+    if not isinstance(url, str) or not url or len(url) > 2083:
+        raise ValueError('Invalid URL')
     try:
-        if len(host) > 2083:  # Standard URL length limit
-            return False
-
-        prefixs = ('http://', 'https://')
-        if not host.startswith(prefixs):
-            host = f'http://{host}'
-        parsed = urlparse(host)
-        scheme = parsed.scheme
-        domain = parsed.netloc
-        hostname = parsed.hostname
-        path = parsed.path
-        query = parsed.query
-        params = parsed.params
+        parsed = urlparse(url)
         port = parsed.port
+    except ValueError as exp:
+        raise ValueError('Invalid URL') from exp
+    effective_port = port or (443 if parsed.scheme == 'https' else 80)
+    if (parsed.scheme not in ('http', 'https')
+        or not parsed.hostname
+        or '@' in parsed.netloc
+        or parsed.params
+        or parsed.fragment
+            or effective_port not in allowed_ports):
+        raise ValueError('Unsafe URL')
+    addresses = resolve_public_ips(parsed.hostname, effective_port)
+    if not addresses:
+        raise ValueError('URL did not resolve exclusively to public addresses')
+    return parsed, addresses
 
-        # Allow only http and https schemes
-        if scheme not in ('http', 'https'):
-            return False
 
-        # Check for hostname
-        if not hostname:
-            return False
+def _pinned_url(parsed, address):
+    """Replace URL hostname with a literal address, preserving path/query."""
+    literal = f'[{address}]' if ':' in address else address
+    if parsed.port:
+        literal = f'{literal}:{parsed.port}'
+    return urlunsplit((
+        parsed.scheme,
+        literal,
+        parsed.path or '/',
+        parsed.query,
+        '',
+    ))
 
-        # Validate port - only allow 80 and 443
-        if port and port not in (80, 443):
-            return False
 
-        # Check for URL credentials
-        if '@' in domain:
-            return False
+def _open_pinned_request(method, url, allowed_ports, **kwargs):
+    """Open one request to a validated literal IP with Host/SNI preserved."""
+    proxies = kwargs.pop('proxies', None)
+    if _upstream_proxy_enabled(proxies):
+        hostname = sanitize_for_logging(
+            str(urlparse(url).hostname or ''),
+        )
+        logger.warning(
+            'Blocked SSRF-safe request for %s: upstream proxy performs DNS',
+            hostname,
+        )
+        raise ValueError(
+            'SSRF-safe requests cannot use an upstream DNS proxy')
+    if kwargs.pop('allow_redirects', False):
+        raise ValueError('Redirects must be validated by safe_stream_request')
+    kwargs.pop('stream', None)
 
-        # Detect parser escapes, only host is allowed
-        if len(path) > 0 or len(query) > 0 or len(params) > 0:
-            return False
+    parsed, addresses = _validated_public_url(url, allowed_ports)
+    headers = dict(kwargs.pop('headers', {}) or {})
+    # Always override a caller-supplied Host header.
+    headers['Host'] = parsed.netloc
+    last_error = None
+    for address in addresses:
+        session = requests.Session()
+        # Ignore HTTP(S)_PROXY environment variables. A proxy would perform
+        # its own DNS lookup and undo connection pinning.
+        session.trust_env = False
+        if parsed.scheme == 'https':
+            session.mount('https://', _PinnedTLSAdapter(parsed.hostname))
+        try:
+            response = session.request(
+                method,
+                _pinned_url(parsed, address),
+                headers=headers,
+                allow_redirects=False,
+                stream=True,
+                **kwargs,
+            )
+            response.url = url
+            return session, response
+        except requests.RequestException as exp:
+            last_error = exp
+            session.close()
+    if last_error:
+        raise last_error
+    raise requests.ConnectionError('No public address available')
 
-        # Resolve dns to get ipv4 or ipv6 address
-        socket.setdefaulttimeout(5)  # 5 second timeout
-        ip_addresses = socket.getaddrinfo(hostname, None)
-        for ip in ip_addresses:
-            ip_obj = ipaddress.ip_address(ip[4][0])
-            if (ip_obj.is_private
-                or ip_obj.is_loopback
-                or ip_obj.is_link_local
-                or ip_obj.is_reserved
-                or ip_obj.is_multicast
-                    or ip_obj.is_unspecified):
-                return False
 
-            # Additional checks for specific IPv4 ranges
-            if isinstance(ip_obj, ipaddress.IPv4Address):
-                problematic_networks = [
-                    '127.0.0.0/8',
-                    '169.254.0.0/16',
-                    '172.16.0.0/12',
-                    '192.168.0.0/16',
-                    '10.0.0.0/8',
-                ]
-                for network in problematic_networks:
-                    if ip_obj in ipaddress.IPv4Network(network):
-                        return False
+@contextmanager
+def safe_stream_request(method, url, *,
+                        allowed_ports=(80, 443), max_redirects=0, **kwargs):
+    """Yield a streaming response with DNS rebinding protections.
 
-        # If all checks pass, return True
-        return True
-    except Exception:
-        return False
-    finally:
-        # Restore default socket timeout
-        socket.setdefaulttimeout(default_timeout)
+    Redirect targets are separately resolved, validated, and pinned. Proxy
+    settings fail closed because the proxy—not MobSF—would resolve the host.
+    """
+    current_url = url
+    redirects = 0
+    while True:
+        session, response = _open_pinned_request(
+            method,
+            current_url,
+            allowed_ports,
+            **kwargs,
+        )
+        location = response.headers.get('Location')
+        if (response.status_code in (301, 302, 303, 307, 308)
+                and location and redirects < max_redirects):
+            response.close()
+            session.close()
+            current_url = urljoin(current_url, location)
+            redirects += 1
+            continue
+        try:
+            yield response
+        finally:
+            response.close()
+            session.close()
+        return
+
+
+def safe_request(method, url, *,
+                 allowed_ports=(80, 443), max_redirects=0,
+                 max_response_size=1024 * 1024, **kwargs):
+    """Return a bounded response from an SSRF-safe network request."""
+    with safe_stream_request(
+            method,
+            url,
+            allowed_ports=allowed_ports,
+            max_redirects=max_redirects,
+            **kwargs) as response:
+        content = response.raw.read(max_response_size + 1, decode_content=True)
+        if len(content) > max_response_size:
+            raise ValueError('Remote response exceeds the allowed size')
+        response._content = content
+        response._content_consumed = True
+        return response
 
 
 def sanitize_svg(svg_content):

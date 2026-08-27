@@ -4,7 +4,6 @@
 import logging
 from urllib.parse import urlparse
 
-import requests
 from concurrent.futures import ThreadPoolExecutor
 from django.utils.html import escape
 
@@ -13,7 +12,10 @@ from mobsf.MobSF.utils import (
     is_number,
     upstream_proxy,
 )
-from mobsf.MobSF.security import valid_host
+from mobsf.MobSF.security import (
+    safe_request,
+    valid_host,
+)
 from mobsf.StaticAnalyzer.views.android import (
     network_security,
 )
@@ -118,9 +120,11 @@ def _check_url(host, w_url):
                 logger.warning(
                     'Non-standard port in assetlinks URL rejected: %s', url)
                 continue
-            r = requests.get(url,
+            # Resolve and connect through the same SSRF-safe request primitive,
+            # preventing a second DNS lookup from rebinding to an internal IP.
+            r = safe_request('GET',
+                             url,
                              timeout=5,
-                             allow_redirects=False,
                              proxies=proxies,
                              verify=verify)
 

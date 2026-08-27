@@ -6,7 +6,10 @@ from mobsf.MobSF.utils import (
     append_scan_status,
     upstream_proxy,
 )
-from mobsf.MobSF.security import valid_host
+from mobsf.MobSF.security import (
+    safe_request,
+    valid_host,
+)
 
 import requests
 
@@ -93,13 +96,14 @@ def open_firebase(checksum, url):
             'User-Agent': ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1)'
                            ' AppleWebKit/537.36 (KHTML, like Gecko) '
                            'Chrome/39.0.2171.95 Safari/537.36')}
-        resp = requests.get(
+        resp = safe_request(
+            'GET',
             base_url,
             timeout=5,
             headers=headers,
             proxies=proxies,
             verify=verify,
-            allow_redirects=False)
+        )
         if resp.status_code == 200:
             return base_url, True
     except Exception as exp:

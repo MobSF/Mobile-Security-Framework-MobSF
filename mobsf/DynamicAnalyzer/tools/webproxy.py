@@ -15,16 +15,19 @@ logger = logging.getLogger(__name__)
 
 def stop_httptools(url):
     """Kill httptools."""
+    # httptools is a local subprocess. Never use the request Host header for
+    # this server-side call; ALLOWED_HOSTS may be configured broadly.
+    local_url = f'http://127.0.0.1:{settings.PROXY_PORT}'
     # Invoke HTTPtools UI Kill Request
     try:
-        requests.get(f'{url}/kill', timeout=5)
+        requests.get(f'{local_url}/kill', timeout=5)
         logger.info('Killing httptools UI')
     except Exception:
         pass
 
     # Invoke HTTPtools Proxy Kill Request
     try:
-        http_proxy = url.replace('https://', 'http://')
+        http_proxy = local_url
         headers = {'httptools': 'kill'}
         url = 'http://127.0.0.1'
         requests.get(
