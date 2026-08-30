@@ -218,7 +218,7 @@ def api_view_source(request):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     if request.POST['type'] in {'eclipse', 'studio',
-                                'apk', 'java', 'smali'}:
+                                'apk', 'java', 'smali', 'xml'}:
         resp = view_source.run(request, api=True)
     else:
         resp = ios_view_source.run(request, api=True)

@@ -68,6 +68,9 @@ def run(request, api=False):
         if typ == 'smali':
             src = base / 'smali_source'
             syntax = 'smali'
+        elif typ == 'xml':
+            src = base / 'apktool_out'
+            syntax = 'xml'
         else:
             try:
                 src, syntax, _ = find_java_source_folder(base)
