@@ -18,7 +18,6 @@ from OpenSSL import crypto
 from frida import __version__ as frida_version
 
 from mobsf.DynamicAnalyzer.tools.webproxy import (
-    create_ca,
     get_ca_file,
     get_http_tools_url,
     start_proxy,
@@ -601,8 +600,9 @@ class Environment:
 
     def mobsf_agents_setup(self, agent):
         """Setup MobSF agents."""
-        create_ca()
-        # Install MITM RootCA
+        # Install MITM RootCA. This generates the CA cert on first
+        # run only, instead of spawning a new mitmdump process on
+        # every dynamic analysis session.
         self.install_mobsf_ca('install')
         if agent == 'frida':
             agent_file = '.mobsf-f'
