@@ -600,7 +600,7 @@ class Environment:
 
     def mobsf_agents_setup(self, agent):
         """Setup MobSF agents."""
-        # Install MITM RootCA.
+        # Install MITM RootCA
         self.install_mobsf_ca('install')
         if agent == 'frida':
             agent_file = '.mobsf-f'
