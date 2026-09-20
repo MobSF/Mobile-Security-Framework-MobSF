@@ -69,20 +69,33 @@ def _mitm_ca_file():
 def create_ca():
     """Generate CA on first run."""
     ca_file = _mitm_ca_file()
+    if ca_file.exists():
+        return
+
     argz = ['mitmdump', '-n']
     proc = subprocess.Popen(argz,
-                            stdin=None,
-                            stdout=None,
-                            stderr=None,
+                            stdin=subprocess.DEVNULL,
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL,
                             close_fds=True)
-    # mitmdump is only needed here to generate the CA cert. Stop it
-    # once the cert file appears instead of leaving it running as a
-    # leaked background process.
-    for _ in range(30):
-        if ca_file.exists():
-            break
-        time.sleep(0.5)
-    proc.terminate()
+    try:
+        # mitmdump is only needed here to generate the CA cert. Stop it
+        # once the cert file appears instead of leaving it running as a
+        # leaked background process.
+        for _ in range(30):
+            if ca_file.exists() or proc.poll() is not None:
+                break
+            time.sleep(0.5)
+        if not ca_file.exists():
+            logger.warning('mitmproxy root CA generation failed.')
+    finally:
+        if proc.poll() is None:
+            proc.terminate()
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait()
 
 
 def get_ca_file():
