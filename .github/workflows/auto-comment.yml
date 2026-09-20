@@ -22,6 +22,8 @@ jobs:
         if: github.event_name == 'issues'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # No checkout: gh needs an explicit repo instead of inferring from .git
+          GH_REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number }}
           AUTHOR: ${{ github.event.issue.user.login }}
         run: |
@@ -30,12 +32,14 @@ jobs:
           Issues is only for reporting a bug/feature request. For limited support, questions, and discussions, please join [MobSF Slack channel](https://join.slack.com/t/mobsf/shared_invite/zt-3ephptj6c-OuDMatJ9z9MT0T_Vb~l2pg)
 
           Please include all the requested and relevant information when opening a bug report. Improper reports will be closed without any response."
-          gh issue comment "${NUMBER}" --body "${body}"
+          gh issue comment "${NUMBER}" -R "${GH_REPO}" --body "${body}"
 
       - name: Comment on new pull request
         if: github.event_name == 'pull_request_target'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # No checkout: gh needs an explicit repo instead of inferring from .git
+          GH_REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.pull_request.number }}
           AUTHOR: ${{ github.event.pull_request.user.login }}
         run: |
@@ -44,4 +48,4 @@ jobs:
           Thank you for sending this pull request ❤️.
 
           Please make sure you have followed our [contribution guidelines](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md). We will review it as soon as possible"
-          gh pr comment "${NUMBER}" --body "${body}"
+          gh pr comment "${NUMBER}" -R "${GH_REPO}" --body "${body}"
