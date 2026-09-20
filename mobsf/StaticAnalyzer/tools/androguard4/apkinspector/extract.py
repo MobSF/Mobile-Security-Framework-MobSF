@@ -3,7 +3,37 @@
 import zlib
 import os
 
-from mobsf.MobSF.exceptions import PathTraversalError
+from mobsf.MobSF.exceptions import PathTraversalError, ZipBombError
+
+
+# Keep this fallback in sync with MobSF.settings.ZIP_MAX_UNCOMPRESSED_FILE_SIZE.
+DEFAULT_MAX_UNCOMPRESSED_SIZE = 400 * 1024 * 1024
+
+
+def _max_uncompressed_size():
+    """Get MobSF's ZIP member limit without requiring Django at import time."""
+    try:
+        from django.conf import settings
+        from django.core.exceptions import ImproperlyConfigured
+
+        return settings.ZIP_MAX_UNCOMPRESSED_FILE_SIZE
+    except (ImportError, ImproperlyConfigured):
+        return DEFAULT_MAX_UNCOMPRESSED_SIZE
+
+
+def _decompress_deflated(compressed_data, max_size):
+    """Decompress a raw DEFLATE stream with a hard output ceiling."""
+    decompressor = zlib.decompressobj(-15)
+    extracted_data = decompressor.decompress(
+        compressed_data,
+        max_size + 1,
+    )
+    if len(extracted_data) > max_size or decompressor.unconsumed_tail:
+        raise ZipBombError(
+            'Decompressed ZIP member exceeds the configured size limit')
+    if not decompressor.eof:
+        raise zlib.error('Incomplete or truncated DEFLATE stream')
+    return extracted_data
 
 
 def extract_file_based_on_header_info(apk_file, local_header_info, central_directory_info):
@@ -31,6 +61,11 @@ def extract_file_based_on_header_info(apk_file, local_header_info, central_direc
         compressed_size = local_header_info["compressed_size"]
         uncompressed_size = local_header_info["uncompressed_size"]
 
+    max_uncompressed_size = _max_uncompressed_size()
+    if uncompressed_size > max_uncompressed_size:
+        raise ZipBombError(
+            'ZIP member exceeds the configured size limit')
+
     extra_field_length = local_header_info["extra_field_length"]
     compression_method = local_header_info["compression_method"]
     # Skip the offset + local header to reach the compressed data
@@ -43,8 +78,10 @@ def extract_file_based_on_header_info(apk_file, local_header_info, central_direc
         indicator = 'STORED'
     elif compression_method == 8:
         compressed_data = apk_file.read(compressed_size)
-        # -15 for windows size due to raw stream with no header or trailer
-        extracted_data = zlib.decompress(compressed_data, -15)
+        extracted_data = _decompress_deflated(
+            compressed_data,
+            max_uncompressed_size,
+        )
         indicator = 'DEFLATED'
     elif compressed_size == uncompressed_size:
         compressed_data = apk_file.read(uncompressed_size)
@@ -54,9 +91,12 @@ def extract_file_based_on_header_info(apk_file, local_header_info, central_direc
         cur_loc = apk_file.tell()
         try:
             compressed_data = apk_file.read(compressed_size)
-            extracted_data = zlib.decompress(compressed_data, -15)
+            extracted_data = _decompress_deflated(
+                compressed_data,
+                max_uncompressed_size,
+            )
             indicator = 'DEFLATED_TAMPERED'
-        except:
+        except zlib.error:
             apk_file.seek(cur_loc)
             compressed_data = apk_file.read(uncompressed_size)
             extracted_data = compressed_data
