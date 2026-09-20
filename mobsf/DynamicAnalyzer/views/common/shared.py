@@ -15,7 +15,11 @@ from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
     MalwareDomainCheck,
 )
 from mobsf.MobSF.exceptions import PathTraversalError
-from mobsf.MobSF.security import clean_filename, is_pipe_or_link
+from mobsf.MobSF.security import (
+    clean_filename,
+    is_pipe_or_link,
+    is_safe_path,
+)
 from mobsf.MobSF.utils import (
     EMAIL_REGEX,
     URL_REGEX,
@@ -108,8 +112,8 @@ def untar_files(tar_loc, untar_dir):
                         continue
                     member_path = os.path.realpath(
                         os.path.join(safe_root, member.name))
-                    if not (member_path.startswith(safe_root + os.sep)
-                            or member_path == safe_root):
+                    if not is_safe_path(
+                            safe_root, member_path, member.name):
                         raise PathTraversalError(
                             'Attempted Path Traversal in Tar File')
                     safe_members.append(member)
