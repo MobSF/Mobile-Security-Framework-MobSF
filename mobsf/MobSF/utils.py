@@ -505,7 +505,7 @@ def check_basic_env():
         os.kill(os.getpid(), signal.SIGTERM)
 
 
-def update_local_db(db_name, url, local_file):
+def update_local_db(db_name, url, local_file, timeout=60):
     """Update Local DBs."""
     update = None
     inmemoryfile = None
@@ -515,7 +515,7 @@ def update_local_db(db_name, url, local_file):
         logger.exception('[ERROR] Setting upstream proxy')
     try:
         response = requests.get(url,
-                                timeout=3,
+                                timeout=timeout,
                                 proxies=proxies,
                                 verify=verify)
         resp = response.content
