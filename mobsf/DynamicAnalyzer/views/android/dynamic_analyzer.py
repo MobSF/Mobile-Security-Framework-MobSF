@@ -14,6 +14,7 @@ from django.http import (HttpResponseRedirect,
 from django.conf import settings
 from django.shortcuts import render
 from django.db.models import ObjectDoesNotExist
+from django.views.decorators.http import require_http_methods
 
 from mobsf.DynamicAnalyzer.views.android.environment import (
     ANDROID_API_SUPPORTED,
@@ -116,6 +117,7 @@ def android_dynamic_analysis(request, api=False):
 
 @login_required
 @permission_required(Permissions.SCAN)
+@require_http_methods(['POST'])
 def dynamic_analyzer(request, checksum, api=False):
     """Android Dynamic Analyzer Environment."""
     try:
@@ -123,12 +125,8 @@ def dynamic_analyzer(request, checksum, api=False):
         activities = None
         deeplinks = None
         exported_activities = None
-        if api:
-            reinstall = request.POST.get('re_install', '1')
-            install = request.POST.get('install', '1')
-        else:
-            reinstall = request.GET.get('re_install', '1')
-            install = request.GET.get('install', '1')
+        reinstall = request.POST.get('re_install', '1')
+        install = request.POST.get('install', '1')
         if not is_md5(checksum):
             # We need this check since checksum is not validated
             # in REST API
@@ -238,6 +236,7 @@ def dynamic_analyzer(request, checksum, api=False):
 
 @login_required
 @permission_required(Permissions.SCAN)
+@require_http_methods(['POST'])
 def httptools_start(request):
     """Start httprools UI."""
     logger.info('Starting httptools Web UI')
@@ -247,8 +246,8 @@ def httptools_start(request):
         start_httptools_ui(settings.PROXY_PORT)
         time.sleep(3)
         logger.info('httptools UI started')
-        if request.GET['project']:
-            project = request.GET['project']
+        if request.POST['project']:
+            project = request.POST['project']
         else:
             project = ''
         url = f'{httptools_url}/dashboard/{project}'
@@ -261,22 +260,23 @@ def httptools_start(request):
 
 @login_required
 @permission_required(Permissions.SCAN)
+@require_http_methods(['GET', 'POST'])
 def logcat(request, api=False):
     logger.info('Starting Logcat streaming')
     try:
-        pkg = request.GET.get('package')
-        if pkg:
-            if not strict_package_check(pkg):
-                return print_n_send_error_response(
-                    request,
-                    'Invalid package name',
-                    api)
-            template = 'dynamic_analysis/android/logcat.html'
-            return render(request, template, {'package': pkg})
+        if request.method == 'GET':
+            pkg = request.GET.get('package')
+            if pkg and strict_package_check(pkg):
+                template = 'dynamic_analysis/android/logcat.html'
+                return render(request, template, {'package': pkg})
+            return print_n_send_error_response(
+                request,
+                'Invalid package name',
+                api)
         if api:
             app_pkg = request.POST['package']
         else:
-            app_pkg = request.GET.get('app_package')
+            app_pkg = request.POST.get('app_package')
         if app_pkg:
             if not strict_package_check(app_pkg):
                 return print_n_send_error_response(
@@ -306,6 +306,7 @@ def logcat(request, api=False):
 
 @login_required
 @permission_required(Permissions.SCAN)
+@require_http_methods(['POST'])
 def trigger_static_analysis(request, checksum):
     """On device APK Static Analysis."""
     try:
