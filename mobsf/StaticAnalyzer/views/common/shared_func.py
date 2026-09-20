@@ -145,7 +145,10 @@ def unzip(checksum, app_path, ext_path):
                     ext_path = str(Path(ext_path) / '_conflict_')
 
                 # Handle Zip Slip
-                if is_path_traversal(file_path):
+                destination = Path(ext_path) / file_path
+                if (is_path_traversal(file_path)
+                        or not is_safe_path(
+                            ext_path, destination, file_path)):
                     msg = ('Zip slip detected. skipped extracting'
                            f' {sanitize_for_logging(file_path)}')
                     logger.error(msg)
@@ -283,7 +286,9 @@ def ar_os(src, dst):
             [shutil.which('ar'), 't', src],
             stderr=subprocess.STDOUT)
         for raw_file in files.decode('utf-8').split('\n'):
-            if is_path_traversal(raw_file):
+            out = Path(dst) / raw_file
+            if (is_path_traversal(raw_file)
+                    or not is_safe_path(dst, out, raw_file)):
                 msg = f'AR slip detected in AR file {src} at {raw_file}'
                 logger.error(msg)
                 raise ValueError(msg)
@@ -316,6 +321,11 @@ def ar_extract(checksum, src, dst):
                 append_scan_status(checksum, msg)
                 continue
             out = Path(dst) / filtered
+            if not is_safe_path(dst, out, filtered):
+                msg = f'AR slip detected. skipped extracting {filtered}'
+                logger.warning(msg)
+                append_scan_status(checksum, msg)
+                continue
             out.write_bytes(val.read())
     except Exception:
         # Possibly dealing with Fat binary, needs Mac host

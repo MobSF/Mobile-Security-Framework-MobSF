@@ -10,6 +10,7 @@ Please report all security issues [here](https://github.com/MobSF/Mobile-Securit
 
 | Vulnerability | Affected Versions |
 | ------- | ------------------ |
+| [Windows-only path traversal via root-relative paths bypasses is_path_traversal()](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-c8g7-42qj-frj3) | `<=4.5.3` |
 | [SSRF port restriction bypass in assetlinks_check](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-95px-34x5-p37h) | `<=4.5.0` |
 | [Zip Bomb Denial of Service via Per-File Size Limit Bypass in ZIP/APK](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-x768-8642-mmq9) | `<=4.5.0` |
 | [Regression: CSRF checks not enforced after Django migration](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-3p54-567p-2wpr) | `<=4.5.0` |

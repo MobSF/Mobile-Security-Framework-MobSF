@@ -1,24 +1,28 @@
 """Runtime Executable Tampering Detection."""
-import subprocess
 import functools
+import ipaddress
 import logging
+import ntpath
+import os
+import posixpath
 import re
 import socket
-import ipaddress
-import sys
-from contextlib import contextmanager
-from shutil import which
-from pathlib import Path
-from platform import system
-import os
 import stat
 import string
+import subprocess
+import sys
 import unicodedata
-from urllib.parse import unquote, urljoin, urlparse, urlunsplit
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
+from pathlib import Path
+from platform import system
+from shutil import which
+from urllib.parse import unquote, urljoin, urlparse, urlunsplit
 
 import requests
 from requests.adapters import HTTPAdapter
+
+from django.conf import settings
 
 from mobsf.MobSF.utils import (
     find_aapt,
@@ -27,9 +31,6 @@ from mobsf.MobSF.utils import (
     get_adb,
     sha256,
 )
-
-from django.conf import settings
-
 
 logger = logging.getLogger(__name__)
 # Non executable files at host level
@@ -596,39 +597,41 @@ def sanitize_svg(svg_content):
 
 
 def is_path_traversal(user_input):
-    """Check for path traversal."""
+    """Check for path traversal with POSIX and Windows path semantics."""
     if not user_input:
         return False
 
-    # Disallow absolute paths and windows paths and backslashes
-    if os.path.isabs(user_input) or user_input.startswith(('\\', '//')):
-        logger.error('Path traversal attack detected with absolute path')
+    try:
+        path = os.fspath(user_input)
+        if isinstance(path, bytes):
+            path = path.decode('utf-8')
+        if not isinstance(path, str):
+            raise TypeError
+    except (TypeError, UnicodeError):
+        logger.error('Path traversal attack detected with invalid path')
         return True
 
-    # Normalize and decode URL-encoded characters
+    paths = [path]
     try:
-        # Handle URL decoding (e.g., %2e -> .)
-        decoded = unquote(user_input)
-        # Handle double URL decoding (e.g., %252e -> %2e -> .)
-        double_decoded = unquote(decoded)
+        # Check single and double URL decoding (for example, %252e -> %2e -> .).
+        for _ in range(2):
+            paths.append(unquote(paths[-1]))
     except Exception:
         logger.error('Path traversal attack detected with invalid URL encoding')
         return True
 
-    # Check for path traversal in both original and decoded versions
-    dangerous_patterns = ['..', '../', '..\\', '..\\\\']
-
-    if any(pattern in user_input for pattern in dangerous_patterns):
-        logger.error('Path traversal attack detected with invalid path')
-        return True
-
-    if any(pattern in decoded for pattern in dangerous_patterns):
-        logger.error('Path traversal attack detected with invalid path')
-        return True
-
-    if any(pattern in double_decoded for pattern in dangerous_patterns):
-        logger.error('Path traversal attack detected with invalid path')
-        return True
+    for candidate in paths:
+        drive, _ = ntpath.splitdrive(candidate)
+        if ('\x00' in candidate
+                or candidate.startswith(('/', '\\'))
+                or posixpath.isabs(candidate)
+                or ntpath.isabs(candidate)
+                or drive):
+            logger.error('Path traversal attack detected with absolute path')
+            return True
+        if '..' in candidate:
+            logger.error('Path traversal attack detected with invalid path')
+            return True
     return False
 
 
@@ -636,9 +639,14 @@ def is_safe_path(safe_root, check_path, raw_file):
     """Detect Path Traversal."""
     if is_path_traversal(raw_file):
         return False
-    safe_root = os.path.realpath(os.path.normpath(safe_root))
-    check_path = os.path.realpath(os.path.normpath(check_path))
-    return check_path.startswith(safe_root + os.sep) or check_path == safe_root
+    try:
+        safe_root = os.path.normcase(
+            os.path.realpath(os.path.normpath(safe_root)))
+        check_path = os.path.normcase(
+            os.path.realpath(os.path.normpath(check_path)))
+        return os.path.commonpath((safe_root, check_path)) == safe_root
+    except (TypeError, ValueError):
+        return False
 
 
 def clean_filename(filename, replace=' '):
