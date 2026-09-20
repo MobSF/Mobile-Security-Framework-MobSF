@@ -393,18 +393,24 @@ function list_apps(){
                               else
                                 order = 'last';
 
-                              var url = `{% url 'dynamic_analyzer_ios'%}?bundle_id=${escapeHtml(bundle)}&instance_id=${$('#ios_dynamic').val()}`;
+                              var url = `{% url 'dynamic_analyzer_ios'%}`;
+                              var instanceId = escapeHtml($('#ios_dynamic').val());
                               $('#in_device > tbody:' + order + '-child').append(
                                 `<tr><td align="center">
                                   <img id="app_icon" src="data:image/png;base64,${escapeHtml(iconb64)}"/><br/>
                                   <strong>${escapeHtml(name)}</strong></td>
                                   <td>${escapeHtml(bundle)}</td>
                                   <td>${escapeHtml(type)}</td>
-                                  <td><p>
-                                      <a class="btn btn-success disable" onclick="dynamic_loader()" href="${url}"><i class="fab fa-apple"></i> Start Dynamic Analysis</a> 
+                                  <td><div>
+                                      <form method="post" action="${url}" onsubmit="dynamic_loader()" class="d-inline">
+                                        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                                        <input type="hidden" name="bundle_id" value="${escapeHtml(bundle)}">
+                                        <input type="hidden" name="instance_id" value="${instanceId}">
+                                        <button type="submit" class="btn btn-success disable"><i class="fab fa-apple"></i> Start Dynamic Analysis</button>
+                                      </form>
                                       <a class="btn btn-info ${buttonState}" href="../../ios/view_report/${escapeHtml(bundle)}"><i class="fa fa-mobile"></i> View Report </a>
                                       <a class="btn btn-warning" id="${$('#ios_dynamic').val()}" onclick="remove_app(this, '${escapeHtml(bundle)}')"><i class="fas fa-trash-alt"></i>  Uninstall</a>
-                                      </p>
+                                      </div>
                                   </td></tr>`);
                         }
                         stop_loader();
