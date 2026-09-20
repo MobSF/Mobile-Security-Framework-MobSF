@@ -76,7 +76,7 @@ COCOA_KEYS = {
         'normal'),
     'NSLocalNetworkUsageDescription': (
         'Allow app to request access to the local network.',
-        'normnal'),
+        'normal'),
 }
 
 

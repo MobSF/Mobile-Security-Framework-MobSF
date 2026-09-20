@@ -173,12 +173,13 @@ def run_apktool(app_path, app_dir, tools_dir):
                 '-jar',
                 str(apktool_path),
                 'd',
-                '-p',
+                '--match-original',
+                '--frame-path',
                 gettempdir(),
-                '-f',
-                '-s',
+                '--force',
+                '--no-src',
                 str(app_path),
-                '-o',
+                '--output',
                 str(output_dir)]
         logger.info('Converting AXML to XML with apktool')
         with open(os.devnull, 'w') as fnull:
