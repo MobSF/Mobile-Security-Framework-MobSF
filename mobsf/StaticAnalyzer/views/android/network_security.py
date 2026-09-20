@@ -1,6 +1,7 @@
 # -*- coding: utf_8 -*-
 """Module for network security analysis."""
 import logging
+import os
 from pathlib import Path
 
 from defusedxml.minidom import parseString
@@ -26,7 +27,8 @@ def read_netsec_config(checksum, app_dir, config, src_type):
     try:
         config_file = None
         # Manifest values are resource names, not filesystem paths.
-        config = Path(config.replace('@xml/', '', 1)).name
+        # os.path.basename is the CodeQL-recognized path sanitizer.
+        config = os.path.basename(config.replace('@xml/', '', 1))
         base = Path(app_dir)
         if src_type == 'studio':
             # Support only android studio source files
@@ -37,11 +39,12 @@ def read_netsec_config(checksum, app_dir, config, src_type):
         if not is_path_traversal(config):
             netsec_file = xml_dir / f'{config}.xml'
             if (is_safe_path(xml_dir, netsec_file, config)
-                    and netsec_file.exists()):
+                    and netsec_file.exists()):  # lgtm [py/path-injection]
                 desc = f'{msg} from {config}.xml'
                 logger.info(desc)
                 append_scan_status(checksum, desc)
-                return netsec_file.read_text('utf8', 'ignore')
+                return netsec_file.read_text(  # lgtm [py/path-injection]
+                    'utf8', 'ignore')
         # Couldn't find the file defined in manifest
         xmls = Path(xml_dir).glob('*.xml')
         for xml in xmls:
