@@ -10,6 +10,7 @@ Please report all security issues [here](https://github.com/MobSF/Mobile-Securit
 
 | Vulnerability | Affected Versions |
 | ------- | ------------------ |
+| [Path traversal in iOS IPA icon extraction via unvalidated CFBundleExecutable](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-m83p-3cgp-6p8c) | `<=4.5.2` |
 | [Denial of service via APK decompression bomb in the bundled apkinspector ZIP reader](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-cvhc-xjjc-c4p3) | `<=4.5.3` |
 | [Windows-only path traversal via root-relative paths bypasses is_path_traversal()](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-c8g7-42qj-frj3) | `<=4.5.3` |
 | [SSRF port restriction bypass in assetlinks_check](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-95px-34x5-p37h) | `<=4.5.0` |
