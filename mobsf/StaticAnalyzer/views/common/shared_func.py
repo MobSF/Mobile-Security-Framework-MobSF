@@ -25,6 +25,7 @@ from mobsf.MobSF.security import (
 )
 from mobsf.MobSF.security import (
     is_path_traversal,
+    is_pipe_or_link,
     is_safe_path,
 )
 from mobsf.MobSF.utils import (
@@ -534,14 +535,18 @@ def scan_library(request, checksum):
         lib_dir = Path(settings.UPLD_DIR) / checksum
 
         sfile = lib_dir / relative_path
-        if not is_safe_path(lib_dir.as_posix(), sfile.as_posix(), relative_path):
+        if (is_path_traversal(relative_path)
+                or not is_safe_path(
+                    lib_dir.as_posix(), sfile.as_posix(), relative_path)):
             msg = 'Path Traversal Detected!'
             return print_n_send_error_response(request, msg)
         ext = sfile.suffix
         if not ext and 'Frameworks' in relative_path:
             # Force Dylib on Frameworks
             ext = '.dylib'
-        if not sfile.exists():
+        if (not sfile.exists()
+                or not sfile.is_file()
+                or is_pipe_or_link(sfile)):
             msg = 'Library File not found'
             return print_n_send_error_response(request, msg)
         with open(sfile, 'rb') as f:
