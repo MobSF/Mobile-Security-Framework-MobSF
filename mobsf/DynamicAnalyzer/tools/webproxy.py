@@ -29,9 +29,9 @@ def stop_httptools(url):
     try:
         http_proxy = local_url
         headers = {'httptools': 'kill'}
-        url = 'http://127.0.0.1'
+        proxy_kill_url = 'http://127.0.0.1'
         requests.get(
-            url,
+            proxy_kill_url,
             timeout=5,
             headers=headers,
             proxies={'http': http_proxy})
