@@ -70,7 +70,7 @@ jobs:
         poetry run python manage.py migrate
         poetry run python manage.py create_roles
   
-    - uses: actions/setup-java@v5
+    - uses: actions/setup-java@v6
       with:
         distribution: 'temurin'
         java-version: '21'
