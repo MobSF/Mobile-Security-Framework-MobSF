@@ -273,7 +273,7 @@ _DISALLOWED_IPV4_NETWORKS = (
     '172.16.0.0/12',
     '192.168.0.0/16',
     '10.0.0.0/8',
-    '100.64.0.0/10',
+    '100.64.0.0/10',  # NOSONAR - RFC 6598 shared address space denylist
 )
 _IPV6_TRANSLATION_NETWORKS = (
     ipaddress.IPv6Network('64:ff9b::/96'),
@@ -469,13 +469,7 @@ def _open_pinned_request(method, url, allowed_ports, **kwargs):
     """Open one request to a validated literal IP with Host/SNI preserved."""
     proxies = kwargs.pop('proxies', None)
     if _upstream_proxy_enabled(proxies):
-        hostname = sanitize_for_logging(
-            str(urlparse(url).hostname or ''),
-        )
-        logger.warning(
-            'Blocked SSRF-safe request for %s: upstream proxy performs DNS',
-            hostname,
-        )
+        logger.warning('Blocked SSRF-safe request: upstream proxy performs DNS')
         raise ValueError(
             'SSRF-safe requests cannot use an upstream DNS proxy')
     if kwargs.pop('allow_redirects', False):

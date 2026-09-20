@@ -1,7 +1,7 @@
 # -*- coding: utf_8 -*-
 """Android APK Downloader."""
 import logging
-from tempfile import gettempdir
+from tempfile import NamedTemporaryFile
 from pathlib import Path
 from threading import Event, Timer
 from time import monotonic
@@ -60,9 +60,14 @@ def fetch_html(url):
     return None
 
 
-def download_file(url, outfile):
+def download_file(url):
+    """Download an APK to a securely generated temporary file."""
+    outfile = None
     try:
         logger.info('Downloading APK...')
+        with NamedTemporaryFile(
+                prefix='mobsf-', suffix='.apk', delete=False) as tmp_file:
+            outfile = Path(tmp_file.name)
         proxies, verify = upstream_proxy('https')
         total_size = 0
         deadline = monotonic() + MAX_APK_DOWNLOAD_TIME
@@ -89,7 +94,7 @@ def download_file(url, outfile):
                         and int(content_length)
                         > settings.DATA_UPLOAD_MAX_MEMORY_SIZE):
                     raise ValueError('Downloaded APK exceeds size limit')
-                with open(outfile, 'wb') as f:
+                with outfile.open('wb') as f:
                     for chunk in r.iter_content(chunk_size=8192):
                         if timed_out.is_set() or monotonic() > deadline:
                             raise TimeoutError(
@@ -103,7 +108,8 @@ def download_file(url, outfile):
                 timer.cancel()
         return outfile
     except Exception:
-        Path(outfile).unlink(missing_ok=True)
+        if outfile:
+            outfile.unlink(missing_ok=True)
     return None
 
 
@@ -157,22 +163,22 @@ def find_apk_link(url, domain):
 def try_provider(package, provider, domain):
     """Try using a provider."""
     downloaded_file = None
-    data = None
     apk_name = f'{package}.apk'
-    temp_file = Path(gettempdir()) / apk_name
-    link = find_apk_link(provider, domain)
-    if link:
-        downloaded_file = download_file(link, temp_file)
-    if downloaded_file:
-        data = add_apk(downloaded_file, apk_name)
-    if data:
-        return data
-    return None
+    try:
+        link = find_apk_link(provider, domain)
+        if not link:
+            return None
+        downloaded_file = download_file(link)
+        if downloaded_file:
+            return add_apk(downloaded_file, apk_name)
+        return None
+    finally:
+        if downloaded_file:
+            downloaded_file.unlink(missing_ok=True)
 
 
 def apk_download(package):
     """Download APK."""
-    downloaded_file = None
     data = None
     try:
         if not is_internet_available():
@@ -207,6 +213,3 @@ def apk_download(package):
     except Exception:
         logger.exception('Failed to download the apk')
         return None
-    finally:
-        if downloaded_file:
-            downloaded_file.unlink()
