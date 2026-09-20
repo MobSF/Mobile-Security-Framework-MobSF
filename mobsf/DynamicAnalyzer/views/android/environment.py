@@ -600,9 +600,7 @@ class Environment:
 
     def mobsf_agents_setup(self, agent):
         """Setup MobSF agents."""
-        # Install MITM RootCA. This generates the CA cert on first
-        # run only, instead of spawning a new mitmdump process on
-        # every dynamic analysis session.
+        # Install MITM RootCA.
         self.install_mobsf_ca('install')
         if agent == 'frida':
             agent_file = '.mobsf-f'
