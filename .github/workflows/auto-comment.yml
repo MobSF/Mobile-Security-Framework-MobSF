@@ -1,8 +1,16 @@
 name: Auto Comment
 
-on: [issues, pull_request]
+# Welcome comments only. Never check out or execute pull request code.
+# pull_request_target is required so fork PRs can receive comments;
+# GITHUB_TOKEN is write-capable in the base-branch context.
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
 
 permissions:
+  contents: read
   issues: write
   pull-requests: write
 
@@ -10,19 +18,30 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: wow-actions/auto-comment@v1
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          issuesOpened: >
-            👋 @{{ author }}
-            
-            Issues is only for reporting a bug/feature request. For limited support, questions, and discussions, please join [MobSF Slack channel](https://join.slack.com/t/mobsf/shared_invite/zt-3ephptj6c-OuDMatJ9z9MT0T_Vb~l2pg)
-            
-            Please include all the requested and relevant information when opening a bug report. Improper reports will be closed without any response.
+      - name: Comment on new issue
+        if: github.event_name == 'issues'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ github.event.issue.number }}
+          AUTHOR: ${{ github.event.issue.user.login }}
+        run: |
+          body="👋 @${AUTHOR}
 
-          pullRequestOpened: >
-            👋 @{{ author }}
-            
-            Thank you for sending this pull request ❤️.
-            
-            Please make sure you have followed our [contribution guidelines](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md). We will review it as soon as possible
+          Issues is only for reporting a bug/feature request. For limited support, questions, and discussions, please join [MobSF Slack channel](https://join.slack.com/t/mobsf/shared_invite/zt-3ephptj6c-OuDMatJ9z9MT0T_Vb~l2pg)
+
+          Please include all the requested and relevant information when opening a bug report. Improper reports will be closed without any response."
+          gh issue comment "${NUMBER}" --body "${body}"
+
+      - name: Comment on new pull request
+        if: github.event_name == 'pull_request_target'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ github.event.pull_request.number }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          body="👋 @${AUTHOR}
+
+          Thank you for sending this pull request ❤️.
+
+          Please make sure you have followed our [contribution guidelines](https://github.com/MobSF/Mobile-Security-Framework-MobSF/blob/master/.github/CONTRIBUTING.md). We will review it as soon as possible"
+          gh pr comment "${NUMBER}" --body "${body}"
