@@ -296,13 +296,17 @@ pre {
                 <div class="col-12">
                   <p><strong><i class="fas fa-info-circle"></i> INFORMATION</strong></p>
                    <div align="center">
-                      <p>
+                      <div class="mb-3">
                       {% if frida_logs %}
                           <a target="_blank" class="btn btn-primary" role="button" href="{% url 'ios_api_monitor' %}?checksum={{ hash }}&bundle_id={{ bundleid }}"><i class="fa fa-search"></i> API Monitor Logs</a>
                           <a target="_blank" class="btn btn-primary" role="button" href="{% url 'frida_logs' %}?hash={{ hash }}"><i class="fas fa-spider"></i> Frida Logs View</a>
                       {% endif %}
-                        <a class="btn btn-success" target="_blank" role="button" href="{% url 'httptools' %}?project={{bundleid}}"><i class="fab fa-hire-a-helper"></i> Start HTTPTools</a>
-                      </p>
+                        <form method="post" action="{% url 'httptools' %}" target="_blank" class="d-inline">
+                          {% csrf_token %}
+                          <input type="hidden" name="project" value="{{ bundleid }}">
+                          <button type="submit" class="btn btn-success"><i class="fab fa-hire-a-helper"></i> Start HTTPTools</button>
+                        </form>
+                      </div>
                       <p><h6><strong>Raw Logs</strong></h6></p>
                       <p>
                       <a target="_blank" class="btn btn-primary btn-sm" role="button" href="{% url 'download' %}{{ hash }}-web_traffic.txt"><i class="fas fa-water"></i> HTTP(S) Traffic</a>

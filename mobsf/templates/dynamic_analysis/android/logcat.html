@@ -1,26 +1,72 @@
 <div id="messages"></div>
 <button id="tgl" onclick="toggle()">Stop Streaming</button>
 <script type="text/javascript">
-var source = new EventSource('/logcat/?app_package={{package}}');
 var i = 0;
 var stream = true;
 var div = document.getElementById("messages");
-source.onmessage = function(message) {
+var controller = new AbortController();
+
+function renderMessage(data) {
     if (stream) {
-        // Grep package name
-        if (!message.data.includes('{{package}}'))
+        if (!data.includes('{{ package|escapejs }}'))
             return;
         i = i + 1;
         // Display only last 500 lines
         if (i < 500){
-            div.innerHTML = div.innerHTML + html_safe(message.data) + "<br>" ;
+            div.innerHTML = div.innerHTML + html_safe(data) + "<br>" ;
         } else {
-            div.innerHTML = html_safe(message.data) + "<br>";
+            div.innerHTML = html_safe(data) + "<br>";
             i=0;
         }
         window.scrollTo(0,document.body.scrollHeight);
     }
-};
+}
+
+async function startStream() {
+    const body = new URLSearchParams();
+    body.append('app_package', '{{ package|escapejs }}');
+    try {
+        const response = await fetch('/logcat/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: body,
+            signal: controller.signal
+        });
+        if (!response.ok || !response.body) {
+            div.textContent = 'Unable to start logcat stream.';
+            return;
+        }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        while (true) {
+            const result = await reader.read();
+            if (result.done)
+                break;
+            buffer += decoder.decode(result.value, {stream: true});
+            const messages = buffer.split('\n\n');
+            buffer = messages.pop();
+            messages.forEach(function(message) {
+                if (message.startsWith('data:'))
+                    renderMessage(message.substring(5));
+            });
+        }
+        buffer += decoder.decode();
+        if (buffer.startsWith('data:'))
+            renderMessage(buffer.substring(5));
+    } catch (error) {
+        if (error.name !== 'AbortError')
+            div.textContent = 'Logcat stream ended unexpectedly.';
+    }
+}
+
+window.addEventListener('beforeunload', function() {
+    controller.abort();
+});
+startStream();
 
 function toggle(){
     var btn =  document.getElementById("tgl");
