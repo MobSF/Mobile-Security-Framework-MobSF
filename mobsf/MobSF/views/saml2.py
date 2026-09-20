@@ -183,6 +183,11 @@ def saml_acs(request):
         role = get_user_role(attributes['role'])
         if User.objects.filter(username=email).exists():
             user = User.objects.get(username=email)
+            # Reject before group mutation or login(), matching
+            # AuthenticationForm / ModelBackend inactive handling.
+            if not user.is_active:
+                raise Exception(
+                    'This account is inactive.')
             user.groups.clear()
             user.groups.add(Group.objects.get(name=role))
             login(request, user)
