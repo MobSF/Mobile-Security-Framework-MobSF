@@ -6,6 +6,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.shortcuts import render
+from django.views.decorators.http import require_http_methods
 
 from mobsf.MobSF.utils import (
     common_check,
@@ -68,17 +69,13 @@ def dynamic_analysis(request, api=False):
 
 @login_required
 @permission_required(Permissions.SCAN)
+@require_http_methods(['POST'])
 def dynamic_analyzer(request, api=False):
     """Dynamic Analyzer for in-device iOS apps."""
     try:
-        if api:
-            bundleid = request.POST.get('bundle_id')
-            instance_id = request.POST.get('instance_id')
-            form = None
-        else:
-            bundleid = request.GET.get('bundle_id')
-            instance_id = request.GET.get('instance_id')
-            form = UploadFileForm()
+        bundleid = request.POST.get('bundle_id')
+        instance_id = request.POST.get('instance_id')
+        form = None if api else UploadFileForm()
         if not bundleid or not strict_package_check(bundleid):
             return print_n_send_error_response(
                 request,

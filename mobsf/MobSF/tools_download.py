@@ -158,8 +158,11 @@ def install_jadx(mobsf_home, version='1.5.0'):
                 for member in zip_ref.namelist():
                     member_path = os.path.realpath(
                         os.path.join(abs_extract_dir, member))
-                    if not (member_path.startswith(abs_extract_dir + os.sep)
-                            or member_path == abs_extract_dir):
+                    common_path = os.path.commonpath((
+                        os.path.normcase(abs_extract_dir),
+                        os.path.normcase(member_path),
+                    ))
+                    if common_path != os.path.normcase(abs_extract_dir):
                         raise PathTraversalError('Attempted Path Traversal in Zip File')
                     zip_ref.extract(member, extract_dir)
 

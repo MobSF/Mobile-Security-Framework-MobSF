@@ -215,8 +215,12 @@
                     _("status").innerText = "You do not have permission to upload!";
                     return;
                 } else {
-                    var json = JSON.parse(event.target.responseText);
-                    responseHandler(json);
+                    try {
+                        var json = JSON.parse(event.target.responseText);
+                        responseHandler(json);
+                    } catch (error) {
+                        errorHandler(event);
+                    }
                 }
             }
             function errorHandler(event) {

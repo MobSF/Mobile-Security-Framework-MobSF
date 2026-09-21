@@ -1,21 +1,26 @@
 # -*- coding: utf_8 -*-
 """Android APK Downloader."""
 import logging
-from tempfile import gettempdir
+from tempfile import NamedTemporaryFile
 from pathlib import Path
+from threading import Event, Timer
+from time import monotonic
+from urllib.parse import urljoin
 from zipfile import ZipFile
-
-import requests
 
 from bs4 import BeautifulSoup
 
 from django.conf import settings
 
+from mobsf.MobSF.security import (
+    is_path_traversal,
+    safe_request,
+    safe_stream_request,
+)
 from mobsf.MobSF.views.scanning import (
     add_to_recent_scan,
     handle_uploaded_file,
 )
-from mobsf.MobSF.security import is_path_traversal
 from mobsf.MobSF.utils import (
     is_internet_available,
     is_zip_magic,
@@ -25,6 +30,8 @@ from mobsf.MobSF.utils import (
 
 
 logger = logging.getLogger(__name__)
+MAX_PROVIDER_HTML_SIZE = 2 * 1024 * 1024
+MAX_APK_DOWNLOAD_TIME = 120
 
 
 def fetch_html(url):
@@ -36,12 +43,16 @@ def fetch_html(url):
         'Accept-Encoding': 'deflate, gzip'}
     try:
         proxies, verify = upstream_proxy('https')
-        res = requests.get(url,
-                           timeout=5,
-                           headers=headers,
-                           proxies=proxies,
-                           verify=verify,
-                           stream=True)
+        res = safe_request(
+            'GET',
+            url,
+            timeout=5,
+            headers=headers,
+            proxies=proxies,
+            verify=verify,
+            max_redirects=3,
+            max_response_size=MAX_PROVIDER_HTML_SIZE,
+        )
         if res.status_code == 200:
             return BeautifulSoup(res.text, features='lxml')
     except Exception:
@@ -49,22 +60,56 @@ def fetch_html(url):
     return None
 
 
-def download_file(url, outfile):
+def download_file(url):
+    """Download an APK to a securely generated temporary file."""
+    outfile = None
     try:
         logger.info('Downloading APK...')
+        with NamedTemporaryFile(
+                prefix='mobsf-', suffix='.apk', delete=False) as tmp_file:
+            outfile = Path(tmp_file.name)
         proxies, verify = upstream_proxy('https')
-        with requests.get(url,
-                          timeout=5,
-                          stream=True,
-                          proxies=proxies,
-                          verify=verify) as r:
-            r.raise_for_status()
-            with open(outfile, 'wb') as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    f.write(chunk)
+        total_size = 0
+        deadline = monotonic() + MAX_APK_DOWNLOAD_TIME
+        with safe_stream_request(
+                'GET',
+                url,
+                timeout=5,
+                proxies=proxies,
+                verify=verify,
+                max_redirects=3) as r:
+            timed_out = Event()
+
+            def abort_download():
+                timed_out.set()
+                r.close()
+
+            timer = Timer(MAX_APK_DOWNLOAD_TIME, abort_download)
+            timer.daemon = True
+            timer.start()
+            try:
+                r.raise_for_status()
+                content_length = r.headers.get('Content-Length')
+                if (content_length
+                        and int(content_length)
+                        > settings.DATA_UPLOAD_MAX_MEMORY_SIZE):
+                    raise ValueError('Downloaded APK exceeds size limit')
+                with outfile.open('wb') as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        if timed_out.is_set() or monotonic() > deadline:
+                            raise TimeoutError(
+                                'Downloaded APK exceeded time limit')
+                        total_size += len(chunk)
+                        if total_size > settings.DATA_UPLOAD_MAX_MEMORY_SIZE:
+                            raise ValueError(
+                                'Downloaded APK exceeds size limit')
+                        f.write(chunk)
+            finally:
+                timer.cancel()
         return outfile
     except Exception:
-        pass
+        if outfile:
+            outfile.unlink(missing_ok=True)
     return None
 
 
@@ -108,7 +153,7 @@ def find_apk_link(url, domain):
         link = bsp.find('a', href=True, string='click here')
         if link:
             logger.info('Download link found from %s', domain)
-            return link['href']
+            return urljoin(url, link['href'])
         logger.warning('Download link not found in %s', domain)
     except Exception:
         logger.warning('Failed to obtain download link from %s', domain)
@@ -118,22 +163,22 @@ def find_apk_link(url, domain):
 def try_provider(package, provider, domain):
     """Try using a provider."""
     downloaded_file = None
-    data = None
     apk_name = f'{package}.apk'
-    temp_file = Path(gettempdir()) / apk_name
-    link = find_apk_link(provider, domain)
-    if link:
-        downloaded_file = download_file(link, temp_file)
-    if downloaded_file:
-        data = add_apk(downloaded_file, apk_name)
-    if data:
-        return data
-    return None
+    try:
+        link = find_apk_link(provider, domain)
+        if not link:
+            return None
+        downloaded_file = download_file(link)
+        if downloaded_file:
+            return add_apk(downloaded_file, apk_name)
+        return None
+    finally:
+        if downloaded_file:
+            downloaded_file.unlink(missing_ok=True)
 
 
 def apk_download(package):
     """Download APK."""
-    downloaded_file = None
     data = None
     try:
         if not is_internet_available():
@@ -168,6 +213,3 @@ def apk_download(package):
     except Exception:
         logger.exception('Failed to download the apk')
         return None
-    finally:
-        if downloaded_file:
-            downloaded_file.unlink()
