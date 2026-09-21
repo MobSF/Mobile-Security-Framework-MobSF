@@ -24,6 +24,10 @@ Centralized security helpers live in **`mobsf/MobSF/security.py`**. When adding 
 security checks, prefer adding them there. Some legacy validators still live in
 `mobsf/MobSF/utils.py`; use existing helpers where they are already established.
 
+Do **not** import `mobsf.MobSF.security` from `mobsf/MobSF/tools_download.py`. That
+module is loaded from `init.py` before Django apps are ready (`AppRegistryNotReady`).
+Path-containment checks there must stay local.
+
 ### Available Security Functions
 
 Import only the helpers needed for the change:
@@ -51,6 +55,10 @@ from mobsf.MobSF.security import (
 )
 ```
 
+CodeQL `py/path-injection` on `exists()` / `is_file()` / `open()` after a passing
+`is_safe_path` check is a known false positive. Do not wrap the path with `basename()`
+or otherwise change code to silence it; dismiss the alert. `is_safe_path` is the control.
+
 ---
 
 ## Past Vulnerabilities and Insecure Patterns
@@ -58,7 +66,9 @@ from mobsf.MobSF.security import (
 Read `.github/SECURITY.md` to understand the full history of security issues in this
 codebase. Use it as a guide for what classes of bugs to watch for and what patterns
 have been exploited before. When in doubt about whether a pattern is safe, check
-whether a similar pattern has appeared in the advisory history.
+whether a similar pattern has appeared in the advisory history. When landing a
+vulnerability fix, add a row to that file's advisory table with the GHSA link and
+affected version range. Do not drop existing rows.
 
 ---
 
@@ -142,7 +152,9 @@ def my_view(request, api=False):
 Django's template engine escapes variables by default. Do **not** use `{% autoescape off %}`
 or the `|safe` filter on any value derived from scan data, manifests, or user input.
 When rendering user-controlled strings outside of templates (e.g., in a JSON response
-built by hand), use `django.utils.html.escape()` explicitly.
+built by hand), use `django.utils.html.escape()` explicitly. Template auto-escaping
+does not protect JavaScript DOM sinks: never assign scan, task, or user-derived
+strings to `innerHTML`; use `textContent` (see `templates/general/tasks.html`).
 
 ### ORM — No Raw SQL
 
@@ -163,7 +175,9 @@ RecentScansDB.objects.raw(f'SELECT * FROM ... WHERE MD5 = "{checksum}"')
 Django's `CsrfViewMiddleware` is enabled globally. Do not use `@csrf_exempt` on any
 view that modifies state. API endpoints that accept an `X-Csrftoken` header or use
 token-based auth are the only legitimate exception, and that pattern is already
-established in the existing API views.
+established in the existing API views. Mutating actions (including dynamic-analysis
+start/stop/stream) must be POST with a CSRF token, not GET. Split GET-render from
+POST-stream when a page both renders and then streams (e.g. logcat).
 
 ---
 
