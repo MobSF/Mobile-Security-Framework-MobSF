@@ -59,17 +59,29 @@ def handle_split_apk(app_dic):
     manifest = app_dic['app_dir'] / 'AndroidManifest.xml'
     if manifest.exists():
         return True
+    base_apk = None
+    fallback_apk = None
+    split_apks = []
     for apk in unzip(checksum, apks.as_posix(), app_dic['app_dir']):
         full_path = app_dic['app_dir'] / apk
         safe_path = is_safe_path(app_dic['app_dir'], full_path, apk)
-        if apk.endswith('base.apk') and safe_path:
-            move(full_path, apks)
-            return True
-        if ('config.' not in apk.lower()
-                and apk.endswith('.apk')
-                and safe_path):
-            move(full_path, apks)
-            return True
+        if not (apk.endswith('.apk') and safe_path):
+            continue
+        split_apks.append(full_path)
+        if apk.endswith('base.apk'):
+            base_apk = full_path
+        elif 'config.' not in apk.lower() and fallback_apk is None:
+            fallback_apk = full_path
+    primary_apk = base_apk or fallback_apk
+    if primary_apk:
+        move(primary_apk, apks)
+        split_dir = app_dic['app_dir'] / 'split_apks'
+        for split_apk in split_apks:
+            if split_apk == primary_apk:
+                continue
+            unzip(checksum, split_apk.as_posix(),
+                  (split_dir / split_apk.stem).as_posix())
+        return True
     return None
 
 
