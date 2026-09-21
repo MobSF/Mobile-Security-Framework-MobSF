@@ -222,8 +222,9 @@ def api_view_source(request):
         resp = view_source.run(request, api=True)
     else:
         resp = ios_view_source.run(request, api=True)
+    status = resp.pop('_status_code', None)
     if 'error' in resp:
-        response = make_api_response(resp, 500)
+        response = make_api_response(resp, status or 400)
     else:
         response = make_api_response(resp, 200)
     return response

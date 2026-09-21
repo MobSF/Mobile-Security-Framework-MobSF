@@ -3,18 +3,140 @@ import json
 import logging
 import os
 import platform
+import tempfile
+from pathlib import Path
 
 from mobsf.MobSF.init import api_key
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.test import Client, TestCase
+from django.test import (
+    Client,
+    RequestFactory,
+    TestCase,
+    override_settings,
+)
+
+from mobsf.StaticAnalyzer.models import (
+    RecentScansDB,
+    StaticAnalyzerAndroid,
+)
+from mobsf.StaticAnalyzer.views.android.views import (
+    view_source,
+)
 
 logger = logging.getLogger(__name__)
 
 RESCAN = False
 # Set RESCAN to True if Static Analyzer Code is modified
 EXTS = settings.ANDROID_EXTS + settings.IOS_EXTS + settings.WINDOWS_EXTS
+
+
+class ViewSourceXMLTest(TestCase):
+    """Test scan-specific Android XML source roots."""
+
+    checksum = '0123456789abcdef0123456789abcdef'
+
+    def setUp(self):
+        self.uploads = tempfile.TemporaryDirectory()
+        self.settings = override_settings(UPLD_DIR=Path(self.uploads.name))
+        self.settings.enable()
+        self.addCleanup(self.settings.disable)
+        self.addCleanup(self.uploads.cleanup)
+        self.factory = RequestFactory()
+
+    def add_scan(self, scan_type, app_type):
+        RecentScansDB.objects.create(
+            MD5=self.checksum,
+            SCAN_TYPE=scan_type,
+            FILE_NAME=f'sample.{scan_type}',
+        )
+        StaticAnalyzerAndroid.objects.create(
+            MD5=self.checksum,
+            APP_TYPE=app_type,
+        )
+
+    def request_xml(self, file_name):
+        request = self.factory.post(
+            '/api/v1/view_source',
+            {
+                'file': file_name,
+                'type': 'xml',
+                'hash': self.checksum,
+            },
+        )
+        return view_source.run(request, api=True)
+
+    def write_xml(self, relative_path, contents='<manifest/>'):
+        xml_file = Path(self.uploads.name) / self.checksum / relative_path
+        xml_file.parent.mkdir(parents=True, exist_ok=True)
+        xml_file.write_text(contents)
+        return xml_file
+
+    def test_apk_xml_uses_apktool_root(self):
+        self.add_scan('apk', 'apk')
+        self.write_xml('apktool_out/AndroidManifest.xml')
+
+        response = self.request_xml('AndroidManifest.xml')
+
+        self.assertEqual(response['data'], '<manifest/>')
+        self.assertEqual(response['type'], 'xml')
+
+    def test_android_studio_zip_xml_uses_source_root(self):
+        self.add_scan('zip', 'studio')
+        self.write_xml('app/src/main/res/values/strings.xml', '<resources/>')
+
+        response = self.request_xml('res/values/strings.xml')
+
+        self.assertEqual(response['data'], '<resources/>')
+
+    def test_aar_xml_uses_extracted_archive_root(self):
+        self.add_scan('aar', 'aar')
+        self.write_xml('res/values/strings.xml', '<resources/>')
+
+        response = self.request_xml('res/values/strings.xml')
+
+        self.assertEqual(response['data'], '<resources/>')
+
+    def test_traversal_is_rejected(self):
+        self.add_scan('apk', 'apk')
+        self.write_xml('apktool_out/AndroidManifest.xml')
+
+        response = self.request_xml('../outside.xml')
+
+        self.assertIn('error', response)
+        self.assertEqual(response['_status_code'], 400)
+
+    def test_symlink_is_rejected(self):
+        self.add_scan('aar', 'aar')
+        outside = self.write_xml('../outside.xml')
+        root = Path(self.uploads.name) / self.checksum
+        root.mkdir(parents=True, exist_ok=True)
+        (root / 'linked.xml').symlink_to(outside)
+
+        response = self.request_xml('linked.xml')
+
+        self.assertIn('error', response)
+        self.assertEqual(response['_status_code'], 400)
+
+    def test_wrong_scan_type_is_rejected(self):
+        self.add_scan('jar', 'jar')
+        self.write_xml('AndroidManifest.xml')
+
+        response = self.request_xml('AndroidManifest.xml')
+
+        self.assertIn('error', response)
+        self.assertEqual(response['_status_code'], 400)
+
+    def test_missing_root_and_file_are_clean_errors(self):
+        self.add_scan('apk', 'apk')
+
+        response = self.request_xml('AndroidManifest.xml')
+
+        self.assertEqual(response['_status_code'], 404)
+        self.write_xml('apktool_out/present.xml')
+        response = self.request_xml('absent.xml')
+        self.assertEqual(response['_status_code'], 404)
 
 
 def static_analysis_test():
