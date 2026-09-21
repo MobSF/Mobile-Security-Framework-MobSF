@@ -214,7 +214,7 @@ def api_search(request):
 def api_view_source(request):
     """View Source for android & ios source file."""
     params = {'file', 'type', 'hash'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     if request.POST['type'] in {'eclipse', 'studio',
