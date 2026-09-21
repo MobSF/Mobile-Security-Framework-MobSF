@@ -41,12 +41,13 @@ def send_json(data):
 
 def send_error(request, err, api_mode, json_resp, exp=None, status=400):
     """Send error message as dict or JSON."""
+    if json_resp:
+        res = print_n_send_error_response(request, err, True)
+        return JsonResponse(res, safe=False, status=status)
     if exp:
         res = print_n_send_error_response(request, err, api_mode, exp)
     else:
         res = print_n_send_error_response(request, err, api_mode)
-    if json_resp:
-        return JsonResponse(res, safe=False, status=status)
     if api_mode:
         res['_status_code'] = status
     else:
@@ -83,18 +84,16 @@ def run(request, api=False):
         logger.info('View Java Source File')
         exp = 'Error Description'
         if api:
-            fil = request.POST['file']
-            md5 = request.POST['hash']
-            typ = request.POST['type']
             viewsource_form = ViewSourceAndroidApiForm(request.POST)
         else:
-            fil = request.GET['file']
-            md5 = request.GET['md5']
-            typ = request.GET['type']
             viewsource_form = ViewSourceAndroidForm(request.GET)
         if not viewsource_form.is_valid():
             err = FormUtil.errors_message(viewsource_form)
             return send_error(request, err, api_mode, json_resp, exp)
+        cleaned = viewsource_form.cleaned_data
+        fil = cleaned['file']
+        typ = cleaned['type']
+        md5 = cleaned['hash'] if api else cleaned['md5']
         base = Path(settings.UPLD_DIR) / md5
         if typ == 'smali':
             src = base / 'smali_source'
@@ -112,8 +111,8 @@ def run(request, api=False):
                 msg = 'Invalid directory or file extension'
                 return send_error(request, msg, api_mode, json_resp)
 
-        if (not src.exists()
-                or not src.is_dir()
+        if (not src.exists()  # lgtm [py/path-injection]
+                or not src.is_dir()  # lgtm [py/path-injection]
                 or is_pipe_or_link(src)):
             msg = 'Source directory not found'
             return send_error(
@@ -122,8 +121,8 @@ def run(request, api=False):
         if not is_safe_path(src, sfile.as_posix(), fil):
             msg = 'Path Traversal Detected!'
             return send_error(request, msg, api_mode, json_resp)
-        if (not sfile.exists()
-                or not sfile.is_file()
+        if (not sfile.exists()  # lgtm [py/path-injection]
+                or not sfile.is_file()  # lgtm [py/path-injection]
                 or is_pipe_or_link(sfile)):
             msg = 'Source file not found'
             return send_error(
@@ -131,7 +130,8 @@ def run(request, api=False):
         context = {
             'title': escape(ntpath.basename(fil)),
             'file': escape(ntpath.basename(fil)),
-            'data': sfile.read_text('utf-8', 'ignore'),
+            'data': sfile.read_text(  # lgtm [py/path-injection]
+                'utf-8', 'ignore'),
             'type': syntax,
             'sqlite': {},
             'version': settings.MOBSF_VER,
@@ -142,8 +142,7 @@ def run(request, api=False):
         if api_mode:
             return context
         return render(request, template, context)
-    except Exception as exp:
+    except Exception:
         logger.exception('Error Viewing Source')
-        msg = str(exp)
-        exp = exp.__doc__
-        return send_error(request, msg, api_mode, json_resp, exp)
+        return send_error(
+            request, 'Error Viewing Source', api_mode, json_resp)
