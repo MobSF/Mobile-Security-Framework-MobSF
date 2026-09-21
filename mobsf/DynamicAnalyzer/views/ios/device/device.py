@@ -4,6 +4,7 @@
 import logging
 import hashlib
 import platform
+import shlex
 import subprocess
 import base64
 import tempfile
@@ -14,6 +15,8 @@ import time
 import plistlib
 
 from django.conf import settings
+
+from mobsf.MobSF.security import is_path_traversal
 
 
 logger = logging.getLogger(__name__)
@@ -474,14 +477,15 @@ class IOSDevice:
             return None
         temp_path = None
         try:
-            if app_icon:
+            if app_icon and not is_path_traversal(app_icon):
                 # Use the provided icon name from Info.plist
                 search_pattern = f'{app_icon}*.png'
             else:
                 # Guess icon path
                 search_pattern = 'AppIcon*.png'
             output, _, exit_code = self.execute_command(
-                f'find "{app_path}" -iname "{search_pattern}"',
+                f'find {shlex.quote(app_path)} '
+                f'-iname {shlex.quote(search_pattern)}',
             )
             if exit_code == 0:
                 if '.png' not in output:

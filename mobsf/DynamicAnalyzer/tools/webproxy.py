@@ -15,20 +15,23 @@ logger = logging.getLogger(__name__)
 
 def stop_httptools(url):
     """Kill httptools."""
+    # httptools is a local subprocess. Never use the request Host header for
+    # this server-side call; ALLOWED_HOSTS may be configured broadly.
+    local_url = f'http://127.0.0.1:{settings.PROXY_PORT}'
     # Invoke HTTPtools UI Kill Request
     try:
-        requests.get(f'{url}/kill', timeout=5)
+        requests.get(f'{local_url}/kill', timeout=5)
         logger.info('Killing httptools UI')
     except Exception:
         pass
 
     # Invoke HTTPtools Proxy Kill Request
     try:
-        http_proxy = url.replace('https://', 'http://')
+        http_proxy = local_url
         headers = {'httptools': 'kill'}
-        url = 'http://127.0.0.1'
+        proxy_kill_url = 'http://127.0.0.1'
         requests.get(
-            url,
+            proxy_kill_url,
             timeout=5,
             headers=headers,
             proxies={'http': http_proxy})
@@ -56,22 +59,48 @@ def start_httptools_ui(port):
     time.sleep(3)
 
 
+def _mitm_ca_file():
+    """Path to the mitmproxy generated CA cert."""
+    from mitmproxy import options
+    ca_dir = Path(options.CONF_DIR).expanduser()
+    return ca_dir / 'mitmproxy-ca-cert.pem'
+
+
 def create_ca():
     """Generate CA on first run."""
+    ca_file = _mitm_ca_file()
+    if ca_file.exists():
+        return
+
     argz = ['mitmdump', '-n']
-    subprocess.Popen(argz,
-                     stdin=None,
-                     stdout=None,
-                     stderr=None,
-                     close_fds=True)
-    time.sleep(3)
+    proc = subprocess.Popen(argz,
+                            stdin=subprocess.DEVNULL,
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL,
+                            close_fds=True)
+    try:
+        # mitmdump is only needed here to generate the CA cert. Stop it
+        # once the cert file appears instead of leaving it running as a
+        # leaked background process.
+        for _ in range(30):
+            if ca_file.exists() or proc.poll() is not None:
+                break
+            time.sleep(0.5)
+        if not ca_file.exists():
+            logger.warning('mitmproxy root CA generation failed.')
+    finally:
+        if proc.poll() is None:
+            proc.terminate()
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait()
 
 
 def get_ca_file():
     """Get CA Dir."""
-    from mitmproxy import options
-    ca_dir = Path(options.CONF_DIR).expanduser()
-    ca_file = ca_dir / 'mitmproxy-ca-cert.pem'
+    ca_file = _mitm_ca_file()
     if not ca_file.exists():
         create_ca()
     return ca_file.as_posix()

@@ -82,17 +82,13 @@ def dynamic_analysis_device(request, api=False):
 
 @login_required
 @permission_required(Permissions.SCAN)
+@require_http_methods(['POST'])
 def dynamic_analyzer_device(request, api=False):
     """Dynamic Analyzer for Jailbroken iOS devices."""
     try:
-        if api:
-            bundleid = request.POST.get('bundle_id')
-            device_id = request.POST.get('device_id')
-            form = None
-        else:
-            bundleid = request.GET.get('bundle_id')
-            device_id = request.GET.get('device_id')
-            form = UploadFileForm()
+        bundleid = request.POST.get('bundle_id')
+        device_id = request.POST.get('device_id')
+        form = None if api else UploadFileForm()
         if not bundleid or not strict_package_check(bundleid):
             return print_n_send_error_response(
                 request,

@@ -9,6 +9,11 @@ from macholib.mach_o import (CPU_TYPE_NAMES, MH_CIGAM_64, MH_MAGIC_64,
                              get_cpu_subtype)
 from macholib.MachO import MachO
 
+from mobsf.MobSF.security import (
+    is_path_traversal,
+    is_pipe_or_link,
+    is_safe_path,
+)
 from mobsf.StaticAnalyzer.views.ios.classdump import (
     get_class_dump,
 )
@@ -75,7 +80,8 @@ def ipa_macho_analysis(binary):
     return data
 
 
-def binary_analysis(checksum, src, tools_dir, app_dir, executable_name):
+def binary_analysis(
+        checksum, src, tools_dir, app_dir, executable_name, app_root=None):
     """Binary Analysis of IPA."""
     bin_dict = {
         'checksec': {},
@@ -92,26 +98,54 @@ def binary_analysis(checksum, src, tools_dir, app_dir, executable_name):
         logger.info(msg)
         append_scan_status(checksum, msg)
 
-        dot_app_path = next(Path(src).glob('**/*.app'), None)
+        scan_root = Path(app_dir)
+        payload_root = Path(src)
+        dot_app_path = Path(app_root) if app_root else next(
+            payload_root.glob('**/*.app'), None)
 
         if not dot_app_path:
             logger.warning('Could not find .app directory.')
             return bin_dict
 
-        bin_dir = dot_app_path
+        try:
+            app_relative = dot_app_path.relative_to(scan_root)
+            payload_relative = dot_app_path.relative_to(payload_root)
+        except ValueError:
+            logger.warning('Application bundle escapes scan directory.')
+            return bin_dict
+        if (not is_safe_path(scan_root, dot_app_path, app_relative)
+                or not is_safe_path(
+                    payload_root, dot_app_path, payload_relative)
+                or not dot_app_path.is_dir()
+                or is_pipe_or_link(dot_app_path)):
+            logger.warning('Unsafe application bundle path.')
+            return bin_dict
 
         if not executable_name:
             bin_name = dot_app_path.stem
         else:
-            _bin = bin_dir / executable_name
-            if _bin.exists():
+            if is_path_traversal(executable_name):
+                logger.warning('Unsafe CFBundleExecutable value.')
+                return bin_dict
+            _bin = dot_app_path / executable_name
+            if not is_safe_path(
+                    dot_app_path, _bin, executable_name):
+                logger.warning('Executable escapes application bundle.')
+                return bin_dict
+            if (_bin.exists()
+                    and _bin.is_file()
+                    and not is_pipe_or_link(_bin)):
                 bin_name = executable_name
             else:
                 bin_name = dot_app_path.stem
 
-        bin_path = bin_dir / bin_name
+        bin_path = dot_app_path / bin_name
 
-        if not (bin_path.exists() and bin_path.is_file()):
+        if (is_path_traversal(bin_name)
+                or not is_safe_path(dot_app_path, bin_path, bin_name)
+                or not bin_path.exists()
+                or not bin_path.is_file()
+                or is_pipe_or_link(bin_path)):
             msg = (
                 f'MobSF Cannot find binary in {bin_path.as_posix()}. '
                 'Skipping Binary Analysis.')

@@ -231,12 +231,20 @@ textarea:focus {
                                 {{ det.1}}
                            </td>
                             <td align="center"> 
-                              <p>
-                                <a class="btn btn-primary disable" onclick="dynamic_loader()" href="{% url "dynamic_analyzer" checksum=hash %}?re_install=0&install=0"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
-                              </p>
-                              <p>
-                                <a class="btn btn-warning disable" onclick="dynamic_loader()" href="{% url "static_scan" checksum=hash %}"><i class="fa fa-download"></i> Pull &amp; Static Analysis</a>
-                              </p>
+                              <div class="mb-3">
+                                <form method="post" action="{% url "dynamic_analyzer" checksum=hash %}">
+                                  {% csrf_token %}
+                                  <input type="hidden" name="re_install" value="0">
+                                  <input type="hidden" name="install" value="0">
+                                  <button type="submit" class="btn btn-primary disable" onclick="dynamic_loader()"><i class="fab fa-android"></i> Start Dynamic Analysis</button>
+                                </form>
+                              </div>
+                              <div class="mb-3">
+                                <form method="post" action="{% url "static_scan" checksum=hash %}">
+                                  {% csrf_token %}
+                                  <button type="submit" class="btn btn-warning disable" onclick="dynamic_loader()"><i class="fa fa-download"></i> Pull &amp; Static Analysis</button>
+                                </form>
+                              </div>
                               <p>
                                  <a class="btn btn-info" href="{% url "dynamic_report" checksum=hash %}"><i class="fa fa-mobile"></i> View Report </a>
                               </p>
@@ -272,12 +280,19 @@ textarea:focus {
                                 {{ e.PACKAGE_NAME }}
                            </td>
                             <td align="center"> 
-                              <p>
-                                <a class="btn btn-success disable" onclick="dynamic_loader()" href="{% url "dynamic_analyzer" checksum=e.MD5 %}"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
-                              </p>
-                              <p>
-                                <a class="btn btn-primary btn-sm disable" onclick="dynamic_loader()" href="{% url "dynamic_analyzer" checksum=e.MD5 %}?re_install=0"><i class="fab fa-android"></i> Start Dynamic Analysis (No reinstall)</a>
-                              </p>
+                              <div class="mb-3">
+                                <form method="post" action="{% url "dynamic_analyzer" checksum=e.MD5 %}">
+                                  {% csrf_token %}
+                                  <button type="submit" class="btn btn-success disable" onclick="dynamic_loader()"><i class="fab fa-android"></i> Start Dynamic Analysis</button>
+                                </form>
+                              </div>
+                              <div class="mb-3">
+                                <form method="post" action="{% url "dynamic_analyzer" checksum=e.MD5 %}">
+                                  {% csrf_token %}
+                                  <input type="hidden" name="re_install" value="0">
+                                  <button type="submit" class="btn btn-primary btn-sm disable" onclick="dynamic_loader()"><i class="fab fa-android"></i> Start Dynamic Analysis (No reinstall)</button>
+                                </form>
+                              </div>
                               <p>
                                  <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "dynamic_report" checksum=e.MD5 %}"><i class="fa fa-mobile"></i> View Report </a>
                               </p>
