@@ -214,16 +214,17 @@ def api_search(request):
 def api_view_source(request):
     """View Source for android & ios source file."""
     params = {'file', 'type', 'hash'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     if request.POST['type'] in {'eclipse', 'studio',
-                                'apk', 'java', 'smali'}:
+                                'apk', 'java', 'smali', 'xml'}:
         resp = view_source.run(request, api=True)
     else:
         resp = ios_view_source.run(request, api=True)
+    status = resp.pop('_status_code', None)
     if 'error' in resp:
-        response = make_api_response(resp, 500)
+        response = make_api_response(resp, status or 400)
     else:
         response = make_api_response(resp, 200)
     return response

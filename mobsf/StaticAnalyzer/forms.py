@@ -63,6 +63,7 @@ class AndroidChecks(forms.Form):
             ('studio', 'studio'),
             ('java', 'java'),
             ('smali', 'smali'),
+            ('xml', 'xml'),
             ('apk', 'apk'),
             ('jar', 'jar'),
             ('aar', 'aar'),

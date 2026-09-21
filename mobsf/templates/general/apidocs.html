@@ -820,7 +820,7 @@
                 </tr>
                 <tr>
                   <td>type</td>
-                  <td>apk/ipa/studio/eclipse/ios</td>
+                  <td>apk/ipa/studio/eclipse/ios/xml</td>
                   <td>Yes</td>
                 </tr>
               </tbody>
@@ -866,6 +866,10 @@
                     <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=6c23c2970551be15f32bbab0b5db0c71&amp;type=ipa&amp;file=classdump.txt" -H "Authorization: {{ api_key}}"
                   </code></pre>
                   </li>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=18e244926da1e49c5b8ffc1c30de8abc&amp;type=xml&amp;file=AndroidManifest.xml" -H "Authorization: {{ api_key}}"
+                  </code></pre>
+                  </li>
                 </ul>
                 <p>OR</p>
                 <ul>
@@ -875,6 +879,10 @@
                   </li>
                   <li>
                     <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=6c23c2970551be15f32bbab0b5db0c71&amp;type=ipa&amp;file=classdump.txt" -H "X-Mobsf-Api-Key: {{ api_key}}"
+                  </code></pre>
+                  </li>
+                  <li>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=18e244926da1e49c5b8ffc1c30de8abc&amp;type=xml&amp;file=AndroidManifest.xml" -H "X-Mobsf-Api-Key: {{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>
