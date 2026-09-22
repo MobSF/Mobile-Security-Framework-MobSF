@@ -9,7 +9,12 @@ from pathlib import Path
 from django.conf import settings
 
 from mobsf.StaticAnalyzer.views.common.shared_func import unzip
-from mobsf.MobSF.security import is_safe_path
+from mobsf.MobSF.security import (
+    is_path_traversal,
+    is_pipe_or_link,
+    is_safe_path,
+    sanitize_for_logging,
+)
 from mobsf.MobSF.utils import (
     append_scan_status,
     find_java_binary,
@@ -51,26 +56,103 @@ def handle_xapk(app_dic):
     return None
 
 
+def _regular_file(path):
+    """Return True for a regular file that is not a symlink or FIFO."""
+    try:
+        if is_pipe_or_link(path):
+            return False
+    except OSError:
+        return False
+    return Path(path).is_file()
+
+
+def _collect_split_apks(app_dir, members):
+    """Return the primary APK and sibling APKs that were actually written."""
+    base_apk = None
+    fallback_apk = None
+    splits = []
+    app_dir = Path(app_dir)
+    for apk in members:
+        if not isinstance(apk, str) or not apk.endswith('.apk'):
+            continue
+        full_path = app_dir / apk
+        if not is_safe_path(app_dir, full_path, apk):
+            continue
+        if not _regular_file(full_path):
+            continue
+        splits.append(full_path)
+        if apk.endswith('base.apk'):
+            base_apk = full_path
+        elif 'config.' not in apk.lower() and fallback_apk is None:
+            fallback_apk = full_path
+    return base_apk or fallback_apk, splits
+
+
+def _split_extract_dir(app_dir, split_apk):
+    """Return an extract directory inside the upload root, or None."""
+    dest_name = split_apk.stem
+    if (not dest_name or dest_name in {'.', '..'}
+            or is_path_traversal(dest_name)):
+        return None
+    dest = Path(app_dir) / 'split_apks' / dest_name
+    if not is_safe_path(app_dir, dest, dest_name):
+        return None
+    return dest
+
+
+def _extract_sibling_splits(checksum, app_dir, primary, splits, size_budget):
+    """Extract non-primary splits under one uncompressed-size budget."""
+    limit = settings.ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE
+    for split_apk in splits:
+        if split_apk == primary:
+            continue
+        if size_budget['used'] >= limit:
+            logger.error('Split APK uncompressed size budget exhausted')
+            break
+        if not _regular_file(split_apk):
+            logger.warning(
+                'Skipping unextracted split APK %s',
+                sanitize_for_logging(split_apk.name))
+            continue
+        dest = _split_extract_dir(app_dir, split_apk)
+        if dest is None:
+            logger.warning(
+                'Skipping unsafe split APK %s',
+                sanitize_for_logging(split_apk.name))
+            continue
+        unzip(
+            checksum,
+            split_apk.as_posix(),
+            dest.as_posix(),
+            size_budget)
+
+
 def handle_split_apk(app_dic):
-    """Unzip and Extract Split APKs."""
+    """Unzip split APKs and extract sibling splits for native libraries."""
     checksum = app_dic['md5']
-    apks = app_dic['app_dir'] / f'{checksum}.apk'
+    app_dir = app_dic['app_dir']
+    apks = app_dir / f'{checksum}.apk'
     # Check if previously extracted
-    manifest = app_dic['app_dir'] / 'AndroidManifest.xml'
+    manifest = app_dir / 'AndroidManifest.xml'
     if manifest.exists():
         return True
-    for apk in unzip(checksum, apks.as_posix(), app_dic['app_dir']):
-        full_path = app_dic['app_dir'] / apk
-        safe_path = is_safe_path(app_dic['app_dir'], full_path, apk)
-        if apk.endswith('base.apk') and safe_path:
-            move(full_path, apks)
-            return True
-        if ('config.' not in apk.lower()
-                and apk.endswith('.apk')
-                and safe_path):
-            move(full_path, apks)
-            return True
-    return None
+    primary, splits = _collect_split_apks(
+        app_dir,
+        unzip(checksum, apks.as_posix(), app_dir),
+    )
+    if primary is None:
+        return None
+    move(primary, apks)
+    # Sibling contents share one cap. The container unzip above keeps its
+    # own cap, matching the previous single-archive limit.
+    _extract_sibling_splits(
+        checksum,
+        app_dir,
+        primary,
+        splits,
+        {'used': 0},
+    )
+    return True
 
 
 def handle_aab(app_dic):
