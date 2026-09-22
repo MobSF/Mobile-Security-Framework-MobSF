@@ -1,6 +1,7 @@
 # -*- coding: utf_8 -*-
 """Handle XAPK File."""
 import logging
+import os
 import subprocess
 from json import load
 from shutil import move
@@ -56,14 +57,42 @@ def handle_xapk(app_dic):
     return None
 
 
-def _regular_file(path):
-    """Return True for a regular file that is not a symlink or FIFO."""
+def _contained_path(root, candidate):
+    """Return candidate's normalized path when it stays inside root.
+
+    The prefix check runs on the normalized path. ``is_safe_path`` still
+    rejects symlink escapes.
+    """
     try:
-        if is_pipe_or_link(path):
-            return False
-    except OSError:
+        root_norm = os.path.normpath(root)
+        candidate_norm = os.path.normpath(candidate)
+    except (TypeError, ValueError):
+        return None
+    prefix = root_norm if root_norm.endswith(os.sep) else root_norm + os.sep
+    if not candidate_norm.startswith(prefix):
+        return None
+    raw_name = os.path.basename(candidate_norm)
+    if not is_safe_path(root, candidate_norm, raw_name):
+        return None
+    return candidate_norm
+
+
+def _regular_file(root, path):
+    """Return True for a regular file inside root that is not a link or FIFO."""
+    contained = _contained_path(root, path)
+    if contained is None:
         return False
-    return Path(path).is_file()
+    root_norm = os.path.normpath(root)
+    prefix = root_norm if root_norm.endswith(os.sep) else root_norm + os.sep
+    candidate_norm = os.path.normpath(contained)
+    if candidate_norm.startswith(prefix):
+        try:
+            if is_pipe_or_link(candidate_norm):
+                return False
+        except OSError:
+            return False
+        return os.path.isfile(candidate_norm)
+    return False
 
 
 def _collect_split_apks(app_dir, members):
@@ -71,14 +100,11 @@ def _collect_split_apks(app_dir, members):
     base_apk = None
     fallback_apk = None
     splits = []
-    app_dir = Path(app_dir)
     for apk in members:
         if not isinstance(apk, str) or not apk.endswith('.apk'):
             continue
-        full_path = app_dir / apk
-        if not is_safe_path(app_dir, full_path, apk):
-            continue
-        if not _regular_file(full_path):
+        full_path = _contained_path(app_dir, Path(app_dir) / apk)
+        if full_path is None or not _regular_file(app_dir, full_path):
             continue
         splits.append(full_path)
         if apk.endswith('base.apk'):
@@ -90,41 +116,40 @@ def _collect_split_apks(app_dir, members):
 
 def _split_extract_dir(app_dir, split_apk):
     """Return an extract directory inside the upload root, or None."""
-    dest_name = split_apk.stem
+    dest_name = Path(split_apk).stem
     if (not dest_name or dest_name in {'.', '..'}
             or is_path_traversal(dest_name)):
         return None
-    dest = Path(app_dir) / 'split_apks' / dest_name
-    if not is_safe_path(app_dir, dest, dest_name):
-        return None
-    return dest
+    return _contained_path(app_dir, Path(app_dir) / 'split_apks' / dest_name)
 
 
 def _extract_sibling_splits(checksum, app_dir, primary, splits, size_budget):
     """Extract non-primary splits under one uncompressed-size budget."""
     limit = settings.ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE
     for split_apk in splits:
-        if split_apk == primary:
+        if os.path.normpath(split_apk) == os.path.normpath(primary):
             continue
         if size_budget['used'] >= limit:
             logger.error('Split APK uncompressed size budget exhausted')
             break
-        if not _regular_file(split_apk):
+        archive = _contained_path(app_dir, split_apk)
+        if archive is None or not _regular_file(app_dir, archive):
             logger.warning(
                 'Skipping unextracted split APK %s',
-                sanitize_for_logging(split_apk.name))
+                sanitize_for_logging(Path(split_apk).name))
             continue
-        dest = _split_extract_dir(app_dir, split_apk)
-        if dest is None:
+        dest = _split_extract_dir(app_dir, archive)
+        root_norm = os.path.normpath(app_dir)
+        prefix = root_norm if root_norm.endswith(os.sep) else root_norm + os.sep
+        archive_norm = os.path.normpath(archive)
+        if dest is None or not archive_norm.startswith(prefix):
             logger.warning(
                 'Skipping unsafe split APK %s',
-                sanitize_for_logging(split_apk.name))
+                sanitize_for_logging(Path(archive).name))
             continue
-        unzip(
-            checksum,
-            split_apk.as_posix(),
-            dest.as_posix(),
-            size_budget)
+        dest_norm = os.path.normpath(dest)
+        if archive_norm.startswith(prefix) and dest_norm.startswith(prefix):
+            unzip(checksum, archive_norm, dest_norm, size_budget)
 
 
 def handle_split_apk(app_dic):
@@ -136,23 +161,35 @@ def handle_split_apk(app_dic):
     manifest = app_dir / 'AndroidManifest.xml'
     if manifest.exists():
         return True
+    archive = _contained_path(app_dir, apks)
+    if archive is None:
+        return None
     primary, splits = _collect_split_apks(
         app_dir,
-        unzip(checksum, apks.as_posix(), app_dir),
+        unzip(checksum, archive, app_dir),
     )
     if primary is None:
         return None
-    move(primary, apks)
-    # Sibling contents share one cap. The container unzip above keeps its
-    # own cap, matching the previous single-archive limit.
-    _extract_sibling_splits(
-        checksum,
-        app_dir,
-        primary,
-        splits,
-        {'used': 0},
-    )
-    return True
+    destination = _contained_path(app_dir, apks)
+    if destination is None or not _regular_file(app_dir, primary):
+        return None
+    root_norm = os.path.normpath(app_dir)
+    prefix = root_norm if root_norm.endswith(os.sep) else root_norm + os.sep
+    primary_norm = os.path.normpath(primary)
+    destination_norm = os.path.normpath(destination)
+    if primary_norm.startswith(prefix) and destination_norm.startswith(prefix):
+        move(primary_norm, destination_norm)
+        # Sibling contents share one cap. The container unzip above keeps its
+        # own cap, matching the previous single-archive limit.
+        _extract_sibling_splits(
+            checksum,
+            app_dir,
+            primary_norm,
+            splits,
+            {'used': 0},
+        )
+        return True
+    return None
 
 
 def handle_aab(app_dic):
