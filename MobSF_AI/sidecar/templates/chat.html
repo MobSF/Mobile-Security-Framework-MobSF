@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MobSF Chat</title>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <style>
+        .content-wrapper {
+            margin-left: 0 !important;
+        }
+    </style>
+</head>
+
+<body class="hold-transition layout-top-nav">
+    <div class="wrapper">
+        <div class="content-wrapper">
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0 text-dark">Security Assistant</h1>
+                        </div>
+                        <div class="col-sm-6">
+                            <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="/recent/">Recent Scans</a></li>
+                                <li class="breadcrumb-item active">Chat</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="content">
+                <div class="container-fluid">
+                    <!-- Direct Chat -->
+                    <div class="card card-primary card-outline direct-chat direct-chat-primary"
+                        style="height: 75vh; display: flex; flex-direction: column;">
+                        <div class="card-header">
+                            <h3 class="card-title">Chat Analysis for {{ scan_hash }}</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body" style="flex: 1; overflow: hidden; display: flex;">
+                            <!-- Conversations are loaded here -->
+                            <div class="direct-chat-messages" id="chat-messages"
+                                style="flex: 1; height: 100%; overflow-y: auto; padding: 20px;">
+                                <!-- Message. Default to the left -->
+                                <div class="direct-chat-msg">
+                                    <div class="direct-chat-infos clearfix">
+                                        <span class="direct-chat-name float-left">MobSF Bot</span>
+                                        <span class="direct-chat-timestamp float-right">Now</span>
+                                    </div>
+                                    <!-- /.direct-chat-infos -->
+                                    <img class="direct-chat-img" src="/static/img/mobsf_icon.png" alt="Bot">
+                                    <!-- /.direct-chat-img -->
+                                    <div class="direct-chat-text">
+                                        Hello! I analyzed the report for <b>{{ scan_hash }}</b>. Ask me anything about
+                                        vulnerabilities, code issues, or security recommendations.
+                                    </div>
+                                    <!-- /.direct-chat-text -->
+                                </div>
+                                <!-- /.direct-chat-msg -->
+                            </div>
+                            <!--/.direct-chat-messages-->
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <div class="input-group">
+                                <input type="text" id="chat-input" name="message" placeholder="Type Message ..."
+                                    class="form-control" autocomplete="off">
+                                <span class="input-group-append">
+                                    <button type="button" id="send-chat" class="btn btn-primary">Send</button>
+                                </span>
+                            </div>
+                        </div>
+                        <!-- /.card-footer-->
+                    </div>
+                    <!--/.direct-chat -->
+                </div>
+            </section>
+        </div>
+    </div>
+    </div>
+</body>
+
+</html>
+
+
+<script>
+    $(document).ready(function () {
+        const scanHash = "{{ scan_hash }}";
+        let chatHistory = [];
+
+        function scrollToBottom() {
+            const messages = document.getElementById('chat-messages');
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const message = $('#chat-input').val().trim();
+            if (!message) return;
+
+            // Add User Message
+            const userHtml = `
+            <div class="direct-chat-msg right">
+               <div class="direct-chat-infos clearfix">
+                  <span class="direct-chat-name float-right">You</span>
+                  <span class="direct-chat-timestamp float-left">Now</span>
+               </div>
+               <div class="direct-chat-text">
+                  ${$('<div>').text(message).html()}
+               </div>
+            </div>`;
+
+            $('#chat-messages').append(userHtml);
+            $('#chat-input').val('');
+            scrollToBottom();
+
+            // Typing Indicator
+            const typingId = 'typing-' + Date.now();
+            $('#chat-messages').append(`
+            <div class="direct-chat-msg" id="${typingId}">
+               <div class="direct-chat-infos clearfix">
+                  <span class="direct-chat-name float-left">MobSF Bot</span>
+               </div>
+               <img class="direct-chat-img" src="/static/img/mobsf_icon.png" alt="Bot">
+               <div class="direct-chat-text">
+                  <i>Analyzing...</i>
+               </div>
+            </div>`);
+            scrollToBottom();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        hash: scanHash,
+                        message: message,
+                        history: chatHistory
+                    })
+                });
+
+                const data = await response.json();
+                $('#' + typingId).remove();
+
+                if (data.response) {
+                    const botHtml = `
+                    <div class="direct-chat-msg">
+                       <div class="direct-chat-infos clearfix">
+                          <span class="direct-chat-name float-left">MobSF Bot</span>
+                          <span class="direct-chat-timestamp float-right">Now</span>
+                       </div>
+                       <img class="direct-chat-img" src="/static/img/mobsf_icon.png" alt="Bot">
+                       <div class="direct-chat-text">
+                          ${data.response.replace(/\n/g, '<br>')}
+                       </div>
+                    </div>`;
+                    $('#chat-messages').append(botHtml);
+
+                    chatHistory.push({ role: "user", parts: [message] });
+                    chatHistory.push({ role: "model", parts: [data.response] });
+                } else {
+                    // Error
+                    $('#chat-messages').append(`<div class="direct-chat-msg"><div class="direct-chat-text bg-danger">Error: ${data.error || 'Unknown error'}</div></div>`);
+                }
+            } catch (error) {
+                $('#' + typingId).remove();
+                $('#chat-messages').append(`<div class="direct-chat-msg"><div class="direct-chat-text bg-danger">Network Error: ${error.message}</div></div>`);
+            }
+            scrollToBottom();
+        }
+
+        $('#send-chat').click(sendMessage);
+        $('#chat-input').keypress(function (e) {
+            if (e.which == 13) sendMessage();
+        });
+    });
+</script>

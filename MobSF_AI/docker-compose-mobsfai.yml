@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  mobsf:
+    image: opensecurity/mobile-security-framework-mobsf:latest
+    container_name: mobsf_core
+    expose:
+      - "8000"
+    environment:
+      - MOBSF_API_KEY=1234567890
+    networks:
+      - mobsf_net
+
+  chat:
+    build: ./sidecar
+    container_name: mobsf_chat
+    expose:
+      - "5000"
+    environment:
+      - MOBSF_URL=http://mobsf:8000
+      - MOBSF_API_KEY=1234567890
+      - OPENAI_API_KEY=${MOBSF_OPENAI_API_KEY}
+    networks:
+      - mobsf_net
+
+  gateway:
+    image: nginx:alpine
+    container_name: mobsf_gateway
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - mobsf_net
+    depends_on:
+      - mobsf
+      - chat
+
+networks:
+  mobsf_net:
+    driver: bridge
