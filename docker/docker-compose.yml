@@ -1,7 +1,7 @@
 services:
 
   postgres:
-    image: "postgres:latest"
+    image: "postgres:17.6-bookworm"
     restart: always
     deploy:
       resources:
@@ -10,16 +10,21 @@ services:
         reservations:
           memory: 512M
     volumes:
-      - $HOME/MobSF/postgresql_data:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in docker/.env}
       - POSTGRES_DB=mobsf
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mobsf"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - mobsf_network
 
   nginx:
-    image: nginx:latest
+    image: nginx:1.28.0-alpine
     restart: always
     deploy:
       resources:
@@ -28,59 +33,66 @@ services:
         reservations:
           memory: 256M
     ports:
-      - "80:4000"
-      - "1337:4001"
+      - "127.0.0.1:8000:4000"
+      - "127.0.0.1:1337:4001"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - mobsf
+      mobsf:
+        condition: service_healthy
     networks:
       - mobsf_network
 
   djangoq:
-    image: opensecurity/mobile-security-framework-mobsf:latest
+    image: mobsf-bounty:4.5.4-dev
     build:
       context: ..
       dockerfile: Dockerfile
     restart: unless-stopped
     command: /home/mobsf/Mobile-Security-Framework-MobSF/scripts/qcluster.sh
     volumes:
-      - $HOME/MobSF/mobsf_data:/home/mobsf/.MobSF
+      - mobsf_data:/home/mobsf/.MobSF
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in docker/.env}
       - POSTGRES_DB=mobsf
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      mobsf:
+        condition: service_healthy
     networks:
       - mobsf_network
 
   mobsf:
-    image: opensecurity/mobile-security-framework-mobsf:latest
+    image: mobsf-bounty:4.5.4-dev
     build:
       context: ..
       dockerfile: Dockerfile
     restart: always
     tty: true
     volumes:
-      - $HOME/MobSF/mobsf_data:/home/mobsf/.MobSF
+      - mobsf_data:/home/mobsf/.MobSF
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in docker/.env}
       - POSTGRES_DB=mobsf
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - MOBSF_ASYNC_ANALYSIS=1
+      - DJANGO_SUPERUSER_USERNAME=${MOBSF_ADMIN_USERNAME:-mobsf}
+      - DJANGO_SUPERUSER_PASSWORD=${MOBSF_ADMIN_PASSWORD:?Set MOBSF_ADMIN_PASSWORD in docker/.env}
+      - MOBSF_ALLOWED_HOSTS=${MOBSF_ALLOWED_HOSTS:-localhost,127.0.0.1,mobsf}
     healthcheck:
       test: curl -f http://localhost:8000/login/ || exit 1
       interval: 30s
       timeout: 10s
       retries: 5
     depends_on:
-      - postgres
-      - djangoq
+      postgres:
+        condition: service_healthy
     networks:
       - mobsf_network
     extra_hosts:
@@ -89,3 +101,7 @@ services:
 networks:
   mobsf_network:
     driver: bridge
+
+volumes:
+  postgres_data:
+  mobsf_data:
