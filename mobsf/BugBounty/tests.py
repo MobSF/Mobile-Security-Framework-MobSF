@@ -65,6 +65,8 @@ class ScopeTests(SimpleTestCase):
         for url in ('https://example.test/%252e%252e/admin',
                     'https://example.test/a/../admin',
                     'https://example.test/a\\admin',
+                    'https://example.test//admin',
+                    'https://example.test/admin;session=value',
                     'https://user:pass@example.test/',
                     'https://example.test:bad/', 'file:///etc/passwd',
                     'https://example.test/[REDACTED]'):
@@ -236,7 +238,7 @@ class WorkspaceTests(TestCase):
             {'kind': 'manual', 'source': 'review', 'content': 'text'}).status_code,
             404)
 
-    @override_settings(MOBSF_DISABLE_AUTHENTICATION='1')
+    @override_settings(DISABLE_AUTHENTICATION='1')
     def test_global_api_key_cannot_bypass_workspace_auth(self):
         anonymous = Client()
         self.assertEqual(anonymous.get('/bounty/api/programs/').status_code, 302)

@@ -67,7 +67,7 @@ def classify(url, program):
             return 'UNKNOWN'
         decoded = unquote(path)
         # Reject ambiguous encodings rather than assume router semantics.
-        if ('%' in decoded or '\\' in decoded
+        if ('%' in decoded or '\\' in decoded or '//' in decoded or ';' in decoded
                 or any(p in ('.', '..') for p in decoded.split('/'))):
             return 'UNKNOWN'
         rules = validate_rules(program.rules)
