@@ -1,0 +1,27 @@
+{% extends "base/base_layout.html" %}
+{% block sidebar_option %}sidebar-collapse{% endblock %}
+{% block content %}
+<main class="content-wrapper p-4">
+  <a href="{% url 'bounty_program' analysis.program_id %}">{{ analysis.program.name }}</a>
+  <h1>{{ analysis.package }} {{ analysis.version }}</h1><p>Analysis {{ analysis.checksum }} — {{ analysis.platform }}</p>
+  <p><a href="{% url 'bounty_export' analysis.pk 'json' %}">Export inventory JSON</a> · <a href="{% url 'bounty_export' analysis.pk 'csv' %}">Export inventory CSV</a></p>
+  <h2>API inventory</h2>
+  <form method="get"><label>Host/path <input name="q" value="{{ query }}"></label><label>Scope <select name="scope"><option value="">All</option><option>IN_SCOPE</option><option>OUT_OF_SCOPE</option><option>UNKNOWN</option></select></label><button class="btn btn-primary">Filter</button></form>
+  <table class="table"><thead><tr><th>Resource</th><th>Method</th><th>Origin</th><th>Scope</th><th>Evidence</th></tr></thead><tbody>
+  {% for record in records %}<tr><td>{{ record.url }}<br>{{ record.protocol }}</td><td>{{ record.method|default:"Unknown / multiple" }}</td><td>{{ record.observed|yesno:"Observed,Static reference" }} ({{ record.confidence }})<br>{{ record.sources|join:", " }}</td><td>{{ record.scope_status }}</td><td>{{ record.evidence_refs|join:", " }}</td></tr>
+  {% empty %}<tr><td colspan="5">No endpoints match.</td></tr>{% endfor %}
+  </tbody></table>
+  <p>Page {{ page.number }} of {{ page.paginator.num_pages }} {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}&amp;q={{ query|urlencode }}&amp;scope={{ request.GET.scope|urlencode }}">Previous</a>{% endif %} {% if page.has_next %}<a href="?page={{ page.next_page_number }}&amp;q={{ query|urlencode }}&amp;scope={{ request.GET.scope|urlencode }}">Next</a>{% endif %}</p>
+  <h2>Import authorized HAR (passive)</h2>
+  <p>Maximum 2 MiB, 1,000 entries. Bodies, credential headers and parameter values are omitted.</p>
+  <form method="post" enctype="multipart/form-data" action="{% url 'bounty_har' analysis.pk %}">{% csrf_token %}<input type="file" name="har" accept=".har,.json" required><button class="btn btn-primary">Import HAR</button></form>
+  <h2>Findings</h2>
+  <p>Potential findings start NEW. Confirmation requires manual review and retained evidence.</p>
+  <form method="get"><label>Review state <select name="status"><option value="">All</option><option>NEW</option><option>IN_REVIEW</option><option>FALSE_POSITIVE</option><option>CONFIRMED</option><option>RESOLVED</option></select></label><button class="btn btn-primary">Filter findings</button></form>
+  <table class="table"><thead><tr><th>Title</th><th>Severity</th><th>Confidence</th><th>State</th></tr></thead><tbody>
+  {% for finding in findings_page %}<tr><td><a href="{% url 'bounty_finding' finding.pk %}">{{ finding.title }}</a></td><td>{{ finding.severity }}</td><td>{{ finding.confidence }}</td><td>{{ finding.status }}</td></tr>{% empty %}<tr><td colspan="4">No findings.</td></tr>{% endfor %}
+  </tbody></table>
+  <p>Findings page {{ findings_page.number }} of {{ findings_page.paginator.num_pages }} {% if findings_page.has_previous %}<a href="?findings_page={{ findings_page.previous_page_number }}&amp;status={{ request.GET.status|urlencode }}">Previous</a>{% endif %} {% if findings_page.has_next %}<a href="?findings_page={{ findings_page.next_page_number }}&amp;status={{ request.GET.status|urlencode }}">Next</a>{% endif %}</p>
+  <h2>Create manual finding</h2><form method="post" action="{% url 'bounty_finding_create' analysis.pk %}">{% csrf_token %}{{ finding_form.as_p }}<button class="btn btn-primary">Create finding</button></form>
+</main>
+{% endblock %}

@@ -1,4 +1,4 @@
-from django.urls import re_path
+from django.urls import include, path, re_path
 
 from mobsf.DynamicAnalyzer.views.common import device
 from mobsf.DynamicAnalyzer.views.common.frida import views as frida
@@ -62,6 +62,7 @@ checksum_regex = r'(?P<checksum>[0-9a-f]{32})'
 paginate = r'(?P<page_size>[0-9]{1,10})/(?P<page_number>[0-9]{1,10})'
 
 urlpatterns = [
+    path('bounty/', include('mobsf.BugBounty.urls')),
     re_path(r'^login/$',
             authentication.login_view,
             name='login'),

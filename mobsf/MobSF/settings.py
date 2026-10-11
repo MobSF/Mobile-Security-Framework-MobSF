@@ -176,7 +176,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 DEBUG = bool(os.getenv('MOBSF_DEBUG', '0') == '1')
 DJANGO_LOG_LEVEL = DEBUG
 TEMPLATE_DEBUG = DEBUG
-ALLOWED_HOSTS = ['127.0.0.1', 'mobsf', '*']
+ALLOWED_HOSTS = [host.strip() for host in os.getenv(
+    'MOBSF_ALLOWED_HOSTS', '127.0.0.1,localhost,mobsf').split(',') if host.strip()]
 # Application definition
 INSTALLED_APPS = (
     # 'django.contrib.admin',
@@ -190,6 +191,7 @@ INSTALLED_APPS = (
     'mobsf.DynamicAnalyzer',
     'mobsf.MobSF',
     'mobsf.MalwareAnalyzer',
+    'mobsf.BugBounty',
 )
 MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
@@ -234,6 +236,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 # 256MB limit for file uploads
 DATA_UPLOAD_MAX_MEMORY_SIZE = 256 * 1024 * 1024
+BOUNTY_MAX_IMPORT_BYTES = int(os.getenv('BOUNTY_MAX_IMPORT_BYTES', '2097152'))
+BOUNTY_RETENTION_DAYS = int(os.getenv('BOUNTY_RETENTION_DAYS', '90'))
 # 400MB per file limit for uncompressed files
 ZIP_MAX_UNCOMPRESSED_FILE_SIZE = 400 * 1024 * 1024
 # 3GB total limit for all uncompressed files

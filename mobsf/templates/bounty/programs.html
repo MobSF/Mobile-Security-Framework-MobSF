@@ -1,0 +1,17 @@
+{% extends "base/base_layout.html" %}
+{% block sidebar_option %}sidebar-collapse{% endblock %}
+{% block content %}
+<main class="content-wrapper p-4">
+  <h1>Bug Bounty Workspace</h1>
+  <p>Passive research workspace. Discovered assets require explicit scope review. Active testing is disabled.</p>
+  <form method="get"><label>Search programs <input name="q" value="{{ query }}"></label><button class="btn btn-primary">Search</button></form>
+  <table class="table"><thead><tr><th>Program</th><th>Authorization documented</th></tr></thead><tbody>
+  {% for program in page %}<tr><td><a href="{% url 'bounty_program' program.pk %}">{{ program.name }}</a></td><td>{{ program.approved|yesno:"Yes,No" }}</td></tr>
+  {% empty %}<tr><td colspan="2">Create your first program below. Use example.test for synthetic fixtures.</td></tr>{% endfor %}
+  </tbody></table>
+  <p>Page {{ page.number }} of {{ page.paginator.num_pages }} {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}&amp;q={{ query|urlencode }}">Previous</a>{% endif %} {% if page.has_next %}<a href="?page={{ page.next_page_number }}&amp;q={{ query|urlencode }}">Next</a>{% endif %}</p>
+  <h2>Create program</h2>
+  <p>Rules accept JSON or YAML. Approval records your authorization evidence; it does not enable traffic generation.</p>
+  <form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Create program</button></form>
+</main>
+{% endblock %}

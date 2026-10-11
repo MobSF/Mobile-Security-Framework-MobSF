@@ -1,0 +1,16 @@
+{% extends "base/base_layout.html" %}
+{% block sidebar_option %}sidebar-collapse{% endblock %}
+{% block content %}
+<main class="content-wrapper p-4">
+  <a href="{% url 'bounty_workspace' %}">Programs</a><h1>{{ program.name }}</h1>
+  <h2>Analyzed applications</h2>
+  <table class="table"><thead><tr><th>Package</th><th>Version</th><th>Analysis</th></tr></thead><tbody>
+  {% for analysis in analyses %}<tr><td>{{ analysis.package }}</td><td>{{ analysis.version }}</td><td><a href="{% url 'bounty_analysis' analysis.pk %}">{{ analysis.checksum }}</a></td></tr>{% empty %}<tr><td colspan="3">Upload and analyze an authorized APK/IPA in the existing Static Analyzer, then import its MD5 below.</td></tr>{% endfor %}
+  </tbody></table>
+  <h2>Import existing MobSF report</h2>
+  <form method="post" action="{% url 'bounty_import' program.pk %}">{% csrf_token %}{{ import_form.as_p }}<button class="btn btn-primary">Import results</button></form>
+  <h2>Scope rules and authorization</h2>
+  <p>Exact domains and subdomain rules are separate. Exclusions take priority. Unlisted hosts remain UNKNOWN.</p>
+  <form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Save scope</button></form>
+</main>
+{% endblock %}
