@@ -81,3 +81,43 @@ P0 extensions and P1/P2 limitations are listed in BUGBOUNTY_MODULES.md and
 ROADMAP.md. Core legacy secret persistence/exports are not retroactively
 sanitized by this release. Do not describe this as a complete production audit
 or all four product phases delivered.
+
+## Standalone Android / Windows update — 2026-10-12
+
+Only `standalone/bug-bounty-edition` is updated. The existing master and feature
+branch are preserved; no upstream pull request is submitted.
+
+| Check | Actual result |
+| --- | --- |
+| Final `tox -e lint,test` | Passed: 61 tests in 342.949 s, including 38 workspace tests, 21 Android regressions and two original integration tests |
+| Go launcher tests / vet | Eight top-level tests passed; vet passed; extraction, credentials, paths and command boundaries covered |
+| Android release verification | Official stable SDK 37.2 archive properties identify Android 17; metadata checksum verified and local SHA256 recorded |
+| Current SDK fixture | Compiled with SDK 37.2 and packaged aapt2 2.20-eng.202610; the actual vendored core decoder reads package/min SDK/target SDK correctly |
+| Executable | Windows x64 PE for Windows 10+, compiled using current stable Go 1.27.2; 103,684,096 bytes; checksum and source provenance in windows/ |
+| Embedded bundle | App source, runtime resources, GPL and third-party licenses included; no credentials, runtime data or caches |
+| Container from embedded source | Built successfully using verified TLS and optional cloud proxy CA secret; required executable permissions explicitly set |
+| Launcher on Linux Docker | Self-test, doctor, start/readiness, stop and restart passed using the same source bundle and launcher logic |
+| Authenticated HTTP | Original authorized APK and Android 17 synthetic APK static scans passed; SDK 37 fields verified for the modern fixture |
+| Workspace flow | Core import, endpoints, manual review and JSON/CSV exports passed |
+| Persistence | Login, endpoints and IN_REVIEW finding retained after launcher stop/start |
+| Android diagnostic | Missing configured device produces the expected explicit error; no real device is automatically selected or modified |
+
+The initial combined tox attempt blocked dependency downloads because its fresh
+isolated environment inherited the deliberate offline proxy. Installed the
+same 106 locked dependencies into that environment over verified normal package
+access, then reran offline: the complete command passed. Earlier formatting
+failures were corrected before commits. A preliminary diagnostic was attempted
+while the container was stopping and correctly reported service unavailable;
+the configured-device diagnostic was retried after confirmed readiness.
+
+The final executable's exact application source commit and embedded source hash
+are recorded in windows/build-manifest.json. Later validation documentation is
+outside that embedded snapshot; application code is unchanged.
+
+The native Windows executable was cross-compiled on Linux. Full Windows 11
+execution, Docker Desktop/WSL2 integration, browser launch and Windows ACLs have
+not been exercised here. The branch-specific workflow is configured to run
+Windows launcher tests and the executable self-test; a CI result is not assumed.
+The executable is unsigned. Android 12–17 physical/emulated-device Frida hooks,
+SELinux behavior and modern TLS interception remain unvalidated. Modern dynamic
+mode is explicitly experimental and does not claim automatic system CA support.

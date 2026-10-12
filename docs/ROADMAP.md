@@ -10,6 +10,10 @@ phases of the proposed product.
 
 ## Next stabilization work
 
+The standalone edition now includes the Windows x64 Docker launcher, verified
+Android 17 SDK metadata, a compiled manifest fixture and modern root capability
+diagnostics. Full device and Windows Desktop validation is still pending.
+
 1. Validate complete Windows Docker Desktop/WSL2 and Linux Compose lifecycle.
 2. Add screenshot evidence with image decoding, size/pixel limits and privacy
    review, scoped artifact access and safe filesystem storage.

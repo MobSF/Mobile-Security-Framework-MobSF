@@ -8,6 +8,8 @@ Android emulator. Host Python, Java and Git are unnecessary for end users.
 The runtime bundle omits JavaScript debug maps, test fixture submodules and the
 legacy native Windows PNG converter, which are unnecessary inside Linux Docker.
 The upstream license and third-party LICENSES directory are included.
+The Go runtime's BSD license is provided alongside the executable as
+windows/GO-LICENSE.txt and included in the workflow distribution.
 Packaging preserves executable modes from Git rather than Windows filesystem
 metadata; the Dockerfile also sets the script and Linux converter permissions.
 
