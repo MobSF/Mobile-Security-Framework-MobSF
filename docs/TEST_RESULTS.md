@@ -154,8 +154,13 @@ packaged-source database smoke passed after that correction.
 Windows native installation is configured in the branch workflow: actual EXE
 execution, locked dependency installation, compiled-module imports, login,
 Android 17 scan, workspace import/reinstallation/restart and proxy-chain tests.
-This cloud host is Linux; those Windows runtime results have not been observed
-here. The checked-in executable is a cross-compiled, unsigned Windows x64 PE.
+The first Windows runs passed compilation and launcher tests but failed native
+installation because Windows PowerShell 5.1 selected an incompatible String.Split
+overload. Public sanitized diagnostics identified the failure. Configuration now
+uses the compatible `-split` operator; the workflow checks both its Windows build
+and the exact checked-in executable using separate profiles. The full native
+Windows result remains pending at this source snapshot.
+The checked-in executable is a cross-compiled, unsigned Windows x64 PE.
 Its hash, source snapshot and native runtime requirement are in
 windows/build-manifest.json. CI marks Windows runtime tested in its artifact
 manifest only after the native checks pass.

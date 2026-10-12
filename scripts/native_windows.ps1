@@ -24,7 +24,9 @@ try {
         'MOBSF_CAPTURE_PROXY_PROVIDER', 'MOBSF_CAPTURE_PROXY_URL', 'MOBSF_CAPTURE_PROXY_CA_FILE')
     foreach ($line in [IO.File]::ReadAllLines($config)) {
         if ($line.Trim().Length -eq 0 -or $line.StartsWith('#')) { continue }
-        $pair = $line.Split(@('='), 2)
+        # -split works on Windows PowerShell 5.1/.NET Framework too. String.Split
+        # with a string array and integer selects the options overload there.
+        $pair = $line -split '=', 2
         if ($pair.Count -ne 2 -or $pair[0] -notin $allowed) { throw 'Invalid desktop.env setting.' }
         [Environment]::SetEnvironmentVariable($pair[0], $pair[1], 'Process')
     }

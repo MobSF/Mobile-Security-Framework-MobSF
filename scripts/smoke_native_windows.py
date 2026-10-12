@@ -211,9 +211,11 @@ def main():
     """Run a Windows executable or the same native server on the cloud host."""
     parser = argparse.ArgumentParser()
     parser.add_argument('--runtime-python')
+    parser.add_argument('--executable', type=Path,
+                        default=ROOT / 'windows/MobSF-BugBounty.exe')
     args = parser.parse_args()
     try:
-        run_smoke(ROOT / 'windows/MobSF-BugBounty.exe', args.runtime_python)
+        run_smoke(args.executable, args.runtime_python)
     except Exception as exc:
         if os.getenv('GITHUB_ACTIONS') == 'true':
             detail = diagnostic(str(exc)).replace('%', '%25')
