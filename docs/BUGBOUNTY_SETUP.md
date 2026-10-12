@@ -34,7 +34,7 @@ tests use `.test` domains; there is no need for a real bug bounty program.
 Enable WSL2 and Docker Desktop Linux containers. From PowerShell:
 
 ```powershell
-git clone --branch feat/bug-bounty-workspace https://github.com/Ivomsantiago/Mobile-Security-Framework-MobSF.git
+git clone --branch standalone/bug-bounty-edition https://github.com/Ivomsantiago/Mobile-Security-Framework-MobSF.git
 Set-Location Mobile-Security-Framework-MobSF
 Copy-Item docker/.env.example docker/.env
 notepad docker/.env

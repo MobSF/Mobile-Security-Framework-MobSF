@@ -1,0 +1,29 @@
+name: Standalone Windows launcher
+on:
+  push:
+    branches: [standalone/bug-bounty-edition]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        with:
+          go-version: stable
+          cache: false
+      - name: Build and test the Windows executable
+        shell: pwsh
+        run: ./scripts/build_windows.ps1
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: MobSF-BugBounty-Windows-x64
+          path: |
+            windows/MobSF-BugBounty.exe
+            windows/SHA256SUMS
+          if-no-files-found: error

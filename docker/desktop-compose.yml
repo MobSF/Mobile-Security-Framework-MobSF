@@ -1,0 +1,35 @@
+services:
+  mobsf:
+    image: mobsf-bounty-desktop:${MOBSF_DESKTOP_SOURCE_ID:-development}
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:1337:1337"
+    volumes:
+      - mobsf_data:/home/mobsf/.MobSF
+    environment:
+      DJANGO_SUPERUSER_USERNAME: mobsf
+      DJANGO_SUPERUSER_PASSWORD: ${MOBSF_ADMIN_PASSWORD:?Initial password is required}
+      MOBSF_ALLOWED_HOSTS: localhost,127.0.0.1,mobsf
+      MOBSF_ANDROID_MODERN_DYNAMIC: ${MOBSF_ANDROID_MODERN_DYNAMIC:-0}
+      MOBSF_ANDROID_ALLOW_LOW_TARGET_INSTALL: ${MOBSF_ANDROID_ALLOW_LOW_TARGET_INSTALL:-0}
+      MOBSF_ANALYZER_IDENTIFIER: ${MOBSF_ANALYZER_IDENTIFIER:-}
+      MOBSF_UPSTREAM_PROXY_ENABLED: ${MOBSF_UPSTREAM_PROXY_ENABLED:-}
+      MOBSF_UPSTREAM_PROXY_IP: ${MOBSF_UPSTREAM_PROXY_IP:-127.0.0.1}
+      MOBSF_UPSTREAM_PROXY_PORT: ${MOBSF_UPSTREAM_PROXY_PORT:-3128}
+      HTTP_PROXY: ${HTTP_PROXY:-}
+      HTTPS_PROXY: ${HTTPS_PROXY:-}
+      NO_PROXY: localhost,127.0.0.1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://127.0.0.1:8000/login/"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 90s
+volumes:
+  mobsf_data:

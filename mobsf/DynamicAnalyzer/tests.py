@@ -278,3 +278,13 @@ class AndroidCompatibilityTests(SimpleTestCase):
                     stdout=output,
                 )
             self.assertIn('"root_adb": false', output.getvalue())
+
+    @override_settings(ANALYZER_IDENTIFIER='emulator-5554')
+    def test_preflight_uses_explicit_configured_identifier(self):
+        output = StringIO()
+        with patch(
+            MODULE + '.Environment.runtime_preflight',
+            return_value={'ready': True},
+        ):
+            call_command('android_preflight', as_json=True, stdout=output)
+        self.assertIn('"ready": true', output.getvalue())

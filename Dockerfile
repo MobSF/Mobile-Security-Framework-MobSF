@@ -69,7 +69,7 @@ RUN --mount=type=secret,id=build_ca \
       export WGETRC=/tmp/build-wgetrc; \
       echo 'ca_certificate=/run/secrets/build_ca' > "$WGETRC"; \
     fi && \
-    ./dependencies.sh
+    chmod +x dependencies.sh && ./dependencies.sh
 
 # Install Python dependencies
 COPY pyproject.toml poetry.lock .
@@ -104,7 +104,10 @@ HEALTHCHECK CMD curl --fail http://127.0.0.1:8000/login/ || exit 1
 EXPOSE 8000 1337
 
 # Create mobsf user
-RUN groupadd --gid $USER_ID $MOBSF_USER && \
+RUN chmod +x scripts/*.sh && \
+    chmod +x mobsf/StaticAnalyzer/tools/ios/CgbiPngFix/CgbiPngFix_amd64 \
+             mobsf/StaticAnalyzer/tools/ios/CgbiPngFix/CgbiPngFix_arm64 && \
+    groupadd --gid $USER_ID $MOBSF_USER && \
     useradd $MOBSF_USER --uid $USER_ID --gid $MOBSF_USER --shell /bin/false && \
     chown -R $MOBSF_USER:$MOBSF_USER /home/mobsf
 

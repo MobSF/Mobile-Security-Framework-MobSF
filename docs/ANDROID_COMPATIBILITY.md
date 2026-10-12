@@ -57,6 +57,8 @@ network, restrict the host firewall to that lab and verify the connection from
 inside the container before starting analysis. Do not bind or expose host ADB
 globally as a shortcut. Native ADB setup does not automatically make a device
 reachable in Docker Desktop.
+After configuring the endpoint and restarting the desktop service, run
+`MobSF-BugBounty.exe android-check` for read-only diagnostics inside the container.
 
 ## Installation and TLS boundaries
 
