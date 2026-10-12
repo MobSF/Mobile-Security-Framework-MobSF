@@ -29,6 +29,7 @@ from mobsf.DynamicAnalyzer.views.common.frida.server_update import (
 from mobsf.DynamicAnalyzer.views.android.compatibility import (
     FRIDA_ARCHITECTURES,
     LEGACY_MAX_API,
+    full_sdk,
     parse_api,
     release_number,
     runtime_policy,
@@ -560,6 +561,15 @@ class Environment:
         """Read properties and access checks without changing device state."""
         sdk = self.get_android_sdk()
         policy = runtime_policy(sdk, settings.ANDROID_MODERN_DYNAMIC)
+        full_out = self.adb_command(
+            ['getprop', 'ro.build.version.sdk_full'], True, True)
+        target_out = self.adb_command(
+            ['getprop', 'ro.build.version.min_supported_target_sdk'], True, True)
+        full_value = full_out.decode('utf-8').strip() if full_out else ''
+        try:
+            minimum_target = parse_api(target_out.decode('utf-8').strip())
+        except (AttributeError, ValueError):
+            minimum_target = None
         arch_out = self.adb_command(['getprop', 'ro.product.cpu.abi'], True, True)
         architecture = arch_out.decode('utf-8').strip() if arch_out else ''
         uid = self.adb_command(['id', '-u'], True, True)
@@ -567,7 +577,9 @@ class Environment:
         modern = policy['api'] and policy['api'] > LEGACY_MAX_API
         directory = '/data/local/tmp' if modern else '/system'
         writable = self.adb_command(['test', '-w', directory], True, True) is not None
-        return {**policy, 'architecture': architecture,
+        return {**policy, 'sdk_full': full_sdk(full_value, policy['api']),
+                'minimum_supported_target_sdk': minimum_target,
+                'architecture': architecture,
                 'frida_architecture': FRIDA_ARCHITECTURES.get(architecture),
                 'root_adb': rooted, 'agent_parent_writable': writable,
                 'frida_version': frida_version,

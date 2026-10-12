@@ -2,17 +2,23 @@
 
 This work exists only on `standalone/bug-bounty-edition`. Static APK analysis
 does not require an Android device. The existing manifest version map includes
-Android 12/12L, 13, 14, 15 and 16 (API 31 through 36). A target SDK value is not
+Android 12/12L, 13, 14, 15, 16 and 17 (API 31 through 37). A target SDK value is not
 proof that every feature or binary format from that release has been tested.
 
 ## Dynamic runtime changes
 
 The original dynamic analyzer rejected every SDK above API 30. The standalone
 edition retains its legacy path and adds an explicitly enabled experimental
-modern path based on root, ABI and writable storage capabilities. Android 12–16
+modern path based on root, ABI and writable storage capabilities. Android 12–17
 and higher numeric APIs no longer face an arbitrary API 30 ceiling in that mode.
 Unknown releases remain labeled unmapped and unvalidated; no future version is
 advertised as a tested release.
+
+Android 17 was checked against Google's current stable SDK 37.2, including
+its build properties: release 17, major SDK 37, full SDK 37.2 and minimum
+supported app target SDK 28. Diagnostics preserve the full SDK value and the
+device-reported installation floor. See android-sdk-verification.json for the
+exact source and artifact hash. This verifies SDK metadata, not a running device.
 
 Modern Frida binaries and readiness markers use `/data/local/tmp/mobsf` instead
 of `/system`. Modern setup does not remount /system. Download or upload failures
@@ -82,7 +88,13 @@ preview parsing, fail-closed setup, legacy failures and explicit installation
 flags. No real Android 12–17 emulator or physical device has been run in this
 cloud task. Device/build-specific Frida behavior, SELinux and CA trust still
 require lab validation. Direct developer.android.com access was denied by the
-cloud proxy, so no newly released Android version was independently verified.
+cloud proxy; Google's current repository2-3.xml and SDK archive were successfully
+verified instead. The older repository2-1.xml omits the new API 37.x packages.
+
+The included android17-static.apk fixture was built with the official SDK 37.2
+framework and the repository's packaged aapt2 (2.20-eng.202610). It is intentionally
+unsigned and has no executable application code. Its original XML is included;
+it tests modern manifest decoding, not signing, runtime hooks or device install.
 
 Before extending the release map, check the official
 [SDK platform release notes](https://developer.android.com/tools/releases/platforms)

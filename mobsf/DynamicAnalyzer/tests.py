@@ -2,6 +2,7 @@
 
 import inspect
 from io import StringIO
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 from django.core.management import call_command
@@ -9,6 +10,7 @@ from django.core.management.base import CommandError
 from django.test import RequestFactory, SimpleTestCase, override_settings
 
 from mobsf.DynamicAnalyzer.views.android.compatibility import (
+    full_sdk,
     parse_api,
     release_number,
     runtime_policy,
@@ -16,6 +18,7 @@ from mobsf.DynamicAnalyzer.views.android.compatibility import (
 from mobsf.DynamicAnalyzer.views.android.environment import Environment
 from mobsf.DynamicAnalyzer.views.android.tests_tls import run_tls_tests
 from mobsf.DynamicAnalyzer.views.android.tests_common import tls_tests
+from mobsf.StaticAnalyzer.tools.androguard4.apk import APK
 
 MODULE = 'mobsf.DynamicAnalyzer.views.android.environment'
 
@@ -48,7 +51,7 @@ class AndroidCompatibilityTests(SimpleTestCase):
                 self.assertTrue(result['eligible'])
                 self.assertEqual(result['mode'], 'modern_experimental')
                 self.assertFalse(result['automatic_system_ca'])
-        self.assertIn('unmapped', runtime_policy('37', True)['release'])
+        self.assertIn('unmapped', runtime_policy('38', True)['release'])
 
     def test_invalid_sdk_is_rejected(self):
         for sdk in ('', None, 'preview', '36;id', '-1', '1000', '0'):
@@ -63,7 +66,34 @@ class AndroidCompatibilityTests(SimpleTestCase):
         self.assertEqual(release_number('12L', '32'), 12)
         self.assertEqual(release_number('17', '37'), 17)
         with self.assertRaises(ValueError):
-            release_number('UnknownPreview', '37')
+            release_number('UnknownPreview', '38')
+
+    def test_android17_full_sdk_and_install_floor_diagnostics(self):
+        self.mock_device(sdk='37')
+        original = self.env.adb_command.side_effect
+
+        def command(args, shell=False, silent=False):
+            if args == ['getprop', 'ro.build.version.sdk_full']:
+                return b'37.2\n'
+            if args == ['getprop', 'ro.build.version.min_supported_target_sdk']:
+                return b'28\n'
+            return original(args, shell, silent)
+
+        self.env.adb_command.side_effect = command
+        result = self.env.runtime_preflight()
+        self.assertEqual(result['release'], '17')
+        self.assertEqual(result['sdk_full'], '37.2')
+        self.assertEqual(result['minimum_supported_target_sdk'], 28)
+        self.assertTrue(result['ready'])
+        self.assertEqual(full_sdk('37.2;id', 37), '37')
+        self.assertEqual(full_sdk('38.2', 37), '37')
+
+    def test_android17_sdk_compiled_apk_uses_the_real_core_decoder(self):
+        fixture = Path(__file__).parent / 'fixtures/android17-static.apk'
+        parsed = APK(str(fixture))
+        self.assertEqual(parsed.get_package(), 'test.mobsf.android17')
+        self.assertEqual(parsed.get_min_sdk_version(), '37')
+        self.assertEqual(parsed.get_target_sdk_version(), '37')
 
     def test_read_only_preflight_on_modern_rooted_device(self):
         self.mock_device()
@@ -155,7 +185,8 @@ class AndroidCompatibilityTests(SimpleTestCase):
         request = RequestFactory().post('/tls_tests', {'hash': 'a' * 32})
         module = 'mobsf.DynamicAnalyzer.views.android.tests_common'
         with patch(module + '.Environment', return_value=self.env), patch(
-            module + '.get_package_name', return_value='test.app',
+            module + '.get_package_name',
+            return_value='test.app',
         ), patch.object(self.env, 'configure_proxy') as proxy:
             result = inspect.unwrap(tls_tests)(request, api=True)
         self.assertEqual(result['status'], 'failed')

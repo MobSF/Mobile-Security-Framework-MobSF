@@ -5,7 +5,7 @@ LEGACY_MAX_API = 30
 ANDROID_RELEASES = {
     21: '5.0', 22: '5.1', 23: '6.0', 24: '7.0', 25: '7.1',
     26: '8.0', 27: '8.1', 28: '9', 29: '10', 30: '11',
-    31: '12', 32: '12L', 33: '13', 34: '14', 35: '15', 36: '16',
+    31: '12', 32: '12L', 33: '13', 34: '14', 35: '15', 36: '16', 37: '17',
 }
 FRIDA_ARCHITECTURES = {
     'armeabi-v7a': 'arm', 'armeabi': 'arm', 'arm64-v8a': 'arm64',
@@ -32,6 +32,16 @@ def release_number(release, sdk):
     if known:
         return float(known.removesuffix('L'))
     raise ValueError('Unknown preview release; Android API mapping needs review')
+
+
+def full_sdk(value, api):
+    """Retain minor API levels while keeping major capability checks separate."""
+    if api is None:
+        return None
+    if (re.fullmatch(r'[0-9]{1,3}(?:\.[0-9]{1,3})?', value)
+            and int(value.split('.')[0]) == api):
+        return value
+    return str(api)
 
 
 def runtime_policy(sdk, modern_enabled=False):
