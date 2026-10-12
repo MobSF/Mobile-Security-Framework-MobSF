@@ -498,6 +498,10 @@ else:
     # ================HTTPS PROXY ===============
     PROXY_IP = os.getenv('MOBSF_PROXY_IP', '127.0.0.1')
     PROXY_PORT = int(os.getenv('MOBSF_PROXY_PORT', '1337'))
+    # Only Android/iOS captured traffic is sent to this interception proxy.
+    CAPTURE_PROXY_PROVIDER = os.getenv('MOBSF_CAPTURE_PROXY_PROVIDER', 'none')
+    CAPTURE_PROXY_URL = os.getenv('MOBSF_CAPTURE_PROXY_URL', '')
+    CAPTURE_PROXY_CA_FILE = os.getenv('MOBSF_CAPTURE_PROXY_CA_FILE', '')
     # ===================================================
 
     # ========UPSTREAM PROXY SETTINGS ==============
@@ -546,3 +550,18 @@ else:
     # CORELLIUM_PROJECT_ID is optional, MobSF will use any available project id
     # ===============================================
     # ^CONFIG-END^: Do not edit this line
+
+# Existing config.py files predate these settings. Preserve their values while
+# applying explicit environment overrides without rewriting user configuration.
+CAPTURE_PROXY_PROVIDER = os.getenv(
+    'MOBSF_CAPTURE_PROXY_PROVIDER', globals().get('CAPTURE_PROXY_PROVIDER', 'none'))
+CAPTURE_PROXY_URL = os.getenv(
+    'MOBSF_CAPTURE_PROXY_URL', globals().get('CAPTURE_PROXY_URL', ''))
+CAPTURE_PROXY_CA_FILE = os.getenv(
+    'MOBSF_CAPTURE_PROXY_CA_FILE', globals().get('CAPTURE_PROXY_CA_FILE', ''))
+ANDROID_MODERN_DYNAMIC = os.getenv(
+    'MOBSF_ANDROID_MODERN_DYNAMIC',
+    '1' if globals().get('ANDROID_MODERN_DYNAMIC', False) else '0') == '1'
+ANDROID_ALLOW_LOW_TARGET_INSTALL = os.getenv(
+    'MOBSF_ANDROID_ALLOW_LOW_TARGET_INSTALL',
+    '1' if globals().get('ANDROID_ALLOW_LOW_TARGET_INSTALL', False) else '0') == '1'

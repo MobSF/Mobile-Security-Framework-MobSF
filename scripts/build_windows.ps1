@@ -20,6 +20,26 @@ try {
     } finally { Pop-Location }
     $digest = (Get-FileHash windows/MobSF-BugBounty.exe -Algorithm SHA256).Hash.ToLowerInvariant()
     "$digest  MobSF-BugBounty.exe" | Set-Content -Encoding ascii windows/SHA256SUMS
+    $goVersion = & $GoExecutable version
+    if ($LASTEXITCODE -ne 0) { throw 'Unable to read compiler version' }
+    $sourceCommit = git rev-parse HEAD
+    if ($LASTEXITCODE -ne 0) { throw 'Unable to read source commit' }
+    $manifest = [ordered]@{
+        source_commit = "$sourceCommit"
+        source_tree_dirty = [bool](git status --porcelain --untracked-files=no -- . ':!windows')
+        embedded_source_sha256 = (Get-FileHash desktop/resources/source.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+        executable_sha256 = $digest
+        executable_bytes = (Get-Item windows/MobSF-BugBounty.exe).Length
+        target = 'windows/amd64'
+        compiler = "$goVersion".Split(' ')[2]
+        build_platform = "$goVersion".Split(' ')[3]
+        docker_desktop_required = $false
+        runtime = 'native Python 3.12 x64 / Java 21+ / Waitress'
+        windows_runtime_tested = $false
+        code_signing = 'unsigned'
+        licenses_included = $true
+    }
+    $manifest | ConvertTo-Json | Set-Content -Encoding ascii windows/build-manifest.json
     if ([System.Environment]::OSVersion.Platform -eq "Win32NT") {
         & ./windows/MobSF-BugBounty.exe self-test
         if ($LASTEXITCODE -ne 0) { throw "Windows executable self-test failed" }

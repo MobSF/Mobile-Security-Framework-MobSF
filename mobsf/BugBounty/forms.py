@@ -53,6 +53,12 @@ class ImportForm(forms.Form):
     checksum = forms.RegexField(regex=r'\A[0-9a-f]{32}\Z', max_length=32)
 
 
+class CaptureForm(forms.Form):
+    format = forms.ChoiceField(choices=(  # noqa: A003
+        ('har', 'HAR'), ('caido', 'Caido HAR'),
+        ('burp', 'Burp Suite Professional XML')))
+
+
 class ReviewForm(forms.Form):
     status = forms.ChoiceField(choices=Finding.STATES)
     severity = forms.ChoiceField(choices=Finding.SEVERITIES)

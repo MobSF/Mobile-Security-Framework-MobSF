@@ -55,16 +55,18 @@ root, remount, install certificates, download Frida or change a device. A
 non-ready result produces diagnostics and a nonzero exit status. Success means
 prerequisites pass, not that application instrumentation has been verified.
 
-For Docker Desktop, set `MOBSF_ANDROID_MODERN_DYNAMIC=1` and your authorized
-device's reachable ADB endpoint in the launcher's `desktop.env`. The emulator
-must be reachable from inside the Linux container; a Windows-host serial such
-as `emulator-5554` alone is not a container connection. Use an isolated test
-network, restrict the host firewall to that lab and verify the connection from
-inside the container before starting analysis. Do not bind or expose host ADB
-globally as a shortcut. Native ADB setup does not automatically make a device
-reachable in Docker Desktop.
-After configuring the endpoint and restarting the desktop service, run
-`MobSF-BugBounty.exe android-check` for read-only diagnostics inside the container.
+For the native Windows executable, put `adb.exe` on PATH (Android SDK Platform
+Tools), configure `MOBSF_ANALYZER_IDENTIFIER` in `desktop.env`, and opt in with
+`MOBSF_ANDROID_MODERN_DYNAMIC=1` for your authorized lab. A host emulator serial
+such as `emulator-5554` is valid in native mode. Restart MobSF and run
+`MobSF-BugBounty.exe android-check`. ADB reverse forwards the device proxy port
+to the native capture listener; it does not install certificates or establish
+root privileges. See PROXY_INTEGRATION.md for capture forwarding to Burp/Caido.
+
+If separately using Docker, the ADB endpoint must be reachable inside that
+container; host emulator serials alone are insufficient. Restrict ADB access
+to the isolated lab network. Native ADB connectivity does not establish
+container connectivity.
 
 ## Installation and TLS boundaries
 

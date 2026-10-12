@@ -17,9 +17,30 @@ jobs:
         with:
           go-version: stable
           cache: false
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          distribution: temurin
+          java-version: '21'
       - name: Build and test the Windows executable
         shell: pwsh
         run: ./scripts/build_windows.ps1
+      - name: Validate native installation, Android 17 scan and restart
+        shell: pwsh
+        timeout-minutes: 30
+        run: |
+          $env:APPDATA = Join-Path $env:RUNNER_TEMP 'MobSF native profile'
+          python -m pip install requests==2.32.5
+          if ($LASTEXITCODE -ne 0) { throw 'Smoke-test dependency installation failed' }
+          python scripts/smoke_native_windows.py
+          if ($LASTEXITCODE -ne 0) { throw 'Native Windows smoke test failed' }
+          $runtimePython = Get-ChildItem -LiteralPath (Join-Path $env:APPDATA 'MobSF-BugBounty/app') -Directory |
+            ForEach-Object { Join-Path $_.FullName '.venv/Scripts/python.exe' } |
+            Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+          & $runtimePython scripts/smoke_proxy_chain.py --runtime-python $runtimePython
+          if ($LASTEXITCODE -ne 0) { throw 'Native proxy forwarding/TLS test failed' }
+          $manifest = Get-Content -Raw windows/build-manifest.json | ConvertFrom-Json
+          $manifest.windows_runtime_tested = $true
+          $manifest | ConvertTo-Json | Set-Content -Encoding ascii windows/build-manifest.json
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: MobSF-BugBounty-Windows-x64
@@ -27,4 +48,5 @@ jobs:
             windows/MobSF-BugBounty.exe
             windows/SHA256SUMS
             windows/GO-LICENSE.txt
+            windows/build-manifest.json
           if-no-files-found: error

@@ -4,7 +4,6 @@ package main
 import (
 	"archive/zip"
 	"bytes"
-	"context"
 	"crypto/rand"
 	"crypto/sha256"
 	_ "embed"
@@ -12,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"os/exec"
 	"path"
@@ -20,17 +18,12 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
-	"time"
 	"unicode/utf8"
 )
 
 //go:embed resources/source.zip
 var sourceArchive []byte
 
-const projectName = "mobsf-bounty-desktop"
-const localURL = "http://127.0.0.1:8000/bounty/"
-
-var containerID = regexp.MustCompile(`^[a-f0-9]{12,64}$`)
 var reservedName = regexp.MustCompile(`^(COM|LPT)[1-9¹²³]$`)
 
 func sourceID() string {
@@ -106,7 +99,7 @@ func extractArchive(data []byte, destination string) error {
 			return err
 		}
 	}
-	for _, required := range []string{"Dockerfile", "manage.py", "poetry.lock", "docker/desktop-compose.yml"} {
+	for _, required := range []string{"manage.py", "pyproject.toml", "poetry.lock", "scripts/native_windows.ps1", "scripts/native_runtime.py", "mobsf/StaticAnalyzer/migrations/0001_initial.py", "mobsf/StaticAnalyzer/migrations/__init__.py"} {
 		info, err := os.Stat(filepath.Join(destination, filepath.FromSlash(required)))
 		if err != nil || !info.Mode().IsRegular() {
 			return fmt.Errorf("source archive is missing %s", required)
@@ -161,90 +154,14 @@ func ensureConfig(home string) (string, error) {
 		return "", err
 	}
 	content := "MOBSF_ADMIN_PASSWORD=" + hex.EncodeToString(secret) + "\n" +
-		"MOBSF_ANDROID_MODERN_DYNAMIC=0\nMOBSF_ANDROID_ALLOW_LOW_TARGET_INSTALL=0\nMOBSF_ANALYZER_IDENTIFIER=\n"
+		"MOBSF_ANDROID_MODERN_DYNAMIC=0\nMOBSF_ANDROID_ALLOW_LOW_TARGET_INSTALL=0\nMOBSF_ANALYZER_IDENTIFIER=\n" +
+		"MOBSF_CAPTURE_PROXY_PROVIDER=none\nMOBSF_CAPTURE_PROXY_URL=\nMOBSF_CAPTURE_PROXY_CA_FILE=\n"
 	file, err := os.OpenFile(location, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
 	if err != nil {
 		return "", err
 	}
 	_, writeErr := io.WriteString(file, content)
 	return location, errors.Join(writeErr, file.Close())
-}
-
-func composeArgs(root, config string, args ...string) []string {
-	base := []string{"compose", "--project-name", projectName, "--project-directory", root,
-		"--env-file", config, "-f", filepath.Join(root, "docker", "desktop-compose.yml")}
-	return append(base, args...)
-}
-
-func dockerOutput(ctx context.Context, docker string, args ...string) (string, error) {
-	command := exec.CommandContext(ctx, docker, args...)
-	command.Env = append(os.Environ(), "MOBSF_DESKTOP_SOURCE_ID="+sourceID())
-	output, err := command.Output()
-	if err != nil {
-		return "", fmt.Errorf("Docker command failed (%s); run doctor or inspect Docker Desktop", args[0])
-	}
-	return strings.TrimSpace(string(output)), nil
-}
-
-func dockerRun(ctx context.Context, docker string, args ...string) error {
-	command := exec.CommandContext(ctx, docker, args...)
-	command.Env = append(os.Environ(), "MOBSF_DESKTOP_SOURCE_ID="+sourceID())
-	command.Stdin, command.Stdout, command.Stderr = os.Stdin, os.Stdout, os.Stderr
-	return command.Run()
-}
-
-func dockerReady(ctx context.Context) (string, error) {
-	docker, err := exec.LookPath("docker")
-	if err != nil {
-		return "", errors.New("install Docker Desktop with WSL2 from https://www.docker.com/products/docker-desktop/ and reopen this launcher")
-	}
-	if kind, err := dockerOutput(ctx, docker, "info", "--format", "{{.OSType}}"); err != nil || kind != "linux" {
-		return "", errors.New("start Docker Desktop and select Linux containers with the WSL2 backend")
-	}
-	if _, err := dockerOutput(ctx, docker, "compose", "version", "--short"); err != nil {
-		return "", errors.New("Docker Compose v2 is required; update Docker Desktop")
-	}
-	return docker, nil
-}
-
-func waitReady(ctx context.Context, docker, root, config string) error {
-	client := &http.Client{Timeout: 5 * time.Second, Transport: &http.Transport{Proxy: nil},
-		CheckRedirect: func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }}
-	defer client.CloseIdleConnections()
-	ticker := time.NewTicker(2 * time.Second)
-	defer ticker.Stop()
-	for {
-		id, err := dockerOutput(ctx, docker, composeArgs(root, config, "ps", "-q", "mobsf")...)
-		if err == nil && containerID.MatchString(id) {
-			state, err := dockerOutput(ctx, docker, "inspect", "--format", "{{.State.Health.Status}}", id)
-			if err == nil && state == "healthy" {
-				response, err := client.Get("http://127.0.0.1:8000/login/")
-				if err == nil {
-					body, readErr := io.ReadAll(io.LimitReader(response.Body, 1<<20))
-					response.Body.Close()
-					if response.StatusCode == http.StatusOK && readErr == nil && bytes.Contains(body, []byte("csrfmiddlewaretoken")) {
-						return nil
-					}
-				}
-			}
-		}
-		select {
-		case <-ctx.Done():
-			return errors.New("startup did not become ready; run the logs command (existing data is preserved)")
-		case <-ticker.C:
-		}
-	}
-}
-
-func openBrowser() error {
-	switch runtime.GOOS {
-	case "windows":
-		return exec.Command("rundll32.exe", "url.dll,FileProtocolHandler", localURL).Start()
-	case "darwin":
-		return exec.Command("open", localURL).Start()
-	default:
-		return exec.Command("xdg-open", localURL).Start()
-	}
 }
 
 func selfTest() error {
@@ -264,14 +181,43 @@ func selfTest() error {
 	if err != nil || !bytes.Contains(data, []byte("MOBSF_ADMIN_PASSWORD=")) {
 		return errors.New("local configuration self-test failed")
 	}
-	fmt.Println("Embedded source and local configuration self-test passed; Docker was not started.")
+	fmt.Println("Embedded source and local configuration self-test passed; no runtime was installed or started.")
 	return nil
+}
+
+// The command is fixed trusted code. Runtime values travel through environment
+// variables so spaces, quotes and ampersands cannot become PowerShell syntax.
+// No persistent execution policy or machine configuration is changed.
+func nativeArgs() []string {
+	return []string{"-NoLogo", "-NoProfile", "-Command",
+		"& ([scriptblock]::Create([IO.File]::ReadAllText($env:MOBSF_DESKTOP_BOOTSTRAP))) " +
+			"-SourceRoot $env:MOBSF_DESKTOP_SOURCE_ROOT -DataRoot $env:MOBSF_DESKTOP_DATA_ROOT -Action $env:MOBSF_DESKTOP_ACTION"}
+}
+
+func nativeEnv(root, home, action string) []string {
+	values := map[string]string{
+		"MOBSF_DESKTOP_BOOTSTRAP":   filepath.Join(root, "scripts", "native_windows.ps1"),
+		"MOBSF_DESKTOP_SOURCE_ROOT": root,
+		"MOBSF_DESKTOP_DATA_ROOT":   home,
+		"MOBSF_DESKTOP_ACTION":      action,
+	}
+	result := []string{}
+	for _, entry := range os.Environ() {
+		name := strings.ToUpper(strings.SplitN(entry, "=", 2)[0])
+		if _, replaced := values[name]; !replaced {
+			result = append(result, entry)
+		}
+	}
+	for name, value := range values {
+		result = append(result, name+"="+value)
+	}
+	return result
 }
 
 func run(args []string) error {
 	action := "start"
 	if len(args) > 1 {
-		return errors.New("usage: MobSF-BugBounty.exe [start|stop|status|logs|doctor|android-check|credentials|password|self-test]")
+		return errors.New("usage: MobSF-BugBounty.exe [install|start|doctor|android-check|proxy-check|credentials|password|self-test]")
 	}
 	if len(args) == 1 {
 		action = args[0]
@@ -280,11 +226,15 @@ func run(args []string) error {
 		return selfTest()
 	}
 	switch action {
-	case "start", "stop", "status", "logs", "doctor", "android-check", "credentials", "password":
+	case "install", "start", "doctor", "android-check", "proxy-check", "credentials", "password":
+	case "stop":
+		return errors.New("native MobSF runs in its own console; press Ctrl+C there to stop it and preserve data")
+	case "logs":
+		return errors.New("native server logs appear in its running console; analysis logs are in %APPDATA%\\MobSF-BugBounty\\data")
 	default:
-		return errors.New("unknown command; use start, stop, status, logs, doctor, android-check, credentials, password or self-test")
+		return errors.New("unknown command; use install, start, doctor, android-check, proxy-check, credentials, password or self-test")
 	}
-	fmt.Println("MobSF Bug Bounty Edition — source SHA256:", sourceID())
+	fmt.Println("MobSF Bug Bounty Edition — native Windows, source SHA256:", sourceID())
 	base, err := os.UserConfigDir()
 	if err != nil {
 		return err
@@ -293,7 +243,7 @@ func run(args []string) error {
 	if action == "credentials" {
 		data, err := os.ReadFile(filepath.Join(home, "desktop.env"))
 		if err != nil {
-			return errors.New("no initial credentials found; run start first")
+			return errors.New("no initial credentials found; run install first")
 		}
 		for _, line := range strings.Split(string(data), "\n") {
 			if strings.HasPrefix(line, "MOBSF_ADMIN_PASSWORD=") {
@@ -304,58 +254,22 @@ func run(args []string) error {
 		}
 		return errors.New("initial password is absent from local configuration")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
-	defer cancel()
-	docker, err := dockerReady(ctx)
-	if err != nil {
-		return err
-	}
-	if action == "doctor" {
-		fmt.Println("Docker Desktop Linux engine and Compose v2 are available.")
-		fmt.Println("Local configuration:", filepath.Join(home, "desktop.env"))
-		fmt.Println("Use android-check for read-only diagnostics of your configured authorized Android device.")
-		return nil
+	if runtime.GOOS != "windows" {
+		return errors.New("native desktop runtime requires Windows x64; use the source installation on Linux")
 	}
 	root, err := ensureSource(home)
 	if err != nil {
 		return err
 	}
-	config, err := ensureConfig(home)
-	if err != nil {
+	if _, err := ensureConfig(home); err != nil {
 		return err
 	}
-	switch action {
-	case "start":
-		fmt.Println("Starting this bundled edition with persistent local data. First startup builds the image, needs Internet and may take several minutes.")
-		buildFlag := "--build"
-		if _, err := dockerOutput(ctx, docker, "image", "inspect", "mobsf-bounty-desktop:"+sourceID()); err == nil {
-			buildFlag = "--no-build"
-		}
-		if err := dockerRun(ctx, docker, composeArgs(root, config, "up", "-d", buildFlag)...); err != nil {
-			return err
-		}
-		readyContext, readyCancel := context.WithTimeout(ctx, 10*time.Minute)
-		defer readyCancel()
-		if err := waitReady(readyContext, docker, root, config); err != nil {
-			return err
-		}
-		fmt.Println("Workspace is ready at", localURL)
-		fmt.Println("Username: mobsf. Run MobSF-BugBounty.exe credentials to view the initial password, or password to change it.")
-		if err := openBrowser(); err != nil {
-			fmt.Println("Could not open the browser automatically; open the local workspace address above.")
-		}
-	case "stop":
-		return dockerRun(ctx, docker, composeArgs(root, config, "stop")...)
-	case "status":
-		return dockerRun(ctx, docker, composeArgs(root, config, "ps")...)
-	case "logs":
-		return dockerRun(ctx, docker, composeArgs(root, config, "logs", "--tail", "100", "mobsf")...)
-	case "password":
-		return dockerRun(ctx, docker, composeArgs(root, config, "exec", "mobsf", "python", "manage.py", "changepassword", "mobsf")...)
-	case "android-check":
-		return dockerRun(ctx, docker, composeArgs(root, config, "exec", "-T", "mobsf", "python", "manage.py", "android_preflight", "--json")...)
-	}
-	return nil
+	// System PowerShell is selected by absolute path, never from extracted source.
+	powershell := filepath.Join(os.Getenv("SystemRoot"), "System32", "WindowsPowerShell", "v1.0", "powershell.exe")
+	command := exec.Command(powershell, nativeArgs()...)
+	command.Env = nativeEnv(root, home, action)
+	command.Stdin, command.Stdout, command.Stderr = os.Stdin, os.Stdout, os.Stderr
+	return command.Run()
 }
 
 func main() {

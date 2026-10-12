@@ -12,9 +12,9 @@
   {% empty %}<tr><td colspan="5">No endpoints match.</td></tr>{% endfor %}
   </tbody></table>
   <p>Page {{ page.number }} of {{ page.paginator.num_pages }} {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}&amp;q={{ query|urlencode }}&amp;scope={{ request.GET.scope|urlencode }}">Previous</a>{% endif %} {% if page.has_next %}<a href="?page={{ page.next_page_number }}&amp;q={{ query|urlencode }}&amp;scope={{ request.GET.scope|urlencode }}">Next</a>{% endif %}</p>
-  <h2>Import authorized HAR (passive)</h2>
+  <h2>Import authorized proxy capture (passive)</h2>
   <p>Maximum 2 MiB, 1,000 entries. Bodies, credential headers and parameter values are omitted.</p>
-  <form method="post" enctype="multipart/form-data" action="{% url 'bounty_har' analysis.pk %}">{% csrf_token %}<input type="file" name="har" accept=".har,.json" required><button class="btn btn-primary">Import HAR</button></form>
+  <form method="post" enctype="multipart/form-data" action="{% url 'bounty_har' analysis.pk %}">{% csrf_token %}<label>Capture format <select name="format"><option value="har">HAR</option><option value="caido">Caido HAR</option><option value="burp">Burp Suite Professional XML (Save items)</option></select></label><input type="file" name="har" accept=".har,.json,.xml" required><button class="btn btn-primary">Import capture</button></form>
   <h2>Findings</h2>
   <p>Potential findings start NEW. Confirmation requires manual review and retained evidence.</p>
   <form method="get"><label>Review state <select name="status"><option value="">All</option><option>NEW</option><option>IN_REVIEW</option><option>FALSE_POSITIVE</option><option>CONFIRMED</option><option>RESOLVED</option></select></label><button class="btn btn-primary">Filter findings</button></form>

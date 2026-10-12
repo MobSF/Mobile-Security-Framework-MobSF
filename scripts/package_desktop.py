@@ -35,9 +35,10 @@ def main():
         for name in modes
         if (name in FILES or name.startswith(DIRECTORIES))
         and name != 'mobsf/StaticAnalyzer/test_files'
-        and not name.endswith(('.map', '.exe'))
+        and not name.endswith('.map')
+        and not name.endswith(('CgbiPngFix_amd64', 'CgbiPngFix_arm64'))
     )
-    if 'docker/desktop-compose.yml' not in selected:
+    if 'scripts/native_windows.ps1' not in selected:
         raise RuntimeError('Stage the desktop source files before packaging')
     destination = ROOT / 'desktop/resources/source.zip'
     destination.parent.mkdir(parents=True, exist_ok=True)

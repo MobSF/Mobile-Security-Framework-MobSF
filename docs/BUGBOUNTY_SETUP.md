@@ -29,7 +29,14 @@ Bug Bounty Workspace. Create a program and import that scan's MD5. An empty
 program remains UNKNOWN until source/date and approval are recorded. Synthetic
 tests use `.test` domains; there is no need for a real bug bounty program.
 
-## Windows 11 / Docker Desktop / WSL2
+## Native Windows 11 (recommended for this edition)
+
+Use the [native executable guide](WINDOWS_EXECUTABLE.md). Install Python 3.12
+x64 and Java 21+, then run `MobSF-BugBounty.exe install` and `start`. No Docker
+or WSL is required. Data persists in your Windows profile. Configure Burp/Caido
+using [PROXY_INTEGRATION.md](PROXY_INTEGRATION.md).
+
+## Optional Windows / Docker Desktop / WSL2
 
 Enable WSL2 and Docker Desktop Linux containers. From PowerShell:
 
@@ -74,7 +81,6 @@ export XDG_CACHE_HOME="$PWD/.runtime/cache"
 export POETRY_VIRTUALENVS_IN_PROJECT=true
 .tools/bin/poetry install --only main --no-root --no-interaction
 git submodule update --init --recursive
-.venv/bin/python manage.py makemigrations StaticAnalyzer
 .venv/bin/python manage.py migrate
 .venv/bin/python manage.py createsuperuser
 .venv/bin/python manage.py create_roles

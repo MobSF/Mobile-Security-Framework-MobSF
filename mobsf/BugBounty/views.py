@@ -16,9 +16,10 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
 from mobsf.BugBounty.forms import (
-    EvidenceForm, FindingForm, ImportForm, ProgramForm, ReviewForm,
+    CaptureForm, EvidenceForm, FindingForm, ImportForm, ProgramForm, ReviewForm,
 )
 from mobsf.BugBounty.models import Analysis, Finding, Program
+from mobsf.BugBounty.proxy_import import burp_items
 from mobsf.BugBounty.sanitization import sanitize
 from mobsf.BugBounty.scope import classify
 from mobsf.BugBounty.services import (
@@ -209,14 +210,25 @@ def analysis_detail(request, pk):
 @bounded
 def har_import(request, pk):
     analysis = analysis_for(request, pk)
+    source = 'HAR'
     if request.content_type == 'application/json':
         data = payload(request)
     else:
         upload = request.FILES.get('har')
         if not upload or upload.size > settings.BOUNTY_MAX_IMPORT_BYTES:
-            return JsonResponse({'error': 'HAR required, maximum 2 MiB'}, status=400)
-        data = json.loads(upload.read())
-    count = import_har(analysis, data)
+            return JsonResponse(
+                {'error': 'Capture required, maximum 2 MiB'}, status=400,
+            )
+        form = CaptureForm({'format': request.POST.get('format', 'har')})
+        kind = validated(form)['format']
+        raw = upload.read()
+        if kind == 'burp':
+            data = burp_items(raw)
+            source = 'Burp Suite Professional XML'
+        else:
+            data = json.loads(raw)
+            source = 'Caido HAR' if kind == 'caido' else 'HAR'
+    count = import_har(analysis, data, source)
     if request.path.startswith('/bounty/api/'):
         return JsonResponse({'imported': count})
     return redirect('bounty_analysis', pk=pk)

@@ -1,96 +1,105 @@
-# Windows executable — standalone edition
+# Native Windows executable — standalone edition
 
-`windows/MobSF-BugBounty.exe` is an x64 console launcher with this edition's
-application source embedded in it. It runs MobSF in Docker Desktop Linux
-containers and opens the local workspace after readiness checks. It is not a
-native standalone replacement for Docker, Python's application server or an
-Android emulator. Host Python, Java and Git are unnecessary for end users.
-The runtime bundle omits JavaScript debug maps, test fixture submodules and the
-legacy native Windows PNG converter, which are unnecessary inside Linux Docker.
-The upstream license and third-party LICENSES directory are included.
-The Go runtime's BSD license is provided alongside the executable as
-windows/GO-LICENSE.txt and included in the workflow distribution.
-Packaging preserves executable modes from Git rather than Windows filesystem
-metadata; the Dockerfile also sets the script and Linux converter permissions.
+`windows/MobSF-BugBounty.exe` installs this bundled edition natively on Windows
+x64 and serves it with Waitress. Docker, WSL, Git and Go are unnecessary for
+end users. The application source and Windows iOS icon converter are embedded;
+Python packages and JADX are installed on first use over verified HTTPS.
 
 ## Install and use
 
-1. Install Docker Desktop with the WSL2 backend on a supported Windows 11 x64
-   machine; enable virtualization and start Docker Desktop in Linux mode.
-2. Download the executable and `windows/SHA256SUMS` from the
-   `standalone/bug-bounty-edition` branch of this fork, or the successful
-   `Standalone Windows launcher` workflow artifact.
-3. Verify the executable's SHA256 against that file, then double-click it.
-   First startup builds the embedded edition and needs Internet, disk space and
-   several minutes. Later starts reuse its exact source-version image.
-4. Retrieve the randomly generated initial login password explicitly using
-   the `credentials` command, then choose your own password using `password`.
+Use Windows 11 x64 with a full Python 3.12 x64 installation and Java 21+.
+Install the prerequisites from their official distributions or with WinGet:
 
-From PowerShell in the download folder:
+```powershell
+winget install --exact --id Python.Python.3.12
+winget install --exact --id EclipseAdoptium.Temurin.21.JDK
+```
+
+Reopen the console after installation. Download the executable and SHA256SUMS
+from `standalone/bug-bounty-edition` or a successful Windows workflow artifact.
+Verify the hash, then install and start:
 
 ```powershell
 Get-FileHash ./MobSF-BugBounty.exe -Algorithm SHA256
-./MobSF-BugBounty.exe doctor
 ./MobSF-BugBounty.exe self-test
-./MobSF-BugBounty.exe
-./MobSF-BugBounty.exe credentials
-./MobSF-BugBounty.exe password
-./MobSF-BugBounty.exe status
-./MobSF-BugBounty.exe android-check
-./MobSF-BugBounty.exe logs
-./MobSF-BugBounty.exe stop
+./MobSF-BugBounty.exe install
+./MobSF-BugBounty.exe doctor
+./MobSF-BugBounty.exe start
 ```
 
-The executable is unsigned. Publisher identity/signing and SmartScreen behavior
-have not been validated. Verify origin and checksum according to your Windows
-policy; this guide does not recommend disabling Windows protections.
+Double-clicking also installs missing application dependencies and starts MobSF.
+The console stays open while the native server runs. Press Ctrl+C in that
+console to stop. Application logs appear there; capture diagnostics are written
+to `%APPDATA%\MobSF-BugBounty\data\capture-proxy.log`.
+In a second console, retrieve the initial random password or change it:
 
-## Storage, connectivity and updates
+```powershell
+./MobSF-BugBounty.exe credentials
+./MobSF-BugBounty.exe password
+./MobSF-BugBounty.exe android-check
+./MobSF-BugBounty.exe proxy-check
+```
 
-Source versions and `desktop.env` live under `%APPDATA%\MobSF-BugBounty` on
-Windows. The initial random password is saved there and only printed when you
-explicitly request `credentials`; it can become stale after a password change.
-Keep that user profile directory private and out of cloud sync or source control.
-Windows file access relies on inherited user profile ACLs; Unix mode 0600 alone
-does not configure a Windows ACL.
+Login uses `mobsf` and a random password unique to the installation. Authentication
+is required. Initial credentials are printed only on explicit request and can
+become stale after a password change. Existing accounts are preserved. Use the
+[proxy integration guide](PROXY_INTEGRATION.md) for Burp Suite Professional/Caido.
 
-The Compose project is consistently named `mobsf-bounty-desktop`. SQLite and
-analysis artifacts persist in its `mobsf_data` named volume. Stop preserves
-data. Do not delete the volume or run `down -v` to update. Back up the full data
-volume before running a newer executable; the new embedded source is extracted
-to a different hash directory and migrations run against retained data. Restore
-and migration rollback procedures still need an independent drill.
+## Runtime and data
 
-Application and proxy ports 8000 and 1337 bind to loopback. A port conflict is an
-error; the launcher does not stop unrelated services. Docker readiness, the
-owned service's health and the login response are checked before opening the
-browser. Docker Desktop availability and a reachable, authorized Android device
-are separate prerequisites. See ANDROID_COMPATIBILITY.md for modern-device
-requirements and network/TLS limitations.
+Everything managed by the launcher lives under `%APPDATA%\MobSF-BugBounty`:
 
-Configuration changes in `desktop.env` take effect on the next start. They do
-not rotate an existing user's password; use `password`. The build does not
-download a moving upstream source branch: it compiles the embedded checkout.
-The base image and signed distribution package updates still follow the
-Dockerfile policy; pin reviewed image digests for production deployment.
+| Path | Purpose |
+| --- | --- |
+| `app/<source SHA256>/` | Extracted application and its isolated `.venv` |
+| `data/` | SQLite, uploads, findings, signatures, JADX, capture flows and local CA |
+| `desktop.env` | Initial password, Android settings and interception proxy settings |
+| `tooling/`, `cache/`, `config/` | Isolated Poetry 1.8.4 and package/tool caches |
 
-## Rebuild from source
+First installation needs Internet and several GB of free disk space. It installs
+`poetry.lock` without regenerating it, checks dependencies and applies checked-in
+migrations. It does not run the old setup.bat cleanup, create a default password,
+install the obsolete Windows RPC/APPX service or register startup tasks. The
+system Python installation and PATH are unchanged; runtime PATH changes exist
+only in the launcher process. Async analysis is off in this desktop edition.
 
-Developers need Python 3.12+ for source packaging, Git and Go 1.24+ for the
-dependency-free launcher. Stage newly added source files so packaging includes
-them, then run from PowerShell:
+Back up the entire profile directory before upgrading. New executables extract
+a different source hash and retain `data/`; migrations also run at server start.
+Old Docker named volumes are separate and are not silently imported or deleted.
+Windows data privacy relies on inherited user profile ACLs; Unix permissions
+alone do not configure NTFS access controls. Keep the directory private and out
+of cloud sync/source control.
+
+Waitress reserves only loopback port 8000. A conflicting service causes an error
+and is never killed. Browser startup requires both the owned runtime's health
+nonce and a real login page with CSRF. Proxy port 1337 also defaults to loopback;
+Android emulator/USB capture can use ADB reverse. A native Android SDK/ADB and an
+authorized rooted lab are separate prerequisites for dynamic analysis.
+
+## Optional functionality
+
+PDF export requires a separately installed wkhtmltopdf binary on PATH;
+`doctor` reports when it is absent. APK/IPA JSON reports and workspace exports
+remain available without it. Modern Android TLS interception requires an
+explicit lab trust configuration; the launcher does not install a system CA
+on Android 12–17. Native APPX analysis requiring Microsoft's legacy RPC stack
+is outside this installer. Python 3.13+, ARM Windows, signed distribution,
+SmartScreen behavior and restore drills remain unvalidated.
+
+## Build and validation
+
+Developers need Python 3.12, Git and Go 1.24+. Stage new source files, then run:
 
 ```powershell
 ./scripts/build_windows.ps1
 ```
 
-The script runs Go tests and vet, cross-compiles Windows x64, writes checksums
-and runs the resulting executable's extraction/configuration self-test when
-on Windows. The branch-specific GitHub workflow performs the Windows build and
-uploads the executable and checksum; it does not publish a release or alter
-master. A successful workflow does not validate a full Docker Desktop session.
-
-The cloud build cross-compiles the actual PE executable and runs equivalent
-launcher tests on Linux. Full interactive Windows/Docker Desktop operation
-remains untested until independently executed on that platform. See
-TEST_RESULTS.md for measured validation rather than inferred compatibility.
+Packaging is deterministic and includes upstream GPL/third-party licenses;
+Linux PNG converters, source maps and submodule test fixtures are omitted from
+the native bundle. The Go BSD license is distributed alongside the executable.
+The executable is unsigned. The cloud environment cross-compiles the real PE
+and validates the same native server on Linux; this is distinct from Windows
+execution. The Windows workflow builds and executes the EXE, then tests native
+installation, dependency imports, login, Android 17 scan, workspace import and
+restart persistence. See TEST_RESULTS.md for actually executed results; a
+configured workflow alone does not establish a passed Windows run.

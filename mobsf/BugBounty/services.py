@@ -176,7 +176,9 @@ def import_core(program, checksum):
 
 
 @transaction.atomic
-def import_har(analysis, data):
+def import_har(analysis, data, source='HAR'):
+    if source not in ('HAR', 'Caido HAR', 'Burp Suite Professional XML'):
+        raise ValueError('Invalid capture source')
     try:
         entries = data['log']['entries']
     except (TypeError, KeyError) as exc:
@@ -190,7 +192,7 @@ def import_har(analysis, data):
         req = entry['request']
         if not isinstance(req.get('url'), str):
             raise ValueError('Invalid HAR URL')
-        record = endpoint_record(req['url'], 'HAR', req.get('method', ''), True)
+        record = endpoint_record(req['url'], source, req.get('method', ''), True)
         # Parameter values and bodies are deliberately omitted from HAR storage.
         headers = req.get('headers', [])
         if not isinstance(headers, list) or len(headers) > 200:

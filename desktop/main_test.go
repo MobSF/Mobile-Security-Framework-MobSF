@@ -74,6 +74,9 @@ func TestBundledSourceExtractionAndReuse(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(root, "LICENSES", "IP2LOCATION LITE DATA.txt")); err != nil {
 		t.Fatal("third-party license is not bundled:", err)
 	}
+	if _, err := os.Stat(filepath.Join(root, "mobsf", "StaticAnalyzer", "tools", "ios", "CgbiPngFix", "CgbiPngFix.exe")); err != nil {
+		t.Fatal("Windows iOS icon converter is not bundled:", err)
+	}
 	again, err := ensureSource(home)
 	if err != nil || again != root {
 		t.Fatal("source version changed on repeat startup", err)
@@ -110,17 +113,26 @@ func TestCredentialsAreRandomAndPreserved(t *testing.T) {
 	}
 }
 
-func TestArgumentBoundariesAndDataPreservation(t *testing.T) {
-	root := `C:\Users\Researcher Name\MobSF & tools`
-	config := filepath.Join(root, "desktop.env")
-	args := composeArgs(root, config, "stop")
-	if args[4] != root || args[6] != config || args[len(args)-1] != "stop" {
-		t.Fatal("Docker argument boundaries were not preserved", args)
+func TestNativeArgumentBoundaries(t *testing.T) {
+	root := `C:\Users\Researcher Name\MobSF & $(tools)`
+	home := `C:\Users\Researcher Name\AppData\Roaming\MobSF-BugBounty`
+	args := nativeArgs()
+	if args[2] != "-Command" || strings.Contains(args[3], root) || strings.Contains(args[3], home) {
+		t.Fatal("runtime paths became PowerShell code", args)
 	}
-	for _, arg := range args {
-		if arg == "down" || arg == "-v" || strings.HasPrefix(arg, "MOBSF_ADMIN_PASSWORD=") {
-			t.Fatal("destructive or secret command argument", arg)
+	t.Setenv("MOBSF_DESKTOP_SOURCE_ROOT", "unexpected inherited value")
+	values := nativeEnv(root, home, "start")
+	count := 0
+	for _, entry := range values {
+		if strings.HasPrefix(strings.ToUpper(entry), "MOBSF_DESKTOP_SOURCE_ROOT=") {
+			count++
+			if entry != "MOBSF_DESKTOP_SOURCE_ROOT="+root {
+				t.Fatal("native argument boundary was lost", entry)
+			}
 		}
+	}
+	if count != 1 {
+		t.Fatal("native source override is ambiguous", values)
 	}
 }
 

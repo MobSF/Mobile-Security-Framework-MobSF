@@ -84,6 +84,10 @@ or all four product phases delivered.
 
 ## Standalone Android / Windows update — 2026-10-12
 
+This historical section describes the earlier Docker launcher. The native update
+below replaces its Docker requirement; the earlier container results do not
+establish current Windows execution.
+
 Only `standalone/bug-bounty-edition` is updated. The existing master and feature
 branch are preserved; no upstream pull request is submitted.
 
@@ -121,3 +125,44 @@ Windows launcher tests and the executable self-test; a CI result is not assumed.
 The executable is unsigned. Android 12–17 physical/emulated-device Frida hooks,
 SELinux behavior and modern TLS interception remain unvalidated. Modern dynamic
 mode is explicitly experimental and does not claim automatic system CA support.
+
+## Native Windows and Burp/Caido update — 2026-10-12
+
+| Check | Actual result |
+| --- | --- |
+| `tox -e lint,test` | Passed: 70 tests in 319.420 s; total tox time 332.20 s |
+| New proxy regressions | Nine tests passed; rerun after config-upgrade support passed in 0.075 s |
+| Native initialization | Real migrations, initial administrator and synchronous JADX preparation passed on Linux |
+| Native HTTP smoke | Waitress login, Android 17 APK upload/scan, report fields, workspace import and stop/restart persistence passed |
+| Actual extracted source | Fresh database initialized using packaged source, including the newly tracked StaticAnalyzer migration; same complete native smoke passed |
+| Upgrade configuration | Existing older config.py accepts explicit capture-provider and modern-Android environment settings without rewriting that file |
+| Proxy forwarding | Real mitmproxy runner forwarded owned synthetic HTTP and HTTPS through loopback interception fixtures for Burp/Caido configurations |
+| HTTPS trust | Missing upstream CA produced 502; adding the fixture CA produced 200 with certificate verification enabled |
+| Passive formats | Burp base64 Save items XML and Caido HAR imported with provenance, body omission and credential redaction; XML entities/DTD and invalid format rejected |
+| Go tests / vet | Eight top-level launcher tests passed; vet passed against the native source archive |
+| PowerShell | Scripts parsed with verified PowerShell 7.4.19; native bootstrap preserved literal paths containing spaces, ampersands and PowerShell-looking text |
+
+The initial native smoke omitted the APK multipart MIME type and was rejected;
+corrected the test to use the accepted Android MIME type. A restart attempt
+exposed POSIX TIME_WAIT handling; added POSIX SO_REUSEADDR while retaining
+Windows SO_EXCLUSIVEADDRUSE and closed the smoke client's connections before
+stopping the owned process. The final restart passed. Neither attempt is counted
+as a passed run. A source-bundle review found the previously ignored core schema
+migration missing; it is now tracked and checked during extraction. The fresh
+packaged-source database smoke passed after that correction.
+
+Windows native installation is configured in the branch workflow: actual EXE
+execution, locked dependency installation, compiled-module imports, login,
+Android 17 scan, workspace import/reinstallation/restart and proxy-chain tests.
+This cloud host is Linux; those Windows runtime results have not been observed
+here. The checked-in executable is a cross-compiled, unsigned Windows x64 PE.
+Its hash, source snapshot and native runtime requirement are in
+windows/build-manifest.json. CI marks Windows runtime tested in its artifact
+manifest only after the native checks pass.
+
+Synthetic interception fixtures emulate HTTP proxy behavior. Installed Burp
+Professional/Caido desktop sessions, provider automation APIs, Android device
+instrumentation/pinning and browser launch on Windows remain untested. PDF needs
+an external native wkhtmltopdf installation. The installer does not bundle the
+legacy Windows APPX RPC service. Original master and feature branches remain
+unchanged, and no upstream pull request is opened.

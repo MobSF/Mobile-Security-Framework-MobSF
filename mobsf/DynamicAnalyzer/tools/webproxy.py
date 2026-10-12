@@ -1,14 +1,18 @@
 import logging
-import os
 from pathlib import Path
 import subprocess
+import sys
 import time
 
 import requests
 
 from django.conf import settings
 
-from mobsf.MobSF.utils import upstream_proxy
+from mobsf.DynamicAnalyzer.tools.capture_runner import (
+    capture_arguments,
+    capture_config,
+    proxy_preflight,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -42,27 +46,29 @@ def stop_httptools(url):
 
 def start_proxy(port, project):
     """Start HTTPtools in Proxy Mode."""
-    argz = ['httptools',
-            '-m', 'capture',
-            '-p', str(port), '-n', project]
-    proxies, _ = upstream_proxy('http')
-    if proxies['http']:
-        argz.extend(['-u', proxies['http']])
-    fnull = open(os.devnull, 'w')
-    subprocess.Popen(argz, stdout=fnull, stderr=subprocess.STDOUT)
+    config = capture_config()
+    capture_arguments(port, project, config)
+    if config['url'] and not proxy_preflight()['ready']:
+        raise ValueError('Configured interception proxy is unreachable')
+    argz = [sys.executable, '-m',
+            'mobsf.DynamicAnalyzer.tools.capture_runner',
+            '--port', str(port), '--project', project]
+    logs = Path(settings.MOBSF_HOME) / 'capture-proxy.log'
+    with logs.open('a', encoding='utf-8') as output:
+        return subprocess.Popen(argz, stdout=output, stderr=subprocess.STDOUT)
 
 
 def start_httptools_ui(port):
     """Start Server UI."""
-    subprocess.Popen(['httptools',
-                      '-m', 'server', '-p', str(port)])
+    subprocess.Popen([sys.executable, '-m',
+                      'mobsf.DynamicAnalyzer.tools.capture_runner',
+                      '--ui', '--port', str(port)])
     time.sleep(3)
 
 
 def _mitm_ca_file():
     """Path to the mitmproxy generated CA cert."""
-    from mitmproxy import options
-    ca_dir = Path(options.CONF_DIR).expanduser()
+    ca_dir = Path(settings.MOBSF_HOME) / 'mitmproxy'
     return ca_dir / 'mitmproxy-ca-cert.pem'
 
 
@@ -72,7 +78,8 @@ def create_ca():
     if ca_file.exists():
         return
 
-    argz = ['mitmdump', '-n']
+    argz = ['mitmdump', '-n', '--set',
+            'confdir=' + str(Path(settings.MOBSF_HOME) / 'mitmproxy')]
     proc = subprocess.Popen(argz,
                             stdin=subprocess.DEVNULL,
                             stdout=subprocess.DEVNULL,
@@ -107,7 +114,7 @@ def get_ca_file():
 
 
 def get_traffic(package):
-    web = Path.home() / '.httptools' / 'flows' / f'{package}.flow.txt'
+    web = Path(settings.MOBSF_HOME) / 'traffic' / f'{package}.flow.txt'
     if web.is_file():
         return web.read_text('utf-8', 'ignore')
     return ''
