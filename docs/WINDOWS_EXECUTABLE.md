@@ -103,3 +103,24 @@ execution. The Windows workflow builds and executes the EXE, then tests native
 installation, dependency imports, login, Android 17 scan, workspace import and
 restart persistence. See TEST_RESULTS.md for actually executed results; a
 configured workflow alone does not establish a passed Windows run.
+
+## Test on a Windows 11 x64 notebook
+
+With this branch's source checkout, Python 3.12 x64 and Java 21+, close an
+existing MobSF console to free port 8000, then run from PowerShell:
+
+```powershell
+./scripts/test_notebook.ps1
+# Or test an executable downloaded into a different folder:
+./scripts/test_notebook.ps1 -Executable C:\Downloads\MobSF-BugBounty.exe
+```
+
+The script uses a new `%LOCALAPPDATA%\MobSF-Validation\<random ID>` profile,
+retains diagnostic logs, and restores environment variables afterward. It
+checks the actual EXE, native install/login/SDK37 scan/workspace/restart, local
+HTTP/HTTPS forwarding and CA rejection, then the 68 synthetic workspace/Android/
+proxy regressions offline. It preserves your regular MobSF profile and never
+stops an unrelated process. First installation requires Internet. Original core
+PDF integration needs the separately installed wkhtmltopdf and test-fixture
+submodule. Physical Android and real Burp/Caido desktop sessions are additional
+lab checks; the script uses synthetic proxy listeners.
