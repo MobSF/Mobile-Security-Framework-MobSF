@@ -17,9 +17,9 @@ from django.db.models import ObjectDoesNotExist
 from django.views.decorators.http import require_http_methods
 
 from mobsf.DynamicAnalyzer.views.android.environment import (
-    ANDROID_API_SUPPORTED,
     Environment,
 )
+from mobsf.DynamicAnalyzer.views.android.compatibility import runtime_policy
 from mobsf.DynamicAnalyzer.views.android.operations import (
     get_package_name,
 )
@@ -99,7 +99,8 @@ def android_dynamic_analysis(request, api=False):
                    'identifier': identifier,
                    'android_version': and_ver,
                    'android_sdk': and_sdk,
-                   'android_supported': ANDROID_API_SUPPORTED,
+                   'android_runtime': runtime_policy(
+                       and_sdk or '', settings.ANDROID_MODERN_DYNAMIC),
                    'proxy_ip': get_proxy_ip(identifier),
                    'proxy_port': settings.PROXY_PORT,
                    'settings_loc': get_config_loc(),

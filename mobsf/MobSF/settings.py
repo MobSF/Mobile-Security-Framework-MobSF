@@ -488,6 +488,9 @@ else:
 
     # =======ANDROID DYNAMIC ANALYSIS SETTINGS===========
     ANALYZER_IDENTIFIER = os.getenv('MOBSF_ANALYZER_IDENTIFIER', '')
+    ANDROID_MODERN_DYNAMIC = os.getenv('MOBSF_ANDROID_MODERN_DYNAMIC', '0') == '1'
+    ANDROID_ALLOW_LOW_TARGET_INSTALL = os.getenv(
+        'MOBSF_ANDROID_ALLOW_LOW_TARGET_INSTALL', '0') == '1'
     FRIDA_TIMEOUT = int(os.getenv('MOBSF_FRIDA_TIMEOUT', '4'))
     ACTIVITY_TESTER_SLEEP = int(os.getenv('MOBSF_ACTIVITY_TESTER_SLEEP', '4'))
     # ==============================================

@@ -11,6 +11,7 @@ from django.conf import settings
 from mobsf.DynamicAnalyzer.views.android.frida_core import (
     Frida,
 )
+from mobsf.DynamicAnalyzer.views.android.compatibility import LEGACY_MAX_API, parse_api
 from mobsf.DynamicAnalyzer.tools.webproxy import (
     get_http_tools_url,
     get_traffic,
@@ -42,6 +43,9 @@ def detect_traffic(data):
 
 def run_tls_tests(request, md5_hash, env, package, test_pkg, duration):
     """Run all TLS test cases."""
+    if parse_api(env.get_android_sdk()) > LEGACY_MAX_API:
+        raise RuntimeError('Automated TLS verdicts require controlled system CA '
+                           'changes and are unavailable on modern Android')
     test_status = {
         'tls_misconfigured': False,
         'no_tls_pin_or_transparency': False,

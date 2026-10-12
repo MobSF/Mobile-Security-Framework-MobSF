@@ -17,6 +17,7 @@ from mobsf.DynamicAnalyzer.views.android.operations import (
 from mobsf.DynamicAnalyzer.views.android.environment import (
     Environment,
 )
+from mobsf.DynamicAnalyzer.views.android.compatibility import LEGACY_MAX_API, parse_api
 from mobsf.DynamicAnalyzer.views.android.tests_xposed import (
     download_xposed_log,
 )
@@ -261,6 +262,8 @@ def tls_tests(request, api=False):
     logger.info('Running TLS/SSL Security tests')
     data = {}
     package = None
+    env = None
+    resume_proxy = False
     try:
         test_duration = 25
         test_package = 'tls_tests'
@@ -273,6 +276,7 @@ def tls_tests(request, api=False):
             data = {'status': 'failed',
                     'message': 'App details not found in database'}
             return send_response(data, api)
+        resume_proxy = parse_api(env.get_android_sdk()) <= LEGACY_MAX_API
         res = run_tls_tests(
             request,
             md5_hash,
@@ -286,6 +290,7 @@ def tls_tests(request, api=False):
         logger.exception('Checking Application Security in Transit')
         data = {'status': 'failed', 'message': str(exp)}
     finally:
-        logger.info('Test Completed. Resuming HTTPS Proxy')
-        env.configure_proxy(package, request)
+        if resume_proxy and env and package:
+            logger.info('Test Completed. Resuming HTTPS Proxy')
+            env.configure_proxy(package, request)
     return send_response(data, api)
