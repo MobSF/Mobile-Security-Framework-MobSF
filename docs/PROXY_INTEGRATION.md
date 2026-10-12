@@ -45,6 +45,16 @@ MOBSF_CAPTURE_PROXY_URL=http://127.0.0.1:8081
 MOBSF_CAPTURE_PROXY_CA_FILE=C:\Users\YOUR_USER\Certificates\caido-ca.pem
 ```
 
+For a DER certificate exported by Burp, Windows can convert it without an
+additional OpenSSL installation:
+
+```powershell
+certutil -encode 'C:\Users\YOUR_USER\Certificates\burp-ca.der' 'C:\Users\YOUR_USER\Certificates\burp-ca.pem'
+```
+
+Use the same conversion for a Caido DER certificate. An already PEM-encoded
+certificate does not need conversion.
+
 Substitute your real certificate path; values in desktop.env are literal and do
 not need surrounding quotes. Providers are `none`, `burp`, `caido` and `custom`.
 URLs accept explicit IPv4/IPv6 addresses and HTTP proxy listeners, with no user

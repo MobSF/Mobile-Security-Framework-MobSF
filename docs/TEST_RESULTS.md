@@ -185,9 +185,9 @@ untrusted upstream CA. The successful artifact is available in that run.
 The checked-in binary remains unchanged after these checks; its manifest now
 records the successful Windows run and exact verified binary SHA256. Its
 embedded documentation belongs to the earlier source snapshot; this section
-records the later verification. The Windows workflow additionally runs the
-isolated notebook procedure and its 68 offline regressions. That additional
-procedure's first CI result is pending at this documentation snapshot.
+records the later verification. The Windows workflow additionally runs the isolated notebook procedure and
+its 68 offline regressions. [Run 38293436545](https://github.com/Ivomsantiago/Mobile-Security-Framework-MobSF/actions/runs/38293436545)
+passed on commit `08a0a49a` in 5m 56s, including that complete procedure.
 
 This was a hosted `windows-latest` runner, not the user's physical notebook.
 The user authorized testing their Windows 11 x64 notebook, but no local-machine
