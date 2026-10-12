@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import secrets
 import signal
 import subprocess
@@ -16,6 +17,25 @@ BASE = 'http://127.0.0.1:8000'
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def diagnostic(text):
+    """Expose bounded CI errors without printing credentials or environment dumps."""
+    lines = text.splitlines()[-35:]
+    lines = [line for line in lines if not re.search(
+        r'password|api.?key|authorization|bearer|secret', line, re.I)]
+    return re.sub(r'[a-fA-F0-9]{32,}', '[REDACTED]', '\n'.join(lines))[-2500:]
+
+
+def checked(command, env):
+    """Keep subprocess error details reviewable in public CI annotations."""
+    result = subprocess.run(command, env=env, stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT, text=True,
+                            encoding='utf-8', errors='replace')
+    if result.returncode:
+        raise RuntimeError('Native ' + command[-1] + ' failed:\n'
+                           + diagnostic(result.stdout))
+    print('Native command passed:', command[-1], flush=True)
+
+
 def run_smoke(executable, runtime_command=None):
     """Use only synthetic owned data in an isolated application profile."""
     profile = Path(os.environ['APPDATA']) / 'MobSF-BugBounty'
@@ -24,8 +44,8 @@ def run_smoke(executable, runtime_command=None):
     if runtime_command:
         command = [runtime_command, str(ROOT / 'scripts/native_runtime.py')]
     else:
-        subprocess.run(command + ['install'], env=env, check=True)
-        subprocess.run(command + ['doctor'], env=env, check=True)
+        checked(command + ['install'], env)
+        checked(command + ['doctor'], env)
     config = dict(
         line.split('=', 1)
         for line in (profile / 'desktop.env').read_text().splitlines()
@@ -53,7 +73,9 @@ def run_smoke(executable, runtime_command=None):
                 for _ in range(180):
                     if server.poll() is not None:
                         raise RuntimeError(
-                            'Native server exited; inspect smoke-server log',
+                            'Native server exited:\n' + diagnostic(
+                                (profile / f'smoke-server-{attempt}.log').read_text(
+                                    encoding='utf-8', errors='replace')),
                         )
                     try:
                         response = session.get(BASE + '/login/', timeout=3)
@@ -172,7 +194,7 @@ def run_smoke(executable, runtime_command=None):
                     server.wait(timeout=10)
         if not runtime_command:
             # Reinstallation must preserve the database, secret and password.
-            subprocess.run(command + ['install'], env=env, check=True)
+            checked(command + ['install'], env)
     print(
         json.dumps(
             {
@@ -190,7 +212,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--runtime-python')
     args = parser.parse_args()
-    run_smoke(ROOT / 'windows/MobSF-BugBounty.exe', args.runtime_python)
+    try:
+        run_smoke(ROOT / 'windows/MobSF-BugBounty.exe', args.runtime_python)
+    except Exception as exc:
+        if os.getenv('GITHUB_ACTIONS') == 'true':
+            detail = diagnostic(str(exc)).replace('%', '%25')
+            detail = detail.replace('\r', '%0D').replace('\n', '%0A')
+            print('::error title=Native Windows diagnostic::' + detail, flush=True)
+        raise
 
 
 if __name__ == '__main__':
