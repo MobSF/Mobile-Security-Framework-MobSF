@@ -47,6 +47,12 @@ jobs:
           $manifest = Get-Content -Raw windows/build-manifest.json | ConvertFrom-Json
           $manifest.windows_runtime_tested = $true
           $manifest | ConvertTo-Json | Set-Content -Encoding ascii windows/build-manifest.json
+      - name: Validate the isolated notebook procedure and offline regressions
+        shell: pwsh
+        timeout-minutes: 30
+        run: |
+          ./scripts/test_notebook.ps1 -Executable (Join-Path $env:RUNNER_TEMP 'Published-MobSF.exe') -PythonExecutable (Get-Command python.exe).Source
+          if ($LASTEXITCODE -ne 0) { throw 'Notebook procedure failed' }
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: MobSF-BugBounty-Windows-x64

@@ -171,3 +171,27 @@ instrumentation/pinning and browser launch on Windows remain untested. PDF needs
 an external native wkhtmltopdf installation. The installer does not bundle the
 legacy Windows APPX RPC service. Original master and feature branches remain
 unchanged, and no upstream pull request is opened.
+
+## Hosted Windows runtime verified — 2026-10-12
+
+[Windows run 38292140143](https://github.com/Ivomsantiago/Mobile-Security-Framework-MobSF/actions/runs/38292140143)
+passed on commit `500e732d` in 4m 4s. It built/tested the launcher and completed
+native installation, compiled dependency imports, login, Android 17 static
+scan, workspace import, reinstall and restart persistence using both the newly
+Windows-built executable and the exact checked-in cross-compiled executable.
+The local real mitmproxy chain passed HTTP/HTTPS forwarding and rejected an
+untrusted upstream CA. The successful artifact is available in that run.
+
+The checked-in binary remains unchanged after these checks; its manifest now
+records the successful Windows run and exact verified binary SHA256. Its
+embedded documentation belongs to the earlier source snapshot; this section
+records the later verification. The Windows workflow additionally runs the
+isolated notebook procedure and its 68 offline regressions. That additional
+procedure's first CI result is pending at this documentation snapshot.
+
+This was a hosted `windows-latest` runner, not the user's physical notebook.
+The user authorized testing their Windows 11 x64 notebook, but no local-machine
+execution connection is available in this session. The isolated procedure is
+`scripts/test_notebook.ps1`. Real Burp/Caido desktop sessions, interactive browser
+launch, Android devices, SmartScreen/signing and native PDF export remain
+separate unexecuted checks.
