@@ -100,7 +100,7 @@ def is_reserved_file_conflict(file_path):
     return False
 
 
-def unzip(checksum, app_path, ext_path):
+def unzip(checksum, app_path, ext_path, size_budget=None):
     """Unzip APK.
 
     Unzip a APK archive while handling encrypted files, reserved file conflicts,
@@ -111,6 +111,10 @@ def unzip(checksum, app_path, ext_path):
         checksum (str): The checksum of the file.
         app_path (str): Path to the ZIP archive.
         ext_path (str): Path to extract the files.
+        size_budget (dict): Optional shared counter, ``{'used': int}``.
+            When set, this call continues that uncompressed-byte total and
+            stops at ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE. The OS unzip fallback
+            is not used, so a failed open cannot bypass the cap.
 
     Returns:
         list: A list of files extracted or an empty list if an error occurs.
@@ -120,11 +124,20 @@ def unzip(checksum, app_path, ext_path):
     append_scan_status(checksum, msg)
     files = []
     original_ext_path = ext_path
+    budgeted = size_budget is not None
+    # A shared budget must not fall through to OS unzip: that path has no
+    # byte cap. Leave the flag unset on the default path so its fallback
+    # behavior stays the same.
+    if budgeted:
+        stop_fallback_extraction = True
     try:
         with zipfile.ZipFile(app_path, 'r') as zipptr:
             files = zipptr.namelist()
-            total_size = 0
-            stop_fallback_extraction = False
+            if budgeted:
+                total_size = size_budget.get('used', 0)
+            else:
+                total_size = 0
+                stop_fallback_extraction = False
             for fileinfo in zipptr.infolist():
                 ext_path = original_ext_path
 
@@ -159,6 +172,8 @@ def unzip(checksum, app_path, ext_path):
                 # Check uncompressed size
                 if not fileinfo.is_dir():
                     total_size += fileinfo.file_size
+                    if budgeted:
+                        size_budget['used'] = total_size
                     if fileinfo.file_size > settings.ZIP_MAX_UNCOMPRESSED_FILE_SIZE:
                         size_mb = fileinfo.file_size / (1024 * 1024)
                         msg = (f'File too large ({size_mb:.2f} MB). Skipping '

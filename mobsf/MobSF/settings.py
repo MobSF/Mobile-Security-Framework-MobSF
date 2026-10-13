@@ -127,7 +127,6 @@ WINDOWS_EXTS = ('appx',)
 API_ONLY = os.getenv('MOBSF_API_ONLY', '0')
 
 # -----External URLS--------------------------
-MALWARE_DB_URL = 'https://www.malwaredomainlist.com/mdlcsv.php'
 MALTRAIL_DB_URL = ('https://github.com/stamparm/trails/'
                    'releases/latest/download/maltrail-malware-domains.txt')
 VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/api/v3/files'
