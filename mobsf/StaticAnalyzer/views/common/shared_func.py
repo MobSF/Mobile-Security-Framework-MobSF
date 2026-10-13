@@ -122,7 +122,6 @@ def unzip(checksum, app_path, ext_path):
     original_ext_path = ext_path
     try:
         with zipfile.ZipFile(app_path, 'r') as zipptr:
-            files = zipptr.namelist()
             total_size = 0
             stop_fallback_extraction = False
             for fileinfo in zipptr.infolist():
@@ -155,6 +154,11 @@ def unzip(checksum, app_path, ext_path):
                     logger.error(msg)
                     stop_fallback_extraction = True
                     continue
+
+                # Rejected members must not be returned. Callers such as the
+                # APPX analyzer open names from this list.
+                if file_path:
+                    files.append(file_path)
 
                 # Check uncompressed size
                 if not fileinfo.is_dir():
