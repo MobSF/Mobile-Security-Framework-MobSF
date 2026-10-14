@@ -1,5 +1,22 @@
 # Mobile Security Framework (MobSF)
 
+This fork adds a passive **Bug Bounty Workspace** with program scope, endpoint
+inventories, evidence and finding review. Build this fork using the
+[Windows/Linux setup guide](docs/BUGBOUNTY_SETUP.md). See the
+[module status](docs/BUGBOUNTY_MODULES.md) and
+[executed validation](docs/TEST_RESULTS.md) for delivered features and limits.
+
+The independent edition is maintained on `standalone/bug-bounty-edition`.
+Use its [Windows executable](docs/WINDOWS_EXECUTABLE.md) and review the
+[modern Android compatibility guide](docs/ANDROID_COMPATIBILITY.md).
+
+[Download the Windows x64 launcher](https://github.com/Ivomsantiago/Mobile-Security-Framework-MobSF/raw/refs/heads/standalone/bug-bounty-edition/windows/MobSF-BugBounty.exe)
+and verify it with [SHA256SUMS](windows/SHA256SUMS). The native launcher requires Python 3.12 x64 and Java 21+;
+Docker and WSL are unnecessary. First startup installs locked dependencies and
+preserves data in your Windows profile. Burp Suite Professional and Caido
+integration is documented in [the proxy guide](docs/PROXY_INTEGRATION.md). Modern dynamic Android analysis remains experimental and needs
+an authorized rooted lab; see the compatibility guide before enabling it.
+
 ![](https://cloud.githubusercontent.com/assets/4301109/20019521/cc61f7fc-a2f2-11e6-95f3-407030d9fdde.png)
 
 Mobile Security Framework (MobSF) is a security research platform for mobile applications in Android, iOS and Windows Mobile. MobSF can be used for a variety of use cases such as mobile application security, penetration testing, malware analysis, and privacy analysis. The Static Analyzer supports popular mobile app binaries like APK, IPA, APPX and source code. Meanwhile, the Dynamic Analyzer supports both Android and iOS applications and offers a platform for interactive instrumented testing, runtime data and network traffic analysis. MobSF seamlessly integrates with your DevSecOps or CI/CD pipeline, facilitated by REST APIs and CLI tools, enhancing your security workflow with ease.

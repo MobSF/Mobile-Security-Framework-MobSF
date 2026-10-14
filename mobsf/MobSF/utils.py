@@ -37,7 +37,6 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
-from mobsf.MobSF. init import api_key
 
 from . import settings
 
@@ -116,16 +115,11 @@ def print_version():
     logger.info(settings.BANNER)
     ver = settings.MOBSF_VER
     logger.info('Author: Ajin Abraham | opensecurity.in')
-    mobsf_api_key = api_key(settings.MOBSF_HOME)
     if platform.system() == 'Windows':
         logger.info('Mobile Security Framework %s', ver)
-        print(f'REST API Key: {mobsf_api_key}')
-        print('Default Credentials: mobsf/mobsf')
     else:
         logger.info(
             '%sMobile Security Framework %s%s', Color.GREY, ver, Color.END)
-        print(f'REST API Key: {Color.BOLD}{mobsf_api_key}{Color.END}')
-        print(f'Default Credentials: {Color.BOLD}mobsf/mobsf{Color.END}')
     os = platform.system()
     pltfm = platform.platform()
     dist = ' '.join(distro.linux_distribution(

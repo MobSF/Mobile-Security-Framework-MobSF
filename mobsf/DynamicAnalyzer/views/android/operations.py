@@ -291,12 +291,13 @@ def mobsf_ca(request, api=False):
     try:
         env = Environment()
         action = request.POST['action']
-        if action == 'install':
-            env.install_mobsf_ca(action)
-            data = {'status': 'ok', 'message': 'installed'}
-        elif action == 'remove':
-            env.install_mobsf_ca(action)
-            data = {'status': 'ok', 'message': 'removed'}
+        if action in ('install', 'remove'):
+            if env.install_mobsf_ca(action):
+                data = {'status': 'ok', 'message': f'Certificate {action} completed'}
+            else:
+                data = {'status': 'failed', 'message':
+                        'System CA operation unavailable or failed. Modern Android '
+                        'needs an explicit lab trust configuration.'}
         else:
             data = {'status': 'failed',
                     'message': 'Action not supported'}

@@ -1,5 +1,5 @@
 # Base image
-FROM python:3.13-slim-bookworm
+FROM python:3.13-slim-trixie
 
 LABEL \
     name="MobSF" \
@@ -20,16 +20,18 @@ ENV DEBIAN_FRONTEND=noninteractive \
     USER_ID=9901 \
     MOBSF_PLATFORM=docker \
     MOBSF_ADB_BINARY=/usr/bin/adb \
-    JAVA_HOME=/jdk-22.0.2 \
-    PATH=/jdk-22.0.2/bin:/root/.local/bin:$PATH \
-    DJANGO_SUPERUSER_USERNAME=mobsf \
-    DJANGO_SUPERUSER_PASSWORD=mobsf
+    PATH=/root/.local/bin:$PATH \
+    DJANGO_SUPERUSER_USERNAME=mobsf
 
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run
-RUN apt update -y && \
+RUN --mount=type=secret,id=build_ca \
+    if [ -f /run/secrets/build_ca ]; then \
+      export PIP_CERT=/run/secrets/build_ca; \
+    fi && \
+    apt update -y && \
     apt install -y --no-install-recommends \
     android-sdk-build-tools \
-    android-tools-adb \
+    adb \
     build-essential \
     curl \
     fontconfig \
@@ -40,6 +42,7 @@ RUN apt update -y && \
     libxext6 \
     libxrender1 \
     locales \
+    openjdk-21-jre-headless \
     python3-dev \
     sqlite3 \
     unzip \
@@ -50,19 +53,32 @@ RUN apt update -y && \
     locale-gen en_US.UTF-8 && \
     update-locale LANG=en_US.UTF-8 && \
     apt upgrade -y && \
-    curl -sSL https://install.python-poetry.org | python3 - && \
+    python3 -m pip install --no-cache-dir poetry==1.8.4 && \
     apt autoremove -y && apt clean -y && rm -rf /var/lib/apt/lists/* /tmp/*
 
 ARG TARGETPLATFORM
 
 # Install wkhtmltopdf, OpenJDK and jadx
 COPY scripts/dependencies.sh mobsf/MobSF/tools_download.py ./
-RUN ./dependencies.sh
+# The standalone downloader imports only these package files during image build.
+COPY mobsf/__init__.py /mobsf/__init__.py
+COPY mobsf/MobSF/__init__.py mobsf/MobSF/exceptions.py /mobsf/MobSF/
+RUN --mount=type=secret,id=build_ca \
+    if [ -f /run/secrets/build_ca ]; then \
+      export SSL_CERT_FILE=/run/secrets/build_ca; \
+      export WGETRC=/tmp/build-wgetrc; \
+      echo 'ca_certificate=/run/secrets/build_ca' > "$WGETRC"; \
+    fi && \
+    chmod +x dependencies.sh && ./dependencies.sh
 
 # Install Python dependencies
-COPY pyproject.toml .
-RUN poetry config virtualenvs.create false && \
-  poetry lock && \
+COPY pyproject.toml poetry.lock .
+RUN --mount=type=secret,id=build_ca \
+  if [ -f /run/secrets/build_ca ]; then \
+    export REQUESTS_CA_BUNDLE=/run/secrets/build_ca; \
+    export SSL_CERT_FILE=/run/secrets/build_ca; \
+  fi && \
+  poetry config virtualenvs.create false && \
   poetry install --only main --no-root --no-interaction --no-ansi && \
   poetry cache clear . --all --no-interaction && \
   rm -rf /root/.cache/
@@ -82,13 +98,16 @@ RUN \
 WORKDIR /home/mobsf/Mobile-Security-Framework-MobSF
 COPY . .
 
-HEALTHCHECK CMD curl --fail http://host.docker.internal:8000/ || exit 1
+HEALTHCHECK CMD curl --fail http://127.0.0.1:8000/login/ || exit 1
 
 # Expose MobSF Port and Proxy Port
 EXPOSE 8000 1337
 
 # Create mobsf user
-RUN groupadd --gid $USER_ID $MOBSF_USER && \
+RUN chmod +x scripts/*.sh && \
+    chmod +x mobsf/StaticAnalyzer/tools/ios/CgbiPngFix/CgbiPngFix_amd64 \
+             mobsf/StaticAnalyzer/tools/ios/CgbiPngFix/CgbiPngFix_arm64 && \
+    groupadd --gid $USER_ID $MOBSF_USER && \
     useradd $MOBSF_USER --uid $USER_ID --gid $MOBSF_USER --shell /bin/false && \
     chown -R $MOBSF_USER:$MOBSF_USER /home/mobsf
 

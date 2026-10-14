@@ -1,0 +1,64 @@
+name: Standalone Windows launcher
+on:
+  push:
+    branches: [standalone/bug-bounty-edition]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        with:
+          go-version: stable
+          cache: false
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Build and test the Windows executable
+        shell: pwsh
+        run: |
+          Copy-Item -LiteralPath windows/MobSF-BugBounty.exe -Destination (Join-Path $env:RUNNER_TEMP 'Published-MobSF.exe')
+          ./scripts/build_windows.ps1
+      - name: Validate native installation, Android 17 scan and restart
+        shell: pwsh
+        timeout-minutes: 30
+        run: |
+          python -m pip install requests==2.32.5
+          if ($LASTEXITCODE -ne 0) { throw 'Smoke-test dependency installation failed' }
+          $executables = @((Join-Path (Get-Location) 'windows/MobSF-BugBounty.exe'),
+            (Join-Path $env:RUNNER_TEMP 'Published-MobSF.exe'))
+          foreach ($executable in $executables) {
+            $env:APPDATA = Join-Path $env:RUNNER_TEMP ('MobSF profile ' + [IO.Path]::GetFileNameWithoutExtension($executable))
+            python scripts/smoke_native_windows.py --executable $executable
+            if ($LASTEXITCODE -ne 0) { throw 'Native Windows smoke test failed' }
+          }
+          $runtimePython = Get-ChildItem -LiteralPath (Join-Path $env:APPDATA 'MobSF-BugBounty/app') -Directory |
+            ForEach-Object { Join-Path $_.FullName '.venv/Scripts/python.exe' } |
+            Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+          & $runtimePython scripts/smoke_proxy_chain.py --runtime-python $runtimePython
+          if ($LASTEXITCODE -ne 0) { throw 'Native proxy forwarding/TLS test failed' }
+          $manifest = Get-Content -Raw windows/build-manifest.json | ConvertFrom-Json
+          $manifest.windows_runtime_tested = $true
+          $manifest | ConvertTo-Json | Set-Content -Encoding ascii windows/build-manifest.json
+      - name: Validate the isolated notebook procedure and offline regressions
+        shell: pwsh
+        timeout-minutes: 30
+        run: |
+          ./scripts/test_notebook.ps1 -Executable (Join-Path $env:RUNNER_TEMP 'Published-MobSF.exe') -PythonExecutable (Get-Command python.exe).Source
+          if ($LASTEXITCODE -ne 0) { throw 'Notebook procedure failed' }
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: MobSF-BugBounty-Windows-x64
+          path: |
+            windows/MobSF-BugBounty.exe
+            windows/SHA256SUMS
+            windows/GO-LICENSE.txt
+            windows/build-manifest.json
+          if-no-files-found: error

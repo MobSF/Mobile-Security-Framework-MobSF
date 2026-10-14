@@ -26,6 +26,14 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
 from mobsf.DynamicAnalyzer.views.common.frida.server_update import (
     FridaServerUpdater,
 )
+from mobsf.DynamicAnalyzer.views.android.compatibility import (
+    FRIDA_ARCHITECTURES,
+    LEGACY_MAX_API,
+    full_sdk,
+    parse_api,
+    release_number,
+    runtime_policy,
+)
 from mobsf.MobSF.utils import (
     get_adb,
     get_device,
@@ -36,7 +44,7 @@ from mobsf.MobSF.utils import (
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
-ANDROID_API_SUPPORTED = 30
+ANDROID_API_SUPPORTED = LEGACY_MAX_API
 
 
 class Environment:
@@ -105,9 +113,9 @@ class Environment:
             return False
         # identify environment
         runtime = self.get_environment()
-        logger.info('Remounting')
-        # Allow non supported environments also
-        self.adb_command(['remount'])
+        if parse_api(self.get_android_sdk()) <= LEGACY_MAX_API:
+            logger.info('Remounting legacy Android system')
+            self.adb_command(['remount'])
         logger.info('Performing System check')
         if not self.system_check(runtime):
             return False
@@ -143,15 +151,18 @@ class Environment:
         ], True)
         logger.info('Installing APK - %s', package)
         # Install APK
-        out = self.adb_command([
-            'install',
-            '-r',
-            '-t',
-            '-d',
-            apk_path], False, True)
+        install_args = ['install', '-r', '-t', '-d']
+        if (settings.ANDROID_ALLOW_LOW_TARGET_INSTALL
+                and parse_api(self.get_android_sdk()) >= 34):
+            install_args.append('--bypass-low-target-sdk-block')
+        out = self.adb_command(install_args + [apk_path], False, True)
         if not out:
             return False, 'adb install failed'
         out = out.decode('utf-8', 'ignore')
+        if 'INSTALL_FAILED_DEPRECATED_SDK_VERSION' in out:
+            out += ('\nModern Android blocks apps with old target SDKs. Only in an '
+                    'authorized isolated lab, enable '
+                    'MOBSF_ANDROID_ALLOW_LOW_TARGET_INSTALL=1 to opt in.')
         # Verify Installation
         return self.is_package_installed(package, out), out
 
@@ -197,6 +208,13 @@ class Environment:
 
     def install_mobsf_ca(self, action):
         """Install or Remove MobSF Root CA."""
+        if action not in ('install', 'remove'):
+            raise ValueError('Invalid certificate operation')
+        if parse_api(self.get_android_sdk()) > LEGACY_MAX_API:
+            logger.warning('Automatic system CA changes are unavailable on modern '
+                           'Android, including the Conscrypt APEX trust store. '
+                           'Use an authorized lab trust configuration.')
+            return False
         mobsf_ca = get_ca_file()
         ca_file = None
         if is_file_exists(mobsf_ca):
@@ -205,25 +223,21 @@ class Environment:
             ca_obj = crypto.load_certificate(crypto.FILETYPE_PEM, pem.read())
             md = md5(ca_obj.get_subject().der()).digest()
             ret = (md[0] | (md[1] << 8) | (md[2] << 16) | md[3] << 24)
-            ca_file_hash = hex(ret).lstrip('0x')
+            ca_file_hash = f'{ret:08x}'
             ca_file = os.path.join('/system/etc/security/cacerts/',
                                    ca_construct.format(ca_file_hash))
             pem.close()
         else:
             logger.warning('mitmproxy root CA is not generated yet.')
-            return
+            return False
         if action == 'install':
             logger.info('Installing MobSF RootCA')
-            self.adb_command(['push',
-                              mobsf_ca,
-                              ca_file])
-            self.adb_command(['chmod',
-                              '644',
-                              ca_file], True)
+            if self.adb_command(['push', mobsf_ca, ca_file]) is None:
+                return False
+            return self.adb_command(['chmod', '644', ca_file], True) is not None
         elif action == 'remove':
             logger.info('Removing MobSF RootCA')
-            self.adb_command(['rm',
-                              ca_file], True)
+            return self.adb_command(['rm', ca_file], True) is not None
         # with a high timeout afterwards
 
     def set_global_proxy(self, version):
@@ -385,12 +399,9 @@ class Environment:
         out = self.adb_command(['getprop',
                                 'ro.build.version.release'],
                                True, False)
-        and_version = out.decode('utf-8').rstrip()
-        if and_version.count('.') > 1:
-            and_version = and_version.rsplit('.', 1)[0]
-        if and_version.count('.') > 1:
-            and_version = and_version.split('.', 1)[0]
-        return float(and_version)
+        if not out:
+            raise ValueError('Android release property is unavailable')
+        return release_number(out.decode('utf-8').rstrip(), self.get_android_sdk())
 
     def get_android_arch(self):
         """Get Android Architecture."""
@@ -404,7 +415,7 @@ class Environment:
         out = self.adb_command([
             'getprop',
             'ro.build.version.sdk'], True)
-        return out.decode('utf-8').strip()
+        return out.decode('utf-8').strip() if out else ''
 
     def get_device_packages(self):
         """Get all packages from device."""
@@ -504,21 +515,22 @@ class Environment:
 
     def system_check(self, runtime):
         """Check if /system is writable."""
+        policy = runtime_policy(self.get_android_sdk(), settings.ANDROID_MODERN_DYNAMIC)
+        if not policy['eligible']:
+            logger.error('%s', policy['message'])
+            return False
+        if policy['mode'] == 'modern_experimental':
+            preflight = self.runtime_preflight()
+            if not preflight['ready']:
+                logger.error('Modern Android preflight failed: %s', preflight)
+                return False
+            directory = self.agent_directory()
+            if self.adb_command(['mkdir', '-p', directory], True) is None:
+                return False
+            return self.adb_command(['chmod', '700', directory], True) is not None
+        err_msg = ('VM\'s /system is not writable. '
+                   'This VM cannot be used for Dynamic Analysis.')
         try:
-            try:
-                api = self.get_android_sdk()
-                if api:
-                    logger.info('Android API Level '
-                                'identified as %s', api)
-                    if int(api) > ANDROID_API_SUPPORTED:
-                        logger.error('This API Level is not supported'
-                                     ' for Dynamic Analysis.')
-                        return False
-            except Exception:
-                pass
-            err_msg = ('VM\'s /system is not writable. '
-                       'This VM cannot be used for '
-                       'Dynamic Analysis.')
             proc = subprocess.Popen([get_adb(),
                                      '-s', self.identifier,
                                      'shell',
@@ -527,7 +539,7 @@ class Environment:
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
             _, stderr = proc.communicate()
-            if b'Read-only' in stderr:
+            if proc.returncode or stderr:
                 logger.error(err_msg)
                 if runtime == 'emulator':
                     logger.error('Please start the AVD as per '
@@ -538,6 +550,41 @@ class Environment:
             logger.error(err_msg)
             return False
         return True
+
+    def agent_directory(self):
+        """Use writable app-independent storage for modern Android agents."""
+        if parse_api(self.get_android_sdk()) > LEGACY_MAX_API:
+            return '/data/local/tmp/mobsf'
+        return '/system'
+
+    def runtime_preflight(self):
+        """Read properties and access checks without changing device state."""
+        sdk = self.get_android_sdk()
+        policy = runtime_policy(sdk, settings.ANDROID_MODERN_DYNAMIC)
+        full_out = self.adb_command(
+            ['getprop', 'ro.build.version.sdk_full'], True, True)
+        target_out = self.adb_command(
+            ['getprop', 'ro.build.version.min_supported_target_sdk'], True, True)
+        full_value = full_out.decode('utf-8').strip() if full_out else ''
+        try:
+            minimum_target = parse_api(target_out.decode('utf-8').strip())
+        except (AttributeError, ValueError):
+            minimum_target = None
+        arch_out = self.adb_command(['getprop', 'ro.product.cpu.abi'], True, True)
+        architecture = arch_out.decode('utf-8').strip() if arch_out else ''
+        uid = self.adb_command(['id', '-u'], True, True)
+        rooted = bool(uid and uid.strip() == b'0')
+        modern = policy['api'] and policy['api'] > LEGACY_MAX_API
+        directory = '/data/local/tmp' if modern else '/system'
+        writable = self.adb_command(['test', '-w', directory], True, True) is not None
+        return {**policy, 'sdk_full': full_sdk(full_value, policy['api']),
+                'minimum_supported_target_sdk': minimum_target,
+                'architecture': architecture,
+                'frida_architecture': FRIDA_ARCHITECTURES.get(architecture),
+                'root_adb': rooted, 'agent_parent_writable': writable,
+                'frida_version': frida_version,
+                'ready': bool(policy['eligible'] and rooted and writable
+                              and architecture in FRIDA_ARCHITECTURES)}
 
     def launch_n_capture(self, package, activity, outfile):
         """Launch and Capture Activity."""
@@ -574,7 +621,7 @@ class Environment:
                  '-s', self.identifier,
                  'shell',
                  'cat',
-                 '/system/' + agent_file])
+                 self.agent_directory() + '/' + agent_file])
             if agent_str not in out:
                 return False
         except Exception:
@@ -611,8 +658,12 @@ class Environment:
         f = tempfile.NamedTemporaryFile(delete=False)
         f.write(agent_str)
         f.close()
-        self.adb_command(['push', f.name, '/system/' + agent_file])
-        os.unlink(f.name)
+        try:
+            destination = self.agent_directory() + '/' + agent_file
+            if self.adb_command(['push', f.name, destination]) is None:
+                raise RuntimeError('Cannot write Android agent marker')
+        finally:
+            os.unlink(f.name)
 
     def xposed_setup(self, android_version):
         """Setup Xposed."""
@@ -680,22 +731,11 @@ class Environment:
 
     def frida_setup(self):
         """Setup Frida."""
-        frida_arch = None
         arch = self.get_android_arch()
         logger.info('Android OS architecture identified as %s', arch)
-        if arch in ['armeabi-v7a', 'armeabi']:
-            frida_arch = 'arm'
-        elif arch == 'arm64-v8a':
-            frida_arch = 'arm64'
-        elif arch == 'x86':
-            frida_arch = 'x86'
-        elif arch == 'x86_64':
-            frida_arch = 'x86_64'
-        else:
-            logger.error('Make sure a Genymotion Android VM'
-                         ' or Android Studio Emulator'
-                         ' instance is running')
-            return
+        frida_arch = FRIDA_ARCHITECTURES.get(arch)
+        if not frida_arch:
+            raise RuntimeError('Unsupported Android CPU architecture')
         frida_bin = f'frida-server-{frida_version}-android-{frida_arch}'
         stat = FridaServerUpdater(
             'android', frida_version).update_frida_server(frida_arch)
@@ -704,17 +744,21 @@ class Environment:
                    f' {frida_bin} in {settings.DWD_DIR} for '
                    'Dynamic Analysis to work')
             logger.error(msg)
-            return
+            raise RuntimeError(msg)
         frida_path = os.path.join(settings.DWD_DIR, frida_bin)
         logger.info('Copying frida server v%s for %s', frida_version, frida_arch)
-        self.adb_command(['push', frida_path, '/system/fd_server'])
-        self.adb_command(['chmod', '755', '/system/fd_server'], True)
+        destination = self.agent_directory() + '/fd_server'
+        if self.adb_command(['push', frida_path, destination]) is None:
+            raise RuntimeError('Cannot upload Frida server')
+        if self.adb_command(['chmod', '755', destination], True) is None:
+            raise RuntimeError('Cannot make Frida server executable')
 
     def run_frida_server(self):
         """Start Frida Server."""
         check = self.adb_command(['ps'], True)
-        if b'fd_server' in check:
-            logger.info('Frida Server v%s is already running', frida_version)
+        if check and b'fd_server' in check:
+            logger.info('Existing fd_server detected; client/server compatibility '
+                        'must be verified during instrumentation')
             return
 
         def start_frida():
@@ -723,7 +767,7 @@ class Environment:
                     '-s',
                     self.identifier,
                     'shell',
-                    '/system/fd_server']
+                    self.agent_directory() + '/fd_server']
             subprocess.call(argz, stdout=fnull, stderr=subprocess.STDOUT)
         trd = threading.Thread(target=start_frida)
         trd.daemon = True

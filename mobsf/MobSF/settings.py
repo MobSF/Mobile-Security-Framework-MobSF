@@ -176,7 +176,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 DEBUG = bool(os.getenv('MOBSF_DEBUG', '0') == '1')
 DJANGO_LOG_LEVEL = DEBUG
 TEMPLATE_DEBUG = DEBUG
-ALLOWED_HOSTS = ['127.0.0.1', 'mobsf', '*']
+ALLOWED_HOSTS = [host.strip() for host in os.getenv(
+    'MOBSF_ALLOWED_HOSTS', '127.0.0.1,localhost,mobsf').split(',') if host.strip()]
 # Application definition
 INSTALLED_APPS = (
     # 'django.contrib.admin',
@@ -190,6 +191,7 @@ INSTALLED_APPS = (
     'mobsf.DynamicAnalyzer',
     'mobsf.MobSF',
     'mobsf.MalwareAnalyzer',
+    'mobsf.BugBounty',
 )
 MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
@@ -234,6 +236,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 # 256MB limit for file uploads
 DATA_UPLOAD_MAX_MEMORY_SIZE = 256 * 1024 * 1024
+BOUNTY_MAX_IMPORT_BYTES = int(os.getenv('BOUNTY_MAX_IMPORT_BYTES', '2097152'))
+BOUNTY_RETENTION_DAYS = int(os.getenv('BOUNTY_RETENTION_DAYS', '90'))
 # 400MB per file limit for uncompressed files
 ZIP_MAX_UNCOMPRESSED_FILE_SIZE = 400 * 1024 * 1024
 # 3GB total limit for all uncompressed files
@@ -484,6 +488,9 @@ else:
 
     # =======ANDROID DYNAMIC ANALYSIS SETTINGS===========
     ANALYZER_IDENTIFIER = os.getenv('MOBSF_ANALYZER_IDENTIFIER', '')
+    ANDROID_MODERN_DYNAMIC = os.getenv('MOBSF_ANDROID_MODERN_DYNAMIC', '0') == '1'
+    ANDROID_ALLOW_LOW_TARGET_INSTALL = os.getenv(
+        'MOBSF_ANDROID_ALLOW_LOW_TARGET_INSTALL', '0') == '1'
     FRIDA_TIMEOUT = int(os.getenv('MOBSF_FRIDA_TIMEOUT', '4'))
     ACTIVITY_TESTER_SLEEP = int(os.getenv('MOBSF_ACTIVITY_TESTER_SLEEP', '4'))
     # ==============================================
@@ -491,6 +498,10 @@ else:
     # ================HTTPS PROXY ===============
     PROXY_IP = os.getenv('MOBSF_PROXY_IP', '127.0.0.1')
     PROXY_PORT = int(os.getenv('MOBSF_PROXY_PORT', '1337'))
+    # Only Android/iOS captured traffic is sent to this interception proxy.
+    CAPTURE_PROXY_PROVIDER = os.getenv('MOBSF_CAPTURE_PROXY_PROVIDER', 'none')
+    CAPTURE_PROXY_URL = os.getenv('MOBSF_CAPTURE_PROXY_URL', '')
+    CAPTURE_PROXY_CA_FILE = os.getenv('MOBSF_CAPTURE_PROXY_CA_FILE', '')
     # ===================================================
 
     # ========UPSTREAM PROXY SETTINGS ==============
@@ -539,3 +550,18 @@ else:
     # CORELLIUM_PROJECT_ID is optional, MobSF will use any available project id
     # ===============================================
     # ^CONFIG-END^: Do not edit this line
+
+# Existing config.py files predate these settings. Preserve their values while
+# applying explicit environment overrides without rewriting user configuration.
+CAPTURE_PROXY_PROVIDER = os.getenv(
+    'MOBSF_CAPTURE_PROXY_PROVIDER', globals().get('CAPTURE_PROXY_PROVIDER', 'none'))
+CAPTURE_PROXY_URL = os.getenv(
+    'MOBSF_CAPTURE_PROXY_URL', globals().get('CAPTURE_PROXY_URL', ''))
+CAPTURE_PROXY_CA_FILE = os.getenv(
+    'MOBSF_CAPTURE_PROXY_CA_FILE', globals().get('CAPTURE_PROXY_CA_FILE', ''))
+ANDROID_MODERN_DYNAMIC = os.getenv(
+    'MOBSF_ANDROID_MODERN_DYNAMIC',
+    '1' if globals().get('ANDROID_MODERN_DYNAMIC', False) else '0') == '1'
+ANDROID_ALLOW_LOW_TARGET_INSTALL = os.getenv(
+    'MOBSF_ANDROID_ALLOW_LOW_TARGET_INSTALL',
+    '1' if globals().get('ANDROID_ALLOW_LOW_TARGET_INSTALL', False) else '0') == '1'
