@@ -1,0 +1,17 @@
+{% extends "base/base_layout.html" %}
+{% block sidebar_option %}sidebar-collapse{% endblock %}
+{% block content %}
+<main class="content-wrapper p-4">
+  <a href="{% url 'bounty_analysis' finding.analysis_id %}">Analysis inventory</a>
+  <h1>{{ finding.title }}</h1><p>{{ finding.status }} · {{ finding.severity }} · Confidence {{ finding.confidence }}</p>
+  <p>{{ finding.rationale }}</p>
+  <p><a href="{% url 'bounty_report' finding.pk 'json' %}">Report JSON</a> · <a href="{% url 'bounty_report' finding.pk 'md' %}">Report Markdown</a></p>
+  <h2>Evidence</h2>
+  {% for item in evidence %}<section class="card p-3"><h3>#{{ item.pk }} — {{ item.kind }}</h3><p>{{ item.source }} · {{ item.created_at }} · Expires {{ item.expires_at }}</p><pre>{{ item.content }}</pre><small>SHA-256 of supplied evidence: {{ item.sha256 }}</small></section>{% empty %}<p>No retained evidence.</p>{% endfor %}
+  <h2>Add sanitized evidence</h2>
+  <form method="post" action="{% url 'bounty_evidence' finding.pk %}">{% csrf_token %}{{ evidence_form.as_p }}<button class="btn btn-primary">Save evidence</button></form>
+  <h2>Review</h2><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Save review</button></form>
+  <h2>Change history</h2>
+  {% for event in events %}<p>{{ event.created_at }} — {{ event.previous_status }} → {{ event.status }}: {{ event.note }}</p>{% empty %}<p>No manual reviews yet.</p>{% endfor %}
+</main>
+{% endblock %}
