@@ -473,9 +473,7 @@ function showDeviceApps(packages, rootAvailable) {
             const guidance = document.createElement('p');
             guidance.className = 'text-muted';
             guidance.textContent = (
-                'Root is unavailable. Pull and scan this app first, then '
-                + 'start it from Apps Available using Frida Gadget. '
-                + 'Split APK/APKS apps are not currently supported.'
+                'Root is unavailable. Pull and scan this app first.'
             );
             actionCell.appendChild(guidance);
         }
