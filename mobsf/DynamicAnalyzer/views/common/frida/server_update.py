@@ -32,9 +32,11 @@ class FridaServerUpdater:
         self.platform = platform
         self.version = version
 
-    def clean_up_old_binaries(self):
-        """Delete old Frida server binaries."""
-        if self.platform == 'android':
+    def clean_up_old_binaries(self, artifact='server'):
+        """Delete old Frida runtime binaries."""
+        if artifact == 'gadget':
+            file_pattern = 'frida-gadget*'
+        elif self.platform == 'android':
             file_pattern = 'frida-server*'
         else:
             file_pattern = 'frida_*'
@@ -45,10 +47,16 @@ class FridaServerUpdater:
                 except Exception:
                     pass
 
-    def download_frida_server(self, url, fname, proxies, verify):
-        """Download Frida server binary."""
+    def download_frida_binary(
+            self, url, fname, proxies, verify, artifact='server'):
+        """Download and decompress a Frida runtime binary."""
         try:
-            logger.info('Downloading Frida server v%s binary: %s', self.version, fname)
+            logger.info(
+                'Downloading Frida %s v%s binary: %s',
+                artifact,
+                self.version,
+                fname,
+            )
             dwd_loc = self.download_dir / fname
 
             with requests.get(
@@ -65,12 +73,18 @@ class FridaServerUpdater:
                     else:
                         copyfileobj(LZMAFile(r.raw), f)
 
-            self.clean_up_old_binaries()
+            with dwd_loc.open('rb') as binary:
+                if not fname.endswith('.deb') and binary.read(4) != b'\x7fELF':
+                    raise ValueError('Downloaded Frida binary is not ELF')
+            self.clean_up_old_binaries(artifact)
             return True
 
         except Exception:
             logger.exception(
-                '[ERROR] Downloading Frida Server v%s Binary', self.version)
+                '[ERROR] Downloading Frida %s v%s binary',
+                artifact,
+                self.version,
+            )
             # Clean up partial download
             try:
                 dwd_loc.unlink()
@@ -112,7 +126,7 @@ class FridaServerUpdater:
                 asset = fserver
             for item in response.json()['assets']:
                 if item['name'] == asset:
-                    return self.download_frida_server(
+                    return self.download_frida_binary(
                         item['browser_download_url'], fserver, proxies, verify,
                     )
 
@@ -125,4 +139,51 @@ class FridaServerUpdater:
         except Exception:
             logger.exception('[ERROR] Fetching Frida Server v%s Release', self.version)
 
+        return False
+
+    def update_frida_gadget(self, arch):
+        """Update/download Frida Gadget for an Android architecture."""
+        gadget = f'frida-gadget-{self.version}-android-{arch}.so'
+        gadget_bin = self.download_dir / gadget
+        if gadget_bin.is_file():
+            try:
+                with gadget_bin.open('rb') as binary:
+                    return binary.read(4) == b'\x7fELF'
+            except OSError:
+                return False
+        if not is_internet_available():
+            return False
+        try:
+            proxies, verify = upstream_proxy('https')
+        except Exception:
+            logger.exception('[ERROR] Setting upstream proxy')
+            proxies, verify = None, True
+        try:
+            response = requests.get(
+                f'{settings.FRIDA_SERVER}{self.version}',
+                timeout=5,
+                proxies=proxies,
+                verify=verify,
+            )
+            response.raise_for_status()
+            asset = f'{gadget}.xz'
+            for item in response.json()['assets']:
+                if item['name'] == asset:
+                    return self.download_frida_binary(
+                        item['browser_download_url'],
+                        gadget,
+                        proxies,
+                        verify,
+                        'gadget',
+                    )
+            logger.error(
+                'Frida Gadget v%s binary not found for architecture: %s',
+                self.version,
+                arch,
+            )
+        except Exception:
+            logger.exception(
+                '[ERROR] Fetching Frida Gadget v%s release',
+                self.version,
+            )
         return False
