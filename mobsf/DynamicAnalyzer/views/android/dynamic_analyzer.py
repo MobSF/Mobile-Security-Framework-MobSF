@@ -371,7 +371,6 @@ def dynamic_analyzer(request, checksum, api=False):
         # Clean up previous analysis
         env.dz_cleanup(checksum)
         apk_path = app_dir / f'{checksum}.apk'
-        user_ca_trusted = False
         if selected_mode == 'gadget':
             if install != '1':
                 return print_n_send_error_response(
@@ -393,7 +392,6 @@ def dynamic_analyzer(request, checksum, api=False):
                 profile.abi,
             )
             apk_path = patcher.patch()
-            user_ca_trusted = patcher.user_ca_trusted
             if package_installed and not env.uninstall_package(package):
                 return print_n_send_error_response(
                     request,
@@ -449,7 +447,6 @@ def dynamic_analyzer(request, checksum, api=False):
                    'hash': checksum,
                    'android_version': version,
                    'device_mode': selected_mode,
-                   'user_ca_trusted': user_ca_trusted,
                    'version': settings.MOBSF_VER,
                    'activities': activities,
                    'exported_activities': exported_activities,

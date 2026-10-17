@@ -266,7 +266,6 @@ class GadgetPatcher:
             )
             removed_pins += pins
             trust_updates += updates
-        self.user_ca_trusted = True
         logger.info(
             'Embedded the MobSF CA in %d trust configuration(s) '
             'and removed %d XML pin set(s)',
