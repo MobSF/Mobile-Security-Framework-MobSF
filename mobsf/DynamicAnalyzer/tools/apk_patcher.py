@@ -47,6 +47,7 @@ class GadgetPatcher:
     """Create an independently signed, single-ABI Gadget APK."""
 
     _keystore_lock = threading.Lock()
+    _patch_lock = threading.Lock()
 
     def __init__(self, app_dir, apk_file, android_abi) -> None:
         self.app_dir = Path(app_dir).resolve()
@@ -134,7 +135,7 @@ class GadgetPatcher:
         return class_name
 
     def _inject_loader(self):
-        """Install an Application subclass that loads Frida Gadget."""
+        """Load Gadget from the app class or a generated subclass."""
         manifest = self.work_dir / 'AndroidManifest.xml'
         if not manifest.is_file() or is_pipe_or_link(manifest):
             raise RuntimeError('Decoded Android manifest is missing')
@@ -154,36 +155,69 @@ class GadgetPatcher:
         if not re.fullmatch(class_pattern, original):
             raise ValueError('Unsupported Android Application class name')
         digest = sha256(self.apk_file)[:12]
-        loader = f'com.mobsf.g{digest}.MobSFApplication'
-        loader_type = f'L{loader.replace(".", "/")};'
-        parent_type = f'L{original.replace(".", "/")};'
-        application.set(f'{ANDROID_ATTR}name', loader)
+        if not self._inject_existing_application(original):
+            loader = f'com.mobsf.g{digest}.MobSFApplication'
+            loader_type = f'L{loader.replace(".", "/")};'
+            parent_type = f'L{original.replace(".", "/")};'
+            application.set(f'{ANDROID_ATTR}name', loader)
+            smali = self.work_dir / 'smali' / Path(*loader.split('.'))
+            smali = smali.with_suffix('.smali')
+            smali.parent.mkdir(parents=True, exist_ok=True)
+            smali.write_text(
+                '\n'.join((
+                    f'.class public {loader_type}',
+                    f'.super {parent_type}',
+                    '',
+                    '.method static constructor <clinit>()V',
+                    '    .locals 1',
+                    '    const-string v0, "frida-gadget"',
+                    '    invoke-static {v0}, '
+                    'Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V',
+                    '    return-void',
+                    '.end method',
+                    '',
+                    '.method public constructor <init>()V',
+                    '    .locals 0',
+                    f'    invoke-direct {{p0}}, {parent_type}-><init>()V',
+                    '    return-void',
+                    '.end method',
+                    '',
+                )),
+                encoding='utf-8',
+            )
         application.set(f'{ANDROID_ATTR}extractNativeLibs', 'true')
-        smali = self.work_dir / 'smali' / Path(*loader.split('.'))
-        smali = smali.with_suffix('.smali')
-        smali.parent.mkdir(parents=True, exist_ok=True)
-        smali.write_text(
-            '\n'.join((
-                f'.class public {loader_type}',
-                f'.super {parent_type}',
-                '',
-                '.method static constructor <clinit>()V',
-                '    .locals 1',
-                '    const-string v0, "frida-gadget"',
-                '    invoke-static {v0}, '
-                'Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V',
-                '    return-void',
-                '.end method',
-                '',
-                '.method public constructor <init>()V',
-                '    .locals 0',
-                f'    invoke-direct {{p0}}, {parent_type}-><init>()V',
-                '    return-void',
-                '.end method',
-                '',
-            )),
-            encoding='utf-8',
-        )
+        self.user_ca_trusted = False
+        network_config = application.get(
+            f'{ANDROID_ATTR}networkSecurityConfig')
+        if not network_config:
+            config_name = f'mobsf_network_security_{digest}'
+            network_config = f'@xml/{config_name}'
+            application.set(
+                f'{ANDROID_ATTR}networkSecurityConfig',
+                network_config,
+            )
+            config_dir = self.work_dir / 'res' / 'xml'
+            config_dir.mkdir(parents=True, exist_ok=True)
+            network_security = (
+                '<?xml version="1.0" encoding="utf-8"?>\n'
+                '<network-security-config>\n'
+                '    <base-config>\n'
+                '        <trust-anchors>\n'
+                '            <certificates src="system" />\n'
+                '            <certificates src="user" />\n'
+                '        </trust-anchors>\n'
+                '    </base-config>\n'
+                '</network-security-config>\n'
+            )
+            (config_dir / f'{config_name}.xml').write_text(
+                network_security,
+                encoding='utf-8',
+            )
+            self.user_ca_trusted = True
+        else:
+            logger.warning(
+                'Preserving the application network security config; '
+                'user CA trust depends on the application policy')
         XmlElementTree.register_namespace('android', ANDROID_NS)
         tree.write(
             manifest,
@@ -191,6 +225,66 @@ class GadgetPatcher:
             xml_declaration=True,
         )
         return package
+
+    def _inject_existing_application(self, class_name):
+        """Inject a load call into an existing Application smali class."""
+        relative = Path(*class_name.split('.')).with_suffix('.smali')
+        application_smali = None
+        for smali_dir in self.work_dir.glob('smali*'):
+            candidate = smali_dir / relative
+            if candidate.is_file() and not candidate.is_symlink():
+                application_smali = candidate
+                break
+        if not application_smali:
+            return False
+        source = application_smali.read_text('utf-8', 'ignore')
+        if re.search(r'const-string \S+, "frida-gadget"', source):
+            raise ValueError(
+                'Application already contains a Frida Gadget loader')
+        method = re.search(
+            r'(?ms)^\.method[^\n]* static constructor <clinit>\(\)V\n'
+            r'(?P<body>.*?)^\.end method',
+            source,
+        )
+        if not method:
+            source += (
+                '\n.method static constructor <clinit>()V\n'
+                '    .locals 1\n'
+                '    const-string v0, "frida-gadget"\n'
+                '    invoke-static {v0}, '
+                'Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V\n'
+                '    return-void\n'
+                '.end method\n'
+            )
+        else:
+            body = method.group('body')
+            registers = re.search(
+                r'(?m)^(?P<indent>\s*)\.(?P<kind>locals|registers) '
+                r'(?P<count>\d+)\s*$',
+                body,
+            )
+            if not registers:
+                raise ValueError(
+                    'Unsupported Application static initializer')
+            register = int(registers.group('count'))
+            directive = (
+                f'{registers.group("indent")}.{registers.group("kind")} '
+                f'{register + 1}'
+            )
+            load_call = (
+                f'\n    const-string v{register}, "frida-gadget"\n'
+                f'    invoke-static {{v{register}}}, '
+                'Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V'
+            )
+            body = (
+                body[:registers.start()]
+                + directive
+                + load_call
+                + body[registers.end():]
+            )
+            source = source[:method.start('body')] + body + source[method.end('body'):]
+        application_smali.write_text(source, encoding='utf-8')
+        return True
 
     def _install_gadget(self):
         """Copy the matched Gadget and its fixed local-only config."""
@@ -364,6 +458,11 @@ class GadgetPatcher:
 
     def patch(self):
         """Build, sign, and return a Frida Gadget APK."""
+        with self._patch_lock:
+            return self._patch()
+
+    def _patch(self):
+        """Run the serialized Gadget build."""
         self._validate()
         self.output_apk.unlink(missing_ok=True)
         self.unsigned_apk.unlink(missing_ok=True)

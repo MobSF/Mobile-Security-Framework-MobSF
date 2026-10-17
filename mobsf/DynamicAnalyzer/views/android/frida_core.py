@@ -39,6 +39,7 @@ class Frida:
         self.frida_log = self.apk_dir / 'mobsf_frida_out.txt'
         self.deps = self.apk_dir / 'mobsf_app_deps.txt'
         self.clipboard = self.apk_dir / 'mobsf_app_clipboard.txt'
+        self.gadget_marker = self.apk_dir / '.mobsf-gadget-mode'
         self.bridge_loader = get_bridge_loader()
 
     def get_scripts(self, script_type, selected_scripts):
@@ -145,6 +146,37 @@ class Frida:
         try:
             env = Environment()
             self.clean_up()
+            if self.gadget_marker.exists():
+                env.run_app(self.package)
+                for attempt in range(5):
+                    try:
+                        device = env.get_frida_device()
+                        application = device.get_frontmost_application()
+                        if (application
+                                and application.pid
+                                and application.identifier in (
+                                    self.package,
+                                    're.frida.Gadget',
+                                )):
+                            _FPID = application.pid
+                            return True
+                        applications = device.enumerate_applications(
+                            scope='minimal')
+                        for application in applications:
+                            if (application.identifier in (
+                                    self.package,
+                                    're.frida.Gadget',
+                            )
+                                    and application.pid):
+                                _FPID = application.pid
+                                return True
+                    except (frida.ServerNotRunningError,
+                            frida.TimedOutError,
+                            frida.TransportError):
+                        if attempt == 4:
+                            raise
+                        time.sleep(1)
+                return False
             if not env.run_frida_server():
                 return False
             device = env.get_frida_device()

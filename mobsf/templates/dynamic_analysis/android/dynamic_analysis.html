@@ -90,13 +90,14 @@ textarea:focus {
                         <h5>
                           <strong>• Genymotion Android VM</strong> version 4.1 - 11.0 (arm64, x86, and x86_64 upto API 30)<br/>
                           <strong>• Android Emulator AVD</strong> (non production) version 5.0 - 11.0 (arm, arm64, x86, and x86_64 upto API 30)<br/>
-                          <strong>• Corellium Android VM</strong> (userdebug builds) version 7.1.2 - 11.0 (arm64 upto API 30)
+                          <strong>• Corellium Android VM</strong> (userdebug builds) version 7.1.2 - 11.0 (arm64 upto API 30)<br/>
+                          <strong>• Physical Android devices</strong> using non-interactive root or a MobSF-signed Frida Gadget APK
                         </h5>
                         <p>
                           {% if android_version %}
                             Android version >= <strong>9.0</strong> recommended<br/>
                             Detected Android Version: <strong>{{android_version}}</strong>, SDK: API level <strong>{{ android_sdk }}</strong> <br/>
-                            {% if android_sdk|floatformat > android_supported|floatformat %}
+                            {% if runtime != "physical" and android_sdk|floatformat > android_supported|floatformat %}
                               <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
                               <script>
                                 Swal.fire(
@@ -122,7 +123,10 @@ textarea:focus {
                      <br/>
                      <br/>
                      <p>
-                        <button class="btn btn-info disable" role="button"  data-toggle="modal" data-target="#mmobsfy">MobSFy Android Runtime</button> <p>Android instance: <strong>{{ identifier }}</strong></p></div>
+                        {% if runtime != "physical" %}
+                        <button class="btn btn-info disable" role="button"  data-toggle="modal" data-target="#mmobsfy">MobSFy Android Runtime</button>
+                        {% endif %}
+                        <p>Android instance: <strong>{{ identifier }}</strong>{% if runtime %} ({{ runtime }}){% endif %}</p></div>
                       </p>
                     </div>
                      </div>
@@ -166,6 +170,9 @@ textarea:focus {
                                   {% csrf_token %}
                                   <input type="hidden" name="re_install" value="0">
                                   <input type="hidden" name="install" value="0">
+                                  {% if runtime == "physical" %}
+                                  <input type="hidden" name="device_mode" value="rooted">
+                                  {% endif %}
                                   <button type="submit" class="btn btn-primary disable" onclick="dynamic_loader()"><i class="fab fa-android"></i> Start Dynamic Analysis</button>
                                 </form>
                               </div>
@@ -213,6 +220,13 @@ textarea:focus {
                               <div class="mb-3">
                                 <form method="post" action="{% url "dynamic_analyzer" checksum=e.MD5 %}">
                                   {% csrf_token %}
+                                  {% if runtime == "physical" %}
+                                  <select name="device_mode" class="form-control form-control-sm mb-2" aria-label="Physical device mode">
+                                    <option value="auto">Auto detect</option>
+                                    <option value="rooted">Rooted device</option>
+                                    <option value="gadget">Frida Gadget (re-sign APK)</option>
+                                  </select>
+                                  {% endif %}
                                   <button type="submit" class="btn btn-success disable" onclick="dynamic_loader()"><i class="fab fa-android"></i> Start Dynamic Analysis</button>
                                 </form>
                               </div>
@@ -220,6 +234,9 @@ textarea:focus {
                                 <form method="post" action="{% url "dynamic_analyzer" checksum=e.MD5 %}">
                                   {% csrf_token %}
                                   <input type="hidden" name="re_install" value="0">
+                                  {% if runtime == "physical" %}
+                                  <input type="hidden" name="device_mode" value="rooted">
+                                  {% endif %}
                                   <button type="submit" class="btn btn-primary btn-sm disable" onclick="dynamic_loader()"><i class="fab fa-android"></i> Start Dynamic Analysis (No reinstall)</button>
                                 </form>
                               </div>
