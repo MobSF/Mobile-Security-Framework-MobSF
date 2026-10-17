@@ -463,15 +463,25 @@ class GadgetPatcher:
 
     def _patch(self):
         """Run the serialized Gadget build."""
+        logger.info('Validating APK for Frida Gadget injection')
         self._validate()
         self.output_apk.unlink(missing_ok=True)
         self.unsigned_apk.unlink(missing_ok=True)
         try:
+            logger.info('Decoding APK resources and bytecode')
             self._decompile()
+            logger.info('Injecting the Frida Gadget application loader')
             package = self._inject_loader()
+            logger.info(
+                'Preparing Frida Gadget for Android ABI %s',
+                self.android_abi,
+            )
             self._install_gadget()
+            logger.info('Rebuilding the Frida Gadget APK')
             self._build()
+            logger.info('Signing the Frida Gadget APK with the MobSF lab key')
             self._sign()
+            logger.info('Verifying the signed Frida Gadget APK')
             self._verify_artifact()
             logger.info('Built Frida Gadget APK for %s', package)
             return self.output_apk

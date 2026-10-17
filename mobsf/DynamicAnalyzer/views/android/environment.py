@@ -310,6 +310,8 @@ class Environment:
 
     def uninstall_package(self, package):
         """Uninstall a package after explicit analyst confirmation."""
+        logger.info(
+            'Uninstalling existing Android package after confirmation')
         try:
             result = self.adb_command_result(
                 ['uninstall', package],
@@ -318,11 +320,16 @@ class Environment:
         except subprocess.TimeoutExpired:
             logger.error('Timed out uninstalling Android package')
             return False
-        return (
+        success = (
             result.returncode == 0
             and b'Success' in result.stdout + result.stderr
             and not self.has_package(package)
         )
+        if success:
+            logger.info('Existing Android package was uninstalled')
+        else:
+            logger.error('Existing Android package uninstall failed')
+        return success
 
     def adb_command(self, cmd_list, shell=False, silent=False):
         """ADB Command wrapper."""
@@ -357,6 +364,7 @@ class Environment:
 
     def probe_root(self):
         """Detect a non-interactive root command without assumptions."""
+        logger.info('Probing Android root capabilities')
         self.root_method = 'none'
         self.root_status = 'unavailable'
         try:
@@ -364,10 +372,12 @@ class Environment:
             if direct.returncode == 0 and b'uid=0' in direct.stdout:
                 self.root_method = 'adbd'
                 self.root_status = 'available'
+                logger.info('Android root is available through root ADB')
                 return self.root_method, self.root_status
             has_su = self.adb_command_result(
                 ['command', '-v', 'su'], True, 5)
             if has_su.returncode != 0 or not has_su.stdout.strip():
+                logger.info('Android root is unavailable')
                 return self.root_method, self.root_status
             probes = (
                 ('su-c', ['su', '-c', 'id']),
@@ -378,14 +388,22 @@ class Environment:
                     result = self.adb_command_result(command, True, 5)
                 except subprocess.TimeoutExpired:
                     self.root_status = 'interactive'
+                    logger.warning(
+                        'Android root requires interactive authorization')
                     return self.root_method, self.root_status
                 if result.returncode == 0 and b'uid=0' in result.stdout:
                     self.root_method = method
                     self.root_status = 'available'
+                    logger.info(
+                        'Android root is available through %s',
+                        method,
+                    )
                     return self.root_method, self.root_status
             self.root_status = 'denied'
+            logger.warning('Android root authorization was denied')
         except subprocess.TimeoutExpired:
             self.root_status = 'interactive'
+            logger.warning('Android root capability probe timed out')
         except Exception:
             logger.exception('Failed to probe Android root capabilities')
             self.root_status = 'error'
@@ -693,6 +711,7 @@ class Environment:
         """Read and cache the Android property map in one ADB call."""
         if self._android_properties is not None:
             return self._android_properties
+        logger.info('Reading Android device properties')
         properties = {}
         output = self.adb_command(['getprop'], True, True)
         if output:
@@ -731,7 +750,15 @@ class Environment:
             if (not refresh
                     and cached
                     and now - cached['created'] < _DEVICE_PACKAGE_CACHE_TTL):
+                logger.info(
+                    'Using cached Android package inventory (%d apps)',
+                    len(cached['packages']),
+                )
                 return cached['packages']
+        logger.info(
+            'Hashing installed Android applications. '
+            'This may take several seconds on a physical device.')
+        started = time.monotonic()
         device_packages = {}
         script = (
             'pm list packages -f -3 | while IFS= read -r entry; do '
@@ -742,6 +769,7 @@ class Environment:
         )
         out = self.adb_command([script], True, True)
         if not out:
+            logger.warning('Android package inventory returned no data')
             return device_packages
         for line in out.decode('utf-8', 'ignore').splitlines():
             parts = line.split('\t', 2)
@@ -759,6 +787,11 @@ class Environment:
                 'created': now,
                 'packages': device_packages,
             }
+        logger.info(
+            'Loaded %d installed Android applications in %.1f seconds',
+            len(device_packages),
+            time.monotonic() - started,
+        )
         return device_packages
 
     def download_apk_packages(self, pkg_path, out_file):
