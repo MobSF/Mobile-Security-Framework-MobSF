@@ -86,14 +86,24 @@ class Environment:
             return False
         return True
 
-    def run_subprocess_verify_output(self, cmd, wait=2):
-        """Run subprocess and verify execution."""
-        out = subprocess.check_output(  # lgtm [py/command-line-injection]
-            cmd,
+    def connect_network_device(self):
+        """Connect the validated network ADB target."""
+        out = subprocess.check_output(
+            [get_adb(), 'connect', self.identifier],
             stderr=subprocess.STDOUT,
             timeout=30,
         )
-        self.wait(wait)                        # adb shell is allowed
+        self.wait(2)
+        return self.check_connect_error(out)
+
+    def restart_adbd_as_root(self):
+        """Restart adbd as root on a validated analysis target."""
+        out = subprocess.check_output(
+            [get_adb(), '-s', self.identifier, 'root'],
+            stderr=subprocess.STDOUT,
+            timeout=30,
+        )
+        self.wait(2)
         return self.check_connect_error(out)
 
     def get_device_state(self):
@@ -130,8 +140,7 @@ class Environment:
                          self.identifier)
             return False
         logger.info('Connecting to Android %s', self.identifier)
-        if not self.run_subprocess_verify_output([
-                get_adb(), 'connect', self.identifier]):
+        if not self.connect_network_device():
             return False
         state = self.get_device_state()
         if state != 'device':
@@ -156,15 +165,11 @@ class Environment:
                 'rooted-device or Frida Gadget support.')
             return False
         logger.info('Restarting ADB Daemon as root')
-        if not self.run_subprocess_verify_output([get_adb(),
-                                                  '-s',
-                                                  self.identifier,
-                                                  'root']):
+        if not self.restart_adbd_as_root():
             return False
         if self.is_network_device():
             logger.info('Reconnecting to Android Device')
-            if not self.run_subprocess_verify_output([
-                    get_adb(), 'connect', self.identifier]):
+            if not self.connect_network_device():
                 return False
         logger.info('Remounting')
         self.adb_command(['remount'])
