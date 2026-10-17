@@ -189,16 +189,15 @@ def download_data(request, api=False):
             return send_response(data, api)
         apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         stop_httptools(get_http_tools_url(request))
-        files_loc = '/data/local/'
         logger.info('Archiving files created by app')
-        env.adb_command(['tar', '-cvf', files_loc + package + '.tar',
-                         '/data/data/' + package + '/'], True)
-        logger.info('Downloading Archive')
-        env.adb_command(['pull', files_loc + package + '.tar',
-                         apk_dir + package + '.tar'])
-        logger.info('Stopping ADB server')
-        env.adb_command(['kill-server'])
-        data = {'status': 'ok'}
+        output_file = os.path.join(apk_dir, package + '.tar')
+        if env.archive_app_data(package, output_file):
+            data = {'status': 'ok'}
+        else:
+            data = {
+                'status': 'failed',
+                'message': 'Application data is not accessible',
+            }
     except Exception as exp:
         logger.exception('Downloading application data')
         data = {'status': 'failed', 'message': str(exp)}
@@ -244,6 +243,7 @@ def collect_logs(request, api=False):
         logger.info('Stopping app')
         # Unset Global Proxy
         env.unset_global_proxy()
+        env.remove_frida_forward()
         data = {'status': 'ok'}
     except Exception as exp:
         logger.exception('Data Collection & Clean Up failed')
