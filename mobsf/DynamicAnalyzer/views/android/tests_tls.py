@@ -89,6 +89,7 @@ def run_tls_tests(request, md5_hash, env, package, test_pkg, duration):
         None,
         None,
         None,
+        env.identifier,
     )
     frd.spawn()
     Thread(target=frd.session, args=(None, None), daemon=True).start()

@@ -104,9 +104,17 @@ def execute_adb(request, api=False):
     data = {'status': 'ok', 'message': ''}
     cmd = request.POST['cmd']
     if cmd:
+        identifier = get_device(request)
+        if not identifier:
+            return send_response({
+                'status': 'failed',
+                'message': 'No Android device selected',
+            }, api)
         args = [get_adb(),
                 '-s',
-                get_device()]
+                identifier]
+        stdout = b''
+        stderr = b''
         try:
             proc = subprocess.Popen(
                 args + cmd.split(' '),  # lgtm [py/command-line-injection]
@@ -133,7 +141,7 @@ def get_component(request):
     """Get Android Component."""
     data = {}
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         comp = request.POST['component']
         bin_hash = request.POST['hash']
         if is_attack_pattern(comp) or not is_md5(bin_hash):
@@ -155,7 +163,7 @@ def run_apk(request):
     """Run Android APK."""
     data = {}
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params()
@@ -180,7 +188,7 @@ def take_screenshot(request, api=False):
     logger.info('Taking screenshot')
     data = {}
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         bin_hash = request.POST['hash']
         if not is_md5(bin_hash):
             return invalid_params(api)
@@ -212,7 +220,7 @@ def screen_cast(request):
         'status': 'failed',
         'message': 'Failed to stream screen'}
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         b64dat = env.screen_stream()
         data = {
             'status': 'ok',
@@ -234,7 +242,7 @@ def touch(request):
         'message': '',
     }
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         x = request.POST['x']
         y = request.POST['y']
         event = request.POST['event']
@@ -289,7 +297,7 @@ def mobsf_ca(request, api=False):
     """Install and Remove MobSF Proxy RootCA."""
     data = {}
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         action = request.POST['action']
         if action == 'install':
             env.install_mobsf_ca(action)
@@ -314,7 +322,7 @@ def global_proxy(request, api=False):
     """Set/unset global proxy."""
     data = {}
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         version = env.get_android_version()
         action = request.POST['action']
         if action == 'set':

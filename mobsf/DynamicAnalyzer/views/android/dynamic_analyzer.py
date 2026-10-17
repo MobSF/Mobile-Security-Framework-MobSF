@@ -16,7 +16,10 @@ from django.shortcuts import render
 from django.db.models import ObjectDoesNotExist
 from django.views.decorators.http import require_http_methods
 
-from mobsf.DynamicAnalyzer.forms import AndroidDynamicAnalysisForm
+from mobsf.DynamicAnalyzer.forms import (
+    AndroidDeviceSelectionForm,
+    AndroidDynamicAnalysisForm,
+)
 from mobsf.DynamicAnalyzer.tools.apk_patcher import GadgetPatcher
 from mobsf.DynamicAnalyzer.views.android.environment import (
     ANDROID_API_SUPPORTED,
@@ -58,6 +61,7 @@ logger = logging.getLogger(__name__)
 
 @login_required
 @permission_required(Permissions.SCAN)
+@require_http_methods(['GET', 'POST'])
 def android_dynamic_analysis(request, api=False):
     """Android Dynamic Analysis Entry point."""
     try:
@@ -67,6 +71,14 @@ def android_dynamic_analysis(request, api=False):
         and_sdk = None
         runtime = None
         devices = get_android_devices()
+        device_form = AndroidDeviceSelectionForm(
+            devices,
+            request.POST if request.method == 'POST' else None,
+        )
+        if request.method == 'POST' and device_form.is_valid():
+            request.session['android_device_identifier'] = (
+                device_form.cleaned_data['identifier'])
+            return HttpResponseRedirect(request.path)
         apks = StaticAnalyzerAndroid.objects.filter(
             APP_TYPE='apk')
 
@@ -84,7 +96,7 @@ def android_dynamic_analysis(request, api=False):
             }
             scan_apps.append(temp_dict)
         try:
-            identifier = get_device()
+            identifier = get_device(request)
         except Exception:
             return print_n_send_error_response(
                 request, get_android_dm_exception_msg(), api)
@@ -108,6 +120,7 @@ def android_dynamic_analysis(request, api=False):
                    'android_sdk': and_sdk,
                    'runtime': runtime,
                    'devices': devices,
+                   'device_form': device_form,
                    'android_supported': ANDROID_API_SUPPORTED,
                    'proxy_ip': get_proxy_ip(identifier),
                    'proxy_port': settings.PROXY_PORT,
@@ -166,7 +179,7 @@ def dynamic_analyzer(request, checksum, api=False):
                 api)
         logger.info('Creating Dynamic Analysis Environment for %s', package)
         try:
-            identifier = get_device()
+            identifier = get_device(request)
         except Exception:
             return print_n_send_error_response(
                 request, get_android_dm_exception_msg(), api)
@@ -397,7 +410,14 @@ def logcat(request, api=False):
                     api)
             adb = os.environ['MOBSF_ADB']
             g = proc.Group()
-            g.run([adb, 'logcat', app_pkg + ':V', '*:*'])
+            g.run([
+                adb,
+                '-s',
+                get_device(request),
+                'logcat',
+                app_pkg + ':V',
+                '*:*',
+            ])
 
             def read_process():
                 while g.is_pending():
@@ -433,7 +453,7 @@ def trigger_static_analysis(request, checksum):
                 request,
                 'Cannot get package name from checksum')
         try:
-            identifier = get_device()
+            identifier = get_device(request)
         except Exception:
             err = 'Cannot connect to Android Runtime'
             return print_n_send_error_response(request, err)

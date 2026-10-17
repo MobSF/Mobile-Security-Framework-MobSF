@@ -22,6 +22,7 @@ from mobsf.DynamicAnalyzer.views.android.operations import (
     get_package_name,
 )
 from mobsf.MobSF.utils import (
+    get_device,
     is_file_exists,
     is_md5,
     print_n_send_error_response,
@@ -55,7 +56,7 @@ def get_runtime_dependencies(request, api=False):
         package = get_package_name(checksum)
         if not package:
             return invalid_params(api)
-        get_dependencies(package, checksum)
+        get_dependencies(package, checksum, get_device(request))
         return send_response(
             {'status': 'ok'},
             api)
@@ -106,7 +107,8 @@ def instrument(request, api=False):
                           default_hooks.split(','),
                           auxiliary_hooks.split(','),
                           extras,
-                          code)
+                          code,
+                          get_device(request))
         if action == 'spawn':
             logger.info('Starting Instrumentation')
             frida_obj.spawn()
@@ -256,7 +258,7 @@ def apimon_analysis(app_dir):
     return api_details, strings
 
 
-def get_dependencies(package, checksum):
+def get_dependencies(package, checksum, identifier=None):
     """Get 3rd party dependencies at runtime."""
     frd = Frida(
         checksum,
@@ -265,6 +267,7 @@ def get_dependencies(package, checksum):
         ['get_dependencies'],
         None,
         None,
+        identifier,
     )
     location = Path(frd.deps)
     if location.exists():

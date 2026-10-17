@@ -31,6 +31,7 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
 )
 from mobsf.MobSF.security import cmd_injection_check
 from mobsf.MobSF.utils import (
+    get_device,
     is_md5,
     python_list,
 )
@@ -55,7 +56,7 @@ logger = logging.getLogger(__name__)
 def start_activity(request, api=False):
     """Launch a specific activity."""
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         activity = request.POST['activity']
         md5_hash = request.POST['hash']
 
@@ -89,7 +90,7 @@ def start_activity(request, api=False):
 def start_deeplink(request, api=False):
     """Launch a specific deeplink."""
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         url = request.POST['url']
         md5_hash = request.POST['hash']
 
@@ -116,7 +117,7 @@ def activity_tester(request, api=False):
     """Exported & non exported activity Tester."""
     data = {}
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         test = request.POST['test']
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
@@ -180,7 +181,7 @@ def download_data(request, api=False):
     logger.info('Downloading app data')
     data = {}
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)
@@ -219,7 +220,7 @@ def collect_logs(request, api=False):
     logger.info('Collecting Data and Cleaning Up')
     data = {}
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)
@@ -244,7 +245,7 @@ def collect_logs(request, api=False):
             with open(dout, 'wb') as flip:
                 flip.write(dumpsys or b'')
             if env.get_android_version() < 5:
-                download_xposed_log(apk_dir)
+                download_xposed_log(apk_dir, env.identifier)
         finally:
             env.adb_command(['am', 'force-stop', package], True)
             logger.info('Stopping app')
@@ -293,7 +294,7 @@ def tls_tests(request, api=False):
     try:
         test_duration = 25
         test_package = 'tls_tests'
-        env = Environment()
+        env = Environment(get_device(request))
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)

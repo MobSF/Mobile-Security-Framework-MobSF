@@ -466,8 +466,28 @@ def get_android_devices():
     return devices
 
 
-def get_device():
+def get_device(request=None):
     """Get Device."""
+    if request is not None:
+        identifier = request.POST.get('identifier')
+        if not identifier:
+            identifier = request.GET.get('identifier')
+        if not identifier:
+            identifier = request.session.get('android_device_identifier')
+        if identifier and valid_android_device_identifier(identifier):
+            identifier = docker_translate_localhost(identifier.strip())
+            connected = {
+                device['identifier']
+                for device in get_android_devices()
+                if device['state'] == 'device'
+            }
+            if identifier in connected:
+                return identifier
+            logger.error('Selected Android device is not connected')
+            return None
+        if identifier:
+            logger.error('Invalid selected Android device identifier')
+            return None
     if os.getenv('ANALYZER_IDENTIFIER'):
         identifier = os.getenv('ANALYZER_IDENTIFIER')
     elif settings.ANALYZER_IDENTIFIER:

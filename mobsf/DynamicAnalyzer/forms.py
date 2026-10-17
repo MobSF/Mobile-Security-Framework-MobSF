@@ -2,6 +2,20 @@
 from django import forms
 
 
+class AndroidDeviceSelectionForm(forms.Form):
+    """Restrict device selection to connected ADB identifiers."""
+
+    identifier = forms.ChoiceField(choices=())
+
+    def __init__(self, devices, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['identifier'].choices = tuple(
+            (device['identifier'], device['identifier'])
+            for device in devices
+            if device['state'] == 'device'
+        )
+
+
 class AndroidDynamicAnalysisForm(forms.Form):
     """Validate Android dynamic-analysis preparation options."""
 
