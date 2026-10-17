@@ -246,7 +246,7 @@ textarea:focus {
                            </td>
                             <td align="center"> 
                               <div class="mb-3">
-                                <form method="post" action="{% url "dynamic_analyzer" checksum=e.MD5 %}">
+                                <form method="post" action="{% url "dynamic_analyzer" checksum=e.MD5 %}" class="dynamic-start-form" data-hash="{{ e.MD5 }}">
                                   {% csrf_token %}
                                   {% if runtime == "physical" %}
                                   <select name="device_mode" class="form-control form-control-sm mb-2" aria-label="Physical device mode">
@@ -255,17 +255,17 @@ textarea:focus {
                                     <option value="gadget">Frida Gadget (re-sign APK)</option>
                                   </select>
                                   {% endif %}
-                                  <button type="submit" class="btn btn-success disable" onclick="dynamic_loader()"><i class="fab fa-android"></i> Start Dynamic Analysis</button>
+                                  <button type="submit" class="btn btn-success disable"><i class="fab fa-android"></i> Start Dynamic Analysis</button>
                                 </form>
                               </div>
                               <div class="mb-3">
-                                <form method="post" action="{% url "dynamic_analyzer" checksum=e.MD5 %}">
+                                <form method="post" action="{% url "dynamic_analyzer" checksum=e.MD5 %}" class="dynamic-start-form" data-hash="{{ e.MD5 }}">
                                   {% csrf_token %}
                                   <input type="hidden" name="re_install" value="0">
                                   {% if runtime == "physical" %}
                                   <input type="hidden" name="device_mode" value="rooted">
                                   {% endif %}
-                                  <button type="submit" class="btn btn-primary btn-sm disable" onclick="dynamic_loader()"><i class="fab fa-android"></i> Start Dynamic Analysis (No reinstall)</button>
+                                  <button type="submit" class="btn btn-primary btn-sm disable"><i class="fab fa-android"></i> Start Dynamic Analysis (No reinstall)</button>
                                 </form>
                               </div>
                               <p>
@@ -342,6 +342,7 @@ textarea:focus {
 <script src="{% static "datatables/js/vfs_fonts.js" %}"></script>
 <script src="{% static "datatables/js/datatables.combined.min.js" %}"></script>
 <script src="{% static "others/js/datatables_init.js" %}"></script>
+<script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script>
 function dynamic_loader(){
     var loadingOverlay = document.querySelector('.loading');
@@ -354,6 +355,62 @@ const staticPathTemplate = "{% url 'static_scan' checksum='000000000000000000000
 const reportPathTemplate = "{% url 'dynamic_report' checksum='00000000000000000000000000000000' %}";
 const csrfToken = '{{ csrf_token }}';
 const physicalRuntime = {% if runtime == "physical" %}true{% else %}false{% endif %};
+
+document.querySelectorAll('.dynamic-start-form').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!physicalRuntime) {
+            dynamic_loader();
+            form.submit();
+            return;
+        }
+        const modeField = form.querySelector('[name="device_mode"]');
+        const mode = modeField ? modeField.value : 'auto';
+        const payload = new FormData();
+        payload.append('csrfmiddlewaretoken', csrfToken);
+        payload.append('hash', form.dataset.hash);
+        payload.append('device_mode', mode);
+        try {
+            const response = await fetch(
+                "{% url 'android_package_status' %}",
+                {
+                    method: 'POST',
+                    body: payload,
+                    credentials: 'same-origin',
+                },
+            );
+            const status = await response.json();
+            if (!response.ok || status.status !== 'ok') {
+                throw new Error(
+                    status.message || 'Unable to check the installed app',
+                );
+            }
+            if (status.confirmation_required) {
+                const decision = await Swal.fire({
+                    title: 'Existing app must be replaced',
+                    text: (
+                        'Frida Gadget changes the APK signature. '
+                        + 'Continuing will uninstall the existing app and '
+                        + 'delete its local app data before MobSF installs '
+                        + 'the re-signed Gadget APK.'
+                    ),
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Uninstall and re-sign',
+                    cancelButtonText: 'Cancel',
+                });
+                if (!(decision.isConfirmed || decision.value)) {
+                    return;
+                }
+                addHiddenInput(form, 'uninstall_existing', '1');
+            }
+            dynamic_loader();
+            form.submit();
+        } catch (error) {
+            Swal.fire('Unable to start analysis', error.message, 'error');
+        }
+    });
+});
 
 function addHiddenInput(form, name, value) {
     const input = document.createElement('input');

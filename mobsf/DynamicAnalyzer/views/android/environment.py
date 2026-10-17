@@ -308,6 +308,22 @@ class Environment:
             and result.stdout.strip().startswith(b'package:')
         )
 
+    def uninstall_package(self, package):
+        """Uninstall a package after explicit analyst confirmation."""
+        try:
+            result = self.adb_command_result(
+                ['uninstall', package],
+                timeout=settings.BINARY_ANALYSIS_TIMEOUT,
+            )
+        except subprocess.TimeoutExpired:
+            logger.error('Timed out uninstalling Android package')
+            return False
+        return (
+            result.returncode == 0
+            and b'Success' in result.stdout + result.stderr
+            and not self.has_package(package)
+        )
+
     def adb_command(self, cmd_list, shell=False, silent=False):
         """ADB Command wrapper."""
         args = [get_adb(),
