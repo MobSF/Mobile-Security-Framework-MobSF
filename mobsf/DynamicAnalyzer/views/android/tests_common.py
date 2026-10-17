@@ -1,8 +1,10 @@
 # -*- coding: utf_8 -*-
 """Available Actions."""
+import json
 import logging
 import os
 import re
+from pathlib import Path
 
 from django.conf import settings
 from django.views.decorators.http import require_http_methods
@@ -195,8 +197,11 @@ def download_data(request, api=False):
             data = {'status': 'ok'}
         else:
             data = {
-                'status': 'failed',
-                'message': 'Application data is not accessible',
+                'status': 'ok',
+                'message': (
+                    'Application data is not accessible with the '
+                    'selected device capabilities'
+                ),
             }
     except Exception as exp:
         logger.exception('Downloading application data')
@@ -226,24 +231,48 @@ def collect_logs(request, api=False):
         apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         lout = os.path.join(apk_dir, 'logcat.txt')
         dout = os.path.join(apk_dir, 'dump.txt')
-        logger.info('Downloading logcat logs')
-        logcat = env.adb_command(['logcat',
-                                  '-d',
-                                  package + ':V',
-                                  '*:*'])
-        with open(lout, 'wb') as flip:
-            flip.write(logcat)
-        logger.info('Downloading dumpsys logs')
-        dumpsys = env.adb_command(['dumpsys'], True)
-        with open(dout, 'wb') as flip:
-            flip.write(dumpsys)
-        if env.get_android_version() < 5:
-            download_xposed_log(apk_dir)
-        env.adb_command(['am', 'force-stop', package], True)
-        logger.info('Stopping app')
-        # Unset Global Proxy
-        env.unset_global_proxy()
-        env.remove_frida_forward()
+        try:
+            logger.info('Downloading logcat logs')
+            logcat = env.adb_command(['logcat',
+                                      '-d',
+                                      package + ':V',
+                                      '*:*'])
+            with open(lout, 'wb') as flip:
+                flip.write(logcat or b'')
+            logger.info('Downloading dumpsys logs')
+            dumpsys = env.adb_command(['dumpsys'], True)
+            with open(dout, 'wb') as flip:
+                flip.write(dumpsys or b'')
+            if env.get_android_version() < 5:
+                download_xposed_log(apk_dir)
+        finally:
+            env.adb_command(['am', 'force-stop', package], True)
+            logger.info('Stopping app')
+            state_file = Path(apk_dir) / '.mobsf-proxy-state'
+            gadget_marker = Path(apk_dir) / '.mobsf-gadget-mode'
+            if state_file.exists() and not state_file.is_symlink():
+                previous_proxy = ''
+                proxy_state = {}
+                if state_file.is_file():
+                    try:
+                        with state_file.open(encoding='utf-8') as source:
+                            proxy_state = json.load(source)
+                    except (OSError, ValueError, TypeError):
+                        logger.warning(
+                            'Unable to read saved Android proxy state')
+                    if not isinstance(proxy_state, dict):
+                        proxy_state = {}
+                    value = proxy_state.get('proxy')
+                    if isinstance(value, str):
+                        previous_proxy = value
+                env.restore_global_proxy(previous_proxy)
+                if proxy_state.get('remove_reverse') is True:
+                    env.disable_adb_reverse_tcp()
+            else:
+                env.unset_global_proxy()
+            env.remove_frida_forward()
+            state_file.unlink(missing_ok=True)
+            gadget_marker.unlink(missing_ok=True)
         data = {'status': 'ok'}
     except Exception as exp:
         logger.exception('Data Collection & Clean Up failed')

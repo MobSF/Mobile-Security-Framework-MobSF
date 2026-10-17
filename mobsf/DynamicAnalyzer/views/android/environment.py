@@ -42,6 +42,8 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
 ANDROID_API_SUPPORTED = 30
+_FRIDA_FORWARD_LOCK = threading.Lock()
+_MOBSF_FRIDA_FORWARDS = set()
 
 
 @dataclass(frozen=True)
@@ -246,33 +248,55 @@ class Environment:
             return True
         return False
 
-    def install_apk(self, apk_path, package, reinstall):
+    def install_apk(
+            self, apk_path, package, reinstall, modify_verifier=True):
         """Install APK and Verify Installation."""
         if self.is_package_installed(package, '') and reinstall != '0':
             logger.info('Removing existing installation')
             # Remove existing installation'
             self.adb_command(['uninstall', package], False, True)
-        # Disable install verification
-        self.adb_command([
-            'settings',
-            'put',
-            'global',
-            'verifier_verify_adb_installs',
-            '0',
-        ], True)
+        if modify_verifier:
+            # Legacy VM images require install verification to be disabled.
+            self.adb_command([
+                'settings',
+                'put',
+                'global',
+                'verifier_verify_adb_installs',
+                '0',
+            ], True)
         logger.info('Installing APK - %s', package)
-        # Install APK
-        out = self.adb_command([
-            'install',
-            '-r',
-            '-t',
-            '-d',
-            apk_path], False, True)
-        if not out:
-            return False, 'adb install failed'
-        out = out.decode('utf-8', 'ignore')
+        install_args = ['install', '-r', '-t', '-d']
+        try:
+            if int(self.get_android_sdk()) >= 34:
+                install_args.append('--bypass-low-target-sdk-block')
+        except (TypeError, ValueError):
+            pass
+        install_args.append(apk_path)
+        try:
+            result = self.adb_command_result(
+                install_args,
+                timeout=settings.BINARY_ANALYSIS_TIMEOUT,
+            )
+        except subprocess.TimeoutExpired:
+            return False, 'adb install timed out'
+        output = result.stdout + result.stderr
+        out = output.decode('utf-8', 'ignore')
+        if result.returncode != 0:
+            return False, out or 'adb install failed'
         # Verify Installation
         return self.is_package_installed(package, out), out
+
+    def has_package(self, package):
+        """Check an exact package without changing device state."""
+        result = self.adb_command_result(
+            ['pm', 'path', package],
+            shell=True,
+            timeout=10,
+        )
+        return (
+            result.returncode == 0
+            and result.stdout.strip().startswith(b'package:')
+        )
 
     def adb_command(self, cmd_list, shell=False, silent=False):
         """ADB Command wrapper."""
@@ -478,6 +502,51 @@ class Environment:
              'http_proxy',
              ':0'], True)
 
+    def get_global_proxy(self):
+        """Read the current global HTTP proxy without changing it."""
+        output = self.adb_command([
+            'settings',
+            'get',
+            'global',
+            'http_proxy',
+        ], True, True)
+        if not output:
+            return ''
+        value = output.decode('utf-8', 'ignore').strip()
+        if value in ('null', ':0'):
+            return ''
+        return value
+
+    def restore_global_proxy(self, value):
+        """Restore a previously recorded global HTTP proxy."""
+        if value:
+            self.adb_command([
+                'settings',
+                'put',
+                'global',
+                'http_proxy',
+                value,
+            ], True)
+        else:
+            self.adb_command([
+                'settings',
+                'delete',
+                'global',
+                'http_proxy',
+            ], True)
+            self.adb_command([
+                'settings',
+                'delete',
+                'global',
+                'global_http_proxy_host',
+            ], True)
+            self.adb_command([
+                'settings',
+                'delete',
+                'global',
+                'global_http_proxy_port',
+            ], True)
+
     def enable_adb_reverse_tcp(self, version):
         """Enable ADB Reverse TCP for Proxy."""
         # Androd 5+ supported
@@ -502,6 +571,29 @@ class Environment:
                 logger.error(stderr.decode('utf-8').replace('\n', ''))
         except Exception:
             logger.exception('Enabling ADB Reverse TCP')
+
+    def disable_adb_reverse_tcp(self):
+        """Remove the proxy reverse created by MobSF."""
+        tcp = f'tcp:{settings.PROXY_PORT}'
+        self.adb_command(
+            ['reverse', '--remove', tcp],
+            silent=True,
+        )
+
+    def has_adb_reverse_tcp(self):
+        """Check whether the MobSF proxy reverse already exists."""
+        tcp = f'tcp:{settings.PROXY_PORT}'
+        output = self.adb_command(
+            ['reverse', '--list'],
+            silent=True,
+        )
+        if not output:
+            return False
+        for line in output.decode('utf-8', 'ignore').splitlines():
+            parts = line.split()
+            if len(parts) >= 3 and parts[-2:] == [tcp, tcp]:
+                return True
+        return False
 
     def start_clipmon(self):
         """Start Clipboard Monitoring."""
@@ -1071,20 +1163,42 @@ class Environment:
                 settings.FRIDA_TIMEOUT,
             )
         tcp = 'tcp:27042'
-        result = self.adb_command_result(
-            ['forward', tcp, tcp],
-            timeout=10,
-        )
-        if result.returncode != 0:
-            raise RuntimeError(
-                'Unable to forward the physical-device Frida port')
+        key = (self.identifier, tcp)
+        with _FRIDA_FORWARD_LOCK:
+            forwards = self.adb_command(
+                ['forward', '--list'],
+                silent=True,
+            ) or b''
+            existing = None
+            for line in forwards.decode('utf-8', 'ignore').splitlines():
+                parts = line.split()
+                if len(parts) >= 3 and parts[0] == self.identifier:
+                    if parts[1] == tcp:
+                        existing = parts[2]
+                        break
+            if existing and existing != tcp:
+                raise RuntimeError(
+                    'Frida port is already forwarded to another target')
+            if not existing:
+                result = self.adb_command_result(
+                    ['forward', '--no-rebind', tcp, tcp],
+                    timeout=10,
+                )
+                if result.returncode != 0:
+                    raise RuntimeError(
+                        'Unable to forward the physical-device Frida port')
+                _MOBSF_FRIDA_FORWARDS.add(key)
         return frida.get_device_manager().add_remote_device(
             '127.0.0.1:27042')
 
     def remove_frida_forward(self):
         """Remove the Frida port forward created by MobSF."""
-        if self.get_environment() == 'physical':
-            self.adb_command(
-                ['forward', '--remove', 'tcp:27042'],
-                silent=True,
-            )
+        tcp = 'tcp:27042'
+        key = (self.identifier, tcp)
+        with _FRIDA_FORWARD_LOCK:
+            if key in _MOBSF_FRIDA_FORWARDS:
+                self.adb_command(
+                    ['forward', '--remove', tcp],
+                    silent=True,
+                )
+                _MOBSF_FRIDA_FORWARDS.discard(key)
