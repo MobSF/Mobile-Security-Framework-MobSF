@@ -199,7 +199,12 @@ textarea:focus {
               </div>
               <div class="card-body">
                  <div class="table-responsive">
-                  <h4> Apps in Device</h4>
+                  <h4>
+                    Apps in Device
+                    <button id="refresh_device_apps" type="button" class="btn btn-sm btn-outline-primary ml-2" {% if not identifier %}disabled{% endif %}>
+                      Refresh
+                    </button>
+                  </h4>
                   <table class="table table-bordered table-hover table-striped">
                     <thead>
                     <tr>
@@ -208,42 +213,10 @@ textarea:focus {
                         <th>ACTION</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    {% if device_packages %}
-                    {% for hash, det in device_packages.items %}
-                        <tr>
-                            <td align="center">
-                              <img id="app_icon" src="/download/{{ hash }}-icon.png" onerror="this.onerror=null;this.src='{% static 'img/no_icon.png' %}'"/>
-                              <br/><strong>{{ det.0 }}</strong>
-                            </td>
-                            <td>
-                                {{ det.1}}
-                           </td>
-                            <td align="center"> 
-                              <div class="mb-3">
-                                <form method="post" action="{% url "dynamic_analyzer" checksum=hash %}">
-                                  {% csrf_token %}
-                                  <input type="hidden" name="re_install" value="0">
-                                  <input type="hidden" name="install" value="0">
-                                  {% if runtime == "physical" %}
-                                  <input type="hidden" name="device_mode" value="rooted">
-                                  {% endif %}
-                                  <button type="submit" class="btn btn-primary disable" onclick="dynamic_loader()"><i class="fab fa-android"></i> Start Dynamic Analysis</button>
-                                </form>
-                              </div>
-                              <div class="mb-3">
-                                <form method="post" action="{% url "static_scan" checksum=hash %}">
-                                  {% csrf_token %}
-                                  <button type="submit" class="btn btn-warning disable" onclick="dynamic_loader()"><i class="fa fa-download"></i> Pull &amp; Static Analysis</button>
-                                </form>
-                              </div>
-                              <p>
-                                 <a class="btn btn-info" href="{% url "dynamic_report" checksum=hash %}"><i class="fa fa-mobile"></i> View Report </a>
-                              </p>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    {% endif %}
+                    <tbody id="device_apps">
+                      <tr>
+                        <td colspan="3">{% if identifier %}Loading installed applications…{% else %}Select an Android device first.{% endif %}</td>
+                      </tr>
                     </tbody>
                 </table>
               </br>
@@ -374,6 +347,121 @@ function dynamic_loader(){
     var loadingOverlay = document.querySelector('.loading');
     loadingOverlay.classList.remove('hidden');
 }
+
+const checksumPlaceholder = '00000000000000000000000000000000';
+const dynamicPathTemplate = "{% url 'dynamic_analyzer' checksum='00000000000000000000000000000000' %}";
+const staticPathTemplate = "{% url 'static_scan' checksum='00000000000000000000000000000000' %}";
+const reportPathTemplate = "{% url 'dynamic_report' checksum='00000000000000000000000000000000' %}";
+const csrfToken = '{{ csrf_token }}';
+const physicalRuntime = {% if runtime == "physical" %}true{% else %}false{% endif %};
+
+function addHiddenInput(form, name, value) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+}
+
+function actionForm(path, label, values) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'mb-3';
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = path;
+    addHiddenInput(form, 'csrfmiddlewaretoken', csrfToken);
+    Object.entries(values).forEach(([name, value]) => {
+        addHiddenInput(form, name, value);
+    });
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.className = 'btn btn-primary btn-sm';
+    button.textContent = label;
+    button.addEventListener('click', dynamic_loader);
+    form.appendChild(button);
+    wrapper.appendChild(form);
+    return wrapper;
+}
+
+function showDeviceApps(packages) {
+    const table = document.getElementById('device_apps');
+    table.replaceChildren();
+    const entries = Object.entries(packages);
+    if (entries.length === 0) {
+        const row = table.insertRow();
+        const cell = row.insertCell();
+        cell.colSpan = 3;
+        cell.textContent = 'No third-party applications found.';
+        return;
+    }
+    entries.forEach(([checksum, details]) => {
+        const row = table.insertRow();
+        const appCell = row.insertCell();
+        const pathCell = row.insertCell();
+        const actionCell = row.insertCell();
+        appCell.textContent = details[0];
+        pathCell.textContent = details[1];
+        actionCell.className = 'text-center';
+        const dynamicValues = {re_install: '0', install: '0'};
+        if (physicalRuntime) {
+            dynamicValues.device_mode = 'rooted';
+        }
+        actionCell.appendChild(actionForm(
+            dynamicPathTemplate.replace(checksumPlaceholder, checksum),
+            'Start Dynamic Analysis',
+            dynamicValues,
+        ));
+        const staticForm = actionForm(
+            staticPathTemplate.replace(checksumPlaceholder, checksum),
+            'Pull & Static Analysis',
+            {},
+        );
+        staticForm.querySelector('button').className = 'btn btn-warning btn-sm';
+        actionCell.appendChild(staticForm);
+        const report = document.createElement('a');
+        report.className = 'btn btn-info btn-sm';
+        report.href = reportPathTemplate.replace(checksumPlaceholder, checksum);
+        report.textContent = 'View Report';
+        actionCell.appendChild(report);
+    });
+}
+
+async function loadDeviceApps(refresh = false) {
+    const table = document.getElementById('device_apps');
+    table.replaceChildren();
+    const loadingRow = table.insertRow();
+    const loadingCell = loadingRow.insertCell();
+    loadingCell.colSpan = 3;
+    loadingCell.textContent = refresh
+        ? 'Refreshing installed applications…'
+        : 'Loading installed applications…';
+    try {
+        const suffix = refresh ? '?refresh=1' : '';
+        const response = await fetch(
+            "{% url 'android_device_apps' %}" + suffix,
+            {credentials: 'same-origin'},
+        );
+        const result = await response.json();
+        if (!response.ok || result.status !== 'ok') {
+            throw new Error(result.message || 'Unable to load applications');
+        }
+        showDeviceApps(result.packages);
+    } catch (error) {
+        table.replaceChildren();
+        const row = table.insertRow();
+        const cell = row.insertCell();
+        cell.colSpan = 3;
+        cell.textContent = error.message;
+    }
+}
+
+document.getElementById('refresh_device_apps').addEventListener(
+    'click',
+    () => loadDeviceApps(true),
+);
+{% if identifier %}
+loadDeviceApps();
+{% endif %}
 
 //MobSFy AJAX
  $("#mobsfy").one( "click", function() {

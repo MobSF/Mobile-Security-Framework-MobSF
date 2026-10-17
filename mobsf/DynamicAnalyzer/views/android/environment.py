@@ -2,6 +2,7 @@
 """Dynamic Analyzer Helpers."""
 import logging
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -44,6 +45,9 @@ logger = logging.getLogger(__name__)
 ANDROID_API_SUPPORTED = 30
 _FRIDA_FORWARD_LOCK = threading.Lock()
 _MOBSF_FRIDA_FORWARDS = set()
+_DEVICE_PACKAGE_CACHE = {}
+_DEVICE_PACKAGE_CACHE_LOCK = threading.Lock()
+_DEVICE_PACKAGE_CACHE_TTL = 300
 
 
 @dataclass(frozen=True)
@@ -87,6 +91,7 @@ class Environment:
         self.root_method = 'none'
         self.root_status = 'not_checked'
         self._profile = None
+        self._android_properties = None
 
     def wait(self, sec):
         """Wait in Seconds."""
@@ -650,48 +655,42 @@ class Environment:
 
     def get_environment(self):
         """Identify the environment."""
-        properties = (
-            'ro.boot.serialno',
-            'ro.serialno',
-            'ro.build.user',
-            'ro.build.characteristics',
-            'ro.kernel.qemu',
-            'ro.boot.qemu',
-            'ro.product.manufacturer',
-            'ro.product.model',
-            'ro.manufacturer.geny-def',
-            'ro.product.manufacturer.geny-def',
-            'ro.genymotion.version',
-        )
-        values = {}
-        for prop in properties:
-            value = self.adb_command(['getprop', prop], True, True)
-            if value:
-                values[prop] = value.strip()
-        out = b'\n'.join(values.values())
-        lower = out.lower()
-        if (b'emulator' in lower
-                or b'generic_x86' in lower
-                or values.get('ro.kernel.qemu') == b'1'
-                or values.get('ro.boot.qemu') == b'1'):
+        values = self.get_android_properties()
+        combined = '\n'.join(values.values()).lower()
+        if ('emulator' in combined
+                or 'generic_x86' in combined
+                or values.get('ro.kernel.qemu') == '1'
+                or values.get('ro.boot.qemu') == '1'):
             logger.info('Found Android Studio Emulator')
             return 'emulator'
-        elif b'genymotion' in lower:
+        elif 'genymotion' in combined:
             logger.info('Found Genymotion Android VM')
             return 'genymotion'
-        elif b'corellium' in lower:
+        elif 'corellium' in combined:
             logger.info('Found Corellium ARM Android VM')
             return 'corellium'
         else:
             logger.info('Found physical Android device')
             return 'physical'
 
+    def get_android_properties(self):
+        """Read and cache the Android property map in one ADB call."""
+        if self._android_properties is not None:
+            return self._android_properties
+        properties = {}
+        output = self.adb_command(['getprop'], True, True)
+        if output:
+            for line in output.decode('utf-8', 'ignore').splitlines():
+                match = re.match(r'^\[([^\]]+)\]: \[(.*)\]$', line)
+                if match:
+                    properties[match.group(1)] = match.group(2)
+        self._android_properties = properties
+        return properties
+
     def get_android_version(self):
         """Get Android version."""
-        out = self.adb_command(['getprop',
-                                'ro.build.version.release'],
-                               True, False)
-        and_version = out.decode('utf-8').rstrip()
+        and_version = self.get_android_properties().get(
+            'ro.build.version.release', '')
         if and_version.count('.') > 1:
             and_version = and_version.rsplit('.', 1)[0]
         if and_version.count('.') > 1:
@@ -700,46 +699,50 @@ class Environment:
 
     def get_android_arch(self):
         """Get Android Architecture."""
-        out = self.adb_command([
-            'getprop',
-            'ro.product.cpu.abi'], True)
-        return out.decode('utf-8').rstrip()
+        return self.get_android_properties().get(
+            'ro.product.cpu.abi', '')
 
     def get_android_sdk(self):
         """Get Android API version."""
-        out = self.adb_command([
-            'getprop',
-            'ro.build.version.sdk'], True)
-        return out.decode('utf-8').strip()
+        return self.get_android_properties().get(
+            'ro.build.version.sdk', '')
 
-    def get_device_packages(self):
+    def get_device_packages(self, refresh=False):
         """Get all packages from device."""
+        now = time.monotonic()
+        with _DEVICE_PACKAGE_CACHE_LOCK:
+            cached = _DEVICE_PACKAGE_CACHE.get(self.identifier)
+            if (not refresh
+                    and cached
+                    and now - cached['created'] < _DEVICE_PACKAGE_CACHE_TTL):
+                return cached['packages']
         device_packages = {}
-        out = self.adb_command([
-            'pm',
-            'list',
-            'packages',
-            '-f',
-            '-3'], True, True)
+        script = (
+            'pm list packages -f -3 | while IFS= read -r entry; do '
+            'apk=${entry#package:}; package=${apk##*=}; apk=${apk%=*}; '
+            'checksum=$(md5sum "$apk" 2>/dev/null | cut -d" " -f1); '
+            'printf "%s\\t%s\\t%s\\n" "$checksum" "$package" "$apk"; '
+            'done'
+        )
+        out = self.adb_command([script], True, True)
         if not out:
             return device_packages
-        for pkg_str in out.decode('utf-8').rstrip().split():
-            path_pkg = pkg_str.split('package:', 1)[1].strip()
-            parts = path_pkg.split('.apk=', 1)
-            apk = f'{parts[0]}.apk'
-            pkg = parts[1]
-            if pkg == 'opensecurity.clipdump':
-                # Do not include MobSF agent
+        for line in out.decode('utf-8', 'ignore').splitlines():
+            parts = line.split('\t', 2)
+            if len(parts) != 3:
                 continue
-            out1 = self.adb_command([
-                'md5sum',
-                '-b',
-                apk], True)
-            md5 = out1.decode('utf-8').strip()
-            if '.apk' in md5:
-                # -b not respected in Android 5.0
-                md5 = md5.split()[0]
-            device_packages[md5] = (pkg, apk)
+            checksum, package, apk = parts
+            if (not re.fullmatch(r'[a-fA-F0-9]{32}', checksum)
+                    or package == 'opensecurity.clipdump'
+                    or not re.fullmatch(r'[A-Za-z][\w.-]{1,255}', package)
+                    or not apk.startswith('/data/app/')):
+                continue
+            device_packages[checksum.lower()] = (package, apk)
+        with _DEVICE_PACKAGE_CACHE_LOCK:
+            _DEVICE_PACKAGE_CACHE[self.identifier] = {
+                'created': now,
+                'packages': device_packages,
+            }
         return device_packages
 
     def download_apk_packages(self, pkg_path, out_file):

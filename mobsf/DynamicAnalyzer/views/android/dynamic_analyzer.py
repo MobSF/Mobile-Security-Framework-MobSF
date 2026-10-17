@@ -10,6 +10,7 @@ from shelljob import proc
 
 
 from django.http import (HttpResponseRedirect,
+                         JsonResponse,
                          StreamingHttpResponse)
 from django.conf import settings
 from django.shortcuts import render
@@ -104,11 +105,12 @@ def android_dynamic_analysis(request, api=False):
             if identifier:
                 env = Environment(identifier)
                 env.connect()
-                device_packages = env.get_device_packages()
-                if device_packages:
-                    pkg_file = Path(settings.DWD_DIR) / 'packages.json'
-                    with pkg_file.open('w', encoding='utf-8') as target:
-                        dump(device_packages, target)
+                if api:
+                    device_packages = env.get_device_packages()
+                    if device_packages:
+                        pkg_file = Path(settings.DWD_DIR) / 'packages.json'
+                        with pkg_file.open('w', encoding='utf-8') as target:
+                            dump(device_packages, target)
                 and_ver = env.get_android_version()
                 and_sdk = env.get_android_sdk()
                 runtime = env.get_environment()
@@ -135,6 +137,46 @@ def android_dynamic_analysis(request, api=False):
     except Exception as exp:
         logger.exception('Dynamic Analysis')
         return print_n_send_error_response(request, exp, api)
+
+
+@login_required
+@permission_required(Permissions.SCAN)
+@require_http_methods(['GET'])
+def android_device_apps(request):
+    """Load installed device apps without blocking the main page."""
+    try:
+        identifier = get_device(request)
+        if not identifier:
+            return JsonResponse({
+                'status': 'failed',
+                'message': 'No Android device selected',
+            }, status=400)
+        refresh = request.GET.get('refresh', '0')
+        if refresh not in ('0', '1'):
+            return JsonResponse({
+                'status': 'failed',
+                'message': 'Invalid refresh option',
+            }, status=400)
+        env = Environment(identifier)
+        if not env.connect():
+            return JsonResponse({
+                'status': 'failed',
+                'message': 'Selected Android device is unavailable',
+            }, status=503)
+        device_packages = env.get_device_packages(refresh=refresh == '1')
+        pkg_file = Path(settings.DWD_DIR) / 'packages.json'
+        with pkg_file.open('w', encoding='utf-8') as target:
+            dump(device_packages, target)
+        return JsonResponse({
+            'status': 'ok',
+            'packages': device_packages,
+        })
+    except Exception:
+        logger.exception('Loading Android device apps')
+        return JsonResponse({
+            'status': 'failed',
+            'message': 'Failed to load installed applications',
+        }, status=500)
 
 
 @login_required
