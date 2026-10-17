@@ -182,6 +182,57 @@ def android_device_apps(request):
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
+def android_package_status(request):
+    """Check whether Gadget installation needs user confirmation."""
+    analysis_form = AndroidDynamicAnalysisForm(request.POST)
+    checksum = request.POST.get('hash')
+    if not analysis_form.is_valid() or not is_md5(checksum):
+        return JsonResponse({
+            'status': 'failed',
+            'message': 'Invalid parameters',
+        }, status=400)
+    package = get_package_name(checksum)
+    identifier = get_device(request)
+    if not package or not identifier:
+        return JsonResponse({
+            'status': 'failed',
+            'message': 'App or Android device is unavailable',
+        }, status=400)
+    try:
+        env = Environment(identifier)
+        if not env.connect():
+            raise RuntimeError('Selected Android device is unavailable')
+        mode = (
+            analysis_form.cleaned_data.get('device_mode')
+            or 'auto'
+        )
+        runtime = env.get_environment()
+        selected_mode = mode
+        if runtime != 'physical':
+            selected_mode = 'legacy'
+        elif mode == 'auto':
+            profile = env.get_device_profile(probe_root=True)
+            selected_mode = 'rooted' if profile.has_root else 'gadget'
+        installed = env.has_package(package)
+        return JsonResponse({
+            'status': 'ok',
+            'installed': installed,
+            'selected_mode': selected_mode,
+            'confirmation_required': (
+                installed and selected_mode == 'gadget'
+            ),
+        })
+    except Exception:
+        logger.exception('Checking Android package status')
+        return JsonResponse({
+            'status': 'failed',
+            'message': 'Failed to check the installed application',
+        }, status=500)
+
+
+@login_required
+@permission_required(Permissions.SCAN)
+@require_http_methods(['POST'])
 def dynamic_analyzer(request, checksum, api=False):
     """Android Dynamic Analyzer Environment."""
     try:
@@ -206,6 +257,7 @@ def dynamic_analyzer(request, checksum, api=False):
         device_mode = options.get('device_mode') or 'auto'
         reinstall = options.get('re_install') or '1'
         install = options.get('install') or '1'
+        uninstall_existing = options.get('uninstall_existing') or '0'
         if not is_md5(checksum):
             # We need this check since checksum is not validated
             # in REST API
@@ -312,11 +364,12 @@ def dynamic_analyzer(request, checksum, api=False):
                     'Frida Gadget mode must install the patched APK',
                     api,
                 )
-            if env.has_package(package):
+            package_installed = env.has_package(package)
+            if package_installed and uninstall_existing != '1':
                 return print_n_send_error_response(
                     request,
-                    f'{package} is already installed. MobSF will not '
-                    'remove it or replace its signature automatically.',
+                    'Confirmation is required before uninstalling the '
+                    'existing app and installing a re-signed Gadget APK.',
                     api,
                 )
             patcher = GadgetPatcher(
@@ -326,6 +379,12 @@ def dynamic_analyzer(request, checksum, api=False):
             )
             apk_path = patcher.patch()
             user_ca_trusted = patcher.user_ca_trusted
+            if package_installed and not env.uninstall_package(package):
+                return print_n_send_error_response(
+                    request,
+                    'Failed to uninstall the existing application',
+                    api,
+                )
         else:
             gadget_marker.unlink(missing_ok=True)
         reverse_created = False

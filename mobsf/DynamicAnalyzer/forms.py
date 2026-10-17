@@ -35,6 +35,10 @@ class AndroidDynamicAnalysisForm(forms.Form):
         required=False,
         choices=(('0', '0'), ('1', '1')),
     )
+    uninstall_existing = forms.ChoiceField(
+        required=False,
+        choices=(('0', '0'), ('1', '1')),
+    )
 
 
 class UploadFileForm(forms.Form):
