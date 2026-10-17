@@ -115,6 +115,28 @@ textarea:focus {
                             <br/>For Android version <strong>4.1 - 4.3</strong>, set Android VM proxy as <strong>{% if proxy_ip %} {{ proxy_ip }}{% else %} <i>&lt;Host IP&gt;</i>{% endif %}:{{proxy_port}}</strong>
                             {% endif %}
                           {% endif %}
+
+                          {% if runtime == "physical" %}
+                            <br/><strong>Physical-device preparation:</strong>
+                            Rooted mode requires a bounded, non-interactive
+                            <code>su</code> grant. Gadget mode rebuilds the
+                            selected APK for this device ABI and signs it with
+                            a local MobSF lab key; it never removes an existing
+                            installation automatically. Install the MobSF CA
+                            through Android settings if HTTPS interception is
+                            required.
+                            <br/><strong>Connectivity:</strong> Native MobSF
+                            supports USB and wireless ADB. Containers support
+                            wireless ADB directly by running
+                            <code>adb pair</code> and <code>adb connect</code>
+                            inside the MobSF container. For container-to-USB
+                            access, run a dedicated host ADB server with
+                            <code>adb -a -P 5037 nodaemon server</code>, set
+                            <code>ADB_SERVER_SOCKET=tcp:host.docker.internal:5037</code>
+                            on the MobSF container, and restrict port 5037 to
+                            the Docker host/bridge. Do not expose ADB to an
+                            untrusted network.
+                          {% endif %}
                          
                         </p>
                       </div>   
