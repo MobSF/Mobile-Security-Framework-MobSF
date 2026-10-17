@@ -529,10 +529,9 @@ def get_adb():
             os.environ['MOBSF_ADB'] = 'adb'
             logger.warning('Dynamic Analysis related '
                            'functions will not work. '
-                           '\nMake sure a Genymotion Android VM/'
-                           'Android Studio Emulator'
-                           ' is running before performing'
-                           ' Dynamic Analysis.')
+                           '\nMake sure ADB is installed and an authorized '
+                           'Android runtime or device is connected before '
+                           'performing Dynamic Analysis.')
     return 'adb'
 
 
@@ -883,8 +882,7 @@ def android_component(data):
 
 def get_android_dm_exception_msg():
     return (
-        'Is your Android VM/emulator running? MobSF cannot'
-        ' find the android device identifier.'
+        'MobSF cannot find an authorized Android runtime or device.'
         ' Please read official documentation.'
         ' If this error persists, set ANALYZER_IDENTIFIER in '
         f'{get_config_loc()} or via environment variable'

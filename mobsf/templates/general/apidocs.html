@@ -1573,6 +1573,7 @@
             <hr />
             <h2><a id="start-analysis-api"></a><strong>Start Dynamic Analysis API</strong></h2>
             <p>Start MobSF Dynamic Analyzer. Ensure that dynamic analysis environment (Android VM/Emulator/Device) is configured and running before calling this API.</p>
+            <p>For physical devices, <code>auto</code> selects non-interactive root when available and otherwise builds a Frida Gadget APK. Gadget mode changes the APK signature and refuses to replace an existing installation. Rooted mode does not require a writable <code>/system</code> partition.</p>
             <ul>
               <li>
                 <p><strong>URL:</strong> <code>/api/v1/dynamic/start_analysis</code></p>
@@ -1609,6 +1610,11 @@
                 <tr>
                   <td>install</td>
                   <td>0 or 1, default is 1</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>device_mode</td>
+                  <td>auto, rooted, or gadget; default is auto</td>
                   <td>No</td>
                 </tr>
               </tbody>
@@ -1655,7 +1661,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/start_analysis --data "hash=3a552566097a8de588b8184b059b0158" -H "Authorization:  {{ api_key}}"
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/start_analysis --data "hash=3a552566097a8de588b8184b059b0158&amp;device_mode=auto" -H "Authorization:  {{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>
