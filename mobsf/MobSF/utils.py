@@ -416,22 +416,81 @@ def docker_translate_proxy_ip(ip):
     return ip
 
 
+def valid_android_device_identifier(identifier):
+    """Validate an ADB device serial or network identifier."""
+    if not isinstance(identifier, str):
+        return False
+    identifier = identifier.strip()
+    if not identifier or len(identifier) > 255:
+        return False
+    return bool(re.fullmatch(
+        r'[A-Za-z0-9][A-Za-z0-9._:%\-\[\]]*',
+        identifier,
+    ))
+
+
+def get_android_devices():
+    """Return devices reported by the configured ADB server."""
+    devices = []
+    try:
+        output = subprocess.check_output(
+            [get_adb(), 'devices', '-l'],
+            stderr=subprocess.STDOUT,
+            timeout=10,
+        ).decode('utf-8', 'ignore')
+        for line in output.splitlines():
+            line = line.strip()
+            if not line or line.startswith('List of devices'):
+                continue
+            parts = line.split()
+            if len(parts) < 2:
+                continue
+            identifier, state = parts[:2]
+            if 'no permissions' in line:
+                state = 'no permissions'
+            if not valid_android_device_identifier(identifier):
+                logger.warning('Ignoring invalid ADB device identifier')
+                continue
+            details = {}
+            for item in parts[2:]:
+                if ':' in item:
+                    key, value = item.split(':', 1)
+                    details[key] = value
+            devices.append({
+                'identifier': docker_translate_localhost(identifier),
+                'state': state,
+                'details': details,
+            })
+    except Exception:
+        logger.exception('Failed to list Android devices')
+    return devices
+
+
 def get_device():
     """Get Device."""
     if os.getenv('ANALYZER_IDENTIFIER'):
-        return docker_translate_localhost(
-            os.getenv('ANALYZER_IDENTIFIER'))
+        identifier = os.getenv('ANALYZER_IDENTIFIER')
     elif settings.ANALYZER_IDENTIFIER:
-        return docker_translate_localhost(
-            settings.ANALYZER_IDENTIFIER)
+        identifier = settings.ANALYZER_IDENTIFIER
     else:
-        dev_id = ''
-        out = subprocess.check_output([get_adb(), 'devices']).splitlines()
-        if len(out) > 2:
-            dev_id = out[1].decode('utf-8').split('\t')[0]
-            if 'daemon started successfully' not in dev_id:
-                return docker_translate_localhost(dev_id)
+        online = [
+            device for device in get_android_devices()
+            if device['state'] == 'device'
+        ]
+        if len(online) == 1:
+            return online[0]['identifier']
+        if len(online) > 1:
+            logger.error(
+                'Multiple Android devices are connected. '
+                'Set MOBSF_ANALYZER_IDENTIFIER explicitly.')
+            return None
+        identifier = None
+    if identifier and valid_android_device_identifier(identifier):
+        return docker_translate_localhost(identifier.strip())
+    if identifier:
+        logger.error('Invalid Android device identifier')
     logger.error(get_android_dm_exception_msg())
+    return None
 
 
 def get_adb():

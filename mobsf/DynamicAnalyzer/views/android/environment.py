@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 import threading
 import time
+from dataclasses import dataclass
 from pathlib import Path
 from base64 import b64encode
 from hashlib import md5
@@ -28,10 +29,12 @@ from mobsf.DynamicAnalyzer.views.common.frida.server_update import (
 )
 from mobsf.MobSF.utils import (
     get_adb,
+    get_android_devices,
     get_device,
     get_proxy_ip,
     is_file_exists,
     python_list,
+    valid_android_device_identifier,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 
@@ -39,13 +42,33 @@ logger = logging.getLogger(__name__)
 ANDROID_API_SUPPORTED = 30
 
 
+@dataclass(frozen=True)
+class DeviceProfile:
+    """Properties used to select an Android preparation strategy."""
+
+    identifier: str
+    state: str
+    transport: str
+    runtime: str
+    android_version: float
+    sdk: int
+    abi: str
+
+    @property
+    def is_physical(self):
+        return self.runtime == 'physical'
+
+
 class Environment:
 
     def __init__(self, identifier=None):
         if identifier:
-            self.identifier = identifier
+            self.identifier = identifier.strip()
         else:
             self.identifier = get_device()
+        if (self.identifier
+                and not valid_android_device_identifier(self.identifier)):
+            raise ValueError('Invalid Android device identifier')
         self.tools_dir = settings.TOOLS_DIR
         self.frida_str = f'MobSF-Frida-{frida_version}'.encode('utf-8')
         self.xposed_str = b'MobSF-Xposed'
@@ -65,31 +88,72 @@ class Environment:
 
     def run_subprocess_verify_output(self, cmd, wait=2):
         """Run subprocess and verify execution."""
-        out = subprocess.check_output(cmd)  # lgtm [py/command-line-injection]
+        out = subprocess.check_output(  # lgtm [py/command-line-injection]
+            cmd,
+            stderr=subprocess.STDOUT,
+            timeout=30,
+        )
         self.wait(wait)                        # adb shell is allowed
         return self.check_connect_error(out)
+
+    def get_device_state(self):
+        """Get the connection state of this device."""
+        for device in get_android_devices():
+            if device['identifier'] == self.identifier:
+                return device['state']
+        return 'disconnected'
+
+    def is_network_device(self):
+        """Check whether an identifier represents a network ADB target."""
+        identifier = self.identifier or ''
+        return (
+            ':' in identifier
+            or identifier.endswith('._adb-tls-connect._tcp')
+        )
 
     def connect(self):
         """ADB Connect."""
         if not self.identifier:
             return False
+        state = self.get_device_state()
+        if state == 'device':
+            return True
+        if state in ('offline', 'unauthorized', 'no permissions'):
+            logger.error(
+                'Android device %s is %s',
+                self.identifier,
+                state,
+            )
+            return False
+        if not self.is_network_device():
+            logger.error('Android USB device %s is disconnected',
+                         self.identifier)
+            return False
         logger.info('Connecting to Android %s', self.identifier)
-        self.run_subprocess_verify_output([get_adb(),
-                                           'connect',
-                                           self.identifier])
+        if not self.run_subprocess_verify_output([
+                get_adb(), 'connect', self.identifier]):
+            return False
+        state = self.get_device_state()
+        if state != 'device':
+            logger.error(
+                'Android device %s is %s',
+                self.identifier,
+                state,
+            )
+            return False
+        return True
 
     def connect_n_mount(self):
         """Test ADB Connection."""
         if not self.identifier:
             return False
-        self.adb_command(['kill-server'])
-        self.adb_command(['start-server'], False, True)
-        logger.info('ADB Restarted')
-        self.wait(2)
-        logger.info('Connecting to Android %s', self.identifier)
-        if not self.run_subprocess_verify_output([get_adb(),
-                                                 'connect',
-                                                  self.identifier]):
+        if not self.connect():
+            return False
+        runtime = self.get_environment()
+        if runtime == 'physical':
+            logger.error(
+                'Physical Android device preparation requires '
+                'rooted-device or Frida Gadget support.')
             return False
         logger.info('Restarting ADB Daemon as root')
         if not self.run_subprocess_verify_output([get_adb(),
@@ -97,21 +161,34 @@ class Environment:
                                                   self.identifier,
                                                   'root']):
             return False
-        logger.info('Reconnecting to Android Device')
-        # connect again with root adb
-        if not self.run_subprocess_verify_output([get_adb(),
-                                                  'connect',
-                                                  self.identifier]):
-            return False
-        # identify environment
-        runtime = self.get_environment()
+        if self.is_network_device():
+            logger.info('Reconnecting to Android Device')
+            if not self.run_subprocess_verify_output([
+                    get_adb(), 'connect', self.identifier]):
+                return False
         logger.info('Remounting')
-        # Allow non supported environments also
         self.adb_command(['remount'])
         logger.info('Performing System check')
         if not self.system_check(runtime):
             return False
         return True
+
+    def get_device_profile(self):
+        """Collect stable properties used by dynamic analysis."""
+        state = self.get_device_state()
+        if state != 'device':
+            raise RuntimeError(
+                f'Android device {self.identifier} is {state}')
+        transport = 'network' if self.is_network_device() else 'usb'
+        return DeviceProfile(
+            identifier=self.identifier,
+            state=state,
+            transport=transport,
+            runtime=self.get_environment(),
+            android_version=self.get_android_version(),
+            sdk=int(self.get_android_sdk()),
+            abi=self.get_android_arch(),
+        )
 
     def is_package_installed(self, package, extra):
         """Check if package is installed."""
@@ -348,37 +425,41 @@ class Environment:
 
     def get_environment(self):
         """Identify the environment."""
-        out = self.adb_command(['getprop',
-                                'ro.boot.serialno'], True, False)
-        out += self.adb_command(['getprop',
-                                 'ro.serialno'], True, False)
-        out += self.adb_command(['getprop',
-                                 'ro.build.user'], True, False)
-        out += self.adb_command(['getprop',
-                                 'ro.manufacturer.geny-def'],
-                                True, False)
-        out += self.adb_command(['getprop',
-                                 'ro.product.manufacturer.geny-def'],
-                                True, False)
-        ver = self.adb_command(['getprop',
-                                'ro.genymotion.version'],
-                               True, False).decode('utf-8', 'ignore')
-        if b'EMULATOR' in out:
+        properties = (
+            'ro.boot.serialno',
+            'ro.serialno',
+            'ro.build.user',
+            'ro.build.characteristics',
+            'ro.kernel.qemu',
+            'ro.boot.qemu',
+            'ro.product.manufacturer',
+            'ro.product.model',
+            'ro.manufacturer.geny-def',
+            'ro.product.manufacturer.geny-def',
+            'ro.genymotion.version',
+        )
+        values = {}
+        for prop in properties:
+            value = self.adb_command(['getprop', prop], True, True)
+            if value:
+                values[prop] = value.strip()
+        out = b'\n'.join(values.values())
+        lower = out.lower()
+        if (b'emulator' in lower
+                or b'generic_x86' in lower
+                or values.get('ro.kernel.qemu') == b'1'
+                or values.get('ro.boot.qemu') == b'1'):
             logger.info('Found Android Studio Emulator')
             return 'emulator'
-        elif (b'genymotion' in out.lower()
-                or any(char.isdigit() for char in ver)):
+        elif b'genymotion' in lower:
             logger.info('Found Genymotion Android VM')
             return 'genymotion'
-        elif b'corellium' in out:
+        elif b'corellium' in lower:
             logger.info('Found Corellium ARM Android VM')
             return 'corellium'
         else:
-            logger.warning(
-                'Unable to identify Dynamic Analysis environment. '
-                'Official support is available only for Android '
-                'Emulator, Corellium, and Genymotion')
-            return ''
+            logger.info('Found physical Android device')
+            return 'physical'
 
     def get_android_version(self):
         """Get Android version."""
