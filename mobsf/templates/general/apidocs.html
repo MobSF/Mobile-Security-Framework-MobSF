@@ -1496,6 +1496,7 @@
            <hr />
             <h2><a id="get-apps-api"></a><strong>Get Apps API</strong></h2>
             <p>Get Apps available for Dynamic Analysis. You must perform static analysis before attempting dynamic analysis.</p>
+            <p>When more than one Android device is online, pass its ADB identifier as the optional <code>identifier</code> query parameter. The response includes the detected <code>devices</code> list.</p>
             <ul>
               <li>
                 <p><strong>URL:</strong> <code>/api/v1/dynamic/get_apps</code></p>
@@ -1563,7 +1564,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl --url http://localhost:8000/api/v1/dynamic/get_apps -H "Authorization:  {{ api_key}}"
+                    <pre><code>curl --url "http://localhost:8000/api/v1/dynamic/get_apps?identifier=192.168.56.139:5555" -H "Authorization:  {{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>
@@ -1617,6 +1618,11 @@
                   <td>auto, rooted, or gadget; default is auto</td>
                   <td>No</td>
                 </tr>
+                <tr>
+                  <td>identifier</td>
+                  <td>online ADB device identifier; required when multiple devices are connected unless a web session has selected one</td>
+                  <td>No</td>
+                </tr>
               </tbody>
             </table>
             <br />
@@ -1661,7 +1667,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/start_analysis --data "hash=3a552566097a8de588b8184b059b0158&amp;device_mode=auto" -H "Authorization:  {{ api_key}}"
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/start_analysis --data "hash=3a552566097a8de588b8184b059b0158&amp;device_mode=auto&amp;identifier=192.168.56.139:5555" -H "Authorization:  {{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>

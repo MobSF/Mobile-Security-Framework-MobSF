@@ -62,6 +62,39 @@ textarea:focus {
 
 
    <div class="row">
+          {% if devices %}
+          <div class="col-md-12">
+            <div class="card card-default">
+              <div class="card-header">
+                <h3 class="card-title">Android Device</h3>
+              </div>
+              <div class="card-body">
+                <form method="post" action="{% url "dynamic_android" %}" class="form-inline">
+                  {% csrf_token %}
+                  <label for="device_identifier" class="mr-2">Selected device</label>
+                  <select id="device_identifier" name="identifier" class="form-control mr-2">
+                    {% for device in devices %}
+                      {% if device.state == "device" %}
+                      <option value="{{ device.identifier }}" {% if device.identifier == identifier %}selected{% endif %}>
+                        {{ device.details.model|default:device.identifier }} — {{ device.identifier }}
+                      </option>
+                      {% endif %}
+                    {% endfor %}
+                  </select>
+                  <button type="submit" class="btn btn-primary">Use Device</button>
+                </form>
+                <small class="form-text text-muted">
+                  Selection is saved for this user session. Switch targets
+                  between analyses; simultaneous Android analyses still share
+                  proxy and report resources and are not supported.
+                </small>
+                {% if device_form.errors %}
+                <p class="text-danger mt-2">Select an online Android device.</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
           {% if not identifier %}
           <div class="col-md-12">
             <div class="card bg-gradient-danger">
