@@ -163,11 +163,13 @@ def android_device_apps(request):
                 'status': 'failed',
                 'message': 'Selected Android device is unavailable',
             }, status=503)
+        logger.info('Inspecting selected Android device capabilities')
         runtime = env.get_environment()
         root_available = runtime != 'physical'
         if runtime == 'physical':
             profile = env.get_device_profile(probe_root=True)
             root_available = profile.has_root
+        logger.info('Loading applications installed on the selected device')
         device_packages = env.get_device_packages(refresh=refresh == '1')
         pkg_file = Path(settings.DWD_DIR) / 'packages.json'
         with pkg_file.open('w', encoding='utf-8') as target:
@@ -320,6 +322,10 @@ def dynamic_analyzer(request, checksum, api=False):
             selected_mode = 'legacy'
         elif device_mode == 'auto':
             selected_mode = 'rooted' if profile.has_root else 'gadget'
+        logger.info(
+            'Selected Android dynamic analysis mode: %s',
+            selected_mode,
+        )
         if selected_mode == 'rooted' and not profile.has_root:
             return print_n_send_error_response(
                 request,
