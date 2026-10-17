@@ -440,7 +440,7 @@ function actionForm(path, label, values) {
     return wrapper;
 }
 
-function showDeviceApps(packages) {
+function showDeviceApps(packages, rootAvailable) {
     const table = document.getElementById('device_apps');
     table.replaceChildren();
     const entries = Object.entries(packages);
@@ -459,15 +459,24 @@ function showDeviceApps(packages) {
         appCell.textContent = details[0];
         pathCell.textContent = details[1];
         actionCell.className = 'text-center';
-        const dynamicValues = {re_install: '0', install: '0'};
-        if (physicalRuntime) {
-            dynamicValues.device_mode = 'rooted';
+        if (rootAvailable) {
+            const dynamicValues = {re_install: '0', install: '0'};
+            if (physicalRuntime) {
+                dynamicValues.device_mode = 'rooted';
+            }
+            actionCell.appendChild(actionForm(
+                dynamicPathTemplate.replace(checksumPlaceholder, checksum),
+                'Start Dynamic Analysis',
+                dynamicValues,
+            ));
+        } else {
+            const guidance = document.createElement('p');
+            guidance.className = 'text-muted';
+            guidance.textContent = (
+                'Root is unavailable. Pull and scan this app first.'
+            );
+            actionCell.appendChild(guidance);
         }
-        actionCell.appendChild(actionForm(
-            dynamicPathTemplate.replace(checksumPlaceholder, checksum),
-            'Start Dynamic Analysis',
-            dynamicValues,
-        ));
         const staticForm = actionForm(
             staticPathTemplate.replace(checksumPlaceholder, checksum),
             'Pull & Static Analysis',
@@ -502,7 +511,7 @@ async function loadDeviceApps(refresh = false) {
         if (!response.ok || result.status !== 'ok') {
             throw new Error(result.message || 'Unable to load applications');
         }
-        showDeviceApps(result.packages);
+        showDeviceApps(result.packages, result.root_available);
     } catch (error) {
         table.replaceChildren();
         const row = table.insertRow();

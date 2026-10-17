@@ -163,6 +163,11 @@ def android_device_apps(request):
                 'status': 'failed',
                 'message': 'Selected Android device is unavailable',
             }, status=503)
+        runtime = env.get_environment()
+        root_available = runtime != 'physical'
+        if runtime == 'physical':
+            profile = env.get_device_profile(probe_root=True)
+            root_available = profile.has_root
         device_packages = env.get_device_packages(refresh=refresh == '1')
         pkg_file = Path(settings.DWD_DIR) / 'packages.json'
         with pkg_file.open('w', encoding='utf-8') as target:
@@ -170,6 +175,7 @@ def android_device_apps(request):
         return JsonResponse({
             'status': 'ok',
             'packages': device_packages,
+            'root_available': root_available,
         })
     except Exception:
         logger.exception('Loading Android device apps')
@@ -317,8 +323,11 @@ def dynamic_analyzer(request, checksum, api=False):
         if selected_mode == 'rooted' and not profile.has_root:
             return print_n_send_error_response(
                 request,
-                f'Android root is {profile.root_status}. '
-                'Use Frida Gadget mode for this device.',
+                f'Android root is {profile.root_status}. For a stock '
+                'device, select Pull & Static Analysis for the installed '
+                'app, wait for the scan to complete, then start it from '
+                'Apps Available using Frida Gadget. Split APK/APKS apps '
+                'are not currently supported by Gadget mode.',
                 api,
             )
         if selected_mode != 'gadget' and not env.connect_n_mount():
