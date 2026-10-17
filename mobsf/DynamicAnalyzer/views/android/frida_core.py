@@ -16,9 +16,6 @@ from mobsf.DynamicAnalyzer.views.android.frida_scripts import (
     string_catch,
     string_compare,
 )
-from mobsf.MobSF.utils import (
-    get_device,
-)
 from mobsf.DynamicAnalyzer.views.common.frida import (
     get_bridge_loader,
 )
@@ -142,26 +139,28 @@ class Frida:
         else:
             logger.error('[Frida] %s', message)
 
-    def spawn(self):
+    def spawn(self, retry=True):
         """Frida Spawn."""
         global _FPID
         try:
             env = Environment()
             self.clean_up()
-            env.run_frida_server()
-            device = frida.get_device(
-                get_device(),
-                settings.FRIDA_TIMEOUT)
+            if not env.run_frida_server():
+                return False
+            device = env.get_frida_device()
             logger.info('Spawning %s', self.package)
             _FPID = device.spawn([self.package])
             device.resume(_FPID)
             time.sleep(1)
+            return True
         except frida.NotSupportedError:
             logger.exception('Not Supported Error')
-            return
+            return False
         except frida.ServerNotRunningError:
             logger.warning('Frida server is not running')
-            self.spawn()
+            if retry:
+                time.sleep(1)
+                return self.spawn(False)
         except frida.TimedOutError:
             logger.error('Timed out while waiting for device to appear')
         except (frida.ProcessNotFoundError,
@@ -171,15 +170,15 @@ class Frida:
             pass
         except Exception:
             logger.exception('Error Connecting to Frida')
+        return False
 
     def session(self, pid, package):
         """Use existing session to inject frida scripts."""
         global _FPID
         try:
+            env = Environment()
             try:
-                device = frida.get_device(
-                    get_device(),
-                    settings.FRIDA_TIMEOUT)
+                device = env.get_frida_device()
                 if pid and package:
                     _FPID = pid
                     self.package = package
@@ -200,7 +199,9 @@ class Frida:
                 return
             except Exception:
                 logger.exception('Cannot attach to pid, spawning again')
-                self.spawn()
+                if not self.spawn():
+                    return
+                device = env.get_frida_device()
                 session = device.attach(_FPID)
                 time.sleep(2)
             if session and device and _FPID:
@@ -226,9 +227,7 @@ class Frida:
         """Get running process pid."""
         ps_dict = []
         try:
-            device = frida.get_device(
-                get_device(),
-                settings.FRIDA_TIMEOUT)
+            device = Environment().get_frida_device()
             processes = device.enumerate_applications(scope='minimal')
             if device and processes:
                 for process in processes:

@@ -2,6 +2,7 @@
 """Dynamic Analyzer Helpers."""
 import logging
 import os
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -16,6 +17,7 @@ from django.conf import settings
 
 from OpenSSL import crypto
 
+import frida
 from frida import __version__ as frida_version
 
 from mobsf.DynamicAnalyzer.tools.webproxy import (
@@ -53,10 +55,18 @@ class DeviceProfile:
     android_version: float
     sdk: int
     abi: str
+    root_method: str = 'none'
+    root_status: str = 'not_checked'
+    selinux: str = 'unknown'
+    writable_temp: bool = False
 
     @property
     def is_physical(self):
         return self.runtime == 'physical'
+
+    @property
+    def has_root(self):
+        return self.root_method != 'none'
 
 
 class Environment:
@@ -72,6 +82,9 @@ class Environment:
         self.tools_dir = settings.TOOLS_DIR
         self.frida_str = f'MobSF-Frida-{frida_version}'.encode('utf-8')
         self.xposed_str = b'MobSF-Xposed'
+        self.root_method = 'none'
+        self.root_status = 'not_checked'
+        self._profile = None
 
     def wait(self, sec):
         """Wait in Seconds."""
@@ -151,10 +164,23 @@ class Environment:
             return False
         runtime = self.get_environment()
         if runtime == 'physical':
-            logger.error(
-                'Physical Android device preparation requires '
-                'rooted-device or Frida Gadget support.')
-            return False
+            profile = self.get_device_profile(probe_root=True)
+            if not profile.has_root:
+                logger.error(
+                    'Physical Android root is %s. '
+                    'Use Frida Gadget mode for a stock device.',
+                    profile.root_status,
+                )
+                return False
+            if not profile.writable_temp:
+                logger.error(
+                    '/data/local/tmp is not writable on the Android device')
+                return False
+            logger.info(
+                'Using %s root on physical Android device',
+                profile.root_method,
+            )
+            return True
         logger.info('Restarting ADB Daemon as root')
         if not self.run_subprocess_verify_output([get_adb(),
                                                   '-s',
@@ -173,14 +199,24 @@ class Environment:
             return False
         return True
 
-    def get_device_profile(self):
+    def get_device_profile(self, probe_root=False):
         """Collect stable properties used by dynamic analysis."""
         state = self.get_device_state()
         if state != 'device':
             raise RuntimeError(
                 f'Android device {self.identifier} is {state}')
         transport = 'network' if self.is_network_device() else 'usb'
-        return DeviceProfile(
+        root_method = 'none'
+        root_status = 'not_checked'
+        writable_temp = False
+        if probe_root:
+            root_method, root_status = self.probe_root()
+            writable = self.adb_command_result(
+                ['test', '-w', '/data/local/tmp'], True, 5)
+            writable_temp = writable.returncode == 0
+        selinux = self.adb_command(
+            ['getenforce'], True, True) or b'unknown'
+        profile = DeviceProfile(
             identifier=self.identifier,
             state=state,
             transport=transport,
@@ -188,7 +224,13 @@ class Environment:
             android_version=self.get_android_version(),
             sdk=int(self.get_android_sdk()),
             abi=self.get_android_arch(),
+            root_method=root_method,
+            root_status=root_status,
+            selinux=selinux.decode('utf-8', 'ignore').strip().lower(),
+            writable_temp=writable_temp,
         )
+        self._profile = profile
+        return profile
 
     def is_package_installed(self, package, extra):
         """Check if package is installed."""
@@ -250,6 +292,87 @@ class Environment:
                 logger.exception('Error Running ADB Command')
             return None
 
+    def adb_command_result(self, cmd_list, shell=False, timeout=30):
+        """Run an ADB command and retain its status and output."""
+        args = [get_adb(), '-s', self.identifier]
+        if shell:
+            args.append('shell')
+        args.extend(cmd_list)
+        return subprocess.run(
+            args,  # lgtm [py/command-line-injection]
+            capture_output=True,
+            check=False,
+            timeout=timeout,
+        )
+
+    def probe_root(self):
+        """Detect a non-interactive root command without assumptions."""
+        self.root_method = 'none'
+        self.root_status = 'unavailable'
+        try:
+            direct = self.adb_command_result(['id'], True, 5)
+            if direct.returncode == 0 and b'uid=0' in direct.stdout:
+                self.root_method = 'adbd'
+                self.root_status = 'available'
+                return self.root_method, self.root_status
+            has_su = self.adb_command_result(
+                ['command', '-v', 'su'], True, 5)
+            if has_su.returncode != 0 or not has_su.stdout.strip():
+                return self.root_method, self.root_status
+            probes = (
+                ('su-c', ['su', '-c', 'id']),
+                ('su-uid', ['su', '0', 'id']),
+            )
+            for method, command in probes:
+                try:
+                    result = self.adb_command_result(command, True, 5)
+                except subprocess.TimeoutExpired:
+                    self.root_status = 'interactive'
+                    return self.root_method, self.root_status
+                if result.returncode == 0 and b'uid=0' in result.stdout:
+                    self.root_method = method
+                    self.root_status = 'available'
+                    return self.root_method, self.root_status
+            self.root_status = 'denied'
+        except subprocess.TimeoutExpired:
+            self.root_status = 'interactive'
+        except Exception:
+            logger.exception('Failed to probe Android root capabilities')
+            self.root_status = 'error'
+        return self.root_method, self.root_status
+
+    def root_command(self, cmd_list, timeout=30, silent=False):
+        """Run a fixed command with the detected root capability."""
+        if self.root_status == 'not_checked':
+            self.probe_root()
+        if self.root_method == 'none':
+            if not silent:
+                logger.error('Android root is %s', self.root_status)
+            return None
+        try:
+            if self.root_method == 'adbd':
+                command = cmd_list
+            elif self.root_method == 'su-c':
+                root_cmd = shlex.join(str(item) for item in cmd_list)
+                command = ['su', '-c', root_cmd]
+            else:
+                command = ['su', '0', *cmd_list]
+            result = self.adb_command_result(command, True, timeout)
+            if result.returncode == 0:
+                return result.stdout
+            if not silent:
+                logger.error(
+                    'Root command failed: %s',
+                    result.stderr.decode('utf-8', 'ignore').strip(),
+                )
+        except subprocess.TimeoutExpired:
+            if not silent:
+                logger.error('Root command timed out')
+        except Exception:
+            if not silent:
+                logger.exception('Root command failed')
+        return None
+
     def dz_cleanup(self, bin_hash):
         """Clean up before Dynamic Analysis."""
         # Delete ScreenStream Cache
@@ -266,7 +389,12 @@ class Environment:
 
     def configure_proxy(self, project, request):
         """HTTPS Proxy."""
-        self.install_mobsf_ca('install')
+        if self.get_environment() == 'physical':
+            logger.warning(
+                'MobSF CA was not installed automatically on the '
+                'physical Android device')
+        else:
+            self.install_mobsf_ca('install')
         proxy_port = settings.PROXY_PORT
         logger.info('Starting HTTPS Proxy on %s', proxy_port)
         stop_httptools(get_http_tools_url(request))
@@ -583,6 +711,38 @@ class Environment:
             logger.exception('Failed to download APK')
         return False
 
+    def archive_app_data(self, package, output_file):
+        """Archive application data when the selected device permits it."""
+        archive = f'/data/local/tmp/mobsf-{package}.tar'
+        runtime = self.get_environment()
+        try:
+            if runtime == 'physical':
+                if self.root_command([
+                        'tar', '-cf', archive,
+                        '-C', '/data/data', package,
+                ], timeout=120) is None:
+                    return False
+                if self.root_command(
+                        ['chmod', '644', archive], silent=True) is None:
+                    return False
+            else:
+                result = self.adb_command([
+                    'tar', '-cf', archive,
+                    '-C', '/data/data', package,
+                ], True)
+                if result is None:
+                    return False
+            return self.adb_command(
+                ['pull', archive, output_file],
+                silent=True,
+            ) is not None
+        finally:
+            if runtime == 'physical':
+                self.root_command(['rm', '-f', archive], silent=True)
+            else:
+                self.adb_command(
+                    ['rm', '-f', archive], True, True)
+
     def system_check(self, runtime):
         """Check if /system is writable."""
         try:
@@ -649,6 +809,10 @@ class Environment:
         else:
             agent_file = '.mobsf-f'
             agent_str = self.frida_str
+        if self.get_environment() == 'physical':
+            marker = f'/data/local/tmp/mobsf/{agent_file}'
+            out = self.root_command(['cat', marker], silent=True)
+            return bool(out and agent_str in out)
         try:
             out = subprocess.check_output(
                 [get_adb(),
@@ -667,11 +831,27 @@ class Environment:
         version = self.get_android_version()
         logger.info('Android Version identified as %s', version)
         try:
+            if self.get_environment() == 'physical':
+                if self.root_status == 'not_checked':
+                    self.probe_root()
+                if self.root_method == 'none':
+                    logger.error(
+                        'Physical Android root is %s',
+                        self.root_status,
+                    )
+                    return False
+                if not self.frida_setup(rooted=True):
+                    return False
+                if not self.write_physical_agent_marker():
+                    return False
+                logger.info('Rooted Android device preparation completed')
+                return version
             if version < 5:
                 self.xposed_setup(version)
                 self.mobsf_agents_setup('xposed')
             else:
-                self.frida_setup()
+                if not self.frida_setup():
+                    return False
                 self.mobsf_agents_setup('frida')
             logger.info('MobSFying Completed!')
             return version
@@ -694,6 +874,24 @@ class Environment:
         f.close()
         self.adb_command(['push', f.name, '/system/' + agent_file])
         os.unlink(f.name)
+
+    def write_physical_agent_marker(self):
+        """Write a version marker without modifying the system partition."""
+        marker = '/data/local/tmp/mobsf/.mobsf-f'
+        tmp_marker = '/data/local/tmp/mobsf-frida-marker'
+        marker_file = tempfile.NamedTemporaryFile(delete=False)
+        try:
+            marker_file.write(self.frida_str)
+            marker_file.close()
+            if not self.adb_command(
+                    ['push', marker_file.name, tmp_marker], silent=True):
+                return False
+            return self.root_command([
+                'mv', tmp_marker, marker,
+            ], silent=True) is not None
+        finally:
+            marker_file.close()
+            os.unlink(marker_file.name)
 
     def xposed_setup(self, android_version):
         """Setup Xposed."""
@@ -759,7 +957,7 @@ class Environment:
         self.adb_command(['am', 'start', '-n',
                           xposed_installer], True)
 
-    def frida_setup(self):
+    def frida_setup(self, rooted=False):
         """Setup Frida."""
         frida_arch = None
         arch = self.get_android_arch()
@@ -773,10 +971,8 @@ class Environment:
         elif arch == 'x86_64':
             frida_arch = 'x86_64'
         else:
-            logger.error('Make sure a Genymotion Android VM'
-                         ' or Android Studio Emulator'
-                         ' instance is running')
-            return
+            logger.error('Unsupported Android architecture: %s', arch)
+            return False
         frida_bin = f'frida-server-{frida_version}-android-{frida_arch}'
         stat = FridaServerUpdater(
             'android', frida_version).update_frida_server(frida_arch)
@@ -785,18 +981,71 @@ class Environment:
                    f' {frida_bin} in {settings.DWD_DIR} for '
                    'Dynamic Analysis to work')
             logger.error(msg)
-            return
+            return False
         frida_path = os.path.join(settings.DWD_DIR, frida_bin)
         logger.info('Copying frida server v%s for %s', frida_version, frida_arch)
-        self.adb_command(['push', frida_path, '/system/fd_server'])
-        self.adb_command(['chmod', '755', '/system/fd_server'], True)
+        if rooted:
+            temp_path = '/data/local/tmp/mobsf-fd-server'
+            target_dir = '/data/local/tmp/mobsf'
+            target_path = f'{target_dir}/fd_server'
+            if self.root_command(
+                    ['mkdir', '-p', target_dir], silent=True) is None:
+                return False
+            if not self.adb_command(
+                    ['push', frida_path, temp_path], silent=True):
+                return False
+            if self.root_command([
+                    'mv', temp_path, target_path], silent=True) is None:
+                return False
+            if self.root_command([
+                    'chmod', '700', target_path], silent=True) is None:
+                return False
+        else:
+            if not self.adb_command(
+                    ['push', frida_path, '/system/fd_server']):
+                return False
+            if self.adb_command(
+                    ['chmod', '755', '/system/fd_server'], True) is None:
+                return False
+        return True
 
     def run_frida_server(self):
         """Start Frida Server."""
+        runtime = self.get_environment()
+        if runtime == 'physical':
+            if self.root_status == 'not_checked':
+                self.probe_root()
+            if self.root_method == 'none':
+                logger.error('Android root is %s', self.root_status)
+                return False
+            server = '/data/local/tmp/mobsf/fd_server'
+            running = self.root_command(
+                ['pidof', 'fd_server'], timeout=5, silent=True)
+            if running:
+                logger.info(
+                    'Frida Server v%s is already running',
+                    frida_version,
+                )
+                return True
+            started = self.root_command(
+                [server, '-D'], timeout=10, silent=True)
+            if started is None:
+                logger.error(
+                    'Unable to start Frida server; execution may be '
+                    'blocked by device policy or SELinux')
+                return False
+            self.wait(2)
+            running = self.root_command(
+                ['pidof', 'fd_server'], timeout=5, silent=True)
+            if not running:
+                logger.error('Frida server exited during startup')
+                return False
+            logger.info('Started Frida Server v%s', frida_version)
+            return True
         check = self.adb_command(['ps'], True)
         if b'fd_server' in check:
             logger.info('Frida Server v%s is already running', frida_version)
-            return
+            return True
 
         def start_frida():
             fnull = open(os.devnull, 'w')
@@ -812,3 +1061,30 @@ class Environment:
         logger.info('Starting Frida Server v%s', frida_version)
         logger.info('Waiting for 2 seconds...')
         time.sleep(2)
+        return True
+
+    def get_frida_device(self):
+        """Return a Frida device for the selected Android transport."""
+        if self.get_environment() != 'physical':
+            return frida.get_device(
+                self.identifier,
+                settings.FRIDA_TIMEOUT,
+            )
+        tcp = 'tcp:27042'
+        result = self.adb_command_result(
+            ['forward', tcp, tcp],
+            timeout=10,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(
+                'Unable to forward the physical-device Frida port')
+        return frida.get_device_manager().add_remote_device(
+            '127.0.0.1:27042')
+
+    def remove_frida_forward(self):
+        """Remove the Frida port forward created by MobSF."""
+        if self.get_environment() == 'physical':
+            self.adb_command(
+                ['forward', '--remove', 'tcp:27042'],
+                silent=True,
+            )
