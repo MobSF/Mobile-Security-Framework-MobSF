@@ -399,7 +399,7 @@ document.querySelectorAll('.dynamic-start-form').forEach((form) => {
                     confirmButtonText: 'Uninstall and re-sign',
                     cancelButtonText: 'Cancel',
                 });
-                if (!decision.isConfirmed) {
+                if (!(decision.isConfirmed || decision.value)) {
                     return;
                 }
                 addHiddenInput(form, 'uninstall_existing', '1');
