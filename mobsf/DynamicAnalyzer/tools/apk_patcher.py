@@ -1,103 +1,385 @@
-"""Inject Frida Gadget to an APK."""
-import subprocess
-from pathlib import Path
-from lzma import LZMAFile
-from shutil import copyfileobj
-from tempfile import gettempdir
+"""Build a signed APK containing Frida Gadget."""
+import json
 import logging
+import os
+import re
+import secrets
+import shutil
+import subprocess
+import threading
+import zipfile
+from pathlib import Path
+from tempfile import gettempdir
+from xml.etree import ElementTree as XmlElementTree
 
-import requests
+from defusedxml import ElementTree
 
 from django.conf import settings
 
+from frida import __version__ as frida_version
+
+from mobsf.DynamicAnalyzer.views.common.frida.server_update import (
+    FridaServerUpdater,
+)
+from mobsf.MobSF.security import (
+    is_pipe_or_link,
+    is_safe_path,
+)
 from mobsf.MobSF.utils import (
     find_java_binary,
     is_file_exists,
-    is_internet_available,
-    upstream_proxy,
+    sha256,
 )
 
-
 logger = logging.getLogger(__name__)
+ANDROID_NS = 'http://schemas.android.com/apk/res/android'
+ANDROID_ATTR = f'{{{ANDROID_NS}}}'
+SUPPORTED_ABIS = {
+    'armeabi': ('arm', 'armeabi'),
+    'armeabi-v7a': ('arm', 'armeabi-v7a'),
+    'arm64-v8a': ('arm64', 'arm64-v8a'),
+    'x86': ('x86', 'x86'),
+    'x86_64': ('x86_64', 'x86_64'),
+}
 
 
 class GadgetPatcher:
+    """Create an independently signed, single-ABI Gadget APK."""
 
-    def __init__(self, app_dir, tools_dir, apk_file) -> None:
-        self.app_dir = app_dir
-        self.tools_dir = tools_dir
-        self.apk_file = apk_file
-        self.output_dir = Path(self.app_dir) / 'apktool_repack'
-        if (len(settings.APKTOOL_BINARY) > 0
+    _keystore_lock = threading.Lock()
+
+    def __init__(self, app_dir, apk_file, android_abi) -> None:
+        self.app_dir = Path(app_dir).resolve()
+        self.apk_file = Path(apk_file).resolve()
+        self.android_abi = android_abi
+        self.work_dir = self.app_dir / 'apktool_gadget'
+        self.unsigned_apk = self.app_dir / 'mobsf-gadget-unsigned.apk'
+        self.output_apk = self.app_dir / 'mobsf-gadget.apk'
+        static_tools = Path(settings.BASE_DIR) / 'StaticAnalyzer' / 'tools'
+        if (settings.APKTOOL_BINARY
                 and is_file_exists(settings.APKTOOL_BINARY)):
-            self.apktool_path = settings.APKTOOL_BINARY
+            self.apktool_path = Path(settings.APKTOOL_BINARY)
         else:
-            self.apktool_path = Path(self.tools_dir) / 'apktool_2.7.0.jar'
+            self.apktool_path = static_tools / 'apktool_3.0.3.jar'
+        self.apksigner_path = static_tools / 'apksigner.jar'
 
-    def decompile_apk(self):
-        """Decompile APK."""
-        args = [find_java_binary(),
-                '-Djdk.util.zip.disableZip64ExtraFieldValidation=true',
-                '-jar',
-                self.apktool_path,
-                '--frame-path',
-                gettempdir(),
-                '-f', '-r', '-s', 'd',
-                self.apk_file,
-                '-o',
-                self.output_dir]
-        manifest = self.output_dir / 'AndroidManifest.xml'
-        if not is_file_exists(manifest):
-            # Skip if already decompiled
-            subprocess.check_output(args)
+    def _validate(self):
+        """Validate fixed inputs and required existing tools."""
+        if self.apk_file.suffix.lower() != '.apk':
+            raise ValueError('Frida Gadget requires a single APK')
+        if not is_safe_path(
+                self.app_dir, self.apk_file, self.apk_file.name):
+            raise ValueError('APK is outside its analysis directory')
+        if not self.apk_file.is_file() or is_pipe_or_link(self.apk_file):
+            raise ValueError('APK is not a regular file')
+        if self.android_abi not in SUPPORTED_ABIS:
+            raise ValueError(
+                f'Unsupported Android architecture: {self.android_abi}')
+        for tool in (self.apktool_path, self.apksigner_path):
+            if not tool.is_file() or is_pipe_or_link(tool):
+                raise RuntimeError(
+                    f'Required Android tool is missing: {tool.name}')
+        if self.work_dir.is_symlink():
+            raise ValueError('Unsafe APK patching workspace')
 
-    def recompile_apk(self):
-        """Recompile APK."""
-        args = [find_java_binary(),
-                '-Djdk.util.zip.disableZip64ExtraFieldValidation=true',
-                '-jar',
-                self.apktool_path,
-                '-f', 'b',
-                '-o',
-                '.patched.apk'.join(
-                    self.apk_file.rsplit('.apk', 1)),
-                self.output_dir]
-        subprocess.check_output(args)
-
-    def download_frida_gadget(self, frida_arch, aarch, version):
-        """Download Frida Gadget."""
-        gadget_bin = self.output_dir / 'lib' / {aarch} / 'libfrida-gadget.so'
-        fgadget = f'frida-gadget-{version}-android-{frida_arch}.so'
-        if gadget_bin.is_file():
-            return True
-        if not is_internet_available():
-            return None
+    def _run(self, args, action, env=None):
+        """Run a bounded build command without invoking a shell."""
         try:
-            proxies, verify = upstream_proxy('https')
-        except Exception:
-            logger.exception('[ERROR] Setting upstream proxy')
-            return None
+            result = subprocess.run(
+                args,
+                capture_output=True,
+                check=False,
+                env=env,
+                timeout=settings.BINARY_ANALYSIS_TIMEOUT,
+            )
+        except subprocess.TimeoutExpired as exp:
+            raise RuntimeError(f'{action} timed out') from exp
+        if result.returncode != 0:
+            logger.error(
+                '%s failed with exit code %d',
+                action,
+                result.returncode,
+            )
+            raise RuntimeError(f'{action} failed')
+        return result.stdout
+
+    def _decompile(self):
+        """Decode resources and smali with the existing apktool."""
+        if self.work_dir.exists():
+            shutil.rmtree(self.work_dir)
+        args = [
+            find_java_binary(),
+            '-Djdk.util.zip.disableZip64ExtraFieldValidation=true',
+            '-jar',
+            self.apktool_path.as_posix(),
+            'decode',
+            '--force',
+            '--frame-path',
+            gettempdir(),
+            self.apk_file.as_posix(),
+            '--output',
+            self.work_dir.as_posix(),
+        ]
+        self._run(args, 'APK decoding')
+
+    @staticmethod
+    def _qualified_class_name(package, class_name):
+        """Resolve an Android manifest class name."""
+        if not class_name:
+            return 'android.app.Application'
+        if class_name.startswith('.'):
+            return f'{package}{class_name}'
+        if '.' not in class_name:
+            return f'{package}.{class_name}'
+        return class_name
+
+    def _inject_loader(self):
+        """Install an Application subclass that loads Frida Gadget."""
+        manifest = self.work_dir / 'AndroidManifest.xml'
+        if not manifest.is_file() or is_pipe_or_link(manifest):
+            raise RuntimeError('Decoded Android manifest is missing')
+        tree = ElementTree.parse(manifest)
+        root = tree.getroot()
+        package = root.get('package', '')
+        application = root.find('application')
+        if not package or application is None:
+            raise RuntimeError('Android manifest has no application')
+        if root.get(f'{ANDROID_ATTR}sharedUserId'):
+            raise ValueError('Shared-user APKs cannot be safely re-signed')
+        original = self._qualified_class_name(
+            package,
+            application.get(f'{ANDROID_ATTR}name'),
+        )
+        class_pattern = r'(?:[A-Za-z_$][\w$]*\.)*[A-Za-z_$][\w$]*'
+        if not re.fullmatch(class_pattern, original):
+            raise ValueError('Unsupported Android Application class name')
+        digest = sha256(self.apk_file)[:12]
+        loader = f'com.mobsf.g{digest}.MobSFApplication'
+        loader_type = f'L{loader.replace(".", "/")};'
+        parent_type = f'L{original.replace(".", "/")};'
+        application.set(f'{ANDROID_ATTR}name', loader)
+        application.set(f'{ANDROID_ATTR}extractNativeLibs', 'true')
+        smali = self.work_dir / 'smali' / Path(*loader.split('.'))
+        smali = smali.with_suffix('.smali')
+        smali.parent.mkdir(parents=True, exist_ok=True)
+        smali.write_text(
+            '\n'.join((
+                f'.class public {loader_type}',
+                f'.super {parent_type}',
+                '',
+                '.method static constructor <clinit>()V',
+                '    .locals 1',
+                '    const-string v0, "frida-gadget"',
+                '    invoke-static {v0}, '
+                'Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V',
+                '    return-void',
+                '.end method',
+                '',
+                '.method public constructor <init>()V',
+                '    .locals 0',
+                f'    invoke-direct {{p0}}, {parent_type}-><init>()V',
+                '    return-void',
+                '.end method',
+                '',
+            )),
+            encoding='utf-8',
+        )
+        XmlElementTree.register_namespace('android', ANDROID_NS)
+        tree.write(
+            manifest,
+            encoding='utf-8',
+            xml_declaration=True,
+        )
+        return package
+
+    def _install_gadget(self):
+        """Copy the matched Gadget and its fixed local-only config."""
+        frida_arch, android_abi = SUPPORTED_ABIS[self.android_abi]
+        updater = FridaServerUpdater('android', frida_version)
+        if not updater.update_frida_gadget(frida_arch):
+            raise RuntimeError('Unable to obtain a matching Frida Gadget')
+        cached = (
+            Path(settings.DWD_DIR)
+            / f'frida-gadget-{frida_version}-android-{frida_arch}.so'
+        )
+        with cached.open('rb') as binary:
+            if binary.read(4) != b'\x7fELF':
+                raise RuntimeError('Cached Frida Gadget is invalid')
+        library_dir = self.work_dir / 'lib' / android_abi
+        library_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(cached, library_dir / 'libfrida-gadget.so')
+        config = {
+            'interaction': {
+                'type': 'listen',
+                'address': '127.0.0.1',
+                'port': 27042,
+                'on_load': 'resume',
+            },
+        }
+        config_file = library_dir / 'libfrida-gadget.config.so'
+        config_file.write_text(
+            json.dumps(config, separators=(',', ':')),
+            encoding='utf-8',
+        )
+
+    def _build(self):
+        """Rebuild the decoded APK."""
+        args = [
+            find_java_binary(),
+            '-Djdk.util.zip.disableZip64ExtraFieldValidation=true',
+            '-jar',
+            self.apktool_path.as_posix(),
+            'build',
+            '--force',
+            self.work_dir.as_posix(),
+            '--output',
+            self.unsigned_apk.as_posix(),
+        ]
+        self._run(args, 'APK rebuilding')
+
+    @staticmethod
+    def _keytool_path():
+        """Return keytool from the configured Java runtime."""
+        java = Path(find_java_binary())
+        executable = 'keytool.exe' if os.name == 'nt' else 'keytool'
+        sibling = java.with_name(executable)
+        if sibling.is_file():
+            return sibling.as_posix()
+        keytool = shutil.which(executable)
+        if keytool:
+            return keytool
+        raise RuntimeError('keytool is required to create the MobSF lab key')
+
+    def _signing_credentials(self):
+        """Create or load the local lab signing key."""
+        download_dir = Path(settings.DWD_DIR)
+        download_dir.mkdir(parents=True, exist_ok=True)
+        credentials_file = download_dir / 'mobsf-dynamic-signing.json'
+        keystore = download_dir / 'mobsf-dynamic-signing.p12'
+        with self._keystore_lock:
+            if keystore.exists() and not credentials_file.exists():
+                raise RuntimeError(
+                    'MobSF signing credentials are missing')
+            if credentials_file.exists():
+                if is_pipe_or_link(credentials_file):
+                    raise RuntimeError('Unsafe MobSF signing credentials')
+                credentials = json.loads(
+                    credentials_file.read_text(encoding='utf-8'))
+                password = credentials.get('password')
+                if not isinstance(password, str) or len(password) < 32:
+                    raise RuntimeError('Invalid MobSF signing credentials')
+                os.chmod(credentials_file, 0o600)
+            else:
+                password = secrets.token_urlsafe(36)
+                descriptor = os.open(
+                    credentials_file,
+                    os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+                    0o600,
+                )
+                with os.fdopen(descriptor, 'w', encoding='utf-8') as target:
+                    json.dump({'password': password}, target)
+            if keystore.exists():
+                if is_pipe_or_link(keystore):
+                    raise RuntimeError('Unsafe MobSF signing keystore')
+                os.chmod(keystore, 0o600)
+                return keystore, password
+            env = os.environ.copy()
+            env['MOBSF_KEYSTORE_PASSWORD'] = password
+            args = [
+                self._keytool_path(),
+                '-genkeypair',
+                '-keystore',
+                keystore.as_posix(),
+                '-storetype',
+                'PKCS12',
+                '-storepass:env',
+                'MOBSF_KEYSTORE_PASSWORD',
+                '-keypass:env',
+                'MOBSF_KEYSTORE_PASSWORD',
+                '-alias',
+                'mobsf-dynamic',
+                '-keyalg',
+                'RSA',
+                '-keysize',
+                '3072',
+                '-validity',
+                '10000',
+                '-dname',
+                'CN=MobSF Dynamic Analysis, O=MobSF',
+                '-noprompt',
+            ]
+            try:
+                self._run(args, 'Lab keystore generation', env)
+            except Exception:
+                credentials_file.unlink(missing_ok=True)
+                keystore.unlink(missing_ok=True)
+                raise
+            os.chmod(keystore, 0o600)
+            return keystore, password
+
+    def _sign(self):
+        """Sign and verify the rebuilt APK with the local lab key."""
+        keystore, password = self._signing_credentials()
+        env = os.environ.copy()
+        env['MOBSF_KEYSTORE_PASSWORD'] = password
+        sign = [
+            find_java_binary(),
+            '-jar',
+            self.apksigner_path.as_posix(),
+            'sign',
+            '--ks',
+            keystore.as_posix(),
+            '--ks-key-alias',
+            'mobsf-dynamic',
+            '--ks-pass',
+            'env:MOBSF_KEYSTORE_PASSWORD',
+            '--key-pass',
+            'env:MOBSF_KEYSTORE_PASSWORD',
+            '--out',
+            self.output_apk.as_posix(),
+            self.unsigned_apk.as_posix(),
+        ]
+        self._run(sign, 'APK signing', env)
+        verify = [
+            find_java_binary(),
+            '-jar',
+            self.apksigner_path.as_posix(),
+            'verify',
+            '--verbose',
+            self.output_apk.as_posix(),
+        ]
+        self._run(verify, 'APK signature verification')
+
+    def _verify_artifact(self):
+        """Verify the expected Gadget files are present."""
+        _, android_abi = SUPPORTED_ABIS[self.android_abi]
+        expected = {
+            'AndroidManifest.xml',
+            f'lib/{android_abi}/libfrida-gadget.so',
+            f'lib/{android_abi}/libfrida-gadget.config.so',
+        }
+        with zipfile.ZipFile(self.output_apk) as apk:
+            if not expected.issubset(apk.namelist()):
+                raise RuntimeError('Signed APK is missing Frida Gadget files')
+
+    def patch(self):
+        """Build, sign, and return a Frida Gadget APK."""
+        self._validate()
+        self.output_apk.unlink(missing_ok=True)
+        self.unsigned_apk.unlink(missing_ok=True)
         try:
-            response = requests.get(f'{settings.FRIDA_SERVER}{version}',
-                                    timeout=5,
-                                    proxies=proxies,
-                                    verify=verify)
-            for item in response.json()['assets']:
-                if item['name'] == f'{fgadget}.xz':
-                    url = item['browser_download_url']
-                    break
-            if not url:
-                return None
-            logger.info('Downloading frida-gadget %s', fgadget)
-            with requests.get(url,
-                              timeout=5,
-                              stream=True,
-                              proxies=proxies,
-                              verify=verify) as r:
-                with LZMAFile(r.raw) as f:
-                    with open(gadget_bin, 'wb') as flip:
-                        copyfileobj(f, flip)
-                return True
+            self._decompile()
+            package = self._inject_loader()
+            self._install_gadget()
+            self._build()
+            self._sign()
+            self._verify_artifact()
+            logger.info('Built Frida Gadget APK for %s', package)
+            return self.output_apk
         except Exception:
-            logger.exception('[ERROR] Fetching Frida Gadget Release')
-        return None
+            self.output_apk.unlink(missing_ok=True)
+            raise
+        finally:
+            self.unsigned_apk.unlink(missing_ok=True)
+            if self.work_dir.exists() and not self.work_dir.is_symlink():
+                shutil.rmtree(self.work_dir)
