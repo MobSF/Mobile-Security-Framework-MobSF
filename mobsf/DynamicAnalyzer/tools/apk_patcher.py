@@ -18,6 +18,7 @@ from django.conf import settings
 
 from frida import __version__ as frida_version
 
+from mobsf.DynamicAnalyzer.tools.webproxy import get_ca_file
 from mobsf.DynamicAnalyzer.views.common.frida.server_update import (
     FridaServerUpdater,
 )
@@ -186,38 +187,7 @@ class GadgetPatcher:
                 encoding='utf-8',
             )
         application.set(f'{ANDROID_ATTR}extractNativeLibs', 'true')
-        self.user_ca_trusted = False
-        network_config = application.get(
-            f'{ANDROID_ATTR}networkSecurityConfig')
-        if not network_config:
-            config_name = f'mobsf_network_security_{digest}'
-            network_config = f'@xml/{config_name}'
-            application.set(
-                f'{ANDROID_ATTR}networkSecurityConfig',
-                network_config,
-            )
-            config_dir = self.work_dir / 'res' / 'xml'
-            config_dir.mkdir(parents=True, exist_ok=True)
-            network_security = (
-                '<?xml version="1.0" encoding="utf-8"?>\n'
-                '<network-security-config>\n'
-                '    <base-config>\n'
-                '        <trust-anchors>\n'
-                '            <certificates src="system" />\n'
-                '            <certificates src="user" />\n'
-                '        </trust-anchors>\n'
-                '    </base-config>\n'
-                '</network-security-config>\n'
-            )
-            (config_dir / f'{config_name}.xml').write_text(
-                network_security,
-                encoding='utf-8',
-            )
-            self.user_ca_trusted = True
-        else:
-            logger.warning(
-                'Preserving the application network security config; '
-                'user CA trust depends on the application policy')
+        self._configure_network_security(application, digest)
         XmlElementTree.register_namespace('android', ANDROID_NS)
         tree.write(
             manifest,
@@ -225,6 +195,153 @@ class GadgetPatcher:
             xml_declaration=True,
         )
         return package
+
+    @staticmethod
+    def _local_xml_tag(element):
+        """Return an XML tag without an optional namespace."""
+        return element.tag.rsplit('}', 1)[-1]
+
+    def _configure_network_security(self, application, digest):
+        """Embed the MobSF CA and remove XML network-security pins."""
+        ca_file = Path(get_ca_file()).resolve()
+        if not ca_file.is_file() or is_pipe_or_link(ca_file):
+            raise RuntimeError('MobSF CA is unavailable')
+        ca_digest = sha256(ca_file)[:12]
+        ca_name = f'mobsf_ca_{ca_digest}'
+        ca_reference = f'@raw/{ca_name}'
+        raw_dir = self.work_dir / 'res' / 'raw'
+        raw_dir.mkdir(parents=True, exist_ok=True)
+        ca_target = raw_dir / f'{ca_name}.pem'
+        if ca_target.is_symlink():
+            raise ValueError('Unsafe MobSF CA resource path')
+        shutil.copyfile(ca_file, ca_target)
+        self.embedded_ca_resource = f'res/raw/{ca_name}.pem'
+
+        network_config = application.get(
+            f'{ANDROID_ATTR}networkSecurityConfig')
+        if network_config:
+            reference = re.fullmatch(
+                r'@(?:[A-Za-z][\w.]*:)?xml/([a-zA-Z0-9_]+)',
+                network_config,
+            )
+            if not reference:
+                raise ValueError(
+                    'Unsupported Android network security config reference')
+            config_name = reference.group(1)
+            config_paths = tuple(
+                path for path in (self.work_dir / 'res').glob(
+                    f'xml*/{config_name}.xml')
+                if path.is_file() and not path.is_symlink()
+            )
+            if not config_paths:
+                raise RuntimeError(
+                    'Android network security config resource is missing')
+        else:
+            config_name = f'mobsf_network_security_{digest}'
+            application.set(
+                f'{ANDROID_ATTR}networkSecurityConfig',
+                f'@xml/{config_name}',
+            )
+            config_dir = self.work_dir / 'res' / 'xml'
+            config_dir.mkdir(parents=True, exist_ok=True)
+            config_path = config_dir / f'{config_name}.xml'
+            root = XmlElementTree.Element('network-security-config')
+            XmlElementTree.ElementTree(root).write(
+                config_path,
+                encoding='utf-8',
+                xml_declaration=True,
+            )
+            config_paths = (config_path,)
+        self.network_security_resources = tuple(
+            path.relative_to(self.work_dir).as_posix()
+            for path in config_paths
+        )
+
+        removed_pins = 0
+        trust_updates = 0
+        for config_path in config_paths:
+            pins, updates = self._patch_network_security_config(
+                config_path,
+                ca_reference,
+            )
+            removed_pins += pins
+            trust_updates += updates
+        self.user_ca_trusted = True
+        logger.info(
+            'Embedded the MobSF CA in %d trust configuration(s) '
+            'and removed %d XML pin set(s)',
+            trust_updates,
+            removed_pins,
+        )
+
+    def _patch_network_security_config(self, config_path, ca_reference):
+        """Merge the MobSF CA into one network-security resource."""
+        tree = ElementTree.parse(config_path)
+        root = tree.getroot()
+        if self._local_xml_tag(root) != 'network-security-config':
+            raise ValueError('Invalid Android network security config')
+
+        removed_pins = 0
+        for parent in root.iter():
+            for child in tuple(parent):
+                if self._local_xml_tag(child) == 'pin-set':
+                    parent.remove(child)
+                    removed_pins += 1
+
+        base_config = next(
+            (child for child in root
+             if self._local_xml_tag(child) == 'base-config'),
+            None,
+        )
+        if base_config is None:
+            base_config = XmlElementTree.SubElement(root, 'base-config')
+
+        containers = [
+            element for element in root.iter()
+            if self._local_xml_tag(element) in (
+                'base-config',
+                'domain-config',
+                'debug-overrides',
+            )
+        ]
+        trust_updates = 0
+        for container in containers:
+            anchors = next(
+                (child for child in container
+                 if self._local_xml_tag(child) == 'trust-anchors'),
+                None,
+            )
+            if anchors is None:
+                if container is not base_config:
+                    continue
+                anchors = XmlElementTree.SubElement(
+                    container, 'trust-anchors')
+                XmlElementTree.SubElement(
+                    anchors,
+                    'certificates',
+                    {'src': 'system'},
+                )
+            sources = {
+                child.get('src')
+                for child in anchors
+                if self._local_xml_tag(child) == 'certificates'
+            }
+            if ca_reference not in sources:
+                XmlElementTree.SubElement(
+                    anchors,
+                    'certificates',
+                    {
+                        'src': ca_reference,
+                        'overridePins': 'true',
+                    },
+                )
+                trust_updates += 1
+        tree.write(
+            config_path,
+            encoding='utf-8',
+            xml_declaration=True,
+        )
+        return removed_pins, trust_updates
 
     def _inject_existing_application(self, class_name):
         """Inject a load call into an existing Application smali class."""
@@ -451,6 +568,8 @@ class GadgetPatcher:
             'AndroidManifest.xml',
             f'lib/{android_abi}/libfrida-gadget.so',
             f'lib/{android_abi}/libfrida-gadget.config.so',
+            self.embedded_ca_resource,
+            *self.network_security_resources,
         }
         with zipfile.ZipFile(self.output_apk) as apk:
             if not expected.issubset(apk.namelist()):

@@ -103,6 +103,9 @@
      This session uses a MobSF lab-signed Frida Gadget APK. The original APK
      remains unchanged. Signature checks, Play-managed delivery, and apps that
      require their original signing identity may not work.
+     The patched app trusts the embedded MobSF CA, removes XML
+     network-security pin sets, and uses Frida hooks for supported runtime
+     pinning implementations.
      {% if not user_ca_trusted %}
      The app already defines a network security policy, so user-installed CA
      trust depends on that policy.
