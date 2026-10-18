@@ -64,6 +64,23 @@ class GadgetPatcher:
             self.apktool_path = static_tools / 'apktool_3.0.3.jar'
         self.apksigner_path = static_tools / 'apksigner.jar'
 
+    @staticmethod
+    def validate_archive_size(apk_file):
+        """Apply MobSF expansion limits before apktool decoding."""
+        total = 0
+        with zipfile.ZipFile(apk_file) as apk:
+            for member in apk.infolist():
+                if member.is_dir():
+                    continue
+                if (member.file_size
+                        > settings.ZIP_MAX_UNCOMPRESSED_FILE_SIZE):
+                    raise ValueError(
+                        'APK entry exceeds the uncompressed size limit')
+                total += member.file_size
+                if total > settings.ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE:
+                    raise ValueError(
+                        'APK exceeds the total uncompressed size limit')
+
     def _validate(self):
         """Validate fixed inputs and required existing tools."""
         if self.apk_file.suffix.lower() != '.apk':
@@ -80,6 +97,7 @@ class GadgetPatcher:
         if self.android_abi not in SUPPORTED_ABIS:
             raise ValueError(
                 f'Unsupported Android architecture: {self.android_abi}')
+        self.validate_archive_size(self.apk_file)
         with zipfile.ZipFile(self.apk_file) as apk:
             self.app_abis = {
                 parts[1]
@@ -163,6 +181,7 @@ class GadgetPatcher:
             raise RuntimeError('Android manifest has no application')
         if root.get(f'{ANDROID_ATTR}sharedUserId'):
             raise ValueError('Shared-user APKs cannot be safely re-signed')
+        application.set(f'{ANDROID_ATTR}hasCode', 'true')
         internet_permission = None
         for permission in root.findall('uses-permission'):
             if (permission.get(f'{ANDROID_ATTR}name')
