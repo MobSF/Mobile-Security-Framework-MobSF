@@ -48,6 +48,7 @@ _MOBSF_FRIDA_FORWARDS = {}
 _DEVICE_PACKAGE_CACHE = {}
 _DEVICE_PACKAGE_CACHE_LOCK = threading.Lock()
 _DEVICE_PACKAGE_CACHE_TTL = 300
+_DEVICE_NOT_PROVIDED = object()
 
 
 @dataclass(frozen=True)
@@ -77,11 +78,13 @@ class DeviceProfile:
 
 class Environment:
 
-    def __init__(self, identifier=None):
-        if identifier:
+    def __init__(self, identifier=_DEVICE_NOT_PROVIDED):
+        if identifier is _DEVICE_NOT_PROVIDED:
+            self.identifier = get_device()
+        elif isinstance(identifier, str) and identifier.strip():
             self.identifier = identifier.strip()
         else:
-            self.identifier = get_device()
+            raise ValueError('No Android device selected')
         if (self.identifier
                 and not valid_android_device_identifier(self.identifier)):
             raise ValueError('Invalid Android device identifier')
