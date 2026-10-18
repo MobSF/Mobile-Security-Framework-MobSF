@@ -114,13 +114,7 @@ textarea:focus {
               <div class="card-body">
                   <div class="row">
                      <div class="col-md-9">
-                        <h4>MobSF Dynamic Analyzer Supports</h4>
-                        <h5>
-                          <strong>• Genymotion Android VM</strong> version 4.1 - 11.0 (arm64, x86, and x86_64 upto API 30)<br/>
-                          <strong>• Android Emulator AVD</strong> (non production) version 5.0 - 11.0 (arm, arm64, x86, and x86_64 upto API 30)<br/>
-                          <strong>• Corellium Android VM</strong> (userdebug builds) version 7.1.2 - 11.0 (arm64 upto API 30)<br/>
-                          <strong>• Physical Android devices</strong> using non-interactive root or a MobSF-signed Frida Gadget APK
-                        </h5>
+                        <h4>MobSF Dynamic Analyzer</h4>
                         <p>
                           {% if android_version %}
                             Android version >= <strong>9.0</strong> recommended<br/>
@@ -136,9 +130,6 @@ textarea:focus {
                         </p>
                       </div>   
                      <div class="col-md-3">
-                     <br/>
-                     <br/>
-                     <br/>
                      <p>
                         {% if runtime != "physical" %}
                         <button class="btn btn-info disable" role="button"  data-toggle="modal" data-target="#mmobsfy">MobSFy Android Runtime</button>
