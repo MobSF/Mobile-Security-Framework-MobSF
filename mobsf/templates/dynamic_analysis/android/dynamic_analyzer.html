@@ -155,7 +155,7 @@
                   <div class="sensor"></div>
                   <div class="speaker"></div>
                   <div class="screen" id="container" tabindex="0" style="outline: none;">
-                  <img width="320" height="580" src="{% url 'download' %}screen/screen.png" id="my" onerror="$('#my').attr('src','/static/img/loading.jpg')" style="background-color:black;">
+                  <img width="320" height="580" src="{% url 'download' %}screen/screen.png" id="my" draggable="false" onerror="$('#my').attr('src','/static/img/loading.jpg')" style="background-color:black; touch-action:none; user-select:none; -webkit-user-drag:none;">
                   </div>
                   </div>
                 </div>
@@ -1008,6 +1008,16 @@ setInterval( function () {
 // View Screen
 var screen_width, screen_height;
 var screenfunc;
+const screenImage = document.getElementById('my');
+screenImage.addEventListener('load', function() {
+  if (touch === "on" && this.naturalWidth && this.naturalHeight) {
+    screen_width = this.naturalWidth;
+    screen_height = this.naturalHeight;
+    console.log(
+      'Screen Resolution: ' + screen_width + 'x' + screen_height
+    );
+  }
+});
 $("#screen").click(function() {
       var stext = $("#screen").text();
       if (stext.includes("Show Screen")){
@@ -1018,17 +1028,6 @@ $("#screen").click(function() {
               // Capture Screen
               action('{% url 'screen_cast' %}', {}, function(json) {
                 if (json.status == 'ok'){
-                  if (screen_width === undefined || screen_height === undefined){
-                    // Get Screen Resolution from Image
-                    var i = new Image();
-                    i.onload = function(){
-                      screen_width = i.width;
-                      screen_height = i.height;
-                      console.log('Screen Resolution: ' + screen_width + 'x' + screen_height)
-                      i = null;
-                    };
-                    i.src = json.message;
-                  }
                   $('#my').attr('src', json.message);
                 } else
                   console.log(json.message)
@@ -1061,28 +1060,47 @@ function android_input(event, x, y){
 var xaxis, yaxis = 0;
 
 function getXY(e, t){
-      // X-Y axis for clicks
-      var offset = $(t).offset();
-      var x = e.pageX - offset.left;
-      var y = e.pageY - offset.top;
-      xaxis = x * (screen_width/320); 
-      yaxis = y * (screen_height/580);
+      const rect = t.getBoundingClientRect();
+      if (!screen_width || !screen_height
+          || rect.width <= 0 || rect.height <= 0) {
+        return false;
+      }
+      const renderedX = Math.max(
+        0, Math.min(e.clientX - rect.left, rect.width)
+      );
+      const renderedY = Math.max(
+        0, Math.min(e.clientY - rect.top, rect.height)
+      );
+      xaxis = Math.min(
+        screen_width - 1,
+        Math.round(renderedX * screen_width / rect.width)
+      );
+      yaxis = Math.min(
+        screen_height - 1,
+        Math.round(renderedY * screen_height / rect.height)
+      );
       console.log('X Axis: '+ xaxis + " Y Axis: "+ yaxis);
+      return true;
 }
 
 // Touch Screen Click Events
 var pressedTime;
 var releaseTime;
-$("#my").on( "mousedown", function() {
-  pressedTime = new Date().getTime();
+$("#my").on("pointerdown", function(e) {
+  pressedTime = performance.now();
+  getXY(e.originalEvent || e, this);
+  e.preventDefault();
 });
 
-$("#my").on( "mouseup", function(e) {
-  releaseTime = new Date().getTime();
-  getXY(e, this);
-  if (releaseTime - pressedTime < 300 && touch === "on") {
+$("#my").on("pointerup", function(e) {
+  releaseTime = performance.now();
+  const point = e.originalEvent || e;
+  if (getXY(point, this)
+      && releaseTime - pressedTime < 300
+      && touch === "on") {
           android_input('touch', xaxis, yaxis);
-      }
+  }
+  e.preventDefault();
 });
 
 
@@ -1163,16 +1181,16 @@ swipe.addEventListener("after", direction => {
   if (touch === "on") {
     switch(direction){
       case 'up': case 'leftup': case 'rightup':
-        android_input('swipe_down', xaxis, yaxis)
-        break;
-      case 'down': case 'leftdown': case 'rightdown':
         android_input('swipe_up', xaxis, yaxis)
         break;
+      case 'down': case 'leftdown': case 'rightdown':
+        android_input('swipe_down', xaxis, yaxis)
+        break;
       case 'left':
-        android_input('swipe_right', xaxis, yaxis)
+        android_input('swipe_left', xaxis, yaxis)
         break;
       case 'right':
-        android_input('swipe_left', xaxis, yaxis)
+        android_input('swipe_right', xaxis, yaxis)
         break;
     }
 }
