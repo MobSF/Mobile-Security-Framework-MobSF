@@ -316,11 +316,12 @@ def dynamic_analyzer(request, checksum, api=False):
         try:
             identifier = get_device(request)
         except Exception:
-            return print_n_send_error_response(
-                request, get_android_dm_exception_msg(), api)
+            identifier = None
         if not identifier:
-            return print_n_send_error_response(
-                request, get_android_dm_exception_msg(), api)
+            if api:
+                return print_n_send_error_response(
+                    request, get_android_dm_exception_msg(), api)
+            return HttpResponseRedirect('/android/dynamic_analysis/')
         logger.info('Using Android device %s', identifier)
 
         # Get activities from the static analyzer results

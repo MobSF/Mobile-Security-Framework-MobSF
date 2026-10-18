@@ -17,6 +17,7 @@ import string
 import subprocess
 import stat
 import sqlite3
+import time
 import unicodedata
 import threading
 from pathlib import Path
@@ -490,31 +491,35 @@ def get_device(request=None):
     if request is not None:
         identifier = request.POST.get('identifier')
         explicit_selection = bool(identifier)
+        session_selection = False
         if not identifier:
             identifier = request.GET.get('identifier')
             explicit_selection = bool(identifier)
         if not identifier:
             identifier = request.session.get('android_device_identifier')
+            session_selection = bool(identifier)
         if identifier and valid_android_device_identifier(identifier):
             identifier = docker_translate_localhost(identifier.strip())
-            connected = {
-                device['identifier']
-                for device in get_android_devices()
-                if device['state'] == 'device'
-            }
-            if identifier in connected:
-                return identifier
+            attempts = 3 if session_selection else 1
+            for attempt in range(attempts):
+                connected = {
+                    device['identifier']
+                    for device in get_android_devices()
+                    if device['state'] == 'device'
+                }
+                if identifier in connected:
+                    return identifier
+                if attempt + 1 < attempts:
+                    time.sleep(0.25)
             if explicit_selection:
                 logger.warning(
                     'Requested Android device is not connected')
             else:
-                request.session.pop(
-                    'android_device_identifier', None)
                 logger.info(
-                    'Cleared unavailable Android device selection')
+                    'Selected Android device is temporarily unavailable')
             return None
         if identifier:
-            if not explicit_selection:
+            if session_selection:
                 request.session.pop(
                     'android_device_identifier', None)
             logger.warning('Invalid Android device selection')
