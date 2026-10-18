@@ -237,9 +237,13 @@ class Environment:
         writable_temp = False
         if probe_root:
             root_method, root_status = self.probe_root()
-            writable = self.adb_command_result(
-                ['test', '-w', '/data/local/tmp'], True, 5)
-            writable_temp = writable.returncode == 0
+            writable = self.adb_command(
+                ['test', '-w', '/data/local/tmp'],
+                True,
+                True,
+                timeout=5,
+            )
+            writable_temp = writable is not None
         selinux = self.adb_command(
             ['getenforce'], True, True) or b'unknown'
         profile = DeviceProfile(
@@ -297,47 +301,47 @@ class Environment:
         except (TypeError, ValueError):
             pass
         install_args.append(apk_path)
-        try:
-            result = self.adb_command_result(
-                install_args,
-                timeout=settings.BINARY_ANALYSIS_TIMEOUT,
+        output = self.adb_command(
+            install_args,
+            silent=True,
+            timeout=settings.BINARY_ANALYSIS_TIMEOUT,
+        )
+        if output is None:
+            message = (
+                'adb install timed out'
+                if self.adb_timed_out else 'adb install failed'
             )
-        except subprocess.TimeoutExpired:
-            return False, 'adb install timed out'
-        output = result.stdout + result.stderr
+            return False, message
         out = output.decode('utf-8', 'ignore')
-        if result.returncode != 0:
-            return False, out or 'adb install failed'
         # Verify Installation
         return self.is_package_installed(package, out), out
 
     def has_package(self, package):
         """Check an exact package without changing device state."""
-        result = self.adb_command_result(
+        result = self.adb_command(
             ['pm', 'path', package],
-            shell=True,
+            True,
+            True,
             timeout=10,
         )
-        return (
-            result.returncode == 0
-            and result.stdout.strip().startswith(b'package:')
-        )
+        return bool(
+            result and result.strip().startswith(b'package:'))
 
     def uninstall_package(self, package):
         """Uninstall a package after explicit analyst confirmation."""
         logger.info(
             'Uninstalling existing Android package after confirmation')
-        try:
-            result = self.adb_command_result(
-                ['uninstall', package],
-                timeout=settings.BINARY_ANALYSIS_TIMEOUT,
-            )
-        except subprocess.TimeoutExpired:
-            logger.error('Timed out uninstalling Android package')
+        result = self.adb_command(
+            ['uninstall', package],
+            silent=True,
+            timeout=settings.BINARY_ANALYSIS_TIMEOUT,
+        )
+        if result is None:
+            if self.adb_timed_out:
+                logger.error('Timed out uninstalling Android package')
             return False
         success = (
-            result.returncode == 0
-            and b'Success' in result.stdout + result.stderr
+            b'Success' in result
             and not self.has_package(package)
         )
         if success:
@@ -346,7 +350,8 @@ class Environment:
             logger.error('Existing Android package uninstall failed')
         return success
 
-    def adb_command(self, cmd_list, shell=False, silent=False):
+    def adb_command(
+            self, cmd_list, shell=False, silent=False, timeout=None):
         """ADB Command wrapper."""
         args = [get_adb(),
                 '-s',
@@ -354,28 +359,23 @@ class Environment:
         if shell:
             args += ['shell']
         args += cmd_list
+        self.adb_timed_out = False
         try:
-            result = subprocess.check_output(
-                args,  # lgtm [py/command-line-injection]
-                stderr=subprocess.STDOUT)
+            result = subprocess.check_output(  # lgtm[py/command-line-injection]
+                args,
+                stderr=subprocess.STDOUT,
+                timeout=timeout,
+            )
             return result
+        except subprocess.TimeoutExpired:
+            self.adb_timed_out = True
+            if not silent:
+                logger.error('ADB command timed out')
+            return None
         except Exception:
             if not silent:
                 logger.exception('Error Running ADB Command')
             return None
-
-    def adb_command_result(self, cmd_list, shell=False, timeout=30):
-        """Run an ADB command and retain its status and output."""
-        args = [get_adb(), '-s', self.identifier]
-        if shell:
-            args.append('shell')
-        args.extend(cmd_list)
-        return subprocess.run(
-            args,  # lgtm [py/command-line-injection]
-            capture_output=True,
-            check=False,
-            timeout=timeout,
-        )
 
     def probe_root(self):
         """Detect a non-interactive root command without assumptions."""
@@ -383,15 +383,16 @@ class Environment:
         self.root_method = 'none'
         self.root_status = 'unavailable'
         try:
-            direct = self.adb_command_result(['id'], True, 5)
-            if direct.returncode == 0 and b'uid=0' in direct.stdout:
+            direct = self.adb_command(
+                ['id'], True, True, timeout=5)
+            if direct and b'uid=0' in direct:
                 self.root_method = 'adbd'
                 self.root_status = 'available'
                 logger.info('Android root is available through root ADB')
                 return self.root_method, self.root_status
-            has_su = self.adb_command_result(
-                ['command', '-v', 'su'], True, 5)
-            if has_su.returncode != 0 or not has_su.stdout.strip():
+            has_su = self.adb_command(
+                ['command', '-v', 'su'], True, True, timeout=5)
+            if not has_su or not has_su.strip():
                 logger.info('Android root is unavailable')
                 return self.root_method, self.root_status
             probes = (
@@ -399,14 +400,14 @@ class Environment:
                 ('su-uid', ['su', '0', 'id']),
             )
             for method, command in probes:
-                try:
-                    result = self.adb_command_result(command, True, 5)
-                except subprocess.TimeoutExpired:
+                result = self.adb_command(
+                    command, True, True, timeout=5)
+                if self.adb_timed_out:
                     self.root_status = 'interactive'
                     logger.warning(
                         'Android root requires interactive authorization')
                     return self.root_method, self.root_status
-                if result.returncode == 0 and b'uid=0' in result.stdout:
+                if result and b'uid=0' in result:
                     self.root_method = method
                     self.root_status = 'available'
                     logger.info(
@@ -416,9 +417,6 @@ class Environment:
                     return self.root_method, self.root_status
             self.root_status = 'denied'
             logger.warning('Android root authorization was denied')
-        except subprocess.TimeoutExpired:
-            self.root_status = 'interactive'
-            logger.warning('Android root capability probe timed out')
         except Exception:
             logger.exception('Failed to probe Android root capabilities')
             self.root_status = 'error'
@@ -426,13 +424,10 @@ class Environment:
 
     def supports_root_adbd(self):
         """Check whether a VM advertises or already uses root ADB."""
-        try:
-            identity = self.adb_command_result(['id'], True, 5)
-            if (identity.returncode == 0
-                    and b'uid=0' in identity.stdout):
-                return True
-        except subprocess.TimeoutExpired:
-            return False
+        identity = self.adb_command(
+            ['id'], True, True, timeout=5)
+        if identity and b'uid=0' in identity:
+            return True
         return self.get_android_properties().get(
             'ro.debuggable') == '1'
 
@@ -453,14 +448,14 @@ class Environment:
             else:
                 remote_command = (
                     f'su 0 sh -c {shlex.quote(root_cmd)}')
-            result = subprocess.run(
+            result = subprocess.run(  # lgtm[py/command-line-injection]
                 [
                     get_adb(),
                     '-s',
                     self.identifier,
                     'shell',
                     remote_command,
-                ],  # lgtm [py/command-line-injection]
+                ],
                 capture_output=True,
                 check=False,
                 timeout=timeout,
@@ -669,25 +664,15 @@ class Environment:
         proxy_port = settings.PROXY_PORT
         logger.info('Enabling ADB Reverse TCP on %s', proxy_port)
         tcp = 'tcp:{}'.format(proxy_port)
-        try:
-            result = self.adb_command_result(
-                ['reverse', '--no-rebind', tcp, tcp],
-                timeout=10,
-            )
-            stderr = result.stderr
-            if b'error: closed' in stderr:
-                logger.warning('ADB Reverse TCP works only on'
-                               ' Android 5.0 and above. Please '
-                               'configure a reachable IP Address'
-                               ' in Android proxy settings.')
-                return False
-            elif result.returncode != 0:
-                logger.error(stderr.decode('utf-8').replace('\n', ''))
-                return False
-            return True
-        except Exception:
-            logger.exception('Enabling ADB Reverse TCP')
+        result = self.adb_command(
+            ['reverse', '--no-rebind', tcp, tcp],
+            silent=True,
+            timeout=10,
+        )
+        if result is None:
+            logger.error('Failed to enable ADB reverse for the proxy')
             return False
+        return True
 
     def disable_adb_reverse_tcp(self):
         """Remove the proxy reverse created by MobSF."""
@@ -1041,20 +1026,20 @@ class Environment:
 
     def run_app(self, package):
         """Launch an app with package name."""
-        monkey = self.adb_command_result([
+        monkey = self.adb_command([
             'monkey',
             '-p',
             package,
             '-c',
             'android.intent.category.LAUNCHER',
             '1',
-        ], True, 30)
-        if monkey.returncode == 0:
+        ], True, True, timeout=30)
+        if monkey is not None:
             return True
         logger.warning(
             'Monkey could not launch the Android app; '
             'resolving its launcher activity')
-        launcher = self.adb_command_result([
+        launcher = self.adb_command([
             'cmd',
             'package',
             'resolve-activity',
@@ -1064,23 +1049,24 @@ class Environment:
             '-c',
             'android.intent.category.LAUNCHER',
             package,
-        ], True, 10)
-        if launcher.returncode != 0:
+        ], True, True, timeout=10)
+        if launcher is None:
             logger.error('Unable to resolve the Android launcher activity')
             return False
-        component = launcher.stdout.decode(
+        component = launcher.decode(
             'utf-8', 'ignore').strip().splitlines()[-1]
         if not re.fullmatch(
                 r'[A-Za-z][\w.-]+/\.?[A-Za-z][\w.$-]+',
                 component):
             logger.error('Android launcher activity is invalid')
             return False
-        launched = self.adb_command_result(
+        launched = self.adb_command(
             ['am', 'start', '-n', component],
             True,
-            30,
+            True,
+            timeout=30,
         )
-        if launched.returncode != 0:
+        if launched is None:
             logger.error('Unable to launch the Android app')
             return False
         return True
@@ -1387,14 +1373,16 @@ class Environment:
                     break
             if not local:
                 for attempt in range(1, 4):
-                    result = self.adb_command_result(
+                    result = self.adb_command(
                         ['forward', 'tcp:0', remote],
+                        silent=True,
                         timeout=10,
                     )
-                    assigned = result.stdout.decode(
-                        'utf-8', 'ignore').strip()
-                    if (result.returncode == 0
-                            and assigned.isdigit()
+                    assigned = (
+                        result.decode('utf-8', 'ignore').strip()
+                        if result else ''
+                    )
+                    if (assigned.isdigit()
                             and 0 < int(assigned) < 65536):
                         local = f'tcp:{assigned}'
                         _MOBSF_FRIDA_FORWARDS[self.identifier] = local
