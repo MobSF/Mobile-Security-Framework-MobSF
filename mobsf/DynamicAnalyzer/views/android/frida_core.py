@@ -148,7 +148,6 @@ class Frida:
         try:
             env = Environment(self.identifier)
             self.clean_up()
-            # codeql[py/path-injection]: app hash is validated before creation
             if self.gadget_marker.exists():
                 if not env.run_app(self.package):
                     logger.error('Unable to launch the Gadget-injected app')
@@ -265,7 +264,6 @@ class Frida:
         ps_dict = []
         try:
             device = Environment(self.identifier).get_frida_device(
-                # codeql[py/path-injection]: app hash validated by caller
                 gadget=self.gadget_marker.exists())
             processes = device.enumerate_applications(scope='minimal')
             if device and processes:
