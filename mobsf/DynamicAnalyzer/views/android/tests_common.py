@@ -34,6 +34,7 @@ from mobsf.MobSF.utils import (
     get_device,
     is_md5,
     python_list,
+    valid_android_device_identifier,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.MobSF.views.authentication import (
@@ -220,7 +221,6 @@ def collect_logs(request, api=False):
     logger.info('Collecting Data and Cleaning Up')
     data = {}
     try:
-        env = Environment(get_device(request))
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)
@@ -230,6 +230,21 @@ def collect_logs(request, api=False):
                     'message': 'App details not found in database'}
             return send_response(data, api)
         apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
+        state_file = Path(apk_dir) / '.mobsf-proxy-state'
+        proxy_state = {}
+        if state_file.is_file() and not state_file.is_symlink():
+            try:
+                with state_file.open(encoding='utf-8') as source:
+                    proxy_state = json.load(source)
+            except (OSError, ValueError, TypeError):
+                logger.warning(
+                    'Unable to read saved Android proxy state')
+            if not isinstance(proxy_state, dict):
+                proxy_state = {}
+        identifier = proxy_state.get('identifier')
+        if not valid_android_device_identifier(identifier):
+            identifier = get_device(request)
+        env = Environment(identifier)
         lout = os.path.join(apk_dir, 'logcat.txt')
         dout = os.path.join(apk_dir, 'dump.txt')
         try:
@@ -249,24 +264,13 @@ def collect_logs(request, api=False):
         finally:
             env.adb_command(['am', 'force-stop', package], True)
             logger.info('Stopping app')
-            state_file = Path(apk_dir) / '.mobsf-proxy-state'
             gadget_marker = Path(apk_dir) / '.mobsf-gadget-mode'
             proxy_restored = True
             if state_file.exists() and not state_file.is_symlink():
                 previous_proxy = ''
-                proxy_state = {}
-                if state_file.is_file():
-                    try:
-                        with state_file.open(encoding='utf-8') as source:
-                            proxy_state = json.load(source)
-                    except (OSError, ValueError, TypeError):
-                        logger.warning(
-                            'Unable to read saved Android proxy state')
-                    if not isinstance(proxy_state, dict):
-                        proxy_state = {}
-                    value = proxy_state.get('proxy')
-                    if isinstance(value, str):
-                        previous_proxy = value
+                value = proxy_state.get('proxy')
+                if isinstance(value, str):
+                    previous_proxy = value
                 proxy_restored = env.restore_global_proxy(previous_proxy)
                 if proxy_state.get('remove_reverse') is True:
                     env.disable_adb_reverse_tcp()
