@@ -489,8 +489,10 @@ def get_device(request=None):
     """Get Device."""
     if request is not None:
         identifier = request.POST.get('identifier')
+        explicit_selection = bool(identifier)
         if not identifier:
             identifier = request.GET.get('identifier')
+            explicit_selection = bool(identifier)
         if not identifier:
             identifier = request.session.get('android_device_identifier')
         if identifier and valid_android_device_identifier(identifier):
@@ -502,10 +504,20 @@ def get_device(request=None):
             }
             if identifier in connected:
                 return identifier
-            logger.error('Selected Android device is not connected')
+            if explicit_selection:
+                logger.warning(
+                    'Requested Android device is not connected')
+            else:
+                request.session.pop(
+                    'android_device_identifier', None)
+                logger.info(
+                    'Cleared unavailable Android device selection')
             return None
         if identifier:
-            logger.error('Invalid selected Android device identifier')
+            if not explicit_selection:
+                request.session.pop(
+                    'android_device_identifier', None)
+            logger.warning('Invalid Android device selection')
             return None
     if os.getenv('ANALYZER_IDENTIFIER'):
         identifier = os.getenv('ANALYZER_IDENTIFIER')
