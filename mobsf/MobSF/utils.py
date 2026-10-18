@@ -380,8 +380,13 @@ def find_process_by(name):
     """Return a set of process path matching name."""
     proc = set()
     for p in psutil.process_iter(attrs=['name']):
-        if (name == p.info['name']):
-            proc.add(p.exe())
+        try:
+            if name == p.info['name']:
+                proc.add(p.exe())
+        except (psutil.AccessDenied,
+                psutil.NoSuchProcess,
+                psutil.ZombieProcess):
+            continue
     return proc
 
 
@@ -425,8 +430,10 @@ def valid_android_device_identifier(identifier):
     identifier = identifier.strip()
     if not identifier or len(identifier) > 255:
         return False
+    serial = r'[A-Za-z0-9][A-Za-z0-9._:%-]*'
+    bracketed_ipv6 = r'\[[0-9A-Fa-f:.%]+\](?::\d{1,5})?'
     return bool(re.fullmatch(
-        r'[A-Za-z0-9][A-Za-z0-9._:%\-\[\]]*',
+        f'(?:{serial}|{bracketed_ipv6})',
         identifier,
     ))
 
@@ -459,7 +466,7 @@ def get_android_devices():
                     key, value = item.split(':', 1)
                     details[key] = value
             devices.append({
-                'identifier': docker_translate_localhost(identifier),
+                'identifier': identifier,
                 'state': state,
                 'details': details,
             })
@@ -568,6 +575,11 @@ def get_adb():
             ADB_PATH = settings.ADB_BINARY
             return ADB_PATH
         if ADB_PATH:
+            return ADB_PATH
+        adb_name = 'adb.exe' if platform.system() == 'Windows' else 'adb'
+        adb_on_path = shutil.which(adb_name)
+        if adb_on_path:
+            ADB_PATH = adb_on_path
             return ADB_PATH
         if platform.system() == 'Windows':
             adb_loc = find_process_by('adb.exe')

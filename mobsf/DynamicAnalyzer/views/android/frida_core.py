@@ -21,7 +21,6 @@ from mobsf.DynamicAnalyzer.views.common.frida import (
 )
 
 logger = logging.getLogger(__name__)
-_FPID = None
 
 
 class Frida:
@@ -36,6 +35,7 @@ class Frida:
         self.extras = extras
         self.code = code
         self.identifier = identifier
+        self.pid = None
         self.frida_dir = Path(settings.TOOLS_DIR) / 'frida_scripts' / 'android'
         self.apk_dir = Path(settings.UPLD_DIR) / self.hash
         self.api_mon = self.apk_dir / 'mobsf_api_monitor.txt'
@@ -145,7 +145,6 @@ class Frida:
 
     def spawn(self, retry=True):
         """Frida Spawn."""
-        global _FPID
         try:
             env = Environment(self.identifier)
             self.clean_up()
@@ -163,7 +162,7 @@ class Frida:
                                     self.package,
                                     're.frida.Gadget',
                                 )):
-                            _FPID = application.pid
+                            self.pid = application.pid
                             return True
                         applications = device.enumerate_applications(
                             scope='minimal')
@@ -173,7 +172,7 @@ class Frida:
                                     're.frida.Gadget',
                             )
                                     and application.pid):
-                                _FPID = application.pid
+                                self.pid = application.pid
                                 return True
                     except (frida.ServerNotRunningError,
                             frida.TimedOutError,
@@ -186,8 +185,8 @@ class Frida:
                 return False
             device = env.get_frida_device()
             logger.info('Spawning %s', self.package)
-            _FPID = device.spawn([self.package])
-            device.resume(_FPID)
+            self.pid = device.spawn([self.package])
+            device.resume(self.pid)
             time.sleep(1)
             return True
         except frida.NotSupportedError:
@@ -211,26 +210,24 @@ class Frida:
 
     def session(self, pid, package):
         """Use existing session to inject frida scripts."""
-        global _FPID
         try:
             env = Environment(self.identifier)
             try:
                 device = env.get_frida_device(
                     gadget=self.gadget_marker.exists())
                 if pid and package:
-                    _FPID = pid
+                    self.pid = pid
                     self.package = package
-                try:
+                if self.pid is None:
                     front = device.get_frontmost_application()
-                    if front and front.pid != _FPID:
-                        # Not the front most app.
-                        # Get the pid of the front most app
-                        logger.warning('Front most app has PID %s', front.pid)
-                        _FPID = front.pid
-                except Exception:
-                    pass
-                # pid is the fornt most app
-                session = device.attach(_FPID)
+                    if (front
+                            and front.pid
+                            and front.identifier in (
+                                self.package,
+                                're.frida.Gadget',
+                            )):
+                        self.pid = front.pid
+                session = device.attach(self.pid)
                 time.sleep(2)
             except frida.NotSupportedError:
                 logger.exception('Not Supported Error')
@@ -241,9 +238,9 @@ class Frida:
                     return
                 device = env.get_frida_device(
                     gadget=self.gadget_marker.exists())
-                session = device.attach(_FPID)
+                session = device.attach(self.pid)
                 time.sleep(2)
-            if session and device and _FPID:
+            if session and device and self.pid:
                 script = session.create_script(self.get_script())
                 script.on('message', self.frida_response)
                 script.load()

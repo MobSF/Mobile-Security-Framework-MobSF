@@ -195,15 +195,22 @@ def download_data(request, api=False):
         stop_httptools(get_http_tools_url(request))
         logger.info('Archiving files created by app')
         output_file = os.path.join(apk_dir, package + '.tar')
-        if env.archive_app_data(package, output_file):
-            data = {'status': 'ok'}
-        else:
+        archive_status = env.archive_app_data(package, output_file)
+        if archive_status == 'ok':
+            data = {'status': 'ok', 'data_collected': True}
+        elif archive_status == 'unsupported':
             data = {
                 'status': 'ok',
+                'data_collected': False,
                 'message': (
                     'Application data is not accessible with the '
                     'selected device capabilities'
                 ),
+            }
+        else:
+            data = {
+                'status': 'failed',
+                'message': 'Failed to archive application data',
             }
     except Exception as exp:
         logger.exception('Downloading application data')
@@ -231,6 +238,7 @@ def collect_logs(request, api=False):
             return send_response(data, api)
         apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         state_file = Path(apk_dir) / '.mobsf-proxy-state'
+        gadget_marker = Path(apk_dir) / '.mobsf-gadget-mode'
         proxy_state = {}
         if state_file.is_file() and not state_file.is_symlink():
             try:
@@ -242,6 +250,15 @@ def collect_logs(request, api=False):
             if not isinstance(proxy_state, dict):
                 proxy_state = {}
         identifier = proxy_state.get('identifier')
+        if (not valid_android_device_identifier(identifier)
+                and gadget_marker.is_file()
+                and not gadget_marker.is_symlink()):
+            marker_identifier = gadget_marker.read_text(
+                encoding='utf-8',
+                errors='ignore',
+            ).strip()
+            if valid_android_device_identifier(marker_identifier):
+                identifier = marker_identifier
         if not valid_android_device_identifier(identifier):
             identifier = get_device(request)
         env = Environment(identifier)
@@ -264,7 +281,6 @@ def collect_logs(request, api=False):
         finally:
             env.adb_command(['am', 'force-stop', package], True)
             logger.info('Stopping app')
-            gadget_marker = Path(apk_dir) / '.mobsf-gadget-mode'
             proxy_restored = True
             if state_file.exists() and not state_file.is_symlink():
                 previous_proxy = ''
@@ -275,8 +291,15 @@ def collect_logs(request, api=False):
                 if proxy_state.get('remove_reverse') is True:
                     env.disable_adb_reverse_tcp()
             else:
-                env.unset_global_proxy()
-                proxy_restored = env.get_global_proxy() == ''
+                logger.info(
+                    'No MobSF proxy ownership state found; '
+                    'checking for stale MobSF proxy state')
+                current_proxy = env.get_global_proxy()
+                mobsf_proxy = env.get_mobsf_proxy(
+                    env.get_android_version())
+                if current_proxy and current_proxy == mobsf_proxy:
+                    proxy_restored = env.restore_global_proxy('')
+                    env.disable_adb_reverse_tcp()
             env.remove_frida_forward()
             if proxy_restored:
                 state_file.unlink(missing_ok=True)
@@ -300,7 +323,9 @@ def tls_tests(request, api=False):
     """Perform TLS tests."""
     logger.info('Running TLS/SSL Security tests')
     data = {}
+    env = None
     package = None
+    resume_proxy = False
     try:
         test_duration = 25
         test_package = 'tls_tests'
@@ -308,11 +333,26 @@ def tls_tests(request, api=False):
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)
+        gadget_marker = (
+            Path(settings.UPLD_DIR)
+            / md5_hash
+            / '.mobsf-gadget-mode'
+        )
+        if ((gadget_marker.is_file() and not gadget_marker.is_symlink())
+                or env.get_environment() == 'physical'):
+            return send_response({
+                'status': 'failed',
+                'message': (
+                    'TLS testing is unavailable when MobSF cannot '
+                    'transition the device Root CA'
+                ),
+            }, api)
         package = get_package_name(md5_hash)
         if not package:
             data = {'status': 'failed',
                     'message': 'App details not found in database'}
             return send_response(data, api)
+        resume_proxy = True
         res = run_tls_tests(
             request,
             md5_hash,
@@ -326,6 +366,7 @@ def tls_tests(request, api=False):
         logger.exception('Checking Application Security in Transit')
         data = {'status': 'failed', 'message': str(exp)}
     finally:
-        logger.info('Test Completed. Resuming HTTPS Proxy')
-        env.configure_proxy(package, request)
+        if resume_proxy and env and package:
+            logger.info('Test Completed. Resuming HTTPS Proxy')
+            env.configure_proxy(package, request)
     return send_response(data, api)
