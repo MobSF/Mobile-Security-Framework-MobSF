@@ -1,5 +1,6 @@
 # -*- coding: utf_8 -*-
 """Android Dynamic Analysis."""
+import json
 import logging
 import os
 import time
@@ -423,12 +424,36 @@ def dynamic_analyzer(request, checksum, api=False):
             gadget_marker.unlink(missing_ok=True)
         reverse_created = False
         if physical:
-            previous_proxy = env.get_global_proxy()
-            reverse_created = not env.has_adb_reverse_tcp()
+            current_proxy = env.get_global_proxy()
+            existing_state = {}
+            if proxy_state_file.is_file():
+                try:
+                    with proxy_state_file.open(encoding='utf-8') as state:
+                        existing_state = json.load(state)
+                except (OSError, ValueError, TypeError):
+                    logger.warning(
+                        'Unable to read previous Android proxy state')
+                if not isinstance(existing_state, dict):
+                    existing_state = {}
+            saved_proxy = existing_state.get('proxy')
+            if isinstance(saved_proxy, str):
+                previous_proxy = saved_proxy
+            elif current_proxy == env.get_mobsf_proxy(version):
+                logger.warning(
+                    'Discarding a stale MobSF proxy from an interrupted '
+                    'physical-device analysis')
+                previous_proxy = ''
+            else:
+                previous_proxy = current_proxy
+            reverse_exists = env.has_adb_reverse_tcp()
+            reverse_created = (
+                existing_state.get('remove_reverse') is True
+                or not reverse_exists
+            )
         # Configure Web Proxy
         env.configure_proxy(package, request)
         # Supported in Android 5+
-        if not physical or reverse_created:
+        if not physical or not env.has_adb_reverse_tcp():
             env.enable_adb_reverse_tcp(version)
         if physical:
             with proxy_state_file.open('w', encoding='utf-8') as state:
@@ -439,6 +464,9 @@ def dynamic_analyzer(request, checksum, api=False):
         # Apply Global Proxy to device
         env.set_global_proxy(version)
         proxy_configured = True
+        if (physical
+                and env.get_global_proxy() != env.get_mobsf_proxy(version)):
+            raise RuntimeError('Failed to configure the Android proxy')
         if install == '1':
             status, output = env.install_apk(
                 apk_path.as_posix(),
@@ -448,10 +476,11 @@ def dynamic_analyzer(request, checksum, api=False):
             )
             if not status:
                 if physical:
-                    env.restore_global_proxy(previous_proxy)
+                    restored = env.restore_global_proxy(previous_proxy)
                     if reverse_created:
                         env.disable_adb_reverse_tcp()
-                    proxy_state_file.unlink(missing_ok=True)
+                    if restored:
+                        proxy_state_file.unlink(missing_ok=True)
                 else:
                     env.unset_global_proxy()
                 msg = 'This APK cannot be installed on the Android device.'
@@ -479,10 +508,12 @@ def dynamic_analyzer(request, checksum, api=False):
         return render(request, template, context)
     except Exception:
         if env and physical and proxy_configured:
-            env.restore_global_proxy(previous_proxy)
+            restored = env.restore_global_proxy(previous_proxy)
             if reverse_created:
                 env.disable_adb_reverse_tcp()
-        if proxy_state_file:
+        else:
+            restored = False
+        if proxy_state_file and restored:
             proxy_state_file.unlink(missing_ok=True)
         if gadget_marker:
             gadget_marker.unlink(missing_ok=True)
