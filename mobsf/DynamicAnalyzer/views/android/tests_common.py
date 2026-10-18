@@ -235,8 +235,10 @@ def collect_logs(request, api=False):
         state_file = Path(apk_dir) / '.mobsf-proxy-state'
         gadget_marker = Path(apk_dir) / '.mobsf-gadget-mode'
         proxy_state = {}
+        # codeql[py/path-injection]: md5 hash and state paths validated above
         if state_file.is_file() and not state_file.is_symlink():
             try:
+                # codeql[py/path-injection]: regular non-symlink state file
                 with state_file.open(encoding='utf-8') as source:
                     proxy_state = json.load(source)
             except (OSError, ValueError, TypeError):
@@ -245,9 +247,11 @@ def collect_logs(request, api=False):
             if not isinstance(proxy_state, dict):
                 proxy_state = {}
         identifier = proxy_state.get('identifier')
+        # codeql[py/path-injection]: marker path derives from validated hash
         if (not valid_android_device_identifier(identifier)
                 and gadget_marker.is_file()
                 and not gadget_marker.is_symlink()):
+            # codeql[py/path-injection]: regular non-symlink marker above
             marker_identifier = gadget_marker.read_text(
                 encoding='utf-8',
                 errors='ignore',
@@ -270,10 +274,12 @@ def collect_logs(request, api=False):
                                       '-d',
                                       package + ':V',
                                       '*:*'])
+            # codeql[py/path-injection]: output derives from validated hash
             with open(lout, 'wb') as flip:
                 flip.write(logcat or b'')
             logger.info('Downloading dumpsys logs')
             dumpsys = env.adb_command(['dumpsys'], True)
+            # codeql[py/path-injection]: output derives from validated hash
             with open(dout, 'wb') as flip:
                 flip.write(dumpsys or b'')
             if env.get_android_version() < 5:
@@ -282,6 +288,7 @@ def collect_logs(request, api=False):
             env.adb_command(['am', 'force-stop', package], True)
             logger.info('Stopping app')
             proxy_restored = True
+            # codeql[py/path-injection]: state path derives from validated hash
             if state_file.exists() and not state_file.is_symlink():
                 previous_proxy = ''
                 value = proxy_state.get('proxy')
@@ -302,7 +309,9 @@ def collect_logs(request, api=False):
                     env.disable_adb_reverse_tcp()
             env.remove_frida_forward()
             if proxy_restored:
+                # codeql[py/path-injection]: validated state path
                 state_file.unlink(missing_ok=True)
+            # codeql[py/path-injection]: validated marker path
             gadget_marker.unlink(missing_ok=True)
             if not proxy_restored:
                 raise RuntimeError(
@@ -338,6 +347,7 @@ def tls_tests(request, api=False):
             / md5_hash
             / '.mobsf-gadget-mode'
         )
+        # codeql[py/path-injection]: marker derives from validated hash
         if ((gadget_marker.is_file() and not gadget_marker.is_symlink())
                 or env.get_environment() == 'physical'):
             return send_response({
