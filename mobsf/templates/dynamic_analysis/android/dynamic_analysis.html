@@ -220,8 +220,8 @@ textarea:focus {
                               <div class="mb-3">
                                 <form method="post" action="{% url "dynamic_analyzer" checksum=e.MD5 %}" class="dynamic-start-form" data-hash="{{ e.MD5 }}">
                                   {% csrf_token %}
-                                  {% if runtime == "physical" %}
-                                  <select name="device_mode" class="form-control form-control-sm mb-2" aria-label="Physical device mode">
+                                  {% if android_version >= 5 %}
+                                  <select name="device_mode" class="form-control form-control-sm mb-2" aria-label="Android analysis mode">
                                     <option value="auto">Auto detect</option>
                                     <option value="rooted">Rooted device</option>
                                     <option value="gadget">Frida Gadget (re-sign APK)</option>
@@ -331,11 +331,6 @@ const physicalRuntime = {% if runtime == "physical" %}true{% else %}false{% endi
 document.querySelectorAll('.dynamic-start-form').forEach((form) => {
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        if (!physicalRuntime) {
-            dynamic_loader();
-            form.submit();
-            return;
-        }
         const modeField = form.querySelector('[name="device_mode"]');
         const mode = modeField ? modeField.value : 'auto';
         const payload = new FormData();

@@ -167,10 +167,11 @@ def android_device_apps(request):
             }, status=503)
         logger.info('Inspecting selected Android device capabilities')
         runtime = env.get_environment()
-        root_available = runtime != 'physical'
         if runtime == 'physical':
             profile = env.get_device_profile(probe_root=True)
             root_available = profile.has_root
+        else:
+            root_available = env.supports_root_adbd()
         logger.info('Loading applications installed on the selected device')
         device_packages = env.get_device_packages(refresh=refresh == '1')
         pkg_file = Path(settings.DWD_DIR) / 'packages.json'
@@ -219,7 +220,11 @@ def android_package_status(request):
         runtime = env.get_environment()
         selected_mode = mode
         if runtime != 'physical':
-            selected_mode = 'legacy'
+            if mode == 'auto':
+                selected_mode = (
+                    'legacy' if env.supports_root_adbd() else 'gadget')
+            elif mode == 'rooted':
+                selected_mode = 'legacy'
         elif mode == 'auto':
             profile = env.get_device_profile(probe_root=True)
             selected_mode = 'rooted' if profile.has_root else 'gadget'
@@ -325,35 +330,51 @@ def dynamic_analyzer(request, checksum, api=False):
         physical = runtime == 'physical'
         profile = env.get_device_profile(
             probe_root=physical and device_mode != 'gadget')
+        version = profile.android_version
         selected_mode = device_mode
-        if not physical:
-            if device_mode == 'gadget':
+        runtime_prepared = False
+        if selected_mode == 'gadget' and version < 5:
+            return print_n_send_error_response(
+                request,
+                'Frida Gadget mode requires Android 5 or later',
+                api,
+            )
+        if physical:
+            if device_mode == 'auto':
+                selected_mode = (
+                    'rooted' if profile.has_root else 'gadget')
+            if selected_mode == 'rooted' and not profile.has_root:
                 return print_n_send_error_response(
                     request,
-                    'Frida Gadget mode requires a physical Android device',
+                    f'Android root is {profile.root_status}. For a stock '
+                    'device, select Pull & Static Analysis for the installed '
+                    'app, wait for the scan to complete, then start it from '
+                    'Apps Available using Frida Gadget. Split APK/APKS apps '
+                    'are not currently supported by Gadget mode.',
                     api,
                 )
+        elif selected_mode != 'gadget':
             selected_mode = 'legacy'
-        elif device_mode == 'auto':
-            selected_mode = 'rooted' if profile.has_root else 'gadget'
+            runtime_prepared = env.connect_n_mount()
+            if (not runtime_prepared
+                    and device_mode == 'auto'
+                    and version >= 5):
+                logger.warning(
+                    'Rooted VM preparation is unavailable; '
+                    'falling back to Frida Gadget')
+                selected_mode = 'gadget'
+            elif not runtime_prepared:
+                msg = f'Cannot prepare {identifier} for dynamic analysis'
+                return print_n_send_error_response(request, msg, api)
         logger.info(
             'Selected Android dynamic analysis mode: %s',
             selected_mode,
         )
-        if selected_mode == 'rooted' and not profile.has_root:
-            return print_n_send_error_response(
-                request,
-                f'Android root is {profile.root_status}. For a stock '
-                'device, select Pull & Static Analysis for the installed '
-                'app, wait for the scan to complete, then start it from '
-                'Apps Available using Frida Gadget. Split APK/APKS apps '
-                'are not currently supported by Gadget mode.',
-                api,
-            )
-        if selected_mode != 'gadget' and not env.connect_n_mount():
+        if (selected_mode != 'gadget'
+                and not runtime_prepared
+                and not env.connect_n_mount()):
             msg = f'Cannot prepare {identifier} for dynamic analysis'
             return print_n_send_error_response(request, msg, api)
-        version = profile.android_version
         logger.info('Android Version identified as %s', version)
         xposed_first_run = False
         if selected_mode != 'gadget' and not env.is_mobsfyied(version):
@@ -453,7 +474,11 @@ def dynamic_analyzer(request, checksum, api=False):
                 or not reverse_exists
             )
         # Configure Web Proxy
-        env.configure_proxy(package, request)
+        env.configure_proxy(
+            package,
+            request,
+            install_ca=selected_mode != 'gadget',
+        )
         # Supported in Android 5+
         if not physical or not env.has_adb_reverse_tcp():
             env.enable_adb_reverse_tcp(version)
