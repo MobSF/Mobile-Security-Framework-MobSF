@@ -105,11 +105,10 @@
 
    {% if device_mode == "gadget" %}
    <div class="alert alert-warning">
-     This session uses an APK injected with Frida Gadget and the MobSF Root CA.
-     XML network-security pins are removed, and supported runtime pinning is
-     handled with Frida hooks. The app may not work if it uses custom signature
-     checks, Play Integrity, unsupported pinning, or requires its original
-     code-signing certificate. Those checks must be patched separately.
+     This session uses an APK injected with Frida Gadget and MobSF Root CA.
+     XML network-security pins are removed. The app may not work if it uses custom signature
+     checks, Play Integrity,certificate pinning, or requires its original
+     code signing certificate. Those checks must be patched separately.
    </div>
    {% endif %}
 
