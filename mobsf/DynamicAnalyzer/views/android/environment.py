@@ -450,18 +450,21 @@ class Environment:
                 values[prop] = value.strip()
         out = b'\n'.join(values.values())
         lower = out.lower()
-        if (b'emulator' in lower
-                or b'generic_x86' in lower
-                or values.get('ro.kernel.qemu') == b'1'
-                or values.get('ro.boot.qemu') == b'1'):
-            logger.info('Found Android Studio Emulator')
-            return 'emulator'
-        elif b'genymotion' in lower:
+        genymotion_version = values.get(
+            'ro.genymotion.version', b'').decode('utf-8', 'ignore')
+        if (b'genymotion' in lower
+                or any(char.isdigit() for char in genymotion_version)):
             logger.info('Found Genymotion Android VM')
             return 'genymotion'
         elif b'corellium' in lower:
             logger.info('Found Corellium ARM Android VM')
             return 'corellium'
+        elif (b'emulator' in lower
+                or b'generic_x86' in lower
+                or values.get('ro.kernel.qemu') == b'1'
+                or values.get('ro.boot.qemu') == b'1'):
+            logger.info('Found Android Studio Emulator')
+            return 'emulator'
         else:
             logger.info('Found physical Android device')
             return 'physical'
