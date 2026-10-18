@@ -458,6 +458,7 @@ def dynamic_analyzer(request, checksum, api=False):
         if physical:
             with proxy_state_file.open('w', encoding='utf-8') as state:
                 dump({
+                    'identifier': identifier,
                     'proxy': previous_proxy,
                     'remove_reverse': reverse_created,
                 }, state)
