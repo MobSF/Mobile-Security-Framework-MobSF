@@ -150,7 +150,9 @@ class Frida:
             env = Environment(self.identifier)
             self.clean_up()
             if self.gadget_marker.exists():
-                env.run_app(self.package)
+                if not env.run_app(self.package):
+                    logger.error('Unable to launch the Gadget-injected app')
+                    return False
                 for attempt in range(5):
                     try:
                         device = env.get_frida_device()
