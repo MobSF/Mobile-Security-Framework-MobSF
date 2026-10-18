@@ -44,7 +44,7 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 logger = logging.getLogger(__name__)
 ANDROID_API_SUPPORTED = 30
 _FRIDA_FORWARD_LOCK = threading.Lock()
-_MOBSF_FRIDA_FORWARDS = set()
+_MOBSF_FRIDA_FORWARDS = {}
 _DEVICE_PACKAGE_CACHE = {}
 _DEVICE_PACKAGE_CACHE_LOCK = threading.Lock()
 _DEVICE_PACKAGE_CACHE_TTL = 300
@@ -971,12 +971,49 @@ class Environment:
 
     def run_app(self, package):
         """Launch an app with package name."""
-        self.adb_command(['monkey',
-                          '-p',
-                          package,
-                          '-c',
-                          'android.intent.category.LAUNCHER',
-                          '1'], True)
+        monkey = self.adb_command_result([
+            'monkey',
+            '-p',
+            package,
+            '-c',
+            'android.intent.category.LAUNCHER',
+            '1',
+        ], True, 30)
+        if monkey.returncode == 0:
+            return True
+        logger.warning(
+            'Monkey could not launch the Android app; '
+            'resolving its launcher activity')
+        launcher = self.adb_command_result([
+            'cmd',
+            'package',
+            'resolve-activity',
+            '--brief',
+            '-a',
+            'android.intent.action.MAIN',
+            '-c',
+            'android.intent.category.LAUNCHER',
+            package,
+        ], True, 10)
+        if launcher.returncode != 0:
+            logger.error('Unable to resolve the Android launcher activity')
+            return False
+        component = launcher.stdout.decode(
+            'utf-8', 'ignore').strip().splitlines()[-1]
+        if not re.fullmatch(
+                r'[A-Za-z][\w.-]+/\.?[A-Za-z][\w.$-]+',
+                component):
+            logger.error('Android launcher activity is invalid')
+            return False
+        launched = self.adb_command_result(
+            ['am', 'start', '-n', component],
+            True,
+            30,
+        )
+        if launched.returncode != 0:
+            logger.error('Unable to launch the Android app')
+            return False
+        return True
 
     def is_mobsfyied(self, android_version):
         """Check is Device is MobSFyed."""
@@ -1248,43 +1285,61 @@ class Environment:
                 self.identifier,
                 settings.FRIDA_TIMEOUT,
             )
-        tcp = 'tcp:27042'
-        key = (self.identifier, tcp)
+        remote = 'tcp:27042'
         with _FRIDA_FORWARD_LOCK:
+            if self.get_device_state() != 'device':
+                raise RuntimeError(
+                    'Physical Android device is disconnected')
             forwards = self.adb_command(
                 ['forward', '--list'],
                 silent=True,
             ) or b''
-            existing = None
+            local = None
             for line in forwards.decode('utf-8', 'ignore').splitlines():
                 parts = line.split()
-                if len(parts) >= 3 and parts[0] == self.identifier:
-                    if parts[1] == tcp:
-                        existing = parts[2]
+                if (len(parts) >= 3
+                        and parts[0] == self.identifier
+                        and parts[2] == remote):
+                    local = parts[1]
+                    break
+            if not local:
+                for attempt in range(1, 4):
+                    result = self.adb_command_result(
+                        ['forward', 'tcp:0', remote],
+                        timeout=10,
+                    )
+                    assigned = result.stdout.decode(
+                        'utf-8', 'ignore').strip()
+                    if (result.returncode == 0
+                            and assigned.isdigit()
+                            and 0 < int(assigned) < 65536):
+                        local = f'tcp:{assigned}'
+                        _MOBSF_FRIDA_FORWARDS[self.identifier] = local
+                        logger.info(
+                            'Forwarded Frida for Android device on '
+                            'local TCP port %s',
+                            assigned,
+                        )
                         break
-            if existing and existing != tcp:
-                raise RuntimeError(
-                    'Frida port is already forwarded to another target')
-            if not existing:
-                result = self.adb_command_result(
-                    ['forward', '--no-rebind', tcp, tcp],
-                    timeout=10,
-                )
-                if result.returncode != 0:
+                    logger.warning(
+                        'ADB Frida forwarding attempt %d failed',
+                        attempt,
+                    )
+                    self.wait(1)
+                if not local:
                     raise RuntimeError(
                         'Unable to forward the physical-device Frida port')
-                _MOBSF_FRIDA_FORWARDS.add(key)
+            port = local.rsplit(':', 1)[1]
         return frida.get_device_manager().add_remote_device(
-            '127.0.0.1:27042')
+            f'127.0.0.1:{port}')
 
     def remove_frida_forward(self):
         """Remove the Frida port forward created by MobSF."""
-        tcp = 'tcp:27042'
-        key = (self.identifier, tcp)
         with _FRIDA_FORWARD_LOCK:
-            if key in _MOBSF_FRIDA_FORWARDS:
+            local = _MOBSF_FRIDA_FORWARDS.pop(
+                self.identifier, None)
+            if local:
                 self.adb_command(
-                    ['forward', '--remove', tcp],
+                    ['forward', '--remove', local],
                     silent=True,
                 )
-                _MOBSF_FRIDA_FORWARDS.discard(key)

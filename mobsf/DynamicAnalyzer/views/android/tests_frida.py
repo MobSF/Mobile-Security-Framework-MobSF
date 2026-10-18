@@ -111,7 +111,13 @@ def instrument(request, api=False):
                           get_device(request))
         if action == 'spawn':
             logger.info('Starting Instrumentation')
-            frida_obj.spawn()
+            if not frida_obj.spawn():
+                return send_response({
+                    'status': 'failed',
+                    'message': (
+                        'Unable to launch the app or connect to Frida'
+                    ),
+                }, api)
         elif action == 'ps':
             logger.info('Enumerating running applications')
             data['message'] = frida_obj.ps()
