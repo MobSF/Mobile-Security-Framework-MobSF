@@ -9,6 +9,7 @@ import subprocess
 import tempfile
 import threading
 import time
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from base64 import b64encode
@@ -873,34 +874,42 @@ class Environment:
         )
         return device_packages
 
-    def download_apk_packages(self, pkg_path, out_file):
+    def download_apk_packages(self, apk_paths, out_file):
         """Download APK package(s)."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Download APK package(s)
-            # Can be single or multiple packages
-            out = self.adb_command([
-                'pull',
-                pkg_path.as_posix(),
-                temp_dir,
-            ])
-            fmt = out.decode('utf-8').strip()
-            logger.info('ADB Pull Output: %s', fmt)
-            # Filter for APK files in the directory
             apk_files = []
-            for f in Path(temp_dir).glob('*.apk'):
-                if f.is_file():
-                    apk_files.append(f)
-            # Check if there is exactly one APK file
+            for index, apk_path in enumerate(apk_paths):
+                filename = apk_path.name
+                destination = Path(temp_dir) / filename
+                if destination.exists():
+                    destination = (
+                        Path(temp_dir) / f'{index}-{filename}')
+                out = self.adb_command([
+                    'pull',
+                    apk_path.as_posix(),
+                    destination.as_posix(),
+                ], silent=True)
+                if out is None:
+                    logger.error('Failed to pull an installed APK')
+                    return False
+                logger.info(
+                    'Pulled installed APK %d of %d',
+                    index + 1,
+                    len(apk_paths),
+                )
+                if (destination.is_file()
+                        and not destination.is_symlink()):
+                    apk_files.append(destination)
+            if not apk_files:
+                return False
             if len(apk_files) == 1:
                 shutil.move(apk_files[0], out_file)
                 return 'apk'
-            else:
-                # If there are multiple APK files, zip them
-                shutil.make_archive(out_file, 'zip', root_dir=temp_dir, base_dir='.')
-                # Rename the zip file to APK
-                apks_file = out_file.with_suffix('.apk')
-                os.rename(out_file.as_posix() + '.zip', apks_file)
-                return 'apks'
+            with zipfile.ZipFile(
+                    out_file, 'w', compression=zipfile.ZIP_STORED) as archive:
+                for apk_file in apk_files:
+                    archive.write(apk_file, apk_file.name)
+            return 'apks'
 
     def get_apk_packages(self, package):
         """Get all APK packages from device."""
@@ -910,15 +919,22 @@ class Environment:
             package], True)
         return out.decode('utf-8').strip()
 
-    def get_apk_parent_directory(self, package):
-        """Get parent directory of APK packages."""
+    def get_apk_paths(self, package):
+        """Get validated APK paths for an installed package."""
         package_out = self.get_apk_packages(package)
-        package_out = package_out.split()
-        if ('package:' in package_out[0]
-                and package_out[0].endswith('.apk')):
-            path = package_out[0].split('package:', 1)[1].strip()
-            return Path(path).parent
-        return False
+        apk_paths = []
+        for line in package_out.splitlines():
+            if not line.startswith('package:'):
+                continue
+            raw_path = line.split('package:', 1)[1].strip()
+            if ('..' in raw_path
+                    or not re.fullmatch(
+                        r'/data/app/[A-Za-z0-9_./=~+-]+\.apk',
+                        raw_path)):
+                logger.warning('Ignoring unsafe installed APK path')
+                continue
+            apk_paths.append(Path(raw_path))
+        return apk_paths
 
     def get_apk(self, checksum, package):
         """Download APK from device."""
@@ -928,13 +944,24 @@ class Environment:
             out_dir.mkdir(parents=True, exist_ok=True)
             out_file = out_dir / f'{checksum}.apk'
             if out_file.exists():
+                try:
+                    with zipfile.ZipFile(out_file) as archive:
+                        names = archive.namelist()
+                        nested_apks = [
+                            name for name in names
+                            if name.lower().endswith('.apk')
+                        ]
+                        if (nested_apks
+                                and 'AndroidManifest.xml' not in names):
+                            return 'apks'
+                except zipfile.BadZipFile:
+                    pass
                 return 'apk'
-            # Get APK package parent directory
-            pkg_path = self.get_apk_parent_directory(package)
-            if pkg_path:
+            apk_paths = self.get_apk_paths(package)
+            if apk_paths:
                 # Download APK package(s)
                 logger.info('Downloading APK')
-                return self.download_apk_packages(pkg_path, out_file)
+                return self.download_apk_packages(apk_paths, out_file)
         except Exception:
             logger.exception('Failed to download APK')
         return False
