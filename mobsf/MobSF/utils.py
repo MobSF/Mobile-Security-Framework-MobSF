@@ -536,9 +536,9 @@ def get_device(request=None):
                     'Multiple Android devices are online; '
                     'waiting for device selection')
             else:
-                logger.error(
+                logger.warning(
                     'Multiple Android devices are connected. '
-                    'Set MOBSF_ANALYZER_IDENTIFIER explicitly.')
+                    'An explicit device identifier is required.')
             return None
         identifier = None
     if identifier and valid_android_device_identifier(identifier):
