@@ -294,6 +294,12 @@ def touch(request):
                 args = ['keyevent', '21']
             elif event == 'right':
                 args = ['keyevent', '22']
+            elif event == 'back':
+                args = ['keyevent', '4']
+            elif event == 'home':
+                args = ['keyevent', '3']
+            elif event == 'recents':
+                args = ['keyevent', '187']
             elif event == 'swipe':
                 args = [
                     'swipe', touch_x, touch_y,
