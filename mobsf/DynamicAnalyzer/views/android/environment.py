@@ -775,7 +775,6 @@ class Environment:
         )
         if not output:
             return False
-        # codeql[py/path-injection]: caller builds outfile from validated hash
         Path(outfile).write_bytes(output)
         return True
 

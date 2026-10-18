@@ -94,7 +94,6 @@ def _regular_file(path):
             return False
     except OSError:
         return False
-    # codeql[py/path-injection]: path already contained by is_safe_path
     return Path(path).is_file()
 
 
@@ -175,7 +174,6 @@ def handle_split_apk(app_dic):
     if primary is None:
         return None
     _write_split_metadata(app_dir, primary, splits)
-    # codeql[py/path-injection]: primary is contained by is_safe_path
     move(primary, apks)
     # Sibling contents share one cap. The container unzip above keeps its
     # own cap, matching the previous single-archive limit.
