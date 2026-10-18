@@ -62,7 +62,7 @@ textarea:focus {
 
 
    <div class="row">
-          {% if devices %}
+          {% if online_devices %}
           <div class="col-md-12">
             <div class="card card-default">
               <div class="card-header">
@@ -92,6 +92,18 @@ textarea:focus {
           {% endif %}
           {% if not identifier %}
           <div class="col-md-12">
+            {% if online_devices %}
+            <div class="card bg-gradient-warning">
+              <div class="card-header">
+                <h3 class="card-title">Select an Android device</h3>
+              </div>
+              <div class="card-body">
+                MobSF found {{ online_devices|length }} online Android
+                device{{ online_devices|length|pluralize }}. Select the
+                device to use above.
+              </div>
+            </div>
+            {% else %}
             <div class="card bg-gradient-danger">
               <div class="card-header">
                 <h3 class="card-title">Android Runtime not found!</h3>
@@ -104,6 +116,7 @@ textarea:focus {
               </div>
               <!-- /.card-body -->
             </div>
+            {% endif %}
             <!-- /.card -->
           </div>
           <!-- /.col -->
