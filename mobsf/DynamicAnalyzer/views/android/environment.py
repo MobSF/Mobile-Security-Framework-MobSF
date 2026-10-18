@@ -701,20 +701,21 @@ class Environment:
 
     def screen_shot(self, outfile):
         """Take Screenshot."""
-        self.adb_command(['screencap',
-                          '-p',
-                          '/data/local/screen.png'], True, True)
-        self.adb_command(['pull',
-                          '/data/local/screen.png',
-                          outfile], False, True)
+        output = self.adb_command(
+            ['exec-out', 'screencap', '-p'],
+            silent=True,
+        )
+        if not output:
+            return False
+        Path(outfile).write_bytes(output)
+        return True
 
     def screen_stream(self):
         """Screen Stream."""
-        self.adb_command(['screencap',
-                          '-p',
-                          '/data/local/stream.png'],
-                         True, True)
-        out = self.adb_command(['cat', '/data/local/stream.png'], True, True)
+        out = self.adb_command(
+            ['exec-out', 'screencap', '-p'],
+            silent=True,
+        )
         if out:
             return b64encode(out).decode('utf-8')
         return ''
