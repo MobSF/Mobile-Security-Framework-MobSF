@@ -221,8 +221,12 @@ def android_package_status(request):
         selected_mode = mode
         if runtime != 'physical':
             if mode == 'auto':
-                selected_mode = (
-                    'legacy' if env.supports_root_adbd() else 'gadget')
+                if int(env.get_android_sdk()) > ANDROID_API_SUPPORTED:
+                    selected_mode = 'gadget'
+                else:
+                    selected_mode = (
+                        'legacy'
+                        if env.supports_root_adbd() else 'gadget')
             elif mode == 'rooted':
                 selected_mode = 'legacy'
         elif mode == 'auto':
@@ -361,15 +365,26 @@ def dynamic_analyzer(request, checksum, api=False):
                 )
         elif selected_mode != 'gadget':
             selected_mode = 'legacy'
-            runtime_prepared = env.connect_n_mount()
+            if (device_mode == 'auto'
+                    and profile.sdk > ANDROID_API_SUPPORTED):
+                logger.info(
+                    'Android API %s exceeds the legacy VM limit; '
+                    'using Frida Gadget',
+                    profile.sdk,
+                )
+                selected_mode = 'gadget'
+            else:
+                runtime_prepared = env.connect_n_mount()
             if (not runtime_prepared
+                    and selected_mode != 'gadget'
                     and device_mode == 'auto'
                     and version >= 5):
                 logger.warning(
                     'Rooted VM preparation is unavailable; '
                     'falling back to Frida Gadget')
                 selected_mode = 'gadget'
-            elif not runtime_prepared:
+            elif (not runtime_prepared
+                  and selected_mode != 'gadget'):
                 msg = f'Cannot prepare {identifier} for dynamic analysis'
                 return print_n_send_error_response(request, msg, api)
         logger.info(
