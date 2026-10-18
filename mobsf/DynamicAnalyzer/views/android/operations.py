@@ -252,6 +252,8 @@ def touch(request):
         x = request.POST['x']
         y = request.POST['y']
         event = request.POST['event']
+        end_x = request.POST.get('end_x', 0)
+        end_y = request.POST.get('end_y', 0)
         max_x = request.POST.get('max_x', 0)
         max_y = request.POST.get('max_y', 0)
 
@@ -260,6 +262,8 @@ def touch(request):
         else:
             if (not is_number(x)
                     or not is_number(y)
+                    or not is_number(end_x)
+                    or not is_number(end_y)
                     or not is_number(max_x)
                     or not is_number(max_y)):
                 return data
@@ -277,6 +281,10 @@ def touch(request):
             down_y = min(max_screen_y, touch_y + distance_y)
             touch_x = str(touch_x)
             touch_y = str(touch_y)
+            end_x = str(max(
+                0, min(int(float(end_x)), max_screen_x)))
+            end_y = str(max(
+                0, min(int(float(end_y)), max_screen_y)))
 
             if event == 'enter':
                 args = ['keyevent', '66']
@@ -286,6 +294,11 @@ def touch(request):
                 args = ['keyevent', '21']
             elif event == 'right':
                 args = ['keyevent', '22']
+            elif event == 'swipe':
+                args = [
+                    'swipe', touch_x, touch_y,
+                    end_x, end_y, '300',
+                ]
             elif event == 'swipe_up':
                 args = [
                     'swipe', touch_x, str(down_y),
