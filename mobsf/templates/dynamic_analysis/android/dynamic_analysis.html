@@ -337,6 +337,12 @@ document.querySelectorAll('.dynamic-start-form').forEach((form) => {
                     || status.gadget_replacement_required) {
                 const warnings = [];
                 if (status.confirmation_required) {
+                    if (status.selected_mode !== 'gadget') {
+                        warnings.push(
+                            'Auto mode may fall back to Frida Gadget if '
+                            + 'rooted preparation fails.'
+                        );
+                    }
                     warnings.push(
                         'Frida Gadget changes the APK signature. '
                         + 'Continuing will uninstall the existing app and '
