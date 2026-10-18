@@ -53,10 +53,11 @@ def get_runtime_dependencies(request, api=False):
         checksum = request.POST['hash']
         if not is_md5(checksum):
             return invalid_params(api)
-        package = get_package_name(checksum)
+        identifier = get_device(request)
+        package = get_package_name(checksum, identifier)
         if not package:
             return invalid_params(api)
-        get_dependencies(package, checksum, get_device(request))
+        get_dependencies(package, checksum, identifier)
         return send_response(
             {'status': 'ok'},
             api)
@@ -99,7 +100,8 @@ def instrument(request, api=False):
                 or not is_md5(md5_hash)
                 or (new_pkg and not strict_package_check(new_pkg))):
             return invalid_params(api)
-        package = get_package_name(md5_hash)
+        identifier = get_device(request)
+        package = get_package_name(md5_hash, identifier)
         if not package and not new_pkg:
             return invalid_params(api)
         frida_obj = Frida(md5_hash,
@@ -108,7 +110,7 @@ def instrument(request, api=False):
                           auxiliary_hooks.split(','),
                           extras,
                           code,
-                          get_device(request))
+                          identifier)
         if action == 'spawn':
             logger.info('Starting Instrumentation')
             if not frida_obj.spawn():

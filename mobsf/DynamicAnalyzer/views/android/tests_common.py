@@ -186,7 +186,7 @@ def download_data(request, api=False):
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)
-        package = get_package_name(md5_hash)
+        package = get_package_name(md5_hash, env.identifier)
         if not package:
             data = {'status': 'failed',
                     'message': 'App details not found in database'}
@@ -231,11 +231,6 @@ def collect_logs(request, api=False):
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)
-        package = get_package_name(md5_hash)
-        if not package:
-            data = {'status': 'failed',
-                    'message': 'App details not found in database'}
-            return send_response(data, api)
         apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         state_file = Path(apk_dir) / '.mobsf-proxy-state'
         gadget_marker = Path(apk_dir) / '.mobsf-gadget-mode'
@@ -262,6 +257,11 @@ def collect_logs(request, api=False):
         if not valid_android_device_identifier(identifier):
             identifier = get_device(request)
         env = Environment(identifier)
+        package = get_package_name(md5_hash, env.identifier)
+        if not package:
+            data = {'status': 'failed',
+                    'message': 'App details not found in database'}
+            return send_response(data, api)
         lout = os.path.join(apk_dir, 'logcat.txt')
         dout = os.path.join(apk_dir, 'dump.txt')
         try:
@@ -347,7 +347,7 @@ def tls_tests(request, api=False):
                     'transition the device Root CA'
                 ),
             }, api)
-        package = get_package_name(md5_hash)
+        package = get_package_name(md5_hash, env.identifier)
         if not package:
             data = {'status': 'failed',
                     'message': 'App details not found in database'}
