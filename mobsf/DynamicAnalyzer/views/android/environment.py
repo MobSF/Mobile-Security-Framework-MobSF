@@ -216,9 +216,13 @@ class Environment:
         writable_temp = False
         if probe_root:
             root_method, root_status = self.probe_root()
-            writable = self.adb_command_result(
-                ['test', '-w', '/data/local/tmp'], True, 5)
-            writable_temp = writable.returncode == 0
+            writable = self.adb_command(
+                ['test', '-w', '/data/local/tmp'],
+                True,
+                True,
+                timeout=5,
+            )
+            writable_temp = writable is not None
         selinux = self.adb_command(
             ['getenforce'], True, True) or b'unknown'
         profile = DeviceProfile(
@@ -279,7 +283,8 @@ class Environment:
         # Verify Installation
         return self.is_package_installed(package, out), out
 
-    def adb_command(self, cmd_list, shell=False, silent=False):
+    def adb_command(
+            self, cmd_list, shell=False, silent=False, timeout=None):
         """ADB Command wrapper."""
         args = [get_adb(),
                 '-s',
@@ -287,60 +292,54 @@ class Environment:
         if shell:
             args += ['shell']
         args += cmd_list
+        self.adb_timed_out = False
         try:
-            result = subprocess.check_output(
-                args,  # lgtm [py/command-line-injection]
-                stderr=subprocess.STDOUT)
+            result = subprocess.check_output(  # lgtm[py/command-line-injection]
+                args,
+                stderr=subprocess.STDOUT,
+                timeout=timeout,
+            )
             return result
+        except subprocess.TimeoutExpired:
+            self.adb_timed_out = True
+            if not silent:
+                logger.error('ADB command timed out')
+            return None
         except Exception:
             if not silent:
                 logger.exception('Error Running ADB Command')
             return None
-
-    def adb_command_result(self, cmd_list, shell=False, timeout=30):
-        """Run an ADB command and retain its status and output."""
-        args = [get_adb(), '-s', self.identifier]
-        if shell:
-            args.append('shell')
-        args.extend(cmd_list)
-        return subprocess.run(
-            args,  # lgtm [py/command-line-injection]
-            capture_output=True,
-            check=False,
-            timeout=timeout,
-        )
 
     def probe_root(self):
         """Detect a non-interactive root command without assumptions."""
         self.root_method = 'none'
         self.root_status = 'unavailable'
         try:
-            direct = self.adb_command_result(['id'], True, 5)
-            if direct.returncode == 0 and b'uid=0' in direct.stdout:
+            direct = self.adb_command(
+                ['id'], True, True, timeout=5)
+            if direct and b'uid=0' in direct:
                 self.root_method = 'adbd'
                 self.root_status = 'available'
                 return self.root_method, self.root_status
-            has_su = self.adb_command_result(
-                ['command', '-v', 'su'], True, 5)
-            if has_su.returncode != 0 or not has_su.stdout.strip():
+            has_su = self.adb_command(
+                ['command', '-v', 'su'], True, True, timeout=5)
+            if not has_su or not has_su.strip():
                 return self.root_method, self.root_status
             probes = (
                 ('su-c', ['su', '-c', 'id']),
                 ('su-uid', ['su', '0', 'id']),
             )
             for method, command in probes:
-                try:
-                    result = self.adb_command_result(command, True, 5)
-                except subprocess.TimeoutExpired:
+                result = self.adb_command(
+                    command, True, True, timeout=5)
+                if self.adb_timed_out:
                     self.root_status = 'interactive'
                     return self.root_method, self.root_status
-                if result.returncode == 0 and b'uid=0' in result.stdout:
+                if result and b'uid=0' in result:
                     self.root_method = method
                     self.root_status = 'available'
                     return self.root_method, self.root_status
             self.root_status = 'denied'
-        except subprocess.TimeoutExpired:
-            self.root_status = 'interactive'
         except Exception:
             logger.exception('Failed to probe Android root capabilities')
             self.root_status = 'error'
@@ -363,14 +362,14 @@ class Environment:
             else:
                 remote_command = (
                     f'su 0 sh -c {shlex.quote(root_cmd)}')
-            result = subprocess.run(
+            result = subprocess.run(  # lgtm[py/command-line-injection]
                 [
                     get_adb(),
                     '-s',
                     self.identifier,
                     'shell',
                     remote_command,
-                ],  # lgtm [py/command-line-injection]
+                ],
                 capture_output=True,
                 check=False,
                 timeout=timeout,
@@ -1095,11 +1094,12 @@ class Environment:
                 settings.FRIDA_TIMEOUT,
             )
         tcp = 'tcp:27042'
-        result = self.adb_command_result(
+        result = self.adb_command(
             ['forward', tcp, tcp],
+            silent=True,
             timeout=10,
         )
-        if result.returncode != 0:
+        if result is None:
             raise RuntimeError(
                 'Unable to forward the physical-device Frida port')
         return frida.get_device_manager().add_remote_device(
