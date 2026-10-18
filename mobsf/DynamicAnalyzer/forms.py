@@ -39,6 +39,10 @@ class AndroidDynamicAnalysisForm(forms.Form):
         required=False,
         choices=(('0', '0'), ('1', '1')),
     )
+    replace_existing_gadget = forms.ChoiceField(
+        required=False,
+        choices=(('0', '0'), ('1', '1')),
+    )
 
 
 class UploadFileForm(forms.Form):

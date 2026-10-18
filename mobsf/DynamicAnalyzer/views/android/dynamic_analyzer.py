@@ -222,12 +222,21 @@ def android_package_status(request):
             profile = env.get_device_profile(probe_root=True)
             selected_mode = 'rooted' if profile.has_root else 'gadget'
         installed = env.has_package(package)
+        gadget_state = 'none'
+        if selected_mode == 'gadget':
+            apk_path = (
+                Path(settings.UPLD_DIR) / checksum / f'{checksum}.apk')
+            gadget_state, _ = GadgetPatcher.inspect(apk_path)
         return JsonResponse({
             'status': 'ok',
             'installed': installed,
             'selected_mode': selected_mode,
+            'gadget_state': gadget_state,
             'confirmation_required': (
                 installed and selected_mode == 'gadget'
+            ),
+            'gadget_replacement_required': (
+                gadget_state == 'third_party'
             ),
         })
     except Exception:
@@ -266,6 +275,8 @@ def dynamic_analyzer(request, checksum, api=False):
         reinstall = options.get('re_install') or '1'
         install = options.get('install') or '1'
         uninstall_existing = options.get('uninstall_existing') or '0'
+        replace_existing_gadget = (
+            options.get('replace_existing_gadget') or '0')
         if not is_md5(checksum):
             # We need this check since checksum is not validated
             # in REST API
@@ -386,10 +397,20 @@ def dynamic_analyzer(request, checksum, api=False):
                     'existing app and installing a re-signed Gadget APK.',
                     api,
                 )
+            gadget_state, _ = GadgetPatcher.inspect(apk_path)
+            if (gadget_state == 'third_party'
+                    and replace_existing_gadget != '1'):
+                return print_n_send_error_response(
+                    request,
+                    'Confirmation is required before replacing an '
+                    'unknown Frida Gadget injection.',
+                    api,
+                )
             patcher = GadgetPatcher(
                 app_dir,
                 apk_path,
                 profile.abi,
+                replace_existing_gadget=replace_existing_gadget == '1',
             )
             apk_path = patcher.patch()
             if package_installed and not env.uninstall_package(package):

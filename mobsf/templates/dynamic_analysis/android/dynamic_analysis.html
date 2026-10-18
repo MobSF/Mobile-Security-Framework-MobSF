@@ -385,24 +385,42 @@ document.querySelectorAll('.dynamic-start-form').forEach((form) => {
                     status.message || 'Unable to check the installed app',
                 );
             }
-            if (status.confirmation_required) {
-                const decision = await Swal.fire({
-                    title: 'Existing app must be replaced',
-                    text: (
+            if (status.confirmation_required
+                    || status.gadget_replacement_required) {
+                const warnings = [];
+                if (status.confirmation_required) {
+                    warnings.push(
                         'Frida Gadget changes the APK signature. '
                         + 'Continuing will uninstall the existing app and '
-                        + 'delete its local app data before MobSF installs '
-                        + 'the re-signed Gadget APK.'
-                    ),
+                        + 'delete its local app data.'
+                    );
+                }
+                if (status.gadget_replacement_required) {
+                    warnings.push(
+                        'The APK already contains an unknown or third-party '
+                        + 'Frida Gadget injection. MobSF will replace its '
+                        + 'Gadget binaries and configuration.'
+                    );
+                }
+                const decision = await Swal.fire({
+                    title: 'Confirm Gadget repacking',
+                    text: warnings.join(' '),
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonText: 'Uninstall and re-sign',
+                    confirmButtonText: status.confirmation_required
+                        ? 'Uninstall and re-sign'
+                        : 'Replace Gadget',
                     cancelButtonText: 'Cancel',
                 });
                 if (!(decision.isConfirmed || decision.value)) {
                     return;
                 }
-                addHiddenInput(form, 'uninstall_existing', '1');
+                if (status.confirmation_required) {
+                    addHiddenInput(form, 'uninstall_existing', '1');
+                }
+                if (status.gadget_replacement_required) {
+                    addHiddenInput(form, 'replace_existing_gadget', '1');
+                }
             }
             dynamic_loader();
             form.submit();

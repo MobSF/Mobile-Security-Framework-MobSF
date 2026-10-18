@@ -1,10 +1,12 @@
 """Build a signed APK containing Frida Gadget."""
+import hashlib
 import json
 import logging
 import os
 import re
 import secrets
 import shutil
+import ssl
 import subprocess
 import threading
 import zipfile
@@ -42,6 +44,8 @@ SUPPORTED_ABIS = {
     'x86': ('x86', 'x86'),
     'x86_64': ('x86_64', 'x86_64'),
 }
+PATCH_METADATA = 'assets/mobsf/gadget.json'
+PATCH_SCHEMA = 1
 
 
 class GadgetPatcher:
@@ -50,10 +54,13 @@ class GadgetPatcher:
     _keystore_lock = threading.Lock()
     _patch_lock = threading.Lock()
 
-    def __init__(self, app_dir, apk_file, android_abi) -> None:
+    def __init__(
+            self, app_dir, apk_file, android_abi,
+            replace_existing_gadget=False) -> None:
         self.app_dir = Path(app_dir).resolve()
         self.apk_file = Path(apk_file).resolve()
         self.android_abi = android_abi
+        self.replace_existing_gadget = replace_existing_gadget
         self.work_dir = self.app_dir / 'apktool_gadget'
         self.unsigned_apk = self.app_dir / 'mobsf-gadget-unsigned.apk'
         self.output_apk = self.app_dir / 'mobsf-gadget.apk'
@@ -64,6 +71,36 @@ class GadgetPatcher:
         else:
             self.apktool_path = static_tools / 'apktool_3.0.3.jar'
         self.apksigner_path = static_tools / 'apksigner.jar'
+        self.patch_metadata = None
+
+    @staticmethod
+    def inspect(apk_file):
+        """Identify MobSF or unknown Frida Gadget injection."""
+        apk_file = Path(apk_file)
+        if not apk_file.is_file() or is_pipe_or_link(apk_file):
+            raise ValueError('APK is not a regular file')
+        try:
+            with zipfile.ZipFile(apk_file) as apk:
+                names = set(apk.namelist())
+                if PATCH_METADATA in names:
+                    metadata_info = apk.getinfo(PATCH_METADATA)
+                    if metadata_info.file_size > 65536:
+                        raise ValueError('MobSF Gadget metadata is too large')
+                    metadata = json.loads(
+                        apk.read(PATCH_METADATA).decode('utf-8'))
+                    if (not isinstance(metadata, dict)
+                            or metadata.get('schema') != PATCH_SCHEMA
+                            or metadata.get('producer') != 'MobSF'):
+                        raise ValueError('Invalid MobSF Gadget metadata')
+                    return 'mobsf', metadata
+                gadget = any(
+                    name.endswith('/libfrida-gadget.so')
+                    for name in names
+                )
+                return ('third_party', None) if gadget else ('none', None)
+        except (OSError, zipfile.BadZipFile, UnicodeDecodeError,
+                json.JSONDecodeError) as exp:
+            raise ValueError('Unable to inspect APK Gadget metadata') from exp
 
     def _validate(self):
         """Validate fixed inputs and required existing tools."""
@@ -77,6 +114,12 @@ class GadgetPatcher:
         if self.android_abi not in SUPPORTED_ABIS:
             raise ValueError(
                 f'Unsupported Android architecture: {self.android_abi}')
+        gadget_state, metadata = self.inspect(self.apk_file)
+        if gadget_state == 'third_party' and not self.replace_existing_gadget:
+            raise ValueError(
+                'APK contains an unknown Frida Gadget injection')
+        self.gadget_state = gadget_state
+        self.patch_metadata = metadata
         for tool in (self.apktool_path, self.apksigner_path):
             if not tool.is_file() or is_pipe_or_link(tool):
                 raise RuntimeError(
@@ -156,11 +199,42 @@ class GadgetPatcher:
         if not re.fullmatch(class_pattern, original):
             raise ValueError('Unsupported Android Application class name')
         digest = sha256(self.apk_file)[:12]
-        if not self._inject_existing_application(original):
+        strategy = None
+        if self.patch_metadata:
+            original_application = self.patch_metadata.get(
+                'original_application')
+            loader_class = self.patch_metadata.get('loader_class')
+            loader_strategy = self.patch_metadata.get('loader_strategy')
+            if (not isinstance(original_application, str)
+                    or not re.fullmatch(class_pattern, original_application)
+                    or not isinstance(loader_class, str)
+                    or not re.fullmatch(class_pattern, loader_class)
+                    or loader_strategy not in (
+                        'existing_application',
+                        'generated_application',
+                        'existing_gadget',
+            )
+                    or loader_class != original):
+                raise ValueError('Invalid MobSF Gadget loader metadata')
+            loader_smali = self._find_application_smali(loader_class)
+            if (not loader_smali
+                    or '"frida-gadget"' not in loader_smali.read_text(
+                        'utf-8', 'ignore')):
+                raise ValueError('MobSF Gadget loader is missing')
+            self.original_application = original_application
+            self.loader_class = loader_class
+            self.loader_strategy = loader_strategy
+        else:
+            strategy = self._inject_existing_application(original)
+            self.original_application = original
+            self.loader_class = original
+            self.loader_strategy = strategy or 'generated_application'
+        if not self.patch_metadata and not strategy:
             loader = f'com.mobsf.g{digest}.MobSFApplication'
             loader_type = f'L{loader.replace(".", "/")};'
             parent_type = f'L{original.replace(".", "/")};'
             application.set(f'{ANDROID_ATTR}name', loader)
+            self.loader_class = loader
             smali = self.work_dir / 'smali' / Path(*loader.split('.'))
             smali = smali.with_suffix('.smali')
             smali.parent.mkdir(parents=True, exist_ok=True)
@@ -214,6 +288,11 @@ class GadgetPatcher:
         ca_target = raw_dir / f'{ca_name}.pem'
         if ca_target.is_symlink():
             raise ValueError('Unsafe MobSF CA resource path')
+        for old_ca in raw_dir.glob('mobsf_ca_*.pem'):
+            if old_ca != ca_target:
+                if old_ca.is_symlink():
+                    raise ValueError('Unsafe previous MobSF CA resource')
+                old_ca.unlink()
         shutil.copyfile(ca_file, ca_target)
         self.embedded_ca_resource = f'res/raw/{ca_name}.pem'
 
@@ -258,18 +337,18 @@ class GadgetPatcher:
         )
 
         removed_pins = 0
-        trust_updates = 0
+        trusted_configs = 0
         for config_path in config_paths:
-            pins, updates = self._patch_network_security_config(
+            pins, trusted = self._patch_network_security_config(
                 config_path,
                 ca_reference,
             )
             removed_pins += pins
-            trust_updates += updates
+            trusted_configs += trusted
         logger.info(
-            'Embedded the MobSF CA in %d trust configuration(s) '
+            'Ensured MobSF CA trust in %d configuration(s) '
             'and removed %d XML pin set(s)',
-            trust_updates,
+            trusted_configs,
             removed_pins,
         )
 
@@ -303,7 +382,7 @@ class GadgetPatcher:
                 'debug-overrides',
             )
         ]
-        trust_updates = 0
+        trusted_configs = 0
         for container in containers:
             anchors = next(
                 (child for child in container
@@ -325,6 +404,13 @@ class GadgetPatcher:
                 for child in anchors
                 if self._local_xml_tag(child) == 'certificates'
             }
+            for certificate in tuple(anchors):
+                source = certificate.get('src', '')
+                if (self._local_xml_tag(certificate) == 'certificates'
+                        and source.startswith('@raw/mobsf_ca_')
+                        and source != ca_reference):
+                    anchors.remove(certificate)
+                    sources.discard(source)
             if ca_reference not in sources:
                 XmlElementTree.SubElement(
                     anchors,
@@ -334,29 +420,33 @@ class GadgetPatcher:
                         'overridePins': 'true',
                     },
                 )
-                trust_updates += 1
+            trusted_configs += 1
         tree.write(
             config_path,
             encoding='utf-8',
             xml_declaration=True,
         )
-        return removed_pins, trust_updates
+        return removed_pins, trusted_configs
 
-    def _inject_existing_application(self, class_name):
-        """Inject a load call into an existing Application smali class."""
+    def _find_application_smali(self, class_name):
+        """Find one decoded application class."""
         relative = Path(*class_name.split('.')).with_suffix('.smali')
-        application_smali = None
         for smali_dir in self.work_dir.glob('smali*'):
             candidate = smali_dir / relative
             if candidate.is_file() and not candidate.is_symlink():
-                application_smali = candidate
-                break
+                return candidate
+        return None
+
+    def _inject_existing_application(self, class_name):
+        """Inject a load call into an existing Application smali class."""
+        application_smali = self._find_application_smali(class_name)
         if not application_smali:
-            return False
+            return None
         source = application_smali.read_text('utf-8', 'ignore')
         if re.search(r'const-string \S+, "frida-gadget"', source):
-            raise ValueError(
-                'Application already contains a Frida Gadget loader')
+            if self.replace_existing_gadget:
+                return 'existing_gadget'
+            raise ValueError('Application contains an unknown Gadget loader')
         method = re.search(
             r'(?ms)^\.method[^\n]* static constructor <clinit>\(\)V\n'
             r'(?P<body>.*?)^\.end method',
@@ -400,11 +490,18 @@ class GadgetPatcher:
             )
             source = source[:method.start('body')] + body + source[method.end('body'):]
         application_smali.write_text(source, encoding='utf-8')
-        return True
+        return 'existing_application'
 
     def _install_gadget(self):
         """Copy the matched Gadget and its fixed local-only config."""
         frida_arch, android_abi = SUPPORTED_ABIS[self.android_abi]
+        for pattern in (
+                'lib/*/libfrida-gadget.so',
+                'lib/*/libfrida-gadget.config.so'):
+            for previous in self.work_dir.glob(pattern):
+                if previous.is_symlink():
+                    raise ValueError('Unsafe existing Gadget resource')
+                previous.unlink()
         updater = FridaServerUpdater('android', frida_version)
         if not updater.update_frida_gadget(frida_arch):
             raise RuntimeError('Unable to obtain a matching Frida Gadget')
@@ -527,6 +624,64 @@ class GadgetPatcher:
             os.chmod(keystore, 0o600)
             return keystore, password
 
+    def _signing_certificate_digest(self):
+        """Return the SHA-256 identity of the local lab certificate."""
+        keystore, password = self._signing_credentials()
+        env = os.environ.copy()
+        env['MOBSF_KEYSTORE_PASSWORD'] = password
+        args = [
+            self._keytool_path(),
+            '-exportcert',
+            '-rfc',
+            '-keystore',
+            keystore.as_posix(),
+            '-storepass:env',
+            'MOBSF_KEYSTORE_PASSWORD',
+            '-alias',
+            'mobsf-dynamic',
+        ]
+        pem = self._run(args, 'Lab certificate export', env)
+        try:
+            der = ssl.PEM_cert_to_DER_cert(
+                pem.decode('ascii', 'strict'))
+        except ValueError as exp:
+            raise RuntimeError('Invalid MobSF lab certificate') from exp
+        return hashlib.sha256(der).hexdigest()
+
+    def _write_patch_metadata(self, package):
+        """Record enough state to refresh a MobSF-patched APK safely."""
+        signing_digest = self._signing_certificate_digest()
+        previous_signer = (
+            self.patch_metadata.get('signing_certificate_sha256')
+            if self.patch_metadata else None
+        )
+        if previous_signer and previous_signer != signing_digest:
+            logger.warning(
+                'Re-signing a MobSF-patched APK with a different lab key')
+        metadata = {
+            'schema': PATCH_SCHEMA,
+            'producer': 'MobSF',
+            'package': package,
+            'frida_version': frida_version,
+            'android_abi': self.android_abi,
+            'original_application': self.original_application,
+            'loader_class': self.loader_class,
+            'loader_strategy': self.loader_strategy,
+            'ca_resource': self.embedded_ca_resource,
+            'network_security_resources': list(
+                self.network_security_resources),
+            'signing_certificate_sha256': signing_digest,
+        }
+        metadata_file = self.work_dir / PATCH_METADATA
+        metadata_file.parent.mkdir(parents=True, exist_ok=True)
+        if metadata_file.is_symlink():
+            raise ValueError('Unsafe MobSF Gadget metadata path')
+        metadata_file.write_text(
+            json.dumps(metadata, sort_keys=True, separators=(',', ':')),
+            encoding='utf-8',
+        )
+        self.patch_metadata = metadata
+
     def _sign(self):
         """Sign and verify the rebuilt APK with the local lab key."""
         keystore, password = self._signing_credentials()
@@ -565,6 +720,7 @@ class GadgetPatcher:
         _, android_abi = SUPPORTED_ABIS[self.android_abi]
         expected = {
             'AndroidManifest.xml',
+            PATCH_METADATA,
             f'lib/{android_abi}/libfrida-gadget.so',
             f'lib/{android_abi}/libfrida-gadget.config.so',
             self.embedded_ca_resource,
@@ -595,6 +751,8 @@ class GadgetPatcher:
                 self.android_abi,
             )
             self._install_gadget()
+            logger.info('Writing MobSF Gadget refresh metadata')
+            self._write_patch_metadata(package)
             logger.info('Rebuilding the Frida Gadget APK')
             self._build()
             logger.info('Signing the Frida Gadget APK with the MobSF lab key')
