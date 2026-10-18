@@ -521,6 +521,16 @@ class Environment:
                  'http_proxy',
                  '{}:{}'.format(proxy_ip, proxy_port)], True)
 
+    def get_mobsf_proxy(self, version):
+        """Return the proxy value MobSF applies for this Android version."""
+        proxy_ip = (
+            get_proxy_ip(self.identifier)
+            if version < 5 else settings.PROXY_IP
+        )
+        if not proxy_ip:
+            return ''
+        return f'{proxy_ip}:{settings.PROXY_PORT}'
+
     def unset_global_proxy(self):
         """Unset Global Proxy on device."""
         logger.info('Removing Global Proxy for Android VM')
@@ -563,33 +573,43 @@ class Environment:
 
     def restore_global_proxy(self, value):
         """Restore a previously recorded global HTTP proxy."""
+        results = []
         if value:
-            self.adb_command([
+            results.append(self.adb_command([
                 'settings',
                 'put',
                 'global',
                 'http_proxy',
                 value,
-            ], True)
+            ], True))
         else:
-            self.adb_command([
+            results.append(self.adb_command([
                 'settings',
                 'delete',
                 'global',
                 'http_proxy',
-            ], True)
-            self.adb_command([
+            ], True))
+            results.append(self.adb_command([
                 'settings',
                 'delete',
                 'global',
                 'global_http_proxy_host',
-            ], True)
-            self.adb_command([
+            ], True))
+            results.append(self.adb_command([
                 'settings',
                 'delete',
                 'global',
                 'global_http_proxy_port',
-            ], True)
+            ], True))
+        restored = (
+            all(result is not None for result in results)
+            and self.get_global_proxy() == value
+        )
+        if restored:
+            logger.info('Restored the previous Android proxy setting')
+        else:
+            logger.error('Failed to restore the previous Android proxy')
+        return restored
 
     def enable_adb_reverse_tcp(self, version):
         """Enable ADB Reverse TCP for Proxy."""

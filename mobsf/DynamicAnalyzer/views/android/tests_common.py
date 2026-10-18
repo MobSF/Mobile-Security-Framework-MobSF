@@ -251,6 +251,7 @@ def collect_logs(request, api=False):
             logger.info('Stopping app')
             state_file = Path(apk_dir) / '.mobsf-proxy-state'
             gadget_marker = Path(apk_dir) / '.mobsf-gadget-mode'
+            proxy_restored = True
             if state_file.exists() and not state_file.is_symlink():
                 previous_proxy = ''
                 proxy_state = {}
@@ -266,14 +267,19 @@ def collect_logs(request, api=False):
                     value = proxy_state.get('proxy')
                     if isinstance(value, str):
                         previous_proxy = value
-                env.restore_global_proxy(previous_proxy)
+                proxy_restored = env.restore_global_proxy(previous_proxy)
                 if proxy_state.get('remove_reverse') is True:
                     env.disable_adb_reverse_tcp()
             else:
                 env.unset_global_proxy()
+                proxy_restored = env.get_global_proxy() == ''
             env.remove_frida_forward()
-            state_file.unlink(missing_ok=True)
+            if proxy_restored:
+                state_file.unlink(missing_ok=True)
             gadget_marker.unlink(missing_ok=True)
+            if not proxy_restored:
+                raise RuntimeError(
+                    'Failed to restore the Android proxy setting')
         data = {'status': 'ok'}
     except Exception as exp:
         logger.exception('Data Collection & Clean Up failed')
