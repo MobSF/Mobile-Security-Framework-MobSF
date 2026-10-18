@@ -201,7 +201,11 @@ def take_screenshot(request, api=False):
         outile = '{}screenshot-{}.png'.format(
             screen_dir,
             str(rand_int))
-        env.screen_shot(outile)
+        if not env.screen_shot(outile):
+            return send_response({
+                'status': 'failed',
+                'message': 'Failed to capture screenshot',
+            }, api)
         logger.info('Screenshot captured')
         data = {'status': 'ok'}
     except Exception as exp:
@@ -222,6 +226,8 @@ def screen_cast(request):
     try:
         env = Environment(get_device(request))
         b64dat = env.screen_stream()
+        if not b64dat:
+            return send_response(data)
         data = {
             'status': 'ok',
             'message': f'data:image/png;base64,{b64dat}'}
