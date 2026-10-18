@@ -108,6 +108,35 @@
       -webkit-user-drag: none;
     }
 
+    .device-navigation {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      margin-top: 8px;
+      padding: 4px 16px 0;
+    }
+
+    .device-nav-button {
+      width: 52px;
+      height: 36px;
+      color: #f9fafb;
+      background: transparent;
+      border: 0;
+      border-radius: 10px;
+      transition: background-color 0.15s ease, opacity 0.15s ease;
+    }
+
+    .device-nav-button:hover:not(:disabled),
+    .device-nav-button:focus:not(:disabled) {
+      background: #374151;
+      outline: none;
+    }
+
+    .device-nav-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.35;
+    }
+
     @media (max-width: 576px) {
       .device-preview {
         width: 100%;
@@ -192,6 +221,17 @@
                 <div align="center">
                   <div class="device-preview" id="container" tabindex="0" style="outline: none;">
                     <img src="{% url 'download' %}screen/screen.png" class="device-preview-screen" id="my" draggable="false" alt="Android device screen" onerror="$('#my').attr('src','/static/img/loading.jpg')">
+                    <div class="device-navigation" aria-label="Android navigation controls">
+                      <button type="button" class="device-nav-button" data-android-key="back" title="Back" aria-label="Back" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                      </button>
+                      <button type="button" class="device-nav-button" data-android-key="home" title="Home" aria-label="Home" disabled>
+                        <i class="far fa-circle"></i>
+                      </button>
+                      <button type="button" class="device-nav-button" data-android-key="recents" title="App Switcher" aria-label="App Switcher" disabled>
+                        <i class="far fa-square"></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -1063,6 +1103,7 @@ $("#screen").click(function() {
           $("#screen").html("<i class='fa fa-mobile'></i> Stop Screen");
           print_status('Screen streaming started.')
           touch = "on";
+          $('.device-nav-button').prop('disabled', false);
           screenfunc = setInterval(function(){
               // Capture Screen
               action('{% url 'screen_cast' %}', {}, function(json) {
@@ -1078,6 +1119,7 @@ $("#screen").click(function() {
           $('#my').attr('src', '/static/img/loading.jpg');
           clearInterval(screenfunc);
           touch = "off";
+          $('.device-nav-button').prop('disabled', true);
       }
       return false;  
 }); 
@@ -1103,6 +1145,12 @@ function android_input(event, x, y, endX = 0, endY = 0){
     });
   }
 }
+
+$('.device-nav-button').on('click', function(e) {
+  e.preventDefault();
+  android_input($(this).data('android-key'), 0, 0);
+  $('#container').trigger('focus');
+});
 
 function getXY(e, t){
       const rect = t.getBoundingClientRect();
