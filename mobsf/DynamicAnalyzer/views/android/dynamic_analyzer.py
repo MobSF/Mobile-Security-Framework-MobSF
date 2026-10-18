@@ -366,8 +366,7 @@ def dynamic_analyzer(request, checksum, api=False):
                     f'Android root is {profile.root_status}. For a stock '
                     'device, select Pull & Static Analysis for the installed '
                     'app, wait for the scan to complete, then start it from '
-                    'Apps Available using Frida Gadget. Split APK/APKS apps '
-                    'are not currently supported by Gadget mode.',
+                    'Apps Available using Frida Gadget.',
                     api,
                 )
         elif selected_mode != 'gadget':
@@ -449,6 +448,8 @@ def dynamic_analyzer(request, checksum, api=False):
         # Clean up previous analysis
         env.dz_cleanup(checksum)
         apk_path = app_dir / f'{checksum}.apk'
+        install_apks = None
+        root_ca_embedded = True
         if selected_mode == 'gadget':
             if install != '1':
                 return print_n_send_error_response(
@@ -456,12 +457,19 @@ def dynamic_analyzer(request, checksum, api=False):
                     'Frida Gadget mode must install the patched APK',
                     api,
                 )
-            if (static_android_db
-                    and Path(static_android_db.FILE_NAME).suffix.lower()
-                    != '.apk'):
+            split_apks = GadgetPatcher.find_split_apks(
+                app_dir,
+                apk_path,
+            )
+            scan_suffix = (
+                Path(static_android_db.FILE_NAME).suffix.lower()
+                if static_android_db else '.apk'
+            )
+            if scan_suffix in ('.apks', '.xapk') and not split_apks:
                 return print_n_send_error_response(
                     request,
-                    'Frida Gadget mode does not support split APK/APKS apps',
+                    'Split APK metadata is unavailable; pull and scan '
+                    'the installed app again',
                     api,
                 )
             package_installed = env.has_package(package)
@@ -484,6 +492,11 @@ def dynamic_analyzer(request, checksum, api=False):
             selected_abi = GadgetPatcher.select_abi(
                 apk_path,
                 profile.abis,
+                split_apks,
+            )
+            split_apks = GadgetPatcher.compatible_splits(
+                split_apks,
+                selected_abi,
             )
             logger.info(
                 'Selected Frida Gadget ABI: %s',
@@ -494,8 +507,11 @@ def dynamic_analyzer(request, checksum, api=False):
                 apk_path,
                 selected_abi,
                 replace_existing_gadget=replace_existing_gadget == '1',
+                split_apks=split_apks,
             )
             apk_path = patcher.patch()
+            install_apks = patcher.install_apks
+            root_ca_embedded = patcher.root_ca_embedded
             if package_installed and not env.uninstall_package(package):
                 return print_n_send_error_response(
                     request,
@@ -558,12 +574,24 @@ def dynamic_analyzer(request, checksum, api=False):
         if env.get_global_proxy() != env.get_mobsf_proxy(version):
             raise RuntimeError('Failed to configure the Android proxy')
         if install == '1':
-            status, output = env.install_apk(
-                apk_path.as_posix(),
-                package,
-                '0' if physical or selected_mode == 'gadget' else reinstall,
-                modify_verifier=selected_mode != 'gadget',
-            )
+            if install_apks and len(install_apks) > 1:
+                status, output = env.install_apks(
+                    install_apks,
+                    package,
+                    '0',
+                    modify_verifier=False,
+                )
+            else:
+                status, output = env.install_apk(
+                    apk_path.as_posix(),
+                    package,
+                    (
+                        '0'
+                        if physical or selected_mode == 'gadget'
+                        else reinstall
+                    ),
+                    modify_verifier=selected_mode != 'gadget',
+                )
             if not status:
                 restored = env.restore_global_proxy(previous_proxy)
                 if reverse_created:
@@ -586,6 +614,7 @@ def dynamic_analyzer(request, checksum, api=False):
                    'hash': checksum,
                    'android_version': version,
                    'device_mode': selected_mode,
+                   'root_ca_embedded': root_ca_embedded,
                    'device_identifier': identifier,
                    'device_model': device_model,
                    'tls_tests_available': (
