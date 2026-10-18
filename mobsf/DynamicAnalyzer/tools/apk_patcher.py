@@ -52,7 +52,31 @@ class GadgetPatcher:
     """Create an independently signed, single-ABI Gadget APK."""
 
     _keystore_lock = threading.Lock()
-    _patch_lock = threading.Lock()
+    _patch_locks = {}
+    _patch_locks_guard = threading.Lock()
+
+    @staticmethod
+    def apk_abis(apk_file):
+        """Return native ABIs present in an APK."""
+        with zipfile.ZipFile(apk_file) as apk:
+            return {
+                parts[1]
+                for name in apk.namelist()
+                if len(parts := Path(name).parts) >= 3
+                and parts[0] == 'lib'
+                and parts[1] in SUPPORTED_ABIS
+            }
+
+    @classmethod
+    def select_abi(cls, apk_file, device_abis):
+        """Select an ABI supported by both the device and APK."""
+        app_abis = cls.apk_abis(apk_file)
+        for abi in device_abis:
+            if abi in SUPPORTED_ABIS and (
+                    not app_abis or abi in app_abis):
+                return abi
+        raise ValueError(
+            'APK native libraries are incompatible with the Android device')
 
     def __init__(
             self, app_dir, apk_file, android_abi,
@@ -124,14 +148,7 @@ class GadgetPatcher:
                 'APK contains an unknown Frida Gadget injection')
         self.gadget_state = gadget_state
         self.patch_metadata = metadata
-        with zipfile.ZipFile(self.apk_file) as apk:
-            self.app_abis = {
-                parts[1]
-                for name in apk.namelist()
-                if len(parts := Path(name).parts) >= 3
-                and parts[0] == 'lib'
-                and parts[1] in SUPPORTED_ABIS
-            }
+        self.app_abis = self.apk_abis(self.apk_file)
         if self.app_abis and self.android_abi not in self.app_abis:
             raise ValueError(
                 'APK native libraries are incompatible with the '
@@ -230,20 +247,6 @@ class GadgetPatcher:
         class_pattern = r'(?:[A-Za-z_$][\w$]*\.)*[A-Za-z_$][\w$]*'
         if not re.fullmatch(class_pattern, original):
             raise ValueError('Unsupported Android Application class name')
-        original_smali = None
-        relative = Path(*original.split('.')).with_suffix('.smali')
-        for smali_dir in self.work_dir.glob('smali*'):
-            candidate = smali_dir / relative
-            if candidate.is_file() and not candidate.is_symlink():
-                original_smali = candidate
-                break
-        if original_smali:
-            source = original_smali.read_text('utf-8', 'ignore')
-            if re.search(
-                    r'(?m)^\.class\b[^\n]*\bfinal\b',
-                    source):
-                raise ValueError(
-                    'Final Android Application classes cannot be wrapped')
         digest = sha256(self.apk_file)[:12]
         strategy = None
         if self.patch_metadata:
@@ -307,7 +310,7 @@ class GadgetPatcher:
                 encoding='utf-8',
             )
         application.set(f'{ANDROID_ATTR}extractNativeLibs', 'true')
-        self._configure_network_security(application, digest)
+        self._configure_network_security(root, application, digest)
         XmlElementTree.register_namespace('android', ANDROID_NS)
         tree.write(
             manifest,
@@ -321,7 +324,7 @@ class GadgetPatcher:
         """Return an XML tag without an optional namespace."""
         return element.tag.rsplit('}', 1)[-1]
 
-    def _configure_network_security(self, application, digest):
+    def _configure_network_security(self, manifest, application, digest):
         """Embed the MobSF CA and remove XML network-security pins."""
         ca_file = Path(get_ca_file()).resolve()
         if not ca_file.is_file() or is_pipe_or_link(ca_file):
@@ -344,6 +347,19 @@ class GadgetPatcher:
 
         network_config = application.get(
             f'{ANDROID_ATTR}networkSecurityConfig')
+        cleartext_policy = application.get(
+            f'{ANDROID_ATTR}usesCleartextTraffic')
+        if cleartext_policy not in ('true', 'false'):
+            target_sdk = 1
+            uses_sdk = manifest.find('uses-sdk')
+            if uses_sdk is not None:
+                try:
+                    target_sdk = int(uses_sdk.get(
+                        f'{ANDROID_ATTR}targetSdkVersion', '1'))
+                except ValueError:
+                    target_sdk = 1
+            cleartext_policy = (
+                'false' if target_sdk >= 28 else 'true')
         if network_config:
             reference = re.fullmatch(
                 r'@(?:[A-Za-z][\w.]*:)?xml/([a-zA-Z0-9_]+)',
@@ -388,6 +404,7 @@ class GadgetPatcher:
             pins, trusted = self._patch_network_security_config(
                 config_path,
                 ca_reference,
+                cleartext_policy,
             )
             removed_pins += pins
             trusted_configs += trusted
@@ -398,7 +415,8 @@ class GadgetPatcher:
             removed_pins,
         )
 
-    def _patch_network_security_config(self, config_path, ca_reference):
+    def _patch_network_security_config(
+            self, config_path, ca_reference, cleartext_policy):
         """Merge the MobSF CA into one network-security resource."""
         tree = ElementTree.parse(config_path)
         root = tree.getroot()
@@ -418,7 +436,11 @@ class GadgetPatcher:
             None,
         )
         if base_config is None:
-            base_config = XmlElementTree.SubElement(root, 'base-config')
+            base_config = XmlElementTree.SubElement(
+                root,
+                'base-config',
+                {'cleartextTrafficPermitted': cleartext_policy},
+            )
 
         containers = [
             element for element in root.iter()
@@ -518,14 +540,14 @@ class GadgetPatcher:
             if not registers:
                 raise ValueError(
                     'Unsupported Application static initializer')
-            register = int(registers.group('count'))
+            register_count = int(registers.group('count'))
             directive = (
                 f'{registers.group("indent")}.{registers.group("kind")} '
-                f'{register + 1}'
+                f'{max(1, register_count)}'
             )
             load_call = (
-                f'\n    const-string v{register}, "frida-gadget"\n'
-                f'    invoke-static {{v{register}}}, '
+                '\n    const-string v0, "frida-gadget"\n'
+                '    invoke-static {v0}, '
                 'Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V'
             )
             body = (
@@ -717,8 +739,10 @@ class GadgetPatcher:
                 'MobSF signing key')
         metadata = {
             'schema': PATCH_SCHEMA,
+            'patch_revision': 1,
             'producer': 'MobSF',
             'package': package,
+            'source_apk_sha256': sha256(self.apk_file),
             'frida_version': frida_version,
             'android_abi': self.android_abi,
             'original_application': self.original_application,
@@ -738,6 +762,34 @@ class GadgetPatcher:
             encoding='utf-8',
         )
         self.patch_metadata = metadata
+
+    def _cached_output(self):
+        """Return a current patched artifact when no inputs changed."""
+        if (not self.output_apk.is_file()
+                or is_pipe_or_link(self.output_apk)):
+            return None
+        try:
+            state, metadata = self.inspect(self.output_apk)
+            if state != 'mobsf' or not metadata:
+                return None
+            ca_digest = sha256(Path(get_ca_file()).resolve())[:12]
+            expected_ca = f'res/raw/mobsf_ca_{ca_digest}.pem'
+            expected_signer = self._signing_certificate_digest()
+            if (
+                metadata.get('patch_revision') == 1
+                and metadata.get('source_apk_sha256') == sha256(self.apk_file)
+                and metadata.get('frida_version') == frida_version
+                and metadata.get('android_abi') == self.android_abi
+                and metadata.get('ca_resource') == expected_ca
+                and metadata.get('signing_certificate_sha256')
+                == expected_signer
+            ):
+                logger.info('Using cached Frida Gadget APK')
+                return self.output_apk
+        except Exception:
+            logger.warning(
+                'Ignoring invalid cached Frida Gadget APK')
+        return None
 
     def _sign(self):
         """Sign and verify the rebuilt APK with the MobSF signing key."""
@@ -789,13 +841,21 @@ class GadgetPatcher:
 
     def patch(self):
         """Build, sign, and return a Frida Gadget APK."""
-        with self._patch_lock:
+        with self._patch_locks_guard:
+            patch_lock = self._patch_locks.setdefault(
+                self.app_dir,
+                threading.Lock(),
+            )
+        with patch_lock:
             return self._patch()
 
     def _patch(self):
         """Run the serialized Gadget build."""
         logger.info('Validating APK for Frida Gadget injection')
         self._validate()
+        cached = self._cached_output()
+        if cached:
+            return cached
         self.output_apk.unlink(missing_ok=True)
         self.unsigned_apk.unlink(missing_ok=True)
         try:

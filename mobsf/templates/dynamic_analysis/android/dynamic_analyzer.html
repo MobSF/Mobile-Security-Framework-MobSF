@@ -193,7 +193,9 @@
                   {% endif %}
                   {% if android_version >= 5 %}
                   <a href="#" id="proxy" class="btn btn-primary" role="button"><i class="fas fa-eye-slash"></i> Unset HTTP(S) Proxy</a>
+                  {% if tls_tests_available %}
                   <a href="#" id="tls_test" class="btn btn-primary" role="button"  data-toggle="modal" data-target="#tls_modal"><i class="fa fa-lock"></i> TLS/SSL Security Tester</a>
+                  {% endif %}
                   {% endif %}
                   <a href="#" id="expactt" class="btn btn-primary" role="button"><i class="fa fa-language"></i> Exported Activity Tester</a>
                   <a href="#" id="actt" class="btn btn-primary" role="button"><i class="fa fa-rocket"></i> Activity Tester</a>
@@ -1627,7 +1629,10 @@ $("#deps").click(function() {
 function dump(){
   action(document.location.origin + '/download_data/', { hash: '{{ hash }}'}, function(json) {
     if (json.status==="ok"){
-      print_status("Application data dumped!");
+      if (json.data_collected === false)
+        print_status(json.message);
+      else
+        print_status("Application data dumped!");
       print_status("Generating Report...Please Wait!");
       //Call reporting
       window.location = document.location.origin+"/dynamic_report/{{ hash }}";

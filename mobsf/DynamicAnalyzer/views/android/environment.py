@@ -62,6 +62,7 @@ class DeviceProfile:
     android_version: float
     sdk: int
     abi: str
+    abis: tuple
     root_method: str = 'none'
     root_status: str = 'not_checked'
     selinux: str = 'unknown'
@@ -249,6 +250,7 @@ class Environment:
             android_version=self.get_android_version(),
             sdk=int(self.get_android_sdk()),
             abi=self.get_android_arch(),
+            abis=self.get_android_abis(),
             root_method=root_method,
             root_status=root_status,
             selinux=selinux.decode('utf-8', 'ignore').strip().lower(),
@@ -663,26 +665,29 @@ class Environment:
         """Enable ADB Reverse TCP for Proxy."""
         # Androd 5+ supported
         if not version >= 5:
-            return
+            return False
         proxy_port = settings.PROXY_PORT
         logger.info('Enabling ADB Reverse TCP on %s', proxy_port)
         tcp = 'tcp:{}'.format(proxy_port)
         try:
-            proc = subprocess.Popen([get_adb(),
-                                     '-s', self.identifier,
-                                     'reverse', tcp, tcp],
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-            _, stderr = proc.communicate()
+            result = self.adb_command_result(
+                ['reverse', '--no-rebind', tcp, tcp],
+                timeout=10,
+            )
+            stderr = result.stderr
             if b'error: closed' in stderr:
                 logger.warning('ADB Reverse TCP works only on'
                                ' Android 5.0 and above. Please '
                                'configure a reachable IP Address'
                                ' in Android proxy settings.')
-            elif stderr:
+                return False
+            elif result.returncode != 0:
                 logger.error(stderr.decode('utf-8').replace('\n', ''))
+                return False
+            return True
         except Exception:
             logger.exception('Enabling ADB Reverse TCP')
+            return False
 
     def disable_adb_reverse_tcp(self):
         """Remove the proxy reverse created by MobSF."""
@@ -695,6 +700,11 @@ class Environment:
     def has_adb_reverse_tcp(self):
         """Check whether the MobSF proxy reverse already exists."""
         tcp = f'tcp:{settings.PROXY_PORT}'
+        return self.get_adb_reverse_target() == tcp
+
+    def get_adb_reverse_target(self):
+        """Return the host target using MobSF's device proxy port."""
+        tcp = f'tcp:{settings.PROXY_PORT}'
         output = self.adb_command(
             ['reverse', '--list'],
             silent=True,
@@ -703,9 +713,9 @@ class Environment:
             return False
         for line in output.decode('utf-8', 'ignore').splitlines():
             parts = line.split()
-            if len(parts) >= 3 and parts[-2:] == [tcp, tcp]:
-                return True
-        return False
+            if len(parts) >= 3 and parts[-2] == tcp:
+                return parts[-1]
+        return None
 
     def start_clipmon(self):
         """Start Clipboard Monitoring."""
@@ -807,6 +817,19 @@ class Environment:
         """Get Android Architecture."""
         return self.get_android_properties().get(
             'ro.product.cpu.abi', '')
+
+    def get_android_abis(self):
+        """Return Android-supported ABIs in preference order."""
+        properties = self.get_android_properties()
+        abilist = properties.get('ro.product.cpu.abilist', '')
+        abis = [
+            abi.strip() for abi in abilist.split(',')
+            if abi.strip()
+        ]
+        primary = self.get_android_arch()
+        if primary and primary not in abis:
+            abis.insert(0, primary)
+        return tuple(abis)
 
     def get_android_sdk(self):
         """Get Android API version."""
@@ -937,25 +960,30 @@ class Environment:
         runtime = self.get_environment()
         try:
             if runtime == 'physical':
+                if self.root_status == 'not_checked':
+                    self.probe_root()
+                if self.root_method == 'none':
+                    return 'unsupported'
                 if self.root_command([
                         'tar', '-cf', archive,
                         '-C', '/data/data', package,
                 ], timeout=120) is None:
-                    return False
+                    return 'failed'
                 if self.root_command(
                         ['chmod', '644', archive], silent=True) is None:
-                    return False
+                    return 'failed'
             else:
                 result = self.adb_command([
                     'tar', '-cf', archive,
                     '-C', '/data/data', package,
                 ], True)
                 if result is None:
-                    return False
-            return self.adb_command(
+                    return 'failed'
+            pulled = self.adb_command(
                 ['pull', archive, output_file],
                 silent=True,
-            ) is not None
+            )
+            return 'ok' if pulled is not None else 'failed'
         finally:
             if runtime == 'physical':
                 self.root_command(['rm', '-f', archive], silent=True)
@@ -1355,6 +1383,7 @@ class Environment:
                         and parts[0] == self.identifier
                         and parts[2] == remote):
                     local = parts[1]
+                    _MOBSF_FRIDA_FORWARDS[self.identifier] = local
                     break
             if not local:
                 for attempt in range(1, 4):

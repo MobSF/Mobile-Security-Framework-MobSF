@@ -380,8 +380,13 @@ def find_process_by(name):
     """Return a set of process path matching name."""
     proc = set()
     for p in psutil.process_iter(attrs=['name']):
-        if (name == p.info['name']):
-            proc.add(p.exe())
+        try:
+            if name == p.info['name']:
+                proc.add(p.exe())
+        except (psutil.AccessDenied,
+                psutil.NoSuchProcess,
+                psutil.ZombieProcess):
+            continue
     return proc
 
 
@@ -570,6 +575,11 @@ def get_adb():
             ADB_PATH = settings.ADB_BINARY
             return ADB_PATH
         if ADB_PATH:
+            return ADB_PATH
+        adb_name = 'adb.exe' if platform.system() == 'Windows' else 'adb'
+        adb_on_path = shutil.which(adb_name)
+        if adb_on_path:
+            ADB_PATH = adb_on_path
             return ADB_PATH
         if platform.system() == 'Windows':
             adb_loc = find_process_by('adb.exe')
