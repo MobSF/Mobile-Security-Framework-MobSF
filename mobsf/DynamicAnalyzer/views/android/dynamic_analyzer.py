@@ -558,7 +558,6 @@ def dynamic_analyzer(request, checksum, api=False):
                 and not env.has_adb_reverse_tcp()
                 and not env.enable_adb_reverse_tcp(version)):
             raise RuntimeError('Failed to configure Android proxy forwarding')
-        # codeql[py/path-injection]: checksum and state paths validated above
         with proxy_state_file.open('w', encoding='utf-8') as state:
             dump({
                 'identifier': identifier,
@@ -583,7 +582,6 @@ def dynamic_analyzer(request, checksum, api=False):
                 if reverse_created:
                     env.disable_adb_reverse_tcp()
                 if restored:
-                    # codeql[py/path-injection]: validated state path
                     proxy_state_file.unlink(missing_ok=True)
                 msg = 'This APK cannot be installed on the Android device.'
                 if selected_mode != 'gadget':
@@ -593,7 +591,6 @@ def dynamic_analyzer(request, checksum, api=False):
                     msg,
                     api)
         if selected_mode == 'gadget':
-            # codeql[py/path-injection]: checksum and marker path validated
             gadget_marker.write_text(identifier, encoding='utf-8')
         logger.info('Testing Environment is Ready!')
         device_model = env.get_android_properties().get(
@@ -623,10 +620,8 @@ def dynamic_analyzer(request, checksum, api=False):
         else:
             restored = False
         if proxy_state_file and restored:
-            # codeql[py/path-injection]: validated state path
             proxy_state_file.unlink(missing_ok=True)
         if gadget_marker:
-            # codeql[py/path-injection]: validated marker path
             gadget_marker.unlink(missing_ok=True)
         logger.exception('Dynamic Analyzer')
         return print_n_send_error_response(
