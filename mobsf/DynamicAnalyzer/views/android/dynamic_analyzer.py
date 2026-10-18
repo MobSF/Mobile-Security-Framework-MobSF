@@ -73,6 +73,10 @@ def android_dynamic_analysis(request, api=False):
         and_sdk = None
         runtime = None
         devices = get_android_devices()
+        online_devices = [
+            device for device in devices
+            if device['state'] == 'device'
+        ]
         device_form = AndroidDeviceSelectionForm(
             devices,
             request.POST if request.method == 'POST' else None,
@@ -124,6 +128,7 @@ def android_dynamic_analysis(request, api=False):
                    'android_sdk': and_sdk,
                    'runtime': runtime,
                    'devices': devices,
+                   'online_devices': online_devices,
                    'device_form': device_form,
                    'android_supported': ANDROID_API_SUPPORTED,
                    'proxy_ip': get_proxy_ip(identifier),
