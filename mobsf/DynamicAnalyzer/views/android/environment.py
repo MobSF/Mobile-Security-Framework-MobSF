@@ -601,6 +601,15 @@ class Environment:
                 'global',
                 'global_http_proxy_port',
             ], True))
+            # Publish Android's canonical no-proxy value. Some apps retain
+            # the previous proxy when the setting is only deleted.
+            results.append(self.adb_command([
+                'settings',
+                'put',
+                'global',
+                'http_proxy',
+                ':0',
+            ], True))
         restored = (
             all(result is not None for result in results)
             and self.get_global_proxy() == value
