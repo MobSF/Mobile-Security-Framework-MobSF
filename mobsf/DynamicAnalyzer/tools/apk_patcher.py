@@ -111,6 +111,10 @@ class GadgetPatcher:
             raise ValueError('APK is outside its analysis directory')
         if not self.apk_file.is_file() or is_pipe_or_link(self.apk_file):
             raise ValueError('APK is not a regular file')
+        if (self.apk_file in (self.output_apk, self.unsigned_apk)
+                or self.apk_file == self.work_dir
+                or self.work_dir in self.apk_file.parents):
+            raise ValueError('APK overlaps the Gadget build workspace')
         if self.android_abi not in SUPPORTED_ABIS:
             raise ValueError(
                 f'Unsupported Android architecture: {self.android_abi}')
@@ -120,6 +124,18 @@ class GadgetPatcher:
                 'APK contains an unknown Frida Gadget injection')
         self.gadget_state = gadget_state
         self.patch_metadata = metadata
+        with zipfile.ZipFile(self.apk_file) as apk:
+            self.app_abis = {
+                parts[1]
+                for name in apk.namelist()
+                if len(parts := Path(name).parts) >= 3
+                and parts[0] == 'lib'
+                and parts[1] in SUPPORTED_ABIS
+            }
+        if self.app_abis and self.android_abi not in self.app_abis:
+            raise ValueError(
+                'APK native libraries are incompatible with the '
+                f'selected ABI: {self.android_abi}')
         for tool in (self.apktool_path, self.apksigner_path):
             if not tool.is_file() or is_pipe_or_link(tool):
                 raise RuntimeError(
@@ -191,6 +207,22 @@ class GadgetPatcher:
             raise RuntimeError('Android manifest has no application')
         if root.get(f'{ANDROID_ATTR}sharedUserId'):
             raise ValueError('Shared-user APKs cannot be safely re-signed')
+        internet_permission = None
+        for permission in root.findall('uses-permission'):
+            if (permission.get(f'{ANDROID_ATTR}name')
+                    == 'android.permission.INTERNET'):
+                internet_permission = permission
+                break
+        if internet_permission is None:
+            internet_permission = XmlElementTree.Element(
+                'uses-permission')
+            internet_permission.set(
+                f'{ANDROID_ATTR}name',
+                'android.permission.INTERNET',
+            )
+            root.insert(0, internet_permission)
+        internet_permission.attrib.pop(
+            f'{ANDROID_ATTR}maxSdkVersion', None)
         original = self._qualified_class_name(
             package,
             application.get(f'{ANDROID_ATTR}name'),
@@ -198,6 +230,20 @@ class GadgetPatcher:
         class_pattern = r'(?:[A-Za-z_$][\w$]*\.)*[A-Za-z_$][\w$]*'
         if not re.fullmatch(class_pattern, original):
             raise ValueError('Unsupported Android Application class name')
+        original_smali = None
+        relative = Path(*original.split('.')).with_suffix('.smali')
+        for smali_dir in self.work_dir.glob('smali*'):
+            candidate = smali_dir / relative
+            if candidate.is_file() and not candidate.is_symlink():
+                original_smali = candidate
+                break
+        if original_smali:
+            source = original_smali.read_text('utf-8', 'ignore')
+            if re.search(
+                    r'(?m)^\.class\b[^\n]*\bfinal\b',
+                    source):
+                raise ValueError(
+                    'Final Android Application classes cannot be wrapped')
         digest = sha256(self.apk_file)[:12]
         strategy = None
         if self.patch_metadata:
@@ -512,6 +558,14 @@ class GadgetPatcher:
         with cached.open('rb') as binary:
             if binary.read(4) != b'\x7fELF':
                 raise RuntimeError('Cached Frida Gadget is invalid')
+        lib_root = self.work_dir / 'lib'
+        if lib_root.is_dir():
+            for abi_dir in lib_root.iterdir():
+                if (abi_dir.name in SUPPORTED_ABIS
+                        and abi_dir.name != android_abi):
+                    if abi_dir.is_symlink():
+                        raise ValueError('Unsafe APK native library path')
+                    shutil.rmtree(abi_dir)
         library_dir = self.work_dir / 'lib' / android_abi
         library_dir.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(cached, library_dir / 'libfrida-gadget.so')

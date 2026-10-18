@@ -425,8 +425,10 @@ def valid_android_device_identifier(identifier):
     identifier = identifier.strip()
     if not identifier or len(identifier) > 255:
         return False
+    serial = r'[A-Za-z0-9][A-Za-z0-9._:%-]*'
+    bracketed_ipv6 = r'\[[0-9A-Fa-f:.%]+\](?::\d{1,5})?'
     return bool(re.fullmatch(
-        r'[A-Za-z0-9][A-Za-z0-9._:%\-\[\]]*',
+        f'(?:{serial}|{bracketed_ipv6})',
         identifier,
     ))
 
@@ -459,7 +461,7 @@ def get_android_devices():
                     key, value = item.split(':', 1)
                     details[key] = value
             devices.append({
-                'identifier': docker_translate_localhost(identifier),
+                'identifier': identifier,
                 'state': state,
                 'details': details,
             })

@@ -443,14 +443,26 @@ class Environment:
                 logger.error('Android root is %s', self.root_status)
             return None
         try:
+            root_cmd = shlex.join(str(item) for item in cmd_list)
             if self.root_method == 'adbd':
-                command = cmd_list
+                remote_command = root_cmd
             elif self.root_method == 'su-c':
-                root_cmd = shlex.join(str(item) for item in cmd_list)
-                command = ['su', '-c', root_cmd]
+                remote_command = f'su -c {shlex.quote(root_cmd)}'
             else:
-                command = ['su', '0', *cmd_list]
-            result = self.adb_command_result(command, True, timeout)
+                remote_command = (
+                    f'su 0 sh -c {shlex.quote(root_cmd)}')
+            result = subprocess.run(
+                [
+                    get_adb(),
+                    '-s',
+                    self.identifier,
+                    'shell',
+                    remote_command,
+                ],  # lgtm [py/command-line-injection]
+                capture_output=True,
+                check=False,
+                timeout=timeout,
+            )
             if result.returncode == 0:
                 return result.stdout
             if not silent:
@@ -748,7 +760,10 @@ class Environment:
         """Identify the environment."""
         values = self.get_android_properties()
         combined = '\n'.join(values.values()).lower()
-        if 'genymotion' in combined:
+        genymotion_version = values.get(
+            'ro.genymotion.version', '')
+        if ('genymotion' in combined
+                or any(char.isdigit() for char in genymotion_version)):
             logger.info('Found Genymotion Android VM')
             return 'genymotion'
         elif 'corellium' in combined:
@@ -1233,6 +1248,8 @@ class Environment:
             if self.root_command(
                     ['mkdir', '-p', target_dir], silent=True) is None:
                 return False
+            self.root_command(
+                ['pkill', '-f', target_path], silent=True)
             if not self.adb_command(
                     ['push', frida_path, temp_path], silent=True):
                 return False
@@ -1243,6 +1260,8 @@ class Environment:
                     'chmod', '700', target_path], silent=True) is None:
                 return False
         else:
+            self.adb_command(
+                ['pkill', '-f', '/system/fd_server'], True, True)
             if not self.adb_command(
                     ['push', frida_path, '/system/fd_server']):
                 return False
