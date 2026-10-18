@@ -92,6 +92,11 @@
       <div class="row mb-2">
         <div id="mobsf_header" align="center" style="padding-left: 20px;">
             <h2><strong>Dynamic Analyzer </strong>- {{ package }}</h2>
+            <p>
+              <strong>Device:</strong>
+              {% if device_model %}{{ device_model }} — {% endif %}{{ device_identifier }}
+              <span class="badge badge-secondary">{{ device_mode|title }}</span>
+            </p>
         </div>
       </div>
     </div>
@@ -100,11 +105,11 @@
 
    {% if device_mode == "gadget" %}
    <div class="alert alert-warning">
-     This session uses a MobSF lab-signed Frida Gadget APK. The original APK
-     remains unchanged. The patched app trusts the embedded MobSF CA, removes
-     XML network-security pin sets, and uses Frida hooks for supported runtime
-     pinning. Signature checks, Play-managed delivery, custom pinning, and apps
-     requiring their original signing identity may still not work.
+     This session uses an APK injected with Frida Gadget and the MobSF Root CA.
+     XML network-security pins are removed, and supported runtime pinning is
+     handled with Frida hooks. The app may not work if it uses custom signature
+     checks, Play Integrity, unsupported pinning, or requires its original
+     code-signing certificate. Those checks must be patched separately.
    </div>
    {% endif %}
 

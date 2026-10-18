@@ -279,7 +279,7 @@ class GadgetPatcher:
         """Embed the MobSF CA and remove XML network-security pins."""
         ca_file = Path(get_ca_file()).resolve()
         if not ca_file.is_file() or is_pipe_or_link(ca_file):
-            raise RuntimeError('MobSF CA is unavailable')
+            raise RuntimeError('MobSF Root CA is unavailable')
         ca_digest = sha256(ca_file)[:12]
         ca_name = f'mobsf_ca_{ca_digest}'
         ca_reference = f'@raw/{ca_name}'
@@ -346,7 +346,7 @@ class GadgetPatcher:
             removed_pins += pins
             trusted_configs += trusted
         logger.info(
-            'Ensured MobSF CA trust in %d configuration(s) '
+            'Ensured MobSF Root CA trust in %d configuration(s) '
             'and removed %d XML pin set(s)',
             trusted_configs,
             removed_pins,
@@ -555,10 +555,11 @@ class GadgetPatcher:
         keytool = shutil.which(executable)
         if keytool:
             return keytool
-        raise RuntimeError('keytool is required to create the MobSF lab key')
+        raise RuntimeError(
+            'keytool is required to create the MobSF signing key')
 
     def _signing_credentials(self):
-        """Create or load the local lab signing key."""
+        """Create or load the MobSF signing key."""
         download_dir = Path(settings.DWD_DIR)
         download_dir.mkdir(parents=True, exist_ok=True)
         credentials_file = download_dir / 'mobsf-dynamic-signing.json'
@@ -625,7 +626,7 @@ class GadgetPatcher:
             return keystore, password
 
     def _signing_certificate_digest(self):
-        """Return the SHA-256 identity of the local lab certificate."""
+        """Return the SHA-256 identity of the MobSF signing certificate."""
         keystore, password = self._signing_credentials()
         env = os.environ.copy()
         env['MOBSF_KEYSTORE_PASSWORD'] = password
@@ -645,7 +646,8 @@ class GadgetPatcher:
             der = ssl.PEM_cert_to_DER_cert(
                 pem.decode('ascii', 'strict'))
         except ValueError as exp:
-            raise RuntimeError('Invalid MobSF lab certificate') from exp
+            raise RuntimeError(
+                'Invalid MobSF signing certificate') from exp
         return hashlib.sha256(der).hexdigest()
 
     def _write_patch_metadata(self, package):
@@ -657,7 +659,8 @@ class GadgetPatcher:
         )
         if previous_signer and previous_signer != signing_digest:
             logger.warning(
-                'Re-signing a MobSF-patched APK with a different lab key')
+                'Re-signing a MobSF-patched APK with a different '
+                'MobSF signing key')
         metadata = {
             'schema': PATCH_SCHEMA,
             'producer': 'MobSF',
@@ -683,7 +686,7 @@ class GadgetPatcher:
         self.patch_metadata = metadata
 
     def _sign(self):
-        """Sign and verify the rebuilt APK with the local lab key."""
+        """Sign and verify the rebuilt APK with the MobSF signing key."""
         keystore, password = self._signing_credentials()
         env = os.environ.copy()
         env['MOBSF_KEYSTORE_PASSWORD'] = password
@@ -755,7 +758,8 @@ class GadgetPatcher:
             self._write_patch_metadata(package)
             logger.info('Rebuilding the Frida Gadget APK')
             self._build()
-            logger.info('Signing the Frida Gadget APK with the MobSF lab key')
+            logger.info(
+                'Signing the Frida Gadget APK with the MobSF signing key')
             self._sign()
             logger.info('Verifying the signed Frida Gadget APK')
             self._verify_artifact()
