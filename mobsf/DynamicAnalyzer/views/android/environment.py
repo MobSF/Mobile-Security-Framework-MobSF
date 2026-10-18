@@ -1280,8 +1280,9 @@ class Environment:
                 return False
             logger.info('Started Frida Server v%s', frida_version)
             return True
-        check = self.adb_command(['ps'], True)
-        if b'fd_server' in check:
+        running = self.adb_command(
+            ['pidof', 'fd_server'], True, True)
+        if running and running.strip():
             logger.info('Frida Server v%s is already running', frida_version)
             return True
 
@@ -1299,6 +1300,13 @@ class Environment:
         logger.info('Starting Frida Server v%s', frida_version)
         logger.info('Waiting for 2 seconds...')
         time.sleep(2)
+        running = self.adb_command(
+            ['pidof', 'fd_server'], True, True)
+        if not running or not running.strip():
+            logger.error(
+                'Frida Server exited during startup. '
+                'Use Frida Gadget mode for this Android runtime.')
+            return False
         return True
 
     def get_frida_device(self, gadget=False):
@@ -1312,7 +1320,7 @@ class Environment:
         with _FRIDA_FORWARD_LOCK:
             if self.get_device_state() != 'device':
                 raise RuntimeError(
-                    'Physical Android device is disconnected')
+                    'Android device is disconnected')
             forwards = self.adb_command(
                 ['forward', '--list'],
                 silent=True,
