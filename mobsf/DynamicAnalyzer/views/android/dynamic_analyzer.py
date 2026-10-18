@@ -104,6 +104,7 @@ def android_dynamic_analysis(request, api=False):
                 request, get_android_dm_exception_msg(), api)
         try:
             if identifier:
+                logger.info('Using Android device %s', identifier)
                 env = Environment(identifier)
                 env.connect()
                 if api:
@@ -300,6 +301,7 @@ def dynamic_analyzer(request, checksum, api=False):
         if not identifier:
             return print_n_send_error_response(
                 request, get_android_dm_exception_msg(), api)
+        logger.info('Using Android device %s', identifier)
 
         # Get activities from the static analyzer results
         try:

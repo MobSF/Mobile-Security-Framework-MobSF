@@ -733,7 +733,6 @@ class Environment:
             logger.info('Found Corellium ARM Android VM')
             return 'corellium'
         else:
-            logger.info('Found physical Android device')
             return 'physical'
 
     def get_android_properties(self):
