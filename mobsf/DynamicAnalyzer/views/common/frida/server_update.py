@@ -2,6 +2,7 @@
 """Common Frida Server Update Management for Android and iOS."""
 
 import logging
+import tempfile
 from pathlib import Path
 from lzma import LZMAFile
 from shutil import copyfileobj
@@ -50,6 +51,7 @@ class FridaServerUpdater:
     def download_frida_binary(
             self, url, fname, proxies, verify, artifact='server'):
         """Download and decompress a Frida runtime binary."""
+        temp_path = None
         try:
             logger.info(
                 'Downloading Frida %s v%s binary: %s',
@@ -66,16 +68,24 @@ class FridaServerUpdater:
                     verify=verify,
                     stream=True) as r:
                 r.raise_for_status()
+                temp_file = tempfile.NamedTemporaryFile(
+                    dir=self.download_dir,
+                    prefix=f'.{fname}.',
+                    delete=False,
+                )
+                temp_path = Path(temp_file.name)
 
-                with open(dwd_loc, 'wb') as f:
+                with temp_file as f:
                     if fname.endswith('.deb'):
                         copyfileobj(r.raw, f)
                     else:
                         copyfileobj(LZMAFile(r.raw), f)
 
-            with dwd_loc.open('rb') as binary:
+            with temp_path.open('rb') as binary:
                 if not fname.endswith('.deb') and binary.read(4) != b'\x7fELF':
                     raise ValueError('Downloaded Frida binary is not ELF')
+            temp_path.replace(dwd_loc)
+            temp_path = None
             self.clean_up_old_binaries(artifact)
             return True
 
@@ -87,7 +97,8 @@ class FridaServerUpdater:
             )
             # Clean up partial download
             try:
-                dwd_loc.unlink()
+                if temp_path:
+                    temp_path.unlink()
             except Exception:
                 pass
         return False
