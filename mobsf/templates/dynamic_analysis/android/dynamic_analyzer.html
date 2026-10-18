@@ -6,7 +6,6 @@
 {% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static "others/css/terminal.css" %}" type="text/css">
-<link rel="stylesheet" href="{% static "others/css/devices.min.css" %}" type="text/css">
 <link rel="stylesheet" href="{% static "codemirror/codemirror.css" %}" type="text/css">
 <link rel="stylesheet" href="{% static "enlighterjs/enlighterjs.min.css" %}" />
 <link rel="stylesheet" href="{% static "codemirror/lint.css" %}" type="text/css">
@@ -76,6 +75,48 @@
     }
     #start_activity_form{
         margin-top: 10px;
+    }
+
+    .device-preview {
+      width: calc(100% - 24px);
+      max-width: 420px;
+      margin: 0 auto;
+      padding: 10px;
+      overflow: hidden;
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 24px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+      transition: max-width 0.2s ease;
+    }
+
+    .device-preview.landscape {
+      max-width: 760px;
+    }
+
+    .device-preview-screen {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 75vh;
+      margin: 0 auto;
+      object-fit: contain;
+      background: #000;
+      border-radius: 14px;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    @media (max-width: 576px) {
+      .device-preview {
+        width: 100%;
+        padding: 6px;
+        border-radius: 16px;
+      }
+      .device-preview-screen {
+        border-radius: 10px;
+      }
     }
 
 </style>
@@ -149,14 +190,8 @@
               <!-- /.card-header -->
               <div class="card-body">
                 <div align="center">
-                  <div class="marvel-device htc-one">
-                  <div class="top-bar"></div>
-                  <div class="camera"></div>
-                  <div class="sensor"></div>
-                  <div class="speaker"></div>
-                  <div class="screen" id="container" tabindex="0" style="outline: none;">
-                  <img width="320" height="580" src="{% url 'download' %}screen/screen.png" id="my" draggable="false" onerror="$('#my').attr('src','/static/img/loading.jpg')" style="background-color:black; touch-action:none; user-select:none; -webkit-user-drag:none;">
-                  </div>
+                  <div class="device-preview" id="container" tabindex="0" style="outline: none;">
+                    <img src="{% url 'download' %}screen/screen.png" class="device-preview-screen" id="my" draggable="false" alt="Android device screen" onerror="$('#my').attr('src','/static/img/loading.jpg')">
                   </div>
                 </div>
 
@@ -1009,10 +1044,15 @@ setInterval( function () {
 var screen_width, screen_height;
 var screenfunc;
 const screenImage = document.getElementById('my');
+const screenContainer = document.getElementById('container');
 screenImage.addEventListener('load', function() {
   if (touch === "on" && this.naturalWidth && this.naturalHeight) {
     screen_width = this.naturalWidth;
     screen_height = this.naturalHeight;
+    screenContainer.classList.toggle(
+      'landscape',
+      screen_width > screen_height
+    );
     console.log(
       'Screen Resolution: ' + screen_width + 'x' + screen_height
     );
