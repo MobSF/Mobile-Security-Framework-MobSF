@@ -2,6 +2,7 @@
 """Dynamic Analyzer Helpers."""
 import logging
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -42,6 +43,11 @@ from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
 ANDROID_API_SUPPORTED = 30
+_FRIDA_FORWARD_LOCK = threading.Lock()
+_MOBSF_FRIDA_FORWARDS = set()
+_DEVICE_PACKAGE_CACHE = {}
+_DEVICE_PACKAGE_CACHE_LOCK = threading.Lock()
+_DEVICE_PACKAGE_CACHE_TTL = 300
 
 
 @dataclass(frozen=True)
@@ -85,6 +91,7 @@ class Environment:
         self.root_method = 'none'
         self.root_status = 'not_checked'
         self._profile = None
+        self._android_properties = None
 
     def wait(self, sec):
         """Wait in Seconds."""
@@ -251,33 +258,78 @@ class Environment:
             return True
         return False
 
-    def install_apk(self, apk_path, package, reinstall):
+    def install_apk(
+            self, apk_path, package, reinstall, modify_verifier=True):
         """Install APK and Verify Installation."""
         if self.is_package_installed(package, '') and reinstall != '0':
             logger.info('Removing existing installation')
             # Remove existing installation'
             self.adb_command(['uninstall', package], False, True)
-        # Disable install verification
-        self.adb_command([
-            'settings',
-            'put',
-            'global',
-            'verifier_verify_adb_installs',
-            '0',
-        ], True)
+        if modify_verifier:
+            # Legacy VM images require install verification to be disabled.
+            self.adb_command([
+                'settings',
+                'put',
+                'global',
+                'verifier_verify_adb_installs',
+                '0',
+            ], True)
         logger.info('Installing APK - %s', package)
-        # Install APK
-        out = self.adb_command([
-            'install',
-            '-r',
-            '-t',
-            '-d',
-            apk_path], False, True)
-        if not out:
-            return False, 'adb install failed'
-        out = out.decode('utf-8', 'ignore')
+        install_args = ['install', '-r', '-t', '-d']
+        try:
+            if int(self.get_android_sdk()) >= 34:
+                install_args.append('--bypass-low-target-sdk-block')
+        except (TypeError, ValueError):
+            pass
+        install_args.append(apk_path)
+        try:
+            result = self.adb_command_result(
+                install_args,
+                timeout=settings.BINARY_ANALYSIS_TIMEOUT,
+            )
+        except subprocess.TimeoutExpired:
+            return False, 'adb install timed out'
+        output = result.stdout + result.stderr
+        out = output.decode('utf-8', 'ignore')
+        if result.returncode != 0:
+            return False, out or 'adb install failed'
         # Verify Installation
         return self.is_package_installed(package, out), out
+
+    def has_package(self, package):
+        """Check an exact package without changing device state."""
+        result = self.adb_command_result(
+            ['pm', 'path', package],
+            shell=True,
+            timeout=10,
+        )
+        return (
+            result.returncode == 0
+            and result.stdout.strip().startswith(b'package:')
+        )
+
+    def uninstall_package(self, package):
+        """Uninstall a package after explicit analyst confirmation."""
+        logger.info(
+            'Uninstalling existing Android package after confirmation')
+        try:
+            result = self.adb_command_result(
+                ['uninstall', package],
+                timeout=settings.BINARY_ANALYSIS_TIMEOUT,
+            )
+        except subprocess.TimeoutExpired:
+            logger.error('Timed out uninstalling Android package')
+            return False
+        success = (
+            result.returncode == 0
+            and b'Success' in result.stdout + result.stderr
+            and not self.has_package(package)
+        )
+        if success:
+            logger.info('Existing Android package was uninstalled')
+        else:
+            logger.error('Existing Android package uninstall failed')
+        return success
 
     def adb_command(self, cmd_list, shell=False, silent=False):
         """ADB Command wrapper."""
@@ -312,6 +364,7 @@ class Environment:
 
     def probe_root(self):
         """Detect a non-interactive root command without assumptions."""
+        logger.info('Probing Android root capabilities')
         self.root_method = 'none'
         self.root_status = 'unavailable'
         try:
@@ -319,10 +372,12 @@ class Environment:
             if direct.returncode == 0 and b'uid=0' in direct.stdout:
                 self.root_method = 'adbd'
                 self.root_status = 'available'
+                logger.info('Android root is available through root ADB')
                 return self.root_method, self.root_status
             has_su = self.adb_command_result(
                 ['command', '-v', 'su'], True, 5)
             if has_su.returncode != 0 or not has_su.stdout.strip():
+                logger.info('Android root is unavailable')
                 return self.root_method, self.root_status
             probes = (
                 ('su-c', ['su', '-c', 'id']),
@@ -333,14 +388,22 @@ class Environment:
                     result = self.adb_command_result(command, True, 5)
                 except subprocess.TimeoutExpired:
                     self.root_status = 'interactive'
+                    logger.warning(
+                        'Android root requires interactive authorization')
                     return self.root_method, self.root_status
                 if result.returncode == 0 and b'uid=0' in result.stdout:
                     self.root_method = method
                     self.root_status = 'available'
+                    logger.info(
+                        'Android root is available through %s',
+                        method,
+                    )
                     return self.root_method, self.root_status
             self.root_status = 'denied'
+            logger.warning('Android root authorization was denied')
         except subprocess.TimeoutExpired:
             self.root_status = 'interactive'
+            logger.warning('Android root capability probe timed out')
         except Exception:
             logger.exception('Failed to probe Android root capabilities')
             self.root_status = 'error'
@@ -483,6 +546,51 @@ class Environment:
              'http_proxy',
              ':0'], True)
 
+    def get_global_proxy(self):
+        """Read the current global HTTP proxy without changing it."""
+        output = self.adb_command([
+            'settings',
+            'get',
+            'global',
+            'http_proxy',
+        ], True, True)
+        if not output:
+            return ''
+        value = output.decode('utf-8', 'ignore').strip()
+        if value in ('null', ':0'):
+            return ''
+        return value
+
+    def restore_global_proxy(self, value):
+        """Restore a previously recorded global HTTP proxy."""
+        if value:
+            self.adb_command([
+                'settings',
+                'put',
+                'global',
+                'http_proxy',
+                value,
+            ], True)
+        else:
+            self.adb_command([
+                'settings',
+                'delete',
+                'global',
+                'http_proxy',
+            ], True)
+            self.adb_command([
+                'settings',
+                'delete',
+                'global',
+                'global_http_proxy_host',
+            ], True)
+            self.adb_command([
+                'settings',
+                'delete',
+                'global',
+                'global_http_proxy_port',
+            ], True)
+
     def enable_adb_reverse_tcp(self, version):
         """Enable ADB Reverse TCP for Proxy."""
         # Androd 5+ supported
@@ -507,6 +615,29 @@ class Environment:
                 logger.error(stderr.decode('utf-8').replace('\n', ''))
         except Exception:
             logger.exception('Enabling ADB Reverse TCP')
+
+    def disable_adb_reverse_tcp(self):
+        """Remove the proxy reverse created by MobSF."""
+        tcp = f'tcp:{settings.PROXY_PORT}'
+        self.adb_command(
+            ['reverse', '--remove', tcp],
+            silent=True,
+        )
+
+    def has_adb_reverse_tcp(self):
+        """Check whether the MobSF proxy reverse already exists."""
+        tcp = f'tcp:{settings.PROXY_PORT}'
+        output = self.adb_command(
+            ['reverse', '--list'],
+            silent=True,
+        )
+        if not output:
+            return False
+        for line in output.decode('utf-8', 'ignore').splitlines():
+            parts = line.split()
+            if len(parts) >= 3 and parts[-2:] == [tcp, tcp]:
+                return True
+        return False
 
     def start_clipmon(self):
         """Start Clipboard Monitoring."""
@@ -558,48 +689,43 @@ class Environment:
 
     def get_environment(self):
         """Identify the environment."""
-        properties = (
-            'ro.boot.serialno',
-            'ro.serialno',
-            'ro.build.user',
-            'ro.build.characteristics',
-            'ro.kernel.qemu',
-            'ro.boot.qemu',
-            'ro.product.manufacturer',
-            'ro.product.model',
-            'ro.manufacturer.geny-def',
-            'ro.product.manufacturer.geny-def',
-            'ro.genymotion.version',
-        )
-        values = {}
-        for prop in properties:
-            value = self.adb_command(['getprop', prop], True, True)
-            if value:
-                values[prop] = value.strip()
-        out = b'\n'.join(values.values())
-        lower = out.lower()
-        if (b'emulator' in lower
-                or b'generic_x86' in lower
-                or values.get('ro.kernel.qemu') == b'1'
-                or values.get('ro.boot.qemu') == b'1'):
+        values = self.get_android_properties()
+        combined = '\n'.join(values.values()).lower()
+        if ('emulator' in combined
+                or 'generic_x86' in combined
+                or values.get('ro.kernel.qemu') == '1'
+                or values.get('ro.boot.qemu') == '1'):
             logger.info('Found Android Studio Emulator')
             return 'emulator'
-        elif b'genymotion' in lower:
+        elif 'genymotion' in combined:
             logger.info('Found Genymotion Android VM')
             return 'genymotion'
-        elif b'corellium' in lower:
+        elif 'corellium' in combined:
             logger.info('Found Corellium ARM Android VM')
             return 'corellium'
         else:
             logger.info('Found physical Android device')
             return 'physical'
 
+    def get_android_properties(self):
+        """Read and cache the Android property map in one ADB call."""
+        if self._android_properties is not None:
+            return self._android_properties
+        logger.info('Reading Android device properties')
+        properties = {}
+        output = self.adb_command(['getprop'], True, True)
+        if output:
+            for line in output.decode('utf-8', 'ignore').splitlines():
+                match = re.match(r'^\[([^\]]+)\]: \[(.*)\]$', line)
+                if match:
+                    properties[match.group(1)] = match.group(2)
+        self._android_properties = properties
+        return properties
+
     def get_android_version(self):
         """Get Android version."""
-        out = self.adb_command(['getprop',
-                                'ro.build.version.release'],
-                               True, False)
-        and_version = out.decode('utf-8').rstrip()
+        and_version = self.get_android_properties().get(
+            'ro.build.version.release', '')
         if and_version.count('.') > 1:
             and_version = and_version.rsplit('.', 1)[0]
         if and_version.count('.') > 1:
@@ -608,46 +734,64 @@ class Environment:
 
     def get_android_arch(self):
         """Get Android Architecture."""
-        out = self.adb_command([
-            'getprop',
-            'ro.product.cpu.abi'], True)
-        return out.decode('utf-8').rstrip()
+        return self.get_android_properties().get(
+            'ro.product.cpu.abi', '')
 
     def get_android_sdk(self):
         """Get Android API version."""
-        out = self.adb_command([
-            'getprop',
-            'ro.build.version.sdk'], True)
-        return out.decode('utf-8').strip()
+        return self.get_android_properties().get(
+            'ro.build.version.sdk', '')
 
-    def get_device_packages(self):
+    def get_device_packages(self, refresh=False):
         """Get all packages from device."""
+        now = time.monotonic()
+        with _DEVICE_PACKAGE_CACHE_LOCK:
+            cached = _DEVICE_PACKAGE_CACHE.get(self.identifier)
+            if (not refresh
+                    and cached
+                    and now - cached['created'] < _DEVICE_PACKAGE_CACHE_TTL):
+                logger.info(
+                    'Using cached Android package inventory (%d apps)',
+                    len(cached['packages']),
+                )
+                return cached['packages']
+        logger.info(
+            'Hashing installed Android applications. '
+            'This may take several seconds on a physical device.')
+        started = time.monotonic()
         device_packages = {}
-        out = self.adb_command([
-            'pm',
-            'list',
-            'packages',
-            '-f',
-            '-3'], True, True)
+        script = (
+            'pm list packages -f -3 | while IFS= read -r entry; do '
+            'apk=${entry#package:}; package=${apk##*=}; apk=${apk%=*}; '
+            'checksum=$(md5sum "$apk" 2>/dev/null | cut -d" " -f1); '
+            'printf "%s\\t%s\\t%s\\n" "$checksum" "$package" "$apk"; '
+            'done'
+        )
+        out = self.adb_command([script], True, True)
         if not out:
+            logger.warning('Android package inventory returned no data')
             return device_packages
-        for pkg_str in out.decode('utf-8').rstrip().split():
-            path_pkg = pkg_str.split('package:', 1)[1].strip()
-            parts = path_pkg.split('.apk=', 1)
-            apk = f'{parts[0]}.apk'
-            pkg = parts[1]
-            if pkg == 'opensecurity.clipdump':
-                # Do not include MobSF agent
+        for line in out.decode('utf-8', 'ignore').splitlines():
+            parts = line.split('\t', 2)
+            if len(parts) != 3:
                 continue
-            out1 = self.adb_command([
-                'md5sum',
-                '-b',
-                apk], True)
-            md5 = out1.decode('utf-8').strip()
-            if '.apk' in md5:
-                # -b not respected in Android 5.0
-                md5 = md5.split()[0]
-            device_packages[md5] = (pkg, apk)
+            checksum, package, apk = parts
+            if (not re.fullmatch(r'[a-fA-F0-9]{32}', checksum)
+                    or package == 'opensecurity.clipdump'
+                    or not re.fullmatch(r'[A-Za-z][\w.-]{1,255}', package)
+                    or not apk.startswith('/data/app/')):
+                continue
+            device_packages[checksum.lower()] = (package, apk)
+        with _DEVICE_PACKAGE_CACHE_LOCK:
+            _DEVICE_PACKAGE_CACHE[self.identifier] = {
+                'created': now,
+                'packages': device_packages,
+            }
+        logger.info(
+            'Loaded %d installed Android applications in %.1f seconds',
+            len(device_packages),
+            time.monotonic() - started,
+        )
         return device_packages
 
     def download_apk_packages(self, pkg_path, out_file):
@@ -1076,20 +1220,42 @@ class Environment:
                 settings.FRIDA_TIMEOUT,
             )
         tcp = 'tcp:27042'
-        result = self.adb_command_result(
-            ['forward', tcp, tcp],
-            timeout=10,
-        )
-        if result.returncode != 0:
-            raise RuntimeError(
-                'Unable to forward the physical-device Frida port')
+        key = (self.identifier, tcp)
+        with _FRIDA_FORWARD_LOCK:
+            forwards = self.adb_command(
+                ['forward', '--list'],
+                silent=True,
+            ) or b''
+            existing = None
+            for line in forwards.decode('utf-8', 'ignore').splitlines():
+                parts = line.split()
+                if len(parts) >= 3 and parts[0] == self.identifier:
+                    if parts[1] == tcp:
+                        existing = parts[2]
+                        break
+            if existing and existing != tcp:
+                raise RuntimeError(
+                    'Frida port is already forwarded to another target')
+            if not existing:
+                result = self.adb_command_result(
+                    ['forward', '--no-rebind', tcp, tcp],
+                    timeout=10,
+                )
+                if result.returncode != 0:
+                    raise RuntimeError(
+                        'Unable to forward the physical-device Frida port')
+                _MOBSF_FRIDA_FORWARDS.add(key)
         return frida.get_device_manager().add_remote_device(
             '127.0.0.1:27042')
 
     def remove_frida_forward(self):
         """Remove the Frida port forward created by MobSF."""
-        if self.get_environment() == 'physical':
-            self.adb_command(
-                ['forward', '--remove', 'tcp:27042'],
-                silent=True,
-            )
+        tcp = 'tcp:27042'
+        key = (self.identifier, tcp)
+        with _FRIDA_FORWARD_LOCK:
+            if key in _MOBSF_FRIDA_FORWARDS:
+                self.adb_command(
+                    ['forward', '--remove', tcp],
+                    silent=True,
+                )
+                _MOBSF_FRIDA_FORWARDS.discard(key)

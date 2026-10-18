@@ -98,7 +98,16 @@
   </div>
    <div class="container-fluid">
 
-   
+   {% if device_mode == "gadget" %}
+   <div class="alert alert-warning">
+     This session uses a MobSF lab-signed Frida Gadget APK. The original APK
+     remains unchanged. The patched app trusts the embedded MobSF CA, removes
+     XML network-security pin sets, and uses Frida hooks for supported runtime
+     pinning. Signature checks, Play-managed delivery, custom pinning, and apps
+     requiring their original signing identity may still not work.
+   </div>
+   {% endif %}
+
    <div class="row">
           <div class="col-md-12">
             <div class="card card-default">
@@ -106,7 +115,9 @@
               <div class="card-body">
                  <div id="but" align="center">
                   <a href="#" id="screen" class="btn btn-primary" role="button"><i class="fa fa-mobile-alt"></i> Show Screen</a>
+                  {% if device_mode != "gadget" %}
                   <a href="#" id="rootca" class="btn btn-primary" role="button"><i class="fa fa-certificate"></i> Remove Root CA</a>
+                  {% endif %}
                   {% if android_version >= 5 %}
                   <a href="#" id="proxy" class="btn btn-primary" role="button"><i class="fas fa-eye-slash"></i> Unset HTTP(S) Proxy</a>
                   <a href="#" id="tls_test" class="btn btn-primary" role="button"  data-toggle="modal" data-target="#tls_modal"><i class="fa fa-lock"></i> TLS/SSL Security Tester</a>

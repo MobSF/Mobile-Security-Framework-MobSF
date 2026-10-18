@@ -1,8 +1,10 @@
 # -*- coding: utf_8 -*-
 """Available Actions."""
+import json
 import logging
 import os
 import re
+from pathlib import Path
 
 from django.conf import settings
 from django.views.decorators.http import require_http_methods
@@ -29,6 +31,7 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
 )
 from mobsf.MobSF.security import cmd_injection_check
 from mobsf.MobSF.utils import (
+    get_device,
     is_md5,
     python_list,
 )
@@ -53,7 +56,7 @@ logger = logging.getLogger(__name__)
 def start_activity(request, api=False):
     """Launch a specific activity."""
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         activity = request.POST['activity']
         md5_hash = request.POST['hash']
 
@@ -87,7 +90,7 @@ def start_activity(request, api=False):
 def start_deeplink(request, api=False):
     """Launch a specific deeplink."""
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         url = request.POST['url']
         md5_hash = request.POST['hash']
 
@@ -114,7 +117,7 @@ def activity_tester(request, api=False):
     """Exported & non exported activity Tester."""
     data = {}
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         test = request.POST['test']
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
@@ -178,7 +181,7 @@ def download_data(request, api=False):
     logger.info('Downloading app data')
     data = {}
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)
@@ -195,8 +198,11 @@ def download_data(request, api=False):
             data = {'status': 'ok'}
         else:
             data = {
-                'status': 'failed',
-                'message': 'Application data is not accessible',
+                'status': 'ok',
+                'message': (
+                    'Application data is not accessible with the '
+                    'selected device capabilities'
+                ),
             }
     except Exception as exp:
         logger.exception('Downloading application data')
@@ -214,7 +220,7 @@ def collect_logs(request, api=False):
     logger.info('Collecting Data and Cleaning Up')
     data = {}
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)
@@ -226,24 +232,48 @@ def collect_logs(request, api=False):
         apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         lout = os.path.join(apk_dir, 'logcat.txt')
         dout = os.path.join(apk_dir, 'dump.txt')
-        logger.info('Downloading logcat logs')
-        logcat = env.adb_command(['logcat',
-                                  '-d',
-                                  package + ':V',
-                                  '*:*'])
-        with open(lout, 'wb') as flip:
-            flip.write(logcat)
-        logger.info('Downloading dumpsys logs')
-        dumpsys = env.adb_command(['dumpsys'], True)
-        with open(dout, 'wb') as flip:
-            flip.write(dumpsys)
-        if env.get_android_version() < 5:
-            download_xposed_log(apk_dir)
-        env.adb_command(['am', 'force-stop', package], True)
-        logger.info('Stopping app')
-        # Unset Global Proxy
-        env.unset_global_proxy()
-        env.remove_frida_forward()
+        try:
+            logger.info('Downloading logcat logs')
+            logcat = env.adb_command(['logcat',
+                                      '-d',
+                                      package + ':V',
+                                      '*:*'])
+            with open(lout, 'wb') as flip:
+                flip.write(logcat or b'')
+            logger.info('Downloading dumpsys logs')
+            dumpsys = env.adb_command(['dumpsys'], True)
+            with open(dout, 'wb') as flip:
+                flip.write(dumpsys or b'')
+            if env.get_android_version() < 5:
+                download_xposed_log(apk_dir, env.identifier)
+        finally:
+            env.adb_command(['am', 'force-stop', package], True)
+            logger.info('Stopping app')
+            state_file = Path(apk_dir) / '.mobsf-proxy-state'
+            gadget_marker = Path(apk_dir) / '.mobsf-gadget-mode'
+            if state_file.exists() and not state_file.is_symlink():
+                previous_proxy = ''
+                proxy_state = {}
+                if state_file.is_file():
+                    try:
+                        with state_file.open(encoding='utf-8') as source:
+                            proxy_state = json.load(source)
+                    except (OSError, ValueError, TypeError):
+                        logger.warning(
+                            'Unable to read saved Android proxy state')
+                    if not isinstance(proxy_state, dict):
+                        proxy_state = {}
+                    value = proxy_state.get('proxy')
+                    if isinstance(value, str):
+                        previous_proxy = value
+                env.restore_global_proxy(previous_proxy)
+                if proxy_state.get('remove_reverse') is True:
+                    env.disable_adb_reverse_tcp()
+            else:
+                env.unset_global_proxy()
+            env.remove_frida_forward()
+            state_file.unlink(missing_ok=True)
+            gadget_marker.unlink(missing_ok=True)
         data = {'status': 'ok'}
     except Exception as exp:
         logger.exception('Data Collection & Clean Up failed')
@@ -264,7 +294,7 @@ def tls_tests(request, api=False):
     try:
         test_duration = 25
         test_package = 'tls_tests'
-        env = Environment()
+        env = Environment(get_device(request))
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)

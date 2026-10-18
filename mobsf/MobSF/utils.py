@@ -466,8 +466,28 @@ def get_android_devices():
     return devices
 
 
-def get_device():
+def get_device(request=None):
     """Get Device."""
+    if request is not None:
+        identifier = request.POST.get('identifier')
+        if not identifier:
+            identifier = request.GET.get('identifier')
+        if not identifier:
+            identifier = request.session.get('android_device_identifier')
+        if identifier and valid_android_device_identifier(identifier):
+            identifier = docker_translate_localhost(identifier.strip())
+            connected = {
+                device['identifier']
+                for device in get_android_devices()
+                if device['state'] == 'device'
+            }
+            if identifier in connected:
+                return identifier
+            logger.error('Selected Android device is not connected')
+            return None
+        if identifier:
+            logger.error('Invalid selected Android device identifier')
+            return None
     if os.getenv('ANALYZER_IDENTIFIER'):
         identifier = os.getenv('ANALYZER_IDENTIFIER')
     elif settings.ANALYZER_IDENTIFIER:
@@ -529,10 +549,9 @@ def get_adb():
             os.environ['MOBSF_ADB'] = 'adb'
             logger.warning('Dynamic Analysis related '
                            'functions will not work. '
-                           '\nMake sure a Genymotion Android VM/'
-                           'Android Studio Emulator'
-                           ' is running before performing'
-                           ' Dynamic Analysis.')
+                           '\nMake sure ADB is installed and an authorized '
+                           'Android runtime or device is connected before '
+                           'performing Dynamic Analysis.')
     return 'adb'
 
 
@@ -883,8 +902,7 @@ def android_component(data):
 
 def get_android_dm_exception_msg():
     return (
-        'Is your Android VM/emulator running? MobSF cannot'
-        ' find the android device identifier.'
+        'MobSF cannot find an authorized Android runtime or device.'
         ' Please read official documentation.'
         ' If this error persists, set ANALYZER_IDENTIFIER in '
         f'{get_config_loc()} or via environment variable'

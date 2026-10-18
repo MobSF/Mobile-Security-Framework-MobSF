@@ -62,6 +62,39 @@ textarea:focus {
 
 
    <div class="row">
+          {% if devices %}
+          <div class="col-md-12">
+            <div class="card card-default">
+              <div class="card-header">
+                <h3 class="card-title">Android Device</h3>
+              </div>
+              <div class="card-body">
+                <form method="post" action="{% url "dynamic_android" %}" class="form-inline">
+                  {% csrf_token %}
+                  <label for="device_identifier" class="mr-2">Selected device</label>
+                  <select id="device_identifier" name="identifier" class="form-control mr-2">
+                    {% for device in devices %}
+                      {% if device.state == "device" %}
+                      <option value="{{ device.identifier }}" {% if device.identifier == identifier %}selected{% endif %}>
+                        {{ device.details.model|default:device.identifier }} — {{ device.identifier }}
+                      </option>
+                      {% endif %}
+                    {% endfor %}
+                  </select>
+                  <button type="submit" class="btn btn-primary">Use Device</button>
+                </form>
+                <small class="form-text text-muted">
+                  Selection is saved for this user session. Switch targets
+                  between analyses; simultaneous Android analyses still share
+                  proxy and report resources and are not supported.
+                </small>
+                {% if device_form.errors %}
+                <p class="text-danger mt-2">Select an online Android device.</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
           {% if not identifier %}
           <div class="col-md-12">
             <div class="card bg-gradient-danger">
@@ -90,13 +123,14 @@ textarea:focus {
                         <h5>
                           <strong>• Genymotion Android VM</strong> version 4.1 - 11.0 (arm64, x86, and x86_64 upto API 30)<br/>
                           <strong>• Android Emulator AVD</strong> (non production) version 5.0 - 11.0 (arm, arm64, x86, and x86_64 upto API 30)<br/>
-                          <strong>• Corellium Android VM</strong> (userdebug builds) version 7.1.2 - 11.0 (arm64 upto API 30)
+                          <strong>• Corellium Android VM</strong> (userdebug builds) version 7.1.2 - 11.0 (arm64 upto API 30)<br/>
+                          <strong>• Physical Android devices</strong> using non-interactive root or a MobSF-signed Frida Gadget APK
                         </h5>
                         <p>
                           {% if android_version %}
                             Android version >= <strong>9.0</strong> recommended<br/>
                             Detected Android Version: <strong>{{android_version}}</strong>, SDK: API level <strong>{{ android_sdk }}</strong> <br/>
-                            {% if android_sdk|floatformat > android_supported|floatformat %}
+                            {% if runtime != "physical" and android_sdk|floatformat > android_supported|floatformat %}
                               <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
                               <script>
                                 Swal.fire(
@@ -114,6 +148,28 @@ textarea:focus {
                             <br/>For Android version <strong>4.1 - 4.3</strong>, set Android VM proxy as <strong>{% if proxy_ip %} {{ proxy_ip }}{% else %} <i>&lt;Host IP&gt;</i>{% endif %}:{{proxy_port}}</strong>
                             {% endif %}
                           {% endif %}
+
+                          {% if runtime == "physical" %}
+                            <br/><strong>Physical-device preparation:</strong>
+                            Rooted mode requires a bounded, non-interactive
+                            <code>su</code> grant. Gadget mode rebuilds the
+                            selected APK for this device ABI and signs it with
+                            a local MobSF lab key; it never removes an existing
+                            installation automatically. Install the MobSF CA
+                            through Android settings if HTTPS interception is
+                            required.
+                            <br/><strong>Connectivity:</strong> Native MobSF
+                            supports USB and wireless ADB. Containers support
+                            wireless ADB directly by running
+                            <code>adb pair</code> and <code>adb connect</code>
+                            inside the MobSF container. For container-to-USB
+                            access, run a dedicated host ADB server with
+                            <code>adb -a -P 5037 nodaemon server</code>, set
+                            <code>ADB_SERVER_SOCKET=tcp:host.docker.internal:5037</code>
+                            on the MobSF container, and restrict port 5037 to
+                            the Docker host/bridge. Do not expose ADB to an
+                            untrusted network.
+                          {% endif %}
                          
                         </p>
                       </div>   
@@ -122,7 +178,10 @@ textarea:focus {
                      <br/>
                      <br/>
                      <p>
-                        <button class="btn btn-info disable" role="button"  data-toggle="modal" data-target="#mmobsfy">MobSFy Android Runtime</button> <p>Android instance: <strong>{{ identifier }}</strong></p></div>
+                        {% if runtime != "physical" %}
+                        <button class="btn btn-info disable" role="button"  data-toggle="modal" data-target="#mmobsfy">MobSFy Android Runtime</button>
+                        {% endif %}
+                        <p>Android instance: <strong>{{ identifier }}</strong>{% if runtime %} ({{ runtime }}){% endif %}</p></div>
                       </p>
                     </div>
                      </div>
@@ -140,7 +199,12 @@ textarea:focus {
               </div>
               <div class="card-body">
                  <div class="table-responsive">
-                  <h4> Apps in Device</h4>
+                  <h4>
+                    Apps in Device
+                    <button id="refresh_device_apps" type="button" class="btn btn-sm btn-outline-primary ml-2" {% if not identifier %}disabled{% endif %}>
+                      Refresh
+                    </button>
+                  </h4>
                   <table class="table table-bordered table-hover table-striped">
                     <thead>
                     <tr>
@@ -149,39 +213,10 @@ textarea:focus {
                         <th>ACTION</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    {% if device_packages %}
-                    {% for hash, det in device_packages.items %}
-                        <tr>
-                            <td align="center">
-                              <img id="app_icon" src="/download/{{ hash }}-icon.png" onerror="this.onerror=null;this.src='{% static 'img/no_icon.png' %}'"/>
-                              <br/><strong>{{ det.0 }}</strong>
-                            </td>
-                            <td>
-                                {{ det.1}}
-                           </td>
-                            <td align="center"> 
-                              <div class="mb-3">
-                                <form method="post" action="{% url "dynamic_analyzer" checksum=hash %}">
-                                  {% csrf_token %}
-                                  <input type="hidden" name="re_install" value="0">
-                                  <input type="hidden" name="install" value="0">
-                                  <button type="submit" class="btn btn-primary disable" onclick="dynamic_loader()"><i class="fab fa-android"></i> Start Dynamic Analysis</button>
-                                </form>
-                              </div>
-                              <div class="mb-3">
-                                <form method="post" action="{% url "static_scan" checksum=hash %}">
-                                  {% csrf_token %}
-                                  <button type="submit" class="btn btn-warning disable" onclick="dynamic_loader()"><i class="fa fa-download"></i> Pull &amp; Static Analysis</button>
-                                </form>
-                              </div>
-                              <p>
-                                 <a class="btn btn-info" href="{% url "dynamic_report" checksum=hash %}"><i class="fa fa-mobile"></i> View Report </a>
-                              </p>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    {% endif %}
+                    <tbody id="device_apps">
+                      <tr>
+                        <td colspan="3">{% if identifier %}Loading installed applications…{% else %}Select an Android device first.{% endif %}</td>
+                      </tr>
                     </tbody>
                 </table>
               </br>
@@ -211,16 +246,26 @@ textarea:focus {
                            </td>
                             <td align="center"> 
                               <div class="mb-3">
-                                <form method="post" action="{% url "dynamic_analyzer" checksum=e.MD5 %}">
+                                <form method="post" action="{% url "dynamic_analyzer" checksum=e.MD5 %}" class="dynamic-start-form" data-hash="{{ e.MD5 }}">
                                   {% csrf_token %}
-                                  <button type="submit" class="btn btn-success disable" onclick="dynamic_loader()"><i class="fab fa-android"></i> Start Dynamic Analysis</button>
+                                  {% if runtime == "physical" %}
+                                  <select name="device_mode" class="form-control form-control-sm mb-2" aria-label="Physical device mode">
+                                    <option value="auto">Auto detect</option>
+                                    <option value="rooted">Rooted device</option>
+                                    <option value="gadget">Frida Gadget (re-sign APK)</option>
+                                  </select>
+                                  {% endif %}
+                                  <button type="submit" class="btn btn-success disable"><i class="fab fa-android"></i> Start Dynamic Analysis</button>
                                 </form>
                               </div>
                               <div class="mb-3">
-                                <form method="post" action="{% url "dynamic_analyzer" checksum=e.MD5 %}">
+                                <form method="post" action="{% url "dynamic_analyzer" checksum=e.MD5 %}" class="dynamic-start-form" data-hash="{{ e.MD5 }}">
                                   {% csrf_token %}
                                   <input type="hidden" name="re_install" value="0">
-                                  <button type="submit" class="btn btn-primary btn-sm disable" onclick="dynamic_loader()"><i class="fab fa-android"></i> Start Dynamic Analysis (No reinstall)</button>
+                                  {% if runtime == "physical" %}
+                                  <input type="hidden" name="device_mode" value="rooted">
+                                  {% endif %}
+                                  <button type="submit" class="btn btn-primary btn-sm disable"><i class="fab fa-android"></i> Start Dynamic Analysis (No reinstall)</button>
                                 </form>
                               </div>
                               <p>
@@ -297,11 +342,210 @@ textarea:focus {
 <script src="{% static "datatables/js/vfs_fonts.js" %}"></script>
 <script src="{% static "datatables/js/datatables.combined.min.js" %}"></script>
 <script src="{% static "others/js/datatables_init.js" %}"></script>
+<script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script>
 function dynamic_loader(){
     var loadingOverlay = document.querySelector('.loading');
     loadingOverlay.classList.remove('hidden');
 }
+
+const checksumPlaceholder = '00000000000000000000000000000000';
+const dynamicPathTemplate = "{% url 'dynamic_analyzer' checksum='00000000000000000000000000000000' %}";
+const staticPathTemplate = "{% url 'static_scan' checksum='00000000000000000000000000000000' %}";
+const reportPathTemplate = "{% url 'dynamic_report' checksum='00000000000000000000000000000000' %}";
+const csrfToken = '{{ csrf_token }}';
+const physicalRuntime = {% if runtime == "physical" %}true{% else %}false{% endif %};
+
+document.querySelectorAll('.dynamic-start-form').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!physicalRuntime) {
+            dynamic_loader();
+            form.submit();
+            return;
+        }
+        const modeField = form.querySelector('[name="device_mode"]');
+        const mode = modeField ? modeField.value : 'auto';
+        const payload = new FormData();
+        payload.append('csrfmiddlewaretoken', csrfToken);
+        payload.append('hash', form.dataset.hash);
+        payload.append('device_mode', mode);
+        try {
+            const response = await fetch(
+                "{% url 'android_package_status' %}",
+                {
+                    method: 'POST',
+                    body: payload,
+                    credentials: 'same-origin',
+                },
+            );
+            const status = await response.json();
+            if (!response.ok || status.status !== 'ok') {
+                throw new Error(
+                    status.message || 'Unable to check the installed app',
+                );
+            }
+            if (status.confirmation_required
+                    || status.gadget_replacement_required) {
+                const warnings = [];
+                if (status.confirmation_required) {
+                    warnings.push(
+                        'Frida Gadget changes the APK signature. '
+                        + 'Continuing will uninstall the existing app and '
+                        + 'delete its local app data.'
+                    );
+                }
+                if (status.gadget_replacement_required) {
+                    warnings.push(
+                        'The APK already contains an unknown or third-party '
+                        + 'Frida Gadget injection. MobSF will replace its '
+                        + 'Gadget binaries and configuration.'
+                    );
+                }
+                const decision = await Swal.fire({
+                    title: 'Confirm Gadget repacking',
+                    text: warnings.join(' '),
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: status.confirmation_required
+                        ? 'Uninstall and re-sign'
+                        : 'Replace Gadget',
+                    cancelButtonText: 'Cancel',
+                });
+                if (!(decision.isConfirmed || decision.value)) {
+                    return;
+                }
+                if (status.confirmation_required) {
+                    addHiddenInput(form, 'uninstall_existing', '1');
+                }
+                if (status.gadget_replacement_required) {
+                    addHiddenInput(form, 'replace_existing_gadget', '1');
+                }
+            }
+            dynamic_loader();
+            form.submit();
+        } catch (error) {
+            Swal.fire('Unable to start analysis', error.message, 'error');
+        }
+    });
+});
+
+function addHiddenInput(form, name, value) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+}
+
+function actionForm(path, label, values) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'mb-3';
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = path;
+    addHiddenInput(form, 'csrfmiddlewaretoken', csrfToken);
+    Object.entries(values).forEach(([name, value]) => {
+        addHiddenInput(form, name, value);
+    });
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.className = 'btn btn-primary btn-sm';
+    button.textContent = label;
+    button.addEventListener('click', dynamic_loader);
+    form.appendChild(button);
+    wrapper.appendChild(form);
+    return wrapper;
+}
+
+function showDeviceApps(packages, rootAvailable) {
+    const table = document.getElementById('device_apps');
+    table.replaceChildren();
+    const entries = Object.entries(packages);
+    if (entries.length === 0) {
+        const row = table.insertRow();
+        const cell = row.insertCell();
+        cell.colSpan = 3;
+        cell.textContent = 'No third-party applications found.';
+        return;
+    }
+    entries.forEach(([checksum, details]) => {
+        const row = table.insertRow();
+        const appCell = row.insertCell();
+        const pathCell = row.insertCell();
+        const actionCell = row.insertCell();
+        appCell.textContent = details[0];
+        pathCell.textContent = details[1];
+        actionCell.className = 'text-center';
+        if (rootAvailable) {
+            const dynamicValues = {re_install: '0', install: '0'};
+            if (physicalRuntime) {
+                dynamicValues.device_mode = 'rooted';
+            }
+            actionCell.appendChild(actionForm(
+                dynamicPathTemplate.replace(checksumPlaceholder, checksum),
+                'Start Dynamic Analysis',
+                dynamicValues,
+            ));
+        } else {
+            const guidance = document.createElement('p');
+            guidance.className = 'text-muted';
+            guidance.textContent = (
+                'Root is unavailable. Pull and scan this app first.'
+            );
+            actionCell.appendChild(guidance);
+        }
+        const staticForm = actionForm(
+            staticPathTemplate.replace(checksumPlaceholder, checksum),
+            'Pull & Static Analysis',
+            {},
+        );
+        staticForm.querySelector('button').className = 'btn btn-warning btn-sm';
+        actionCell.appendChild(staticForm);
+        const report = document.createElement('a');
+        report.className = 'btn btn-info btn-sm';
+        report.href = reportPathTemplate.replace(checksumPlaceholder, checksum);
+        report.textContent = 'View Report';
+        actionCell.appendChild(report);
+    });
+}
+
+async function loadDeviceApps(refresh = false) {
+    const table = document.getElementById('device_apps');
+    table.replaceChildren();
+    const loadingRow = table.insertRow();
+    const loadingCell = loadingRow.insertCell();
+    loadingCell.colSpan = 3;
+    loadingCell.textContent = refresh
+        ? 'Refreshing installed applications…'
+        : 'Loading installed applications…';
+    try {
+        const suffix = refresh ? '?refresh=1' : '';
+        const response = await fetch(
+            "{% url 'android_device_apps' %}" + suffix,
+            {credentials: 'same-origin'},
+        );
+        const result = await response.json();
+        if (!response.ok || result.status !== 'ok') {
+            throw new Error(result.message || 'Unable to load applications');
+        }
+        showDeviceApps(result.packages, result.root_available);
+    } catch (error) {
+        table.replaceChildren();
+        const row = table.insertRow();
+        const cell = row.insertCell();
+        cell.colSpan = 3;
+        cell.textContent = error.message;
+    }
+}
+
+document.getElementById('refresh_device_apps').addEventListener(
+    'click',
+    () => loadDeviceApps(true),
+);
+{% if identifier %}
+loadDeviceApps();
+{% endif %}
 
 //MobSFy AJAX
  $("#mobsfy").one( "click", function() {

@@ -26,19 +26,23 @@ _FPID = None
 
 class Frida:
 
-    def __init__(self, app_hash, package, defaults, auxiliary, extras, code):
+    def __init__(
+            self, app_hash, package, defaults, auxiliary, extras, code,
+            identifier=None):
         self.hash = app_hash
         self.package = package
         self.defaults = defaults
         self.auxiliary = auxiliary
         self.extras = extras
         self.code = code
+        self.identifier = identifier
         self.frida_dir = Path(settings.TOOLS_DIR) / 'frida_scripts' / 'android'
         self.apk_dir = Path(settings.UPLD_DIR) / self.hash
         self.api_mon = self.apk_dir / 'mobsf_api_monitor.txt'
         self.frida_log = self.apk_dir / 'mobsf_frida_out.txt'
         self.deps = self.apk_dir / 'mobsf_app_deps.txt'
         self.clipboard = self.apk_dir / 'mobsf_app_clipboard.txt'
+        self.gadget_marker = self.apk_dir / '.mobsf-gadget-mode'
         self.bridge_loader = get_bridge_loader()
 
     def get_scripts(self, script_type, selected_scripts):
@@ -143,8 +147,39 @@ class Frida:
         """Frida Spawn."""
         global _FPID
         try:
-            env = Environment()
+            env = Environment(self.identifier)
             self.clean_up()
+            if self.gadget_marker.exists():
+                env.run_app(self.package)
+                for attempt in range(5):
+                    try:
+                        device = env.get_frida_device()
+                        application = device.get_frontmost_application()
+                        if (application
+                                and application.pid
+                                and application.identifier in (
+                                    self.package,
+                                    're.frida.Gadget',
+                                )):
+                            _FPID = application.pid
+                            return True
+                        applications = device.enumerate_applications(
+                            scope='minimal')
+                        for application in applications:
+                            if (application.identifier in (
+                                    self.package,
+                                    're.frida.Gadget',
+                            )
+                                    and application.pid):
+                                _FPID = application.pid
+                                return True
+                    except (frida.ServerNotRunningError,
+                            frida.TimedOutError,
+                            frida.TransportError):
+                        if attempt == 4:
+                            raise
+                        time.sleep(1)
+                return False
             if not env.run_frida_server():
                 return False
             device = env.get_frida_device()
@@ -176,7 +211,7 @@ class Frida:
         """Use existing session to inject frida scripts."""
         global _FPID
         try:
-            env = Environment()
+            env = Environment(self.identifier)
             try:
                 device = env.get_frida_device()
                 if pid and package:
@@ -227,7 +262,7 @@ class Frida:
         """Get running process pid."""
         ps_dict = []
         try:
-            device = Environment().get_frida_device()
+            device = Environment(self.identifier).get_frida_device()
             processes = device.enumerate_applications(scope='minimal')
             if device and processes:
                 for process in processes:
