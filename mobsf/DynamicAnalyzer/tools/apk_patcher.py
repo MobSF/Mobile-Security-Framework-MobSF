@@ -117,7 +117,9 @@ class GadgetPatcher:
     def find_split_apks(app_dir, base_apk):
         """Find regular sibling APKs retained by static analysis."""
         upload_root = Path(settings.UPLD_DIR).resolve()
+        # codeql[py/path-injection]: containment is enforced immediately below
         app_dir = Path(app_dir).resolve()
+        # codeql[py/path-injection]: base is checked against contained app_dir
         base_apk = Path(base_apk).resolve()
         try:
             app_relative = app_dir.relative_to(upload_root).as_posix()
@@ -126,12 +128,14 @@ class GadgetPatcher:
                 'Analysis directory is outside the upload root') from exp
         if not is_safe_path(upload_root, app_dir, app_relative):
             raise ValueError('Unsafe analysis directory')
+        # codeql[py/path-injection]: fixed sidecar below validated app_dir
         metadata_file = app_dir / SPLIT_METADATA
         if (not metadata_file.is_file()
                 or metadata_file.is_symlink()
                 or metadata_file.stat().st_size > 65536):
             return ()
         try:
+            # codeql[py/path-injection]: regular non-symlink sidecar above
             metadata = json.loads(
                 metadata_file.read_text(encoding='utf-8'))
         except (OSError, ValueError, TypeError) as exp:
@@ -143,6 +147,7 @@ class GadgetPatcher:
         for member in members:
             if not isinstance(member, str):
                 raise ValueError('Invalid split APK metadata')
+            # codeql[py/path-injection]: member is contained before any use
             candidate = (app_dir / member).resolve()
             if (candidate == base_apk
                     or candidate.name in (
@@ -155,6 +160,7 @@ class GadgetPatcher:
                 relative = candidate.relative_to(app_dir).as_posix()
             except ValueError as exp:
                 raise ValueError('Invalid split APK path') from exp
+            # codeql[py/path-injection]: candidate containment checked here
             if (not is_safe_path(
                     app_dir, candidate, relative)
                     or not candidate.is_file()
@@ -181,6 +187,7 @@ class GadgetPatcher:
         self.apk_file = Path(apk_file).resolve()
         self.android_abi = android_abi
         self.replace_existing_gadget = replace_existing_gadget
+        # codeql[py/path-injection]: each path is validated in _validate
         self.split_apks = tuple(
             Path(path).resolve() for path in (split_apks or ()))
         self.no_resource_rebuild = bool(self.split_apks)
@@ -297,6 +304,7 @@ class GadgetPatcher:
                     f'Required Android tool is missing: {tool.name}')
         if self.work_dir.is_symlink():
             raise ValueError('Unsafe APK patching workspace')
+        # codeql[py/path-injection]: fixed child validated below
         if self.split_output_dir.is_symlink():
             raise ValueError('Unsafe Gadget split output directory')
         if not is_safe_path(
@@ -1076,6 +1084,7 @@ class GadgetPatcher:
         """Re-sign every required split with the MobSF signing key."""
         if not self.split_apks:
             return []
+        # codeql[py/path-injection]: validated beneath app_dir in _validate
         if self.split_output_dir.exists():
             if self.split_output_dir.is_symlink():
                 raise ValueError('Unsafe Gadget split output directory')
