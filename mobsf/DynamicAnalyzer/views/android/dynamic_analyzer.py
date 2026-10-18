@@ -228,6 +228,12 @@ def android_package_status(request):
         elif mode == 'auto':
             profile = env.get_device_profile(probe_root=True)
             selected_mode = 'rooted' if profile.has_root else 'gadget'
+        if (mode == 'auto'
+                and selected_mode != 'gadget'
+                and env.get_android_version() >= 5
+                and env.is_mobsfyied(env.get_android_version())
+                and not env.run_frida_server()):
+            selected_mode = 'gadget'
         installed = env.has_package(package)
         gadget_state = 'none'
         if selected_mode == 'gadget':
@@ -398,6 +404,21 @@ def dynamic_analyzer(request, checksum, api=False):
                    ' all Xposed modules. And finally'
                    ' restart the device once again.')
             return print_n_send_error_response(request, msg, api)
+        if (selected_mode != 'gadget'
+                and version >= 5
+                and not env.run_frida_server()):
+            if device_mode == 'auto':
+                logger.warning(
+                    'Frida Server is unavailable; '
+                    'falling back to Frida Gadget')
+                selected_mode = 'gadget'
+            else:
+                return print_n_send_error_response(
+                    request,
+                    'Frida Server cannot run on this Android runtime. '
+                    'Select Frida Gadget mode.',
+                    api,
+                )
         app_dir = Path(settings.UPLD_DIR) / checksum
         gadget_marker = app_dir / '.mobsf-gadget-mode'
         proxy_state_file = app_dir / '.mobsf-proxy-state'
