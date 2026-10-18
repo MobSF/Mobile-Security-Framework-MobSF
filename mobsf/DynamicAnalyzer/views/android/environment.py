@@ -325,6 +325,58 @@ class Environment:
         # Verify Installation
         return self.is_package_installed(package, out), out
 
+    def install_apks(
+            self, apk_paths, package, reinstall, modify_verifier=True):
+        """Install and verify one complete split APK set."""
+        paths = [Path(path).resolve() for path in apk_paths]
+        upload_root = Path(settings.UPLD_DIR).resolve()
+        valid_paths = []
+        for path in paths:
+            try:
+                relative = path.relative_to(upload_root).as_posix()
+            except ValueError:
+                return False, 'Invalid split APK set'
+            valid_paths.append(
+                path.is_file()
+                and not is_pipe_or_link(path)
+                and path.suffix.lower() == '.apk'
+                and is_safe_path(upload_root, path, relative),
+            )
+        if len(paths) < 2 or not all(valid_paths):
+            return False, 'Invalid split APK set'
+        if self.is_package_installed(package, '') and reinstall != '0':
+            logger.info('Removing existing installation')
+            self.adb_command(['uninstall', package], silent=True)
+        if modify_verifier:
+            self.adb_command([
+                'settings',
+                'put',
+                'global',
+                'verifier_verify_adb_installs',
+                '0',
+            ], True)
+        logger.info('Installing %d APK splits - %s', len(paths), package)
+        install_args = ['install-multiple', '-r', '-t', '-d']
+        try:
+            if int(self.get_android_sdk()) >= 34:
+                install_args.append('--bypass-low-target-sdk-block')
+        except (TypeError, ValueError):
+            pass
+        install_args.extend(path.as_posix() for path in paths)
+        output = self.adb_command(
+            install_args,
+            silent=True,
+            timeout=settings.BINARY_ANALYSIS_TIMEOUT,
+        )
+        if output is None:
+            message = (
+                'adb install-multiple timed out'
+                if self.adb_timed_out else 'adb install-multiple failed'
+            )
+            return False, message
+        out = output.decode('utf-8', 'ignore')
+        return self.is_package_installed(package, out), out
+
     def has_package(self, package):
         """Check an exact package without changing device state."""
         result = self.adb_command(
