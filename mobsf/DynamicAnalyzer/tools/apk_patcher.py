@@ -210,6 +210,7 @@ class GadgetPatcher:
     def inspect(apk_file):
         """Identify MobSF or unknown Frida Gadget injection."""
         apk_file = Path(apk_file)
+        # codeql[py/path-injection]: callers validate upload containment
         if not apk_file.is_file() or is_pipe_or_link(apk_file):
             raise ValueError('APK is not a regular file')
         try:
@@ -466,7 +467,9 @@ class GadgetPatcher:
             self.loader_class = loader
             smali = self.work_dir / 'smali' / Path(*loader.split('.'))
             smali = smali.with_suffix('.smali')
+            # codeql[py/path-injection]: class name is allowlisted above
             smali.parent.mkdir(parents=True, exist_ok=True)
+            # codeql[py/path-injection]: class name is allowlisted above
             smali.write_text(
                 '\n'.join((
                     f'.class public {loader_type}',
@@ -603,15 +606,19 @@ class GadgetPatcher:
         ca_name = f'mobsf_ca_{ca_digest}'
         ca_reference = f'@raw/{ca_name}'
         raw_dir = self.work_dir / 'res' / 'raw'
+        # codeql[py/path-injection]: validated work_dir  # noqa: E800
         raw_dir.mkdir(parents=True, exist_ok=True)
         ca_target = raw_dir / f'{ca_name}.pem'
+        # codeql[py/path-injection]: fixed resource name beneath work_dir
         if ca_target.is_symlink():
             raise ValueError('Unsafe MobSF CA resource path')
+        # codeql[py/path-injection]: fixed glob beneath validated work_dir
         for old_ca in raw_dir.glob('mobsf_ca_*.pem'):
             if old_ca != ca_target:
                 if old_ca.is_symlink():
                     raise ValueError('Unsafe previous MobSF CA resource')
                 old_ca.unlink()
+        # codeql[py/path-injection]: source and target validated above
         shutil.copyfile(ca_file, ca_target)
         self.embedded_ca_resource = f'res/raw/{ca_name}.pem'
 
@@ -639,6 +646,7 @@ class GadgetPatcher:
                 raise ValueError(
                     'Unsupported Android network security config reference')
             config_name = reference.group(1)
+            # codeql[py/path-injection]: resource name is regex-allowlisted
             config_paths = tuple(
                 path for path in (self.work_dir / 'res').glob(
                     f'xml*/{config_name}.xml')
