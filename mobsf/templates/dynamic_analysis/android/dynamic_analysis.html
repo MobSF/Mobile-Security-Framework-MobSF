@@ -83,11 +83,6 @@ textarea:focus {
                   </select>
                   <button type="submit" class="btn btn-primary">Use Device</button>
                 </form>
-                <small class="form-text text-muted">
-                  Selection is saved for this user session. Switch targets
-                  between analyses; simultaneous Android analyses still share
-                  proxy and report resources and are not supported.
-                </small>
                 {% if device_form.errors %}
                 <p class="text-danger mt-2">Select an online Android device.</p>
                 {% endif %}
