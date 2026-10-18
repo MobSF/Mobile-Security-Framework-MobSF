@@ -43,22 +43,6 @@ class Command(BaseCommand):
             entries.sort(key=lambda item: item[0].stat().st_mtime)
         return states
 
-    @staticmethod
-    def _remove_frida_forwards(env):
-        output = env.adb_command(
-            ['forward', '--list'],
-            silent=True,
-        ) or b''
-        for line in output.decode('utf-8', 'ignore').splitlines():
-            parts = line.split()
-            if (len(parts) >= 3
-                    and parts[0] == env.identifier
-                    and parts[2] == 'tcp:27042'):
-                env.adb_command(
-                    ['forward', '--remove', parts[1]],
-                    silent=True,
-                )
-
     def handle(self, *args, **options):
         states = self._proxy_states()
         failures = 0
@@ -71,12 +55,17 @@ class Command(BaseCommand):
             env = Environment(identifier)
             entries = states.get(identifier, [])
             restored = True
+            remove_reverse = False
             if entries:
                 original_state = entries[0][1]
                 previous_proxy = original_state.get('proxy', '')
                 if not isinstance(previous_proxy, str):
                     previous_proxy = ''
                 restored = env.restore_global_proxy(previous_proxy)
+                remove_reverse = any(
+                    state.get('remove_reverse') is True
+                    for _, state in entries
+                )
             else:
                 current_proxy = env.get_global_proxy()
                 try:
@@ -92,8 +81,9 @@ class Command(BaseCommand):
                 stale_proxies.discard('')
                 if current_proxy in stale_proxies:
                     restored = env.restore_global_proxy('')
-            env.disable_adb_reverse_tcp()
-            self._remove_frida_forwards(env)
+                    remove_reverse = restored
+            if remove_reverse:
+                env.disable_adb_reverse_tcp()
             if restored:
                 for state_file, _ in entries:
                     state_file.unlink(missing_ok=True)

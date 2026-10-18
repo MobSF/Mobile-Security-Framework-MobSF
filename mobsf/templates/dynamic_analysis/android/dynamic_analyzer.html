@@ -711,6 +711,7 @@ function aux_click(cb) {
 function action(url, data, on_success){
   //Add CSRF
   data.csrfmiddlewaretoken ='{{ csrf_token }}';
+  data.identifier = '{{ device_identifier|escapejs }}';
   $.ajax({
     url : url, 
     type : "POST",
@@ -1492,7 +1493,15 @@ $("#run_app").click(function() {
 // Logcat Stream
 $("#logstream").click(function() {
     print_status("Logcat Steaming started.");
-    setTimeout(function(){ window.open(document.location.origin + '/logcat/?package={{ package }}', '_blank');}, 500);   
+    setTimeout(function(){
+      window.open(
+        document.location.origin
+        + '/logcat/?package={{ package|urlencode }}'
+        + '&identifier='
+        + encodeURIComponent('{{ device_identifier|escapejs }}'),
+        '_blank'
+      );
+    }, 500);
     return false;  
 }); 
 
@@ -1643,7 +1652,9 @@ function dump(){
       //Call reporting
       window.location = document.location.origin+"/dynamic_report/{{ hash }}";
     } else {
-      print_status(json.message);
+      print_status("Application data was not collected: " + json.message);
+      print_status("Generating partial report...Please Wait!");
+      window.location = document.location.origin+"/dynamic_report/{{ hash }}";
     }
   });
 }

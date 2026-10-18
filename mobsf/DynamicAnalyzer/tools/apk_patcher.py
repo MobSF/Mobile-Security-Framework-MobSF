@@ -68,6 +68,23 @@ class GadgetPatcher:
                 and parts[1] in SUPPORTED_ABIS
             }
 
+    @staticmethod
+    def validate_archive_size(apk_file):
+        """Apply MobSF archive expansion limits before apktool decoding."""
+        total = 0
+        with zipfile.ZipFile(apk_file) as apk:
+            for member in apk.infolist():
+                if member.is_dir():
+                    continue
+                if (member.file_size
+                        > settings.ZIP_MAX_UNCOMPRESSED_FILE_SIZE):
+                    raise ValueError(
+                        'APK entry exceeds the uncompressed size limit')
+                total += member.file_size
+                if total > settings.ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE:
+                    raise ValueError(
+                        'APK exceeds the total uncompressed size limit')
+
     @classmethod
     def select_abi(cls, apk_file, device_abis, split_apks=None):
         """Select an ABI supported by both the device and APK."""
@@ -84,9 +101,18 @@ class GadgetPatcher:
     @staticmethod
     def find_split_apks(app_dir, base_apk):
         """Find regular sibling APKs retained by static analysis."""
+        upload_root = Path(settings.UPLD_DIR).resolve()
         app_dir = Path(app_dir).resolve()
         base_apk = Path(base_apk).resolve()
+        try:
+            app_relative = app_dir.relative_to(upload_root).as_posix()
+        except ValueError as exp:
+            raise ValueError(
+                'Analysis directory is outside the upload root') from exp
+        if not is_safe_path(upload_root, app_dir, app_relative):
+            raise ValueError('Unsafe analysis directory')
         splits = []
+        # codeql[py/path-injection]: app_dir is contained by upload_root above
         for candidate in app_dir.rglob('*.apk'):
             candidate = candidate.resolve()
             if (candidate == base_apk
@@ -190,6 +216,16 @@ class GadgetPatcher:
 
     def _validate(self):
         """Validate fixed inputs and required existing tools."""
+        upload_root = Path(settings.UPLD_DIR).resolve()
+        try:
+            app_relative = self.app_dir.relative_to(
+                upload_root).as_posix()
+        except ValueError as exp:
+            raise ValueError(
+                'Analysis directory is outside the upload root') from exp
+        if not is_safe_path(
+                upload_root, self.app_dir, app_relative):
+            raise ValueError('Unsafe analysis directory')
         if self.apk_file.suffix.lower() != '.apk':
             raise ValueError('Frida Gadget requires a single APK')
         if not is_safe_path(
@@ -204,6 +240,7 @@ class GadgetPatcher:
         if self.android_abi not in SUPPORTED_ABIS:
             raise ValueError(
                 f'Unsupported Android architecture: {self.android_abi}')
+        self.validate_archive_size(self.apk_file)
         for split_apk in self.split_apks:
             if (split_apk.suffix.lower() != '.apk'
                     or not is_safe_path(
@@ -212,6 +249,7 @@ class GadgetPatcher:
                     or is_pipe_or_link(split_apk)
                     or split_apk == self.apk_file):
                 raise ValueError('Invalid split APK input')
+            self.validate_archive_size(split_apk)
         if self.split_apks:
             base_manifest = androguard_apk.APK(
                 self.apk_file.as_posix())
@@ -248,6 +286,12 @@ class GadgetPatcher:
         if self.work_dir.is_symlink():
             raise ValueError('Unsafe APK patching workspace')
         if self.split_output_dir.is_symlink():
+            raise ValueError('Unsafe Gadget split output directory')
+        if not is_safe_path(
+                self.app_dir,
+                self.split_output_dir,
+                'mobsf-gadget-splits',
+        ):
             raise ValueError('Unsafe Gadget split output directory')
 
     def _run(self, args, action, env=None):
@@ -320,6 +364,7 @@ class GadgetPatcher:
             raise RuntimeError('Android manifest has no application')
         if root.get(f'{ANDROID_ATTR}sharedUserId'):
             raise ValueError('Shared-user APKs cannot be safely re-signed')
+        application.set(f'{ANDROID_ATTR}hasCode', 'true')
         internet_permission = None
         for permission in root.findall('uses-permission'):
             if (permission.get(f'{ANDROID_ATTR}name')
@@ -425,6 +470,10 @@ class GadgetPatcher:
             raise ValueError(
                 'Split APK Gadget mode requires INTERNET permission '
                 'in the original base manifest')
+        if (parsed_apk.get_attribute_value(
+                'application', 'hasCode') == 'false'):
+            raise ValueError(
+                'Split APK Gadget mode requires application code')
         application = self._qualified_class_name(
             package,
             parsed_apk.get_attribute_value('application', 'name'),
@@ -979,7 +1028,9 @@ class GadgetPatcher:
         if self.split_output_dir.exists():
             if self.split_output_dir.is_symlink():
                 raise ValueError('Unsafe Gadget split output directory')
+            # codeql[py/path-injection]: validated beneath app_dir in _validate
             shutil.rmtree(self.split_output_dir)
+        # codeql[py/path-injection]: validated beneath app_dir in _validate
         self.split_output_dir.mkdir(parents=True)
         signed = []
         for index, split_apk in enumerate(self.split_apks):

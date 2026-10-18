@@ -1,6 +1,7 @@
 # -*- coding: utf_8 -*-
 """Dynamic Analyzer Operations."""
 import json
+import hashlib
 import logging
 import os
 import random
@@ -42,14 +43,34 @@ logger = logging.getLogger(__name__)
 
 # Helpers
 
-def get_package_name(checksum):
+def _device_packages_file(identifier):
+    """Return a device-scoped package inventory path."""
+    if not identifier:
+        return None
+    digest = hashlib.sha256(identifier.encode('utf-8')).hexdigest()
+    return Path(settings.DWD_DIR) / f'packages-{digest}.json'
+
+
+def save_device_packages(identifier, packages):
+    """Persist one device package inventory."""
+    package_file = _device_packages_file(identifier)
+    if package_file:
+        package_file.write_text(
+            json.dumps(packages),
+            encoding='utf-8',
+        )
+
+
+def get_package_name(checksum, identifier=None):
     """Get Package Name from DB or Device."""
     try:
         static_android_db = StaticAnalyzerAndroid.objects.get(
             MD5=checksum)
         return static_android_db.PACKAGE_NAME
     except Exception:
-        pkg_file = Path(settings.DWD_DIR) / 'packages.json'
+        pkg_file = _device_packages_file(identifier)
+        if pkg_file is None:
+            return None
         if not pkg_file.exists():
             return None
         with pkg_file.open(encoding='utf-8') as src:
@@ -167,7 +188,7 @@ def run_apk(request):
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params()
-        pkg = get_package_name(md5_hash)
+        pkg = get_package_name(md5_hash, env.identifier)
         if not pkg:
             return invalid_params()
         env.run_app(pkg)

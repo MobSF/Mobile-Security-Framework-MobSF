@@ -29,6 +29,7 @@ from mobsf.DynamicAnalyzer.views.android.environment import (
 )
 from mobsf.DynamicAnalyzer.views.android.operations import (
     get_package_name,
+    save_device_packages,
 )
 from mobsf.DynamicAnalyzer.tools.webproxy import (
     get_http_tools_url,
@@ -46,6 +47,7 @@ from mobsf.MobSF.utils import (
     python_dict,
     python_list,
     strict_package_check,
+    valid_android_device_identifier,
 )
 from mobsf.MobSF.forms import FormUtil
 from mobsf.MobSF.views.scanning import add_to_recent_scan
@@ -114,9 +116,8 @@ def android_dynamic_analysis(request, api=False):
                 if api:
                     device_packages = env.get_device_packages()
                     if device_packages:
-                        pkg_file = Path(settings.DWD_DIR) / 'packages.json'
-                        with pkg_file.open('w', encoding='utf-8') as target:
-                            dump(device_packages, target)
+                        save_device_packages(
+                            identifier, device_packages)
                 and_ver = env.get_android_version()
                 and_sdk = env.get_android_sdk()
                 runtime = env.get_environment()
@@ -129,7 +130,6 @@ def android_dynamic_analysis(request, api=False):
                    'runtime': runtime,
                    'devices': devices,
                    'online_devices': online_devices,
-                   'device_form': device_form,
                    'android_supported': ANDROID_API_SUPPORTED,
                    'proxy_ip': get_proxy_ip(identifier),
                    'proxy_port': settings.PROXY_PORT,
@@ -139,6 +139,7 @@ def android_dynamic_analysis(request, api=False):
                    'version': settings.MOBSF_VER}
         if api:
             return context
+        context['device_form'] = device_form
         template = 'dynamic_analysis/android/dynamic_analysis.html'
         return render(request, template, context)
     except Exception as exp:
@@ -179,9 +180,7 @@ def android_device_apps(request):
             root_available = env.supports_root_adbd()
         logger.info('Loading applications installed on the selected device')
         device_packages = env.get_device_packages(refresh=refresh == '1')
-        pkg_file = Path(settings.DWD_DIR) / 'packages.json'
-        with pkg_file.open('w', encoding='utf-8') as target:
-            dump(device_packages, target)
+        save_device_packages(identifier, device_packages)
         return JsonResponse({
             'status': 'ok',
             'packages': device_packages,
@@ -207,8 +206,8 @@ def android_package_status(request):
             'status': 'failed',
             'message': 'Invalid parameters',
         }, status=400)
-    package = get_package_name(checksum)
     identifier = get_device(request)
+    package = get_package_name(checksum, identifier)
     if not package or not identifier:
         return JsonResponse({
             'status': 'failed',
@@ -245,7 +244,11 @@ def android_package_status(request):
             selected_mode = 'gadget'
         installed = env.has_package(package)
         gadget_state = 'none'
-        if selected_mode == 'gadget':
+        gadget_fallback_possible = (
+            selected_mode == 'gadget'
+            or (mode == 'auto' and env.get_android_version() >= 5)
+        )
+        if gadget_fallback_possible:
             apk_path = (
                 Path(settings.UPLD_DIR) / checksum / f'{checksum}.apk')
             gadget_state, _ = GadgetPatcher.inspect(apk_path)
@@ -253,9 +256,10 @@ def android_package_status(request):
             'status': 'ok',
             'installed': installed,
             'selected_mode': selected_mode,
+            'gadget_fallback_possible': gadget_fallback_possible,
             'gadget_state': gadget_state,
             'confirmation_required': (
-                installed and selected_mode == 'gadget'
+                installed and gadget_fallback_possible
             ),
             'gadget_replacement_required': (
                 gadget_state == 'third_party'
@@ -307,13 +311,6 @@ def dynamic_analyzer(request, checksum, api=False):
                 request,
                 'Invalid Hash',
                 api)
-        package = get_package_name(checksum)
-        if not package:
-            return print_n_send_error_response(
-                request,
-                'Cannot get package name from checksum',
-                api)
-        logger.info('Creating Dynamic Analysis Environment for %s', package)
         try:
             identifier = get_device(request)
         except Exception:
@@ -323,6 +320,13 @@ def dynamic_analyzer(request, checksum, api=False):
                 return print_n_send_error_response(
                     request, get_android_dm_exception_msg(), api)
             return HttpResponseRedirect('/android/dynamic_analysis/')
+        package = get_package_name(checksum, identifier)
+        if not package:
+            return print_n_send_error_response(
+                request,
+                'Cannot get package name from checksum',
+                api)
+        logger.info('Creating Dynamic Analysis Environment for %s', package)
         logger.info('Using Android device %s', identifier)
 
         # Get activities from the static analyzer results
@@ -445,6 +449,24 @@ def dynamic_analyzer(request, checksum, api=False):
         proxy_state_file = app_dir / '.mobsf-proxy-state'
         if gadget_marker.is_symlink() or proxy_state_file.is_symlink():
             raise RuntimeError('Unsafe dynamic-analysis state path')
+        existing_state = {}
+        if proxy_state_file.is_file():
+            try:
+                with proxy_state_file.open(encoding='utf-8') as state:
+                    existing_state = json.load(state)
+            except (OSError, ValueError, TypeError):
+                logger.warning(
+                    'Unable to read previous Android proxy state')
+            if not isinstance(existing_state, dict):
+                existing_state = {}
+        active_identifier = existing_state.get('identifier')
+        if (valid_android_device_identifier(active_identifier)
+                and active_identifier != identifier):
+            return print_n_send_error_response(
+                request,
+                'This app already has an active analysis on another device',
+                api,
+            )
         # Clean up previous analysis
         env.dz_cleanup(checksum)
         apk_path = app_dir / f'{checksum}.apk'
@@ -521,16 +543,6 @@ def dynamic_analyzer(request, checksum, api=False):
         else:
             gadget_marker.unlink(missing_ok=True)
         current_proxy = env.get_global_proxy()
-        existing_state = {}
-        if proxy_state_file.is_file():
-            try:
-                with proxy_state_file.open(encoding='utf-8') as state:
-                    existing_state = json.load(state)
-            except (OSError, ValueError, TypeError):
-                logger.warning(
-                    'Unable to read previous Android proxy state')
-            if not isinstance(existing_state, dict):
-                existing_state = {}
         saved_proxy = existing_state.get('proxy')
         if isinstance(saved_proxy, str):
             previous_proxy = saved_proxy
@@ -571,7 +583,8 @@ def dynamic_analyzer(request, checksum, api=False):
         # Apply Global Proxy to device
         env.set_global_proxy(version)
         proxy_configured = True
-        if env.get_global_proxy() != env.get_mobsf_proxy(version):
+        if (version >= 4.4
+                and env.get_global_proxy() != env.get_mobsf_proxy(version)):
             raise RuntimeError('Failed to configure the Android proxy')
         if install == '1':
             if install_apks and len(install_apks) > 1:
@@ -679,8 +692,18 @@ def logcat(request, api=False):
         if request.method == 'GET':
             pkg = request.GET.get('package')
             if pkg and strict_package_check(pkg):
+                identifier = get_device(request)
+                if not identifier:
+                    return print_n_send_error_response(
+                        request,
+                        'Selected Android device is unavailable',
+                        api,
+                    )
                 template = 'dynamic_analysis/android/logcat.html'
-                return render(request, template, {'package': pkg})
+                return render(request, template, {
+                    'package': pkg,
+                    'identifier': identifier,
+                })
             return print_n_send_error_response(
                 request,
                 'Invalid package name',
@@ -734,16 +757,16 @@ def trigger_static_analysis(request, checksum):
             return print_n_send_error_response(
                 request,
                 'Invalid MD5')
-        package = get_package_name(checksum)
-        if not package:
-            return print_n_send_error_response(
-                request,
-                'Cannot get package name from checksum')
         try:
             identifier = get_device(request)
         except Exception:
             err = 'Cannot connect to Android Runtime'
             return print_n_send_error_response(request, err)
+        package = get_package_name(checksum, identifier)
+        if not package:
+            return print_n_send_error_response(
+                request,
+                'Cannot get package name from checksum')
         env = Environment(identifier)
         scan_type = env.get_apk(checksum, package)
         if not scan_type:
