@@ -1413,8 +1413,18 @@ class Environment:
                     raise RuntimeError(
                         'Unable to forward the physical-device Frida port')
             port = local.rsplit(':', 1)[1]
+            frida_host = '127.0.0.1'
+            adb_socket = os.getenv('ADB_SERVER_SOCKET', '')
+            socket_match = re.fullmatch(
+                r'tcp:(\[[0-9A-Fa-f:.%]+\]|[A-Za-z0-9.-]+):\d{1,5}',
+                adb_socket,
+            )
+            if socket_match:
+                frida_host = socket_match.group(1)
+                if frida_host in ('localhost', '127.0.0.1'):
+                    frida_host = '127.0.0.1'
         return frida.get_device_manager().add_remote_device(
-            f'127.0.0.1:{port}')
+            f'{frida_host}:{port}')
 
     def remove_frida_forward(self):
         """Remove the Frida port forward created by MobSF."""
