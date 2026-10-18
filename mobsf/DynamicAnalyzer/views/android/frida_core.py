@@ -155,7 +155,7 @@ class Frida:
                     return False
                 for attempt in range(5):
                     try:
-                        device = env.get_frida_device()
+                        device = env.get_frida_device(gadget=True)
                         application = device.get_frontmost_application()
                         if (application
                                 and application.pid
@@ -215,7 +215,8 @@ class Frida:
         try:
             env = Environment(self.identifier)
             try:
-                device = env.get_frida_device()
+                device = env.get_frida_device(
+                    gadget=self.gadget_marker.exists())
                 if pid and package:
                     _FPID = pid
                     self.package = package
@@ -238,7 +239,8 @@ class Frida:
                 logger.exception('Cannot attach to pid, spawning again')
                 if not self.spawn():
                     return
-                device = env.get_frida_device()
+                device = env.get_frida_device(
+                    gadget=self.gadget_marker.exists())
                 session = device.attach(_FPID)
                 time.sleep(2)
             if session and device and _FPID:
@@ -264,7 +266,8 @@ class Frida:
         """Get running process pid."""
         ps_dict = []
         try:
-            device = Environment(self.identifier).get_frida_device()
+            device = Environment(self.identifier).get_frida_device(
+                gadget=self.gadget_marker.exists())
             processes = device.enumerate_applications(scope='minimal')
             if device and processes:
                 for process in processes:

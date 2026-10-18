@@ -108,21 +108,31 @@ class Environment:
 
     def connect_network_device(self):
         """Connect the validated network ADB target."""
-        out = subprocess.check_output(
-            [get_adb(), 'connect', self.identifier],
-            stderr=subprocess.STDOUT,
-            timeout=30,
-        )
+        try:
+            out = subprocess.check_output(
+                [get_adb(), 'connect', self.identifier],
+                stderr=subprocess.STDOUT,
+                timeout=30,
+            )
+        except (subprocess.CalledProcessError,
+                subprocess.TimeoutExpired):
+            logger.warning('Unable to connect to the Android ADB target')
+            return False
         self.wait(2)
         return self.check_connect_error(out)
 
     def restart_adbd_as_root(self):
         """Restart adbd as root on a validated analysis target."""
-        out = subprocess.check_output(
-            [get_adb(), '-s', self.identifier, 'root'],
-            stderr=subprocess.STDOUT,
-            timeout=30,
-        )
+        try:
+            out = subprocess.check_output(
+                [get_adb(), '-s', self.identifier, 'root'],
+                stderr=subprocess.STDOUT,
+                timeout=30,
+            )
+        except (subprocess.CalledProcessError,
+                subprocess.TimeoutExpired):
+            logger.warning('Android root ADB is unavailable')
+            return False
         self.wait(2)
         return self.check_connect_error(out)
 
@@ -409,6 +419,18 @@ class Environment:
             self.root_status = 'error'
         return self.root_method, self.root_status
 
+    def supports_root_adbd(self):
+        """Check whether a VM advertises or already uses root ADB."""
+        try:
+            identity = self.adb_command_result(['id'], True, 5)
+            if (identity.returncode == 0
+                    and b'uid=0' in identity.stdout):
+                return True
+        except subprocess.TimeoutExpired:
+            return False
+        return self.get_android_properties().get(
+            'ro.debuggable') == '1'
+
     def root_command(self, cmd_list, timeout=30, silent=False):
         """Run a fixed command with the detected root capability."""
         if self.root_status == 'not_checked':
@@ -455,9 +477,11 @@ class Environment:
         else:
             os.makedirs(screen_dir)
 
-    def configure_proxy(self, project, request):
+    def configure_proxy(self, project, request, install_ca=True):
         """HTTPS Proxy."""
-        if self.get_environment() == 'physical':
+        if not install_ca:
+            logger.info('Using the MobSF Root CA embedded in the Gadget APK')
+        elif self.get_environment() == 'physical':
             logger.warning(
                 'MobSF Root CA was not installed automatically on the '
                 'physical Android device')
@@ -720,18 +744,18 @@ class Environment:
         """Identify the environment."""
         values = self.get_android_properties()
         combined = '\n'.join(values.values()).lower()
-        if ('emulator' in combined
-                or 'generic_x86' in combined
-                or values.get('ro.kernel.qemu') == '1'
-                or values.get('ro.boot.qemu') == '1'):
-            logger.info('Found Android Studio Emulator')
-            return 'emulator'
-        elif 'genymotion' in combined:
+        if 'genymotion' in combined:
             logger.info('Found Genymotion Android VM')
             return 'genymotion'
         elif 'corellium' in combined:
             logger.info('Found Corellium ARM Android VM')
             return 'corellium'
+        elif ('emulator' in combined
+                or 'generic_x86' in combined
+                or values.get('ro.kernel.qemu') == '1'
+                or values.get('ro.boot.qemu') == '1'):
+            logger.info('Found Android Studio Emulator')
+            return 'emulator'
         else:
             return 'physical'
 
@@ -1277,9 +1301,9 @@ class Environment:
         time.sleep(2)
         return True
 
-    def get_frida_device(self):
+    def get_frida_device(self, gadget=False):
         """Return a Frida device for the selected Android transport."""
-        if self.get_environment() != 'physical':
+        if not gadget and self.get_environment() != 'physical':
             return frida.get_device(
                 self.identifier,
                 settings.FRIDA_TIMEOUT,
