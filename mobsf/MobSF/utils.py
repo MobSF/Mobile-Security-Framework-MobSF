@@ -44,6 +44,7 @@ from . import settings
 
 logger = logging.getLogger(__name__)
 ADB_PATH = None
+ANDROID_DEVICE_SNAPSHOT = None
 BASE64_REGEX = re.compile(r'^[-A-Za-z0-9+/]*={0,3}$')
 MD5_REGEX = re.compile(r'^[0-9a-f]{32}$')
 # Regex to capture strings between quotes or <string> tag
@@ -463,6 +464,24 @@ def get_android_devices():
             })
     except Exception:
         logger.exception('Failed to list Android devices')
+        return devices
+    snapshot = tuple(
+        (device['identifier'], device['state'])
+        for device in devices
+    )
+    global ANDROID_DEVICE_SNAPSHOT
+    if snapshot != ANDROID_DEVICE_SNAPSHOT:
+        online = sum(
+            device['state'] == 'device'
+            for device in devices
+        )
+        logger.info(
+            'Found %d Android device%s (%d online)',
+            len(devices),
+            '' if len(devices) == 1 else 's',
+            online,
+        )
+        ANDROID_DEVICE_SNAPSHOT = snapshot
     return devices
 
 
