@@ -31,6 +31,7 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
 from mobsf.DynamicAnalyzer.views.common.frida.server_update import (
     FridaServerUpdater,
 )
+from mobsf.MobSF.security import is_safe_android_path
 from mobsf.MobSF.utils import (
     get_adb,
     get_android_devices,
@@ -927,7 +928,7 @@ class Environment:
             if not line.startswith('package:'):
                 continue
             raw_path = line.split('package:', 1)[1].strip()
-            if ('..' in raw_path
+            if (not is_safe_android_path(raw_path)
                     or not re.fullmatch(
                         r'/data/app/[A-Za-z0-9_./=~+-]+\.apk',
                         raw_path)):

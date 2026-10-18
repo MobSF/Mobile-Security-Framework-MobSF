@@ -650,6 +650,25 @@ def is_safe_path(safe_root, check_path, raw_file):
         return False
 
 
+def is_safe_android_path(check_path, safe_root='/data/app'):
+    """Validate an absolute path reported by an Android device."""
+    if not isinstance(check_path, str) or not isinstance(safe_root, str):
+        return False
+    safe_root = posixpath.normpath(safe_root)
+    if (not posixpath.isabs(check_path)
+            or not check_path.startswith(f'{safe_root}/')):
+        return False
+    relative = check_path[len(safe_root) + 1:]
+    if is_path_traversal(relative):
+        return False
+    normalized = posixpath.normpath(check_path)
+    try:
+        return posixpath.commonpath(
+            (safe_root, normalized)) == safe_root
+    except ValueError:
+        return False
+
+
 def clean_filename(filename, replace=' '):
     """Sanitize filename for Windows compatibility."""
     if system() == 'Windows':
