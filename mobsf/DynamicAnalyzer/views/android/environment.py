@@ -459,7 +459,7 @@ class Environment:
         """HTTPS Proxy."""
         if self.get_environment() == 'physical':
             logger.warning(
-                'MobSF CA was not installed automatically on the '
+                'MobSF Root CA was not installed automatically on the '
                 'physical Android device')
         else:
             self.install_mobsf_ca('install')

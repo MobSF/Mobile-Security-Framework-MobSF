@@ -154,10 +154,9 @@ textarea:focus {
                             Rooted mode requires a bounded, non-interactive
                             <code>su</code> grant. Gadget mode rebuilds the
                             selected APK for this device ABI and signs it with
-                            a local MobSF lab key; it never removes an existing
-                            installation automatically. Install the MobSF CA
-                            through Android settings if HTTPS interception is
-                            required.
+                            a MobSF-generated signing key; it never removes an
+                            existing installation automatically. Gadget APKs
+                            trust the embedded MobSF Root CA.
                             <br/><strong>Connectivity:</strong> Native MobSF
                             supports USB and wireless ADB. Containers support
                             wireless ADB directly by running

@@ -494,10 +494,14 @@ def dynamic_analyzer(request, checksum, api=False):
         if selected_mode == 'gadget':
             gadget_marker.write_text(identifier, encoding='utf-8')
         logger.info('Testing Environment is Ready!')
+        device_model = env.get_android_properties().get(
+            'ro.product.model', '')
         context = {'package': package,
                    'hash': checksum,
                    'android_version': version,
                    'device_mode': selected_mode,
+                   'device_identifier': identifier,
+                   'device_model': device_model,
                    'version': settings.MOBSF_VER,
                    'activities': activities,
                    'exported_activities': exported_activities,
