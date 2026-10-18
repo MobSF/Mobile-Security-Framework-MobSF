@@ -263,9 +263,20 @@ def touch(request):
                     or not is_number(max_x)
                     or not is_number(max_y)):
                 return data
-            # Should not be greater than max screen size
-            swipe_x = str(min(int(float(x)) + 500, int(float(max_x))))
-            swipe_y = str(min(int(float(y)) + 500, int(float(max_y))))
+            width = max(1, int(float(max_x)))
+            height = max(1, int(float(max_y)))
+            max_screen_x = width - 1
+            max_screen_y = height - 1
+            touch_x = max(0, min(int(float(x)), max_screen_x))
+            touch_y = max(0, min(int(float(y)), max_screen_y))
+            distance_x = max(50, width // 4)
+            distance_y = max(50, height // 4)
+            left_x = max(0, touch_x - distance_x)
+            right_x = min(max_screen_x, touch_x + distance_x)
+            up_y = max(0, touch_y - distance_y)
+            down_y = min(max_screen_y, touch_y + distance_y)
+            touch_x = str(touch_x)
+            touch_y = str(touch_y)
 
             if event == 'enter':
                 args = ['keyevent', '66']
@@ -276,15 +287,30 @@ def touch(request):
             elif event == 'right':
                 args = ['keyevent', '22']
             elif event == 'swipe_up':
-                args = ['swipe', x, y, x, swipe_y]
+                args = [
+                    'swipe', touch_x, str(down_y),
+                    touch_x, str(up_y), '300',
+                ]
             elif event == 'swipe_down':
-                args = ['swipe', x, swipe_y, x, y]
+                args = [
+                    'swipe', touch_x, str(up_y),
+                    touch_x, str(down_y), '300',
+                ]
             elif event == 'swipe_left':
-                args = ['swipe', x, y, swipe_x, y]
+                args = [
+                    'swipe', str(right_x), touch_y,
+                    str(left_x), touch_y, '300',
+                ]
             elif event == 'swipe_right':
-                args = ['swipe', swipe_x, y, x, y]
+                args = [
+                    'swipe', str(left_x), touch_y,
+                    str(right_x), touch_y, '300',
+                ]
+            elif event == 'touch':
+                args = ['tap', touch_x, touch_y]
             else:
-                args = ['tap', x, y]
+                data['message'] = 'Unsupported input event'
+                return data
         threading.Thread(target=env.adb_command,
                          args=(['input'] + args, True),
                          daemon=True).start()
