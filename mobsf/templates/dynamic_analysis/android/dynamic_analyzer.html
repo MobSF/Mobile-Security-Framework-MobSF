@@ -78,8 +78,9 @@
     }
 
     .device-preview {
-      width: calc(100% - 24px);
-      max-width: 420px;
+      box-sizing: border-box;
+      width: 420px;
+      max-width: calc(100% - 24px);
       margin: 0 auto;
       padding: 10px;
       overflow: hidden;
@@ -87,20 +88,18 @@
       border: 1px solid #374151;
       border-radius: 24px;
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-      transition: max-width 0.2s ease;
+      transition: width 0.2s ease;
     }
 
     .device-preview.landscape {
-      max-width: 760px;
+      max-width: calc(100% - 24px);
     }
 
     .device-preview-screen {
       display: block;
       width: 100%;
       height: auto;
-      max-height: 75vh;
       margin: 0 auto;
-      object-fit: contain;
       background: #000;
       border-radius: 14px;
       touch-action: none;
@@ -139,7 +138,7 @@
 
     @media (max-width: 576px) {
       .device-preview {
-        width: 100%;
+        max-width: 100%;
         padding: 6px;
         border-radius: 16px;
       }
@@ -1084,6 +1083,29 @@ var screen_width, screen_height;
 var screenfunc;
 const screenImage = document.getElementById('my');
 const screenContainer = document.getElementById('container');
+
+function resizeDevicePreview() {
+  if (!screen_width || !screen_height) {
+    return;
+  }
+  const styles = window.getComputedStyle(screenContainer);
+  const horizontalPadding = (
+    parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight)
+  );
+  const parentWidth = screenContainer.parentElement.clientWidth;
+  const maximumWidth = screen_width > screen_height ? 760 : 420;
+  const widthForViewportHeight = (
+    window.innerHeight * 0.72 * screen_width / screen_height
+    + horizontalPadding
+  );
+  const frameWidth = Math.min(
+    maximumWidth,
+    Math.max(120, parentWidth - 24),
+    widthForViewportHeight
+  );
+  screenContainer.style.width = Math.floor(frameWidth) + 'px';
+}
+
 screenImage.addEventListener('load', function() {
   if (touch === "on" && this.naturalWidth && this.naturalHeight) {
     screen_width = this.naturalWidth;
@@ -1092,11 +1114,13 @@ screenImage.addEventListener('load', function() {
       'landscape',
       screen_width > screen_height
     );
+    resizeDevicePreview();
     console.log(
       'Screen Resolution: ' + screen_width + 'x' + screen_height
     );
   }
 });
+window.addEventListener('resize', resizeDevicePreview);
 $("#screen").click(function() {
       var stext = $("#screen").text();
       if (stext.includes("Show Screen")){
