@@ -116,10 +116,8 @@ textarea:focus {
                      <div class="col-md-9">
                         <h4>MobSF Dynamic Analyzer Supports</h4>
                         <h5>
-                          <strong>• Genymotion Android VM</strong> version 4.1 - 11.0 (arm64, x86, and x86_64 upto API 30)<br/>
-                          <strong>• Android Emulator AVD</strong> (non production) version 5.0 - 11.0 (arm, arm64, x86, and x86_64 upto API 30)<br/>
-                          <strong>• Corellium Android VM</strong> (userdebug builds) version 7.1.2 - 11.0 (arm64 upto API 30)<br/>
-                          <strong>• Physical Android devices</strong> using non-interactive root or a MobSF-signed Frida Gadget APK
+                          <strong>• Rooted AVD, Genymotion, and Corellium runtimes</strong> using legacy MobSFy up to API 30<br/>
+                          <strong>• Physical, jailed, and non-rooted Android 5+ targets</strong> using a MobSF-patched Frida Gadget APK
                         </h5>
                         <p>
                           {% if android_version %}
@@ -129,9 +127,9 @@ textarea:focus {
                               <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
                               <script>
                                 Swal.fire(
-                                        'Android Version/SDK not supported',
-                                        'You are running Android Version <strong>{{ android_version }}</strong> and SDK <strong>{{ android_sdk }}</strong> which is not supported by MobSF. Please use a supported Android version/API level.',
-                                        'error'
+                                        'Use Frida Gadget for this API level',
+                                        'Android Version <strong>{{ android_version }}</strong> / SDK <strong>{{ android_sdk }}</strong> is newer than the legacy MobSFy limit of API {{ android_supported }}. Select Auto or Frida Gadget mode.',
+                                        'info'
                                         )
                               </script>
                             {% endif %}
