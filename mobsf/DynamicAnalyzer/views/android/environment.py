@@ -1042,6 +1042,10 @@ class Environment:
                         ['chmod', '644', archive], silent=True) is None:
                     return 'failed'
             else:
+                identity = self.adb_command(
+                    ['id'], True, True, timeout=5)
+                if not identity or b'uid=0' not in identity:
+                    return 'unsupported'
                 result = self.adb_command([
                     'tar', '-cf', archive,
                     '-C', '/data/data', package,
@@ -1447,13 +1451,15 @@ class Environment:
                 silent=True,
             ) or b''
             local = None
+            owned_local = _MOBSF_FRIDA_FORWARDS.get(
+                self.identifier)
             for line in forwards.decode('utf-8', 'ignore').splitlines():
                 parts = line.split()
                 if (len(parts) >= 3
                         and parts[0] == self.identifier
+                        and parts[1] == owned_local
                         and parts[2] == remote):
                     local = parts[1]
-                    _MOBSF_FRIDA_FORWARDS[self.identifier] = local
                     break
             if not local:
                 for attempt in range(1, 4):

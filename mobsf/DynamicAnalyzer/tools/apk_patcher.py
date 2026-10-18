@@ -235,6 +235,23 @@ class GadgetPatcher:
                 json.JSONDecodeError) as exp:
             raise ValueError('Unable to inspect APK Gadget metadata') from exp
 
+    @staticmethod
+    def validate_archive_size(apk_file):
+        """Apply MobSF expansion limits before apktool decoding."""
+        total = 0
+        with zipfile.ZipFile(apk_file) as apk:
+            for member in apk.infolist():
+                if member.is_dir():
+                    continue
+                if (member.file_size
+                        > settings.ZIP_MAX_UNCOMPRESSED_FILE_SIZE):
+                    raise ValueError(
+                        'APK entry exceeds the uncompressed size limit')
+                total += member.file_size
+                if total > settings.ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE:
+                    raise ValueError(
+                        'APK exceeds the total uncompressed size limit')
+
     def _validate(self):
         """Validate fixed inputs and required existing tools."""
         upload_root = Path(settings.UPLD_DIR).resolve()
@@ -261,6 +278,7 @@ class GadgetPatcher:
         if self.android_abi not in SUPPORTED_ABIS:
             raise ValueError(
                 f'Unsupported Android architecture: {self.android_abi}')
+        self.validate_archive_size(self.apk_file)
         for split_apk in self.split_apks:
             if (split_apk.suffix.lower() != '.apk'
                     or not is_safe_path(
@@ -269,6 +287,7 @@ class GadgetPatcher:
                     or is_pipe_or_link(split_apk)
                     or split_apk == self.apk_file):
                 raise ValueError('Invalid split APK input')
+            self.validate_archive_size(split_apk)
         if self.split_apks:
             base_manifest = androguard_apk.APK(
                 self.apk_file.as_posix())
@@ -384,6 +403,7 @@ class GadgetPatcher:
             raise RuntimeError('Android manifest has no application')
         if root.get(f'{ANDROID_ATTR}sharedUserId'):
             raise ValueError('Shared-user APKs cannot be safely re-signed')
+        application.set(f'{ANDROID_ATTR}hasCode', 'true')
         internet_permission = None
         for permission in root.findall('uses-permission'):
             if (permission.get(f'{ANDROID_ATTR}name')
@@ -489,6 +509,10 @@ class GadgetPatcher:
             raise ValueError(
                 'Split APK Gadget mode requires INTERNET permission '
                 'in the original base manifest')
+        if (parsed_apk.get_attribute_value(
+                'application', 'hasCode') == 'false'):
+            raise ValueError(
+                'Split APK Gadget mode requires application code')
         application = self._qualified_class_name(
             package,
             parsed_apk.get_attribute_value('application', 'name'),
