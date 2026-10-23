@@ -8,6 +8,7 @@ MobSF and Django settings
 import logging
 import os
 
+from mobsf.MobSF.env import env_flag
 from mobsf.MobSF.init import (
     first_run,
     get_mobsf_home,
@@ -404,6 +405,10 @@ else:
     # Common third party classes/paths that will be skipped
     # during static analysis
     import os
+
+    # Needed in the generated user config.py
+    from mobsf.MobSF.env import env_flag  # noqa: F811
+
     SKIP_CLASS_PATH = {
         'com/google/', 'androidx', 'okhttp2/', 'okhttp3/',
         'com/android/', 'com/squareup', 'okhttp/',
@@ -416,7 +421,7 @@ else:
         'kotlinx/', 'kotlin/',
     }
     # Disable CVSSV2 Score by default
-    CVSS_SCORE_ENABLED = bool(os.getenv('MOBSF_CVSS_SCORE_ENABLED', ''))
+    CVSS_SCORE_ENABLED = env_flag('MOBSF_CVSS_SCORE_ENABLED')
     # NIAP Scan
     NIAP_ENABLED = os.getenv('MOBSF_NIAP_ENABLED', '')
     # Permission to Code Mapping
@@ -495,8 +500,7 @@ else:
 
     # ========UPSTREAM PROXY SETTINGS ==============
     # If you are behind a Proxy
-    UPSTREAM_PROXY_ENABLED = bool(os.getenv(
-        'MOBSF_UPSTREAM_PROXY_ENABLED', ''))
+    UPSTREAM_PROXY_ENABLED = env_flag('MOBSF_UPSTREAM_PROXY_ENABLED')
     UPSTREAM_PROXY_SSL_VERIFY = os.getenv(
         'MOBSF_UPSTREAM_PROXY_SSL_VERIFY', '1')
     UPSTREAM_PROXY_TYPE = os.getenv('MOBSF_UPSTREAM_PROXY_TYPE', 'http')
@@ -510,9 +514,9 @@ else:
     # Get AppMonsta API from https://appmonsta.com/dashboard/get_api_key/
     APPMONSTA_API = os.getenv('MOBSF_APPMONSTA_API', '')
     # ----------VirusTotal (API v3)-----------------
-    VT_ENABLED = bool(os.getenv('MOBSF_VT_ENABLED', ''))
+    VT_ENABLED = env_flag('MOBSF_VT_ENABLED')
     VT_API_KEY = os.getenv('MOBSF_VT_API_KEY', '')
-    VT_UPLOAD = bool(os.getenv('MOBSF_VT_UPLOAD', ''))
+    VT_UPLOAD = env_flag('MOBSF_VT_UPLOAD')
     # Before setting VT_ENABLED to True,
     # Make sure VT_API_KEY is set to your VirusTotal API key
     # register at: https://www.virustotal.com/#/join-us
@@ -539,3 +543,9 @@ else:
     # CORELLIUM_PROJECT_ID is optional, MobSF will use any available project id
     # ===============================================
     # ^CONFIG-END^: Do not edit this line
+# Existing user config.py files parse these with bool(os.getenv()),
+# which treats MOBSF_VT_UPLOAD=0 as enabled. Re-parse when set.
+for _flag in ('CVSS_SCORE_ENABLED', 'UPSTREAM_PROXY_ENABLED',
+              'VT_ENABLED', 'VT_UPLOAD'):
+    if f'MOBSF_{_flag}' in os.environ:
+        globals()[_flag] = env_flag(f'MOBSF_{_flag}')
