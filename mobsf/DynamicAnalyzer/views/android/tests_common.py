@@ -19,6 +19,7 @@ from mobsf.DynamicAnalyzer.views.android.operations import (
     android_analysis_state_file,
     android_gadget_marker_file,
     get_android_analysis_claim,
+    get_android_frida_target,
     get_package_name,
     release_android_analysis,
     write_android_analysis_state,
@@ -385,6 +386,8 @@ def _collect_logs(request, api=False, identifier=None):
                 'status': 'ok',
                 'message': 'Logs were already collected',
             }, api)
+        proxy_state['finalizing'] = True
+        write_android_analysis_state(md5_hash, proxy_state)
         env = Environment(identifier)
         package = get_package_name(md5_hash, env.identifier)
         if not package:
@@ -410,6 +413,13 @@ def _collect_logs(request, api=False, identifier=None):
         finally:
             env.adb_command(['am', 'force-stop', package], True)
             logger.info('Stopping app')
+            frida_target = (
+                get_android_frida_target(env.identifier, md5_hash)
+                or package
+            )
+            if frida_target != package:
+                env.adb_command(
+                    ['am', 'force-stop', frida_target], True)
             proxy_restored = True
             if state_file.exists() and not state_file.is_symlink():
                 previous_proxy = ''
@@ -429,9 +439,14 @@ def _collect_logs(request, api=False, identifier=None):
                 if current_proxy and current_proxy == mobsf_proxy:
                     proxy_restored = env.restore_global_proxy('')
                     env.disable_adb_reverse_tcp()
-            Frida.close_active(md5_hash, env.identifier, package)
-            env.remove_frida_forward()
-            if proxy_restored:
+            frida_closed = Frida.close_active(
+                md5_hash,
+                env.identifier,
+                frida_target,
+            )
+            if frida_closed:
+                env.remove_frida_forward()
+            if proxy_restored and frida_closed:
                 proxy_state.update({
                     'identifier': env.identifier,
                     'checksum': md5_hash,
@@ -441,6 +456,9 @@ def _collect_logs(request, api=False, identifier=None):
             if not proxy_restored:
                 raise RuntimeError(
                     'Failed to restore the Android proxy setting')
+            if not frida_closed:
+                raise RuntimeError(
+                    'Failed to close the active Frida session')
         data = {'status': 'ok'}
     except Exception as exp:
         logger.exception('Data Collection & Clean Up failed')

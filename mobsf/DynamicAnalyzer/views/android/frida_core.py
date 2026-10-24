@@ -27,7 +27,11 @@ from mobsf.DynamicAnalyzer.views.android.operations import (
     android_frida_owner_file,
     android_gadget_marker_file,
 )
-from mobsf.MobSF.security import sanitize_for_logging
+from mobsf.MobSF.security import (
+    is_path_traversal,
+    sanitize_for_logging,
+)
+from mobsf.MobSF.utils import strict_package_check
 
 logger = logging.getLogger(__name__)
 _ACTIVE_SESSIONS = {}
@@ -180,19 +184,69 @@ class Frida:
                 cls._close_entry(entry)
             owner_file = android_frida_owner_file(app_hash)
             if owner_file is None:
-                return
+                return False
             process_token = _session_owner_token()
             try:
+                if owner_file.is_symlink():
+                    return False
+                if not owner_file.exists():
+                    return True
+                owner = owner_file.read_text(
+                    encoding='utf-8',
+                    errors='ignore',
+                ).strip()
+                if owner == process_token:
+                    owner_file.unlink(missing_ok=True)
+                    return True
+                pid_text = owner.partition(':')[0]
+                if (not pid_text.isdigit()
+                        or not cls._process_alive(int(pid_text))
+                        or pid_text == str(os.getpid())):
+                    owner_file.unlink(missing_ok=True)
+                    return True
+                if (not isinstance(package, str)
+                        or not strict_package_check(package)
+                        or is_path_traversal(package)):
+                    logger.error(
+                        'Cannot close a cross-worker Frida session '
+                        'without its target package')
+                    return False
+                env = Environment(identifier)
+                stopped = env.adb_command(
+                    ['am', 'force-stop', package],
+                    True,
+                    True,
+                    timeout=10,
+                )
+                if stopped is None:
+                    logger.error(
+                        'Unable to stop the cross-worker Frida target')
+                    return False
+                for _ in range(20):
+                    if not owner_file.exists():
+                        return True
+                    time.sleep(0.1)
+                if env.adb_command(
+                        ['pidof', package],
+                        True,
+                        True,
+                        timeout=5):
+                    logger.error(
+                        'Cross-worker Frida target is still running')
+                    return False
                 if (not owner_file.is_symlink()
                         and owner_file.read_text(
                             encoding='utf-8',
                             errors='ignore',
-                ).strip() == process_token):
+                ).strip() == owner):
                     owner_file.unlink(missing_ok=True)
+                    return True
+                return not owner_file.exists()
             except FileNotFoundError:
-                pass
+                return True
             except OSError:
-                logger.exception('Unable to release Frida session ownership')
+                logger.exception('Unable to close Frida session ownership')
+                return False
 
     def reuse_session(self, replace=True, completion_timeout=30):
         """Inject through an existing Frida session."""
