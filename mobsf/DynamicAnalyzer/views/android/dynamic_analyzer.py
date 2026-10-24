@@ -152,6 +152,50 @@ def android_dynamic_analysis(request, api=False):
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['GET'])
+def android_device_details(request):
+    """Return display details for one connected Android device."""
+    try:
+        identifier = get_device(request)
+        if not identifier:
+            return JsonResponse({
+                'status': 'failed',
+                'message': 'No Android device selected',
+            }, status=400)
+        env = Environment(identifier)
+        if not env.connect():
+            return JsonResponse({
+                'status': 'failed',
+                'message': 'Selected Android device is unavailable',
+            }, status=503)
+        runtime = env.get_environment()
+        profile = env.get_device_profile(
+            probe_root=runtime == 'physical')
+        root_available = (
+            profile.has_root
+            if runtime == 'physical'
+            else env.supports_root_adbd()
+        )
+        return JsonResponse({
+            'status': 'ok',
+            'identifier': identifier,
+            'android_version': f'{profile.android_version:g}',
+            'android_sdk': profile.sdk,
+            'android_abi': profile.abi,
+            'root_status': (
+                'Rooted' if root_available else 'Non-Root'),
+            'runtime': runtime.title(),
+        })
+    except Exception:
+        logger.exception('Loading Android device details')
+        return JsonResponse({
+            'status': 'failed',
+            'message': 'Failed to load Android device details',
+        }, status=500)
+
+
+@login_required
+@permission_required(Permissions.SCAN)
+@require_http_methods(['GET'])
 def android_device_apps(request):
     """Load installed device apps without blocking the main page."""
     try:

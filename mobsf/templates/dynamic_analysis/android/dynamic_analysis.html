@@ -75,7 +75,7 @@ textarea:focus {
                   <select id="device_identifier" name="identifier" class="form-control mr-2">
                     {% for device in devices %}
                       {% if device.state == "device" %}
-                      <option value="{{ device.identifier }}" {% if device.identifier == identifier %}selected{% endif %}>
+                      <option value="{{ device.identifier }}" data-device-details="pending" {% if device.identifier == identifier %}selected{% endif %}>
                         {{ device.details.model|default:device.identifier }} — {{ device.identifier }}
                       </option>
                       {% endif %}
@@ -306,8 +306,47 @@ const checksumPlaceholder = '00000000000000000000000000000000';
 const dynamicPathTemplate = "{% url 'dynamic_analyzer' checksum='00000000000000000000000000000000' %}";
 const staticPathTemplate = "{% url 'static_scan' checksum='00000000000000000000000000000000' %}";
 const reportPathTemplate = "{% url 'dynamic_report' checksum='00000000000000000000000000000000' %}";
+const deviceDetailsUrl = "{% url 'android_device_details' %}";
 const csrfToken = '{{ csrf_token }}';
 const physicalRuntime = {% if runtime == "physical" %}true{% else %}false{% endif %};
+
+async function loadDeviceDetails() {
+    const options = Array.from(
+        document.querySelectorAll(
+            '#device_identifier option[data-device-details="pending"]',
+        ),
+    );
+    await Promise.all(options.map(async (option) => {
+        try {
+            const params = new URLSearchParams({
+                identifier: option.value,
+            });
+            const response = await fetch(
+                `${deviceDetailsUrl}?${params.toString()}`,
+                {
+                    credentials: 'same-origin',
+                    headers: {'X-Requested-With': 'XMLHttpRequest'},
+                },
+            );
+            const details = await response.json();
+            if (!response.ok || details.status !== 'ok') {
+                return;
+            }
+            option.textContent = [
+                `Android ${details.android_version}`,
+                `API ${details.android_sdk}`,
+                details.android_abi || 'Unknown ABI',
+                details.root_status,
+                details.runtime,
+            ].join(' · ') + ` — ${details.identifier}`;
+            option.dataset.deviceDetails = 'loaded';
+        } catch (error) {
+            console.warn('Unable to load Android device details');
+        }
+    }));
+}
+
+loadDeviceDetails();
 
 document.querySelectorAll('.dynamic-start-form').forEach((form) => {
     form.addEventListener('submit', async (event) => {
