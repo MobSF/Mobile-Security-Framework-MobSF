@@ -9,6 +9,7 @@ import shutil
 import ssl
 import subprocess
 import threading
+import weakref
 import zipfile
 from pathlib import Path
 from tempfile import gettempdir
@@ -52,7 +53,7 @@ class GadgetPatcher:
     """Create an independently signed, single-ABI Gadget APK."""
 
     _keystore_lock = threading.Lock()
-    _patch_locks = {}
+    _patch_locks = weakref.WeakValueDictionary()
     _patch_locks_guard = threading.Lock()
 
     @staticmethod
@@ -229,6 +230,48 @@ class GadgetPatcher:
             return f'{package}.{class_name}'
         return class_name
 
+    @staticmethod
+    def _application_process(package, application):
+        """Return the validated primary process name."""
+        process = application.get(f'{ANDROID_ATTR}process') or package
+        if process.startswith(':'):
+            process = f'{package}{process}'
+        if not re.fullmatch(r'[A-Za-z0-9_.:]+', process):
+            raise ValueError('Unsupported Android application process name')
+        return process
+
+    def _gadget_load_smali(self, process):
+        """Return a primary-process-only Gadget load sequence."""
+        label = f'mobsf_{sha256(self.apk_file)[:12]}'
+        return (
+            '    sget v0, Landroid/os/Build$VERSION;->SDK_INT:I',
+            '    const/16 v1, 0x1c',
+            f'    if-lt v0, v1, :{label}_legacy',
+            '    invoke-static {}, '
+            'Landroid/app/Application;->getProcessName()'
+            'Ljava/lang/String;',
+            '    move-result-object v0',
+            f'    goto :{label}_check',
+            '',
+            f'    :{label}_legacy',
+            '    invoke-static {}, '
+            'Landroid/app/ActivityThread;->currentProcessName()'
+            'Ljava/lang/String;',
+            '    move-result-object v0',
+            '',
+            f'    :{label}_check',
+            f'    const-string v1, "{process}"',
+            '    invoke-virtual {v1, v0}, '
+            'Ljava/lang/String;->equals(Ljava/lang/Object;)Z',
+            '    move-result v0',
+            f'    if-eqz v0, :{label}_done',
+            '    const-string v1, "frida-gadget"',
+            '    invoke-static {v1}, '
+            'Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V',
+            '',
+            f'    :{label}_done',
+        )
+
     def _inject_loader(self):
         """Load Gadget from the app class or a generated subclass."""
         manifest = self.work_dir / 'AndroidManifest.xml'
@@ -240,6 +283,9 @@ class GadgetPatcher:
         application = root.find('application')
         if not package or application is None:
             raise RuntimeError('Android manifest has no application')
+        if root.get('split'):
+            raise ValueError(
+                'Frida Gadget requires the base APK, not a feature split')
         if root.get(f'{ANDROID_ATTR}sharedUserId'):
             raise ValueError('Shared-user APKs cannot be safely re-signed')
         application.set(f'{ANDROID_ATTR}hasCode', 'true')
@@ -267,6 +313,7 @@ class GadgetPatcher:
         if not re.fullmatch(class_pattern, original):
             raise ValueError('Unsupported Android Application class name')
         digest = sha256(self.apk_file)[:12]
+        process = self._application_process(package, application)
         strategy = None
         if self.patch_metadata:
             original_application = self.patch_metadata.get(
@@ -293,7 +340,7 @@ class GadgetPatcher:
             self.loader_class = loader_class
             self.loader_strategy = loader_strategy
         else:
-            strategy = self._inject_existing_application(original)
+            strategy = self._inject_existing_application(original, process)
             self.original_application = original
             self.loader_class = original
             self.loader_strategy = strategy or 'generated_application'
@@ -312,10 +359,8 @@ class GadgetPatcher:
                     f'.super {parent_type}',
                     '',
                     '.method static constructor <clinit>()V',
-                    '    .locals 1',
-                    '    const-string v0, "frida-gadget"',
-                    '    invoke-static {v0}, '
-                    'Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V',
+                    '    .locals 2',
+                    *self._gadget_load_smali(process),
                     '    return-void',
                     '.end method',
                     '',
@@ -524,7 +569,7 @@ class GadgetPatcher:
                 return candidate
         return None
 
-    def _inject_existing_application(self, class_name):
+    def _inject_existing_application(self, class_name, process):
         """Inject a load call into an existing Application smali class."""
         application_smali = self._find_application_smali(class_name)
         if not application_smali:
@@ -542,10 +587,9 @@ class GadgetPatcher:
         if not method:
             source += (
                 '\n.method static constructor <clinit>()V\n'
-                '    .locals 1\n'
-                '    const-string v0, "frida-gadget"\n'
-                '    invoke-static {v0}, '
-                'Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V\n'
+                '    .locals 2\n'
+                + '\n'.join(self._gadget_load_smali(process))
+                + '\n'
                 '    return-void\n'
                 '.end method\n'
             )
@@ -562,13 +606,10 @@ class GadgetPatcher:
             register_count = int(registers.group('count'))
             directive = (
                 f'{registers.group("indent")}.{registers.group("kind")} '
-                f'{max(1, register_count)}'
+                f'{max(2, register_count)}'
             )
-            load_call = (
-                '\n    const-string v0, "frida-gadget"\n'
-                '    invoke-static {v0}, '
-                'Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V'
-            )
+            load_call = '\n' + '\n'.join(
+                self._gadget_load_smali(process))
             body = (
                 body[:registers.start()]
                 + directive
