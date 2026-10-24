@@ -406,8 +406,14 @@ def dynamic_analyzer(request, checksum, api=False):
         if (selected_mode != 'gadget'
                 and not runtime_prepared
                 and not env.connect_n_mount()):
-            msg = f'Cannot prepare {identifier} for dynamic analysis'
-            return print_n_send_error_response(request, msg, api)
+            if device_mode == 'auto' and version >= 5:
+                logger.warning(
+                    'Android runtime preparation is unavailable; '
+                    'falling back to Frida Gadget')
+                selected_mode = 'gadget'
+            else:
+                msg = f'Cannot prepare {identifier} for dynamic analysis'
+                return print_n_send_error_response(request, msg, api)
         logger.info('Android Version identified as %s', version)
         xposed_first_run = False
         if selected_mode != 'gadget' and not env.is_mobsfyied(version):
