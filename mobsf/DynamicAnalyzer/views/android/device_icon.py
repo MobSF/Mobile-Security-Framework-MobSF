@@ -12,6 +12,10 @@ from pathlib import Path
 
 from django.conf import settings
 
+from mobsf.DynamicAnalyzer.views.android.device_vector import (
+    safe_svg_image,
+    vector_image,
+)
 from mobsf.DynamicAnalyzer.views.android.environment import (
     _clean_package_display,
 )
@@ -41,6 +45,7 @@ _IMAGE_TYPES = {
     'image/webp': '.webp',
     'image/jpeg': '.jpg',
     'image/gif': '.gif',
+    'image/svg+xml': '.svg',
 }
 _MAX_IMAGE = 1_500_000
 _MAX_XML = 500_000
@@ -132,18 +137,24 @@ def _icon_from_device(env, package):
     remote = source.primary()
     if remote is None:
         return None, ''
+    apk = _apk_from_remote(remote)
+    if apk is None:
+        return None, ''
+    return _raster_icon(apk, source), _app_label(apk)
+
+
+def _apk_from_remote(remote):
+    """Build a minimal APK parser from one installed split."""
     manifest = remote.read_entry('AndroidManifest.xml', _MAX_MANIFEST)
     resources = remote.read_entry('resources.arsc', _MAX_RESOURCES)
     if not manifest or not resources:
-        return None, ''
+        return None
     archive = io.BytesIO()
     with zipfile.ZipFile(archive, 'w') as bundle:
         bundle.writestr('AndroidManifest.xml', manifest)
         bundle.writestr('resources.arsc', resources)
     apk = APK(archive.getvalue(), raw=True)
-    if not apk.valid_apk:
-        return None, ''
-    return _raster_icon(apk, source), _app_label(apk)
+    return apk if apk.valid_apk else None
 
 
 def _base_path(paths):
@@ -160,6 +171,7 @@ class _IconSource:
         self.env = env
         self.paths = paths
         self._opened = {}
+        self._resource_apks = None
 
     def primary(self):
         for apk_path in self.paths:
@@ -178,6 +190,28 @@ class _IconSource:
             if remote and remote.has(name):
                 return remote.read_entry(name, limit)
         return None
+
+    def resource_apks(self, primary_apk=None):
+        """Return parsers for base and configuration resource tables."""
+        if self._resource_apks is not None:
+            return self._resource_apks
+        parsed = []
+        primary_remote = self.primary()
+        for apk_path in self.paths:
+            remote = self._open(apk_path)
+            if (not remote
+                    or not remote.has('AndroidManifest.xml')
+                    or not remote.has('resources.arsc')):
+                continue
+            apk = (
+                primary_apk
+                if remote is primary_remote and primary_apk is not None
+                else _apk_from_remote(remote)
+            )
+            if apk is not None:
+                parsed.append(apk)
+        self._resource_apks = tuple(parsed)
+        return self._resource_apks
 
     def _open(self, apk_path):
         raw_path = apk_path.as_posix()
@@ -328,28 +362,50 @@ def _clean_label(value):
 
 
 def _raster_icon(apk, source):
+    resolved = None
     try:
         resource_id = _icon_resource_id(apk)
         if resource_id:
-            image = _raster_for_id(apk, source, resource_id, set())
-            if image:
-                return image
+            resolved = _raster_for_id(
+                apk, source, resource_id, set())
+            if resolved and resolved[1] != 'image/svg+xml':
+                return resolved
     except Exception:
         logger.debug('Launcher icon resources could not be resolved')
-    return _fallback_icon(source)
+    return _fallback_icon(source) or resolved
+
+
+def _resolved_configs(apk, source, resource_id):
+    """Resolve an id from the base table, then configuration splits."""
+    candidates = []
+    resources = apk.get_android_resources()
+    if resources:
+        try:
+            candidates = resources.get_resolved_res_configs(resource_id)
+        except Exception:
+            candidates = []
+    if candidates:
+        return candidates
+    for split_apk in source.resource_apks(apk):
+        if split_apk is apk:
+            continue
+        resources = split_apk.get_android_resources()
+        if not resources:
+            continue
+        try:
+            candidates = resources.get_resolved_res_configs(resource_id)
+        except Exception:
+            continue
+        if candidates:
+            return candidates
+    return []
 
 
 def _raster_for_id(apk, source, resource_id, seen):
     if resource_id in seen or len(seen) > 8:
         return None
     seen.add(resource_id)
-    resources = apk.get_android_resources()
-    if not resources:
-        return None
-    try:
-        candidates = resources.get_resolved_res_configs(resource_id)
-    except Exception:
-        return None
+    candidates = _resolved_configs(apk, source, resource_id)
     images = []
     xml_names = []
     for config, name in candidates:
@@ -381,37 +437,44 @@ def _raster_for_id(apk, source, resource_id, seen):
             image = _raster_for_id(apk, source, child, seen)
             if image:
                 return image
+        image = vector_image(xml_bytes)
+        if image:
+            return image
     return None
 
 
 def _fallback_icon(source):
-    """Use a conventional launcher filename when resource lookup fails."""
-    remote = source.primary()
-    if remote is None:
-        return None
+    """Use a conventional launcher bitmap from any installed split."""
     ranked = []
-    for name in remote.entries:
-        lower = name.lower()
-        if 'ic_launcher' not in lower:
+    for split_order, apk_path in enumerate(source.paths):
+        remote = source._open(apk_path)
+        if remote is None:
             continue
-        if not lower.endswith(('.png', '.webp', '.jpg', '.jpeg', '.gif')):
-            continue
-        if not _safe_zip_name(name):
-            continue
-        if 'xxhdpi' in lower:
-            score = 0
-        elif 'xhdpi' in lower:
-            score = 1
-        elif 'hdpi' in lower:
-            score = 2
-        else:
-            score = 3
-        if 'foreground' in lower:
-            score += 4
-        ranked.append((score, name))
+        for name in remote.entries:
+            lower = name.lower()
+            if 'ic_launcher' not in lower:
+                continue
+            if not lower.endswith(
+                    ('.png', '.webp', '.jpg', '.jpeg', '.gif')):
+                continue
+            if not _safe_zip_name(name):
+                continue
+            if 'xxhdpi' in lower:
+                score = 0
+            elif 'xhdpi' in lower:
+                score = 1
+            elif 'hdpi' in lower:
+                score = 2
+            else:
+                score = 3
+            if 'foreground' in lower:
+                score += 4
+            if 'background' in lower:
+                score += 8
+            ranked.append((score, split_order, name, remote))
     ranked.sort()
-    for _score, name in ranked[:6]:
-        image = _image(source.read_entry(name, _MAX_IMAGE))
+    for _score, _order, name, remote in ranked[:8]:
+        image = _image(remote.read_entry(name, _MAX_IMAGE))
         if image:
             return image
     return None
@@ -614,7 +677,11 @@ def _cached_device_icon(identifier, package, version, apk_path):
     digest = _cache_digest(identifier, package, version, apk_path)
     root = _icon_root()
     for suffix in _IMAGE_TYPES.values():
-        image = _read_cached_image(root, f'{digest}{suffix}')
+        image = _read_cached_image(
+            root,
+            f'{digest}{suffix}',
+            allow_svg=suffix == '.svg',
+        )
         if image:
             return image
     return None
@@ -718,7 +785,7 @@ def _scan_icon(package, version, match_version):
     return None
 
 
-def _read_cached_image(root, relative):
+def _read_cached_image(root, relative, allow_svg=False):
     if not isinstance(relative, str) or not relative:
         return None
     if is_path_traversal(relative) or Path(relative).is_absolute():
@@ -737,4 +804,6 @@ def _read_cached_image(root, relative):
             data = handle.read(_MAX_IMAGE + 1)
     except OSError:
         return None
+    if allow_svg and data.lstrip().startswith(b'<svg'):
+        return safe_svg_image(data)
     return _image(data)
