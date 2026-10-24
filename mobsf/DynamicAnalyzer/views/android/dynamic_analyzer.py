@@ -48,6 +48,7 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
 from mobsf.MobSF.security import is_path_traversal
 from mobsf.MobSF.utils import (
     clear_analysis_state,
+    docker_translate_localhost,
     get_android_devices,
     get_android_dm_exception_msg,
     get_config_loc,
@@ -73,6 +74,17 @@ from mobsf.MobSF.views.authorization import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _get_form_device(request, form):
+    """Resolve only the connected device validated by the form."""
+    requested = form.cleaned_data['identifier']
+    identifier = get_device(request)
+    if identifier in (
+            requested,
+            docker_translate_localhost(requested)):
+        return identifier
+    return None
 
 
 @login_required
@@ -241,7 +253,7 @@ def android_device_apps(request):
                 'status': 'failed',
                 'message': 'Invalid Android device',
             }, status=400)
-        identifier = get_device(request)
+        identifier = _get_form_device(request, target_form)
         if not identifier:
             return JsonResponse({
                 'status': 'failed',
@@ -285,7 +297,7 @@ def android_device_app_icon(request):
         return HttpResponse(status=204)
     package = form.cleaned_data['package']
     try:
-        identifier = get_device(request)
+        identifier = _get_form_device(request, form)
         if not identifier:
             return HttpResponse(status=204)
         env = Environment(identifier)
@@ -844,7 +856,7 @@ def pull_and_scan(request):
                 'Invalid package name or Android device')
         package = form.cleaned_data['package']
         try:
-            identifier = get_device(request)
+            identifier = _get_form_device(request, form)
         except Exception:
             return print_n_send_error_response(
                 request,
