@@ -6,6 +6,7 @@ import os
 import time
 from pathlib import Path
 from json import dump
+from urllib.parse import quote, urlsplit
 
 from shelljob import proc
 
@@ -15,6 +16,7 @@ from django.http import (JsonResponse,
 from django.conf import settings
 from django.shortcuts import redirect, render
 from django.db.models import ObjectDoesNotExist
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods
 
 from mobsf.DynamicAnalyzer.forms import (
@@ -28,10 +30,12 @@ from mobsf.DynamicAnalyzer.views.android.environment import (
 )
 from mobsf.DynamicAnalyzer.views.android.frida_core import Frida
 from mobsf.DynamicAnalyzer.views.android.operations import (
+    android_analysis_lifecycle,
     android_analysis_state_file,
     android_gadget_marker_file,
     claim_android_analysis,
     get_android_analysis_claim,
+    get_android_capture_claim,
     get_package_name,
     release_android_analysis,
     save_device_packages,
@@ -41,6 +45,7 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
     start_httptools_ui,
     stop_httptools,
 )
+from mobsf.MobSF.security import is_path_traversal
 from mobsf.MobSF.utils import (
     get_android_devices,
     get_android_dm_exception_msg,
@@ -350,6 +355,19 @@ def android_package_status(request):
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def dynamic_analyzer(request, checksum, api=False):
+    """Serialize Android environment preparation across workers."""
+    try:
+        with android_analysis_lifecycle():
+            return _dynamic_analyzer(request, checksum, api)
+    except TimeoutError as exp:
+        return print_n_send_error_response(
+            request,
+            str(exp),
+            api,
+        )
+
+
+def _dynamic_analyzer(request, checksum, api=False):
     """Android Dynamic Analyzer Environment."""
     try:
         identifier = None
@@ -777,21 +795,42 @@ def dynamic_analyzer(request, checksum, api=False):
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def httptools_start(request):
+    """Serialize HTTPTools UI startup with Android capture changes."""
+    try:
+        with android_analysis_lifecycle():
+            return _httptools_start(request)
+    except TimeoutError as exp:
+        return print_n_send_error_response(request, str(exp))
+
+
+def _httptools_start(request):
     """Start httprools UI."""
     logger.info('Starting httptools Web UI')
     try:
+        if get_android_capture_claim():
+            return print_n_send_error_response(
+                request,
+                'Finish the active Android analysis before opening HTTPTools',
+            )
         httptools_url = get_http_tools_url(request)
         stop_httptools(httptools_url)
         start_httptools_ui(settings.PROXY_PORT)
         time.sleep(3)
         logger.info('httptools UI started')
-        if request.POST['project']:
-            project = request.POST['project']
-        else:
-            project = ''
+        project = request.POST.get('project', '')
+        if (project
+                and (not strict_package_check(project)
+                     or is_path_traversal(project))):
+            raise ValueError('Invalid HTTPTools project')
+        project = quote(project, safe='')
         url = f'{httptools_url}/dashboard/{project}'
-        # Host and scheme are allowlisted by get_http_tools_url().
-        return redirect(url)  # lgtm [py/url-redirection]
+        trusted_netloc = urlsplit(httptools_url).netloc
+        if not url_has_allowed_host_and_scheme(
+                url,
+                allowed_hosts={trusted_netloc},
+                require_https=request.is_secure()):
+            raise ValueError('Untrusted HTTPTools redirect')
+        return redirect(url)
     except Exception:
         logger.exception('Starting httptools Web UI')
         err = 'Error Starting httptools UI'

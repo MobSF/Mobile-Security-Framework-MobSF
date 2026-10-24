@@ -14,6 +14,7 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
     send_response,
 )
 from mobsf.DynamicAnalyzer.views.android.operations import (
+    android_analysis_lifecycle,
     android_analysis_state_file,
     android_gadget_marker_file,
     get_android_analysis_claim,
@@ -224,9 +225,24 @@ def activity_tester(request, api=False):
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def download_data(request, api=False, identifier=None):
+    """Serialize final data collection with Android lifecycle changes."""
+    try:
+        with android_analysis_lifecycle():
+            return _download_data(request, api, identifier)
+    except TimeoutError as exp:
+        return send_response({
+            'status': 'failed',
+            'message': str(exp),
+        }, api)
+
+
+def _download_data(request, api=False, identifier=None):
     """Download Application Data from Device."""
     logger.info('Downloading app data')
     data = {}
+    state_file = None
+    gadget_marker = None
+    owns_analysis = False
     try:
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
@@ -235,6 +251,33 @@ def download_data(request, api=False, identifier=None):
             identifier = get_analysis_identifier(request, md5_hash)
         if not valid_android_device_identifier(identifier):
             return invalid_params(api)
+        state_file = android_analysis_state_file(md5_hash)
+        gadget_marker = android_gadget_marker_file(md5_hash)
+        if state_file is None or gadget_marker is None:
+            return invalid_params(api)
+        claim_checksum = get_android_analysis_claim(identifier)
+        if claim_checksum != md5_hash:
+            return send_response({
+                'status': 'ok',
+                'analysis_inactive': True,
+                'data_collected': False,
+                'message': 'Analysis was already cleaned up',
+            }, api)
+        state = {}
+        if state_file.is_file() and not state_file.is_symlink():
+            try:
+                with state_file.open(encoding='utf-8') as source:
+                    state = json.load(source)
+            except (OSError, ValueError, TypeError):
+                state = {}
+        if (not isinstance(state, dict)
+                or state.get('identifier') != identifier
+                or state.get('cleanup_complete') is not True):
+            return send_response({
+                'status': 'failed',
+                'message': 'Collect logs before downloading app data',
+            }, api)
+        owns_analysis = True
         env = Environment(identifier)
         package = get_package_name(md5_hash, env.identifier)
         if (not isinstance(package, str)
@@ -270,6 +313,11 @@ def download_data(request, api=False, identifier=None):
     except Exception as exp:
         logger.exception('Downloading application data')
         data = {'status': 'failed', 'message': str(exp)}
+    finally:
+        if owns_analysis:
+            state_file.unlink(missing_ok=True)
+            gadget_marker.unlink(missing_ok=True)
+            release_android_analysis(identifier, md5_hash)
     return send_response(data, api)
 
 # AJAX
@@ -279,6 +327,18 @@ def download_data(request, api=False, identifier=None):
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def collect_logs(request, api=False, identifier=None):
+    """Serialize Android cleanup across threads and workers."""
+    try:
+        with android_analysis_lifecycle():
+            return _collect_logs(request, api, identifier)
+    except TimeoutError as exp:
+        return send_response({
+            'status': 'failed',
+            'message': str(exp),
+        }, api)
+
+
+def _collect_logs(request, api=False, identifier=None):
     """Collecting Data and Cleanup."""
     logger.info('Collecting Data and Cleaning Up')
     data = {}
@@ -316,6 +376,12 @@ def collect_logs(request, api=False, identifier=None):
                 'status': 'ok',
                 'analysis_inactive': True,
                 'message': 'Analysis was already cleaned up',
+            }, api)
+        if (claim_checksum == md5_hash
+                and proxy_state.get('cleanup_complete') is True):
+            return send_response({
+                'status': 'ok',
+                'message': 'Logs were already collected',
             }, api)
         env = Environment(identifier)
         package = get_package_name(md5_hash, env.identifier)
@@ -364,9 +430,13 @@ def collect_logs(request, api=False, identifier=None):
             Frida.close_active(md5_hash, env.identifier, package)
             env.remove_frida_forward()
             if proxy_restored:
-                state_file.unlink(missing_ok=True)
-                release_android_analysis(env.identifier, md5_hash)
-            gadget_marker.unlink(missing_ok=True)
+                proxy_state.update({
+                    'identifier': env.identifier,
+                    'checksum': md5_hash,
+                    'cleanup_complete': True,
+                })
+                with state_file.open('w', encoding='utf-8') as target:
+                    json.dump(proxy_state, target)
             if not proxy_restored:
                 raise RuntimeError(
                     'Failed to restore the Android proxy setting')
@@ -383,6 +453,18 @@ def collect_logs(request, api=False, identifier=None):
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def tls_tests(request, api=False):
+    """Serialize TLS proxy transitions with Android lifecycle changes."""
+    try:
+        with android_analysis_lifecycle():
+            return _tls_tests(request, api)
+    except TimeoutError as exp:
+        return send_response({
+            'status': 'failed',
+            'message': str(exp),
+        }, api)
+
+
+def _tls_tests(request, api=False):
     """Perform TLS tests."""
     logger.info('Running TLS/SSL Security tests')
     data = {}

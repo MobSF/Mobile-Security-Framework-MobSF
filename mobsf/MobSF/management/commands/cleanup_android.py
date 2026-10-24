@@ -8,6 +8,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from mobsf.DynamicAnalyzer.views.android.environment import Environment
 from mobsf.DynamicAnalyzer.views.android.operations import (
+    android_analysis_lifecycle,
     android_gadget_marker_file,
     release_android_analysis,
 )
@@ -52,6 +53,12 @@ class Command(BaseCommand):
         return states
 
     def handle(self, *args, **options):
+        """Serialize shutdown cleanup with active analysis transitions."""
+        with android_analysis_lifecycle():
+            self._cleanup()
+
+    def _cleanup(self):
+        """Restore each online device with trusted analysis state."""
         states = self._proxy_states()
         failures = 0
         online = [
