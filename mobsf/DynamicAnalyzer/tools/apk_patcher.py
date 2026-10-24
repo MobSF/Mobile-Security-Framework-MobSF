@@ -308,6 +308,7 @@ class GadgetPatcher:
                     or is_pipe_or_link(split_apk)
                     or split_apk == self.apk_file):
                 raise ValueError('Invalid split APK input')
+            self.validate_archive_size(split_apk)
         if self.split_apks:
             base_manifest = androguard_apk.APK(
                 self.apk_file.as_posix())
@@ -624,6 +625,10 @@ class GadgetPatcher:
             raise ValueError(
                 'Split APK Gadget mode requires INTERNET permission '
                 'in the original base manifest')
+        if (parsed_apk.get_attribute_value(
+                'application', 'hasCode') == 'false'):
+            raise ValueError(
+                'Split APK Gadget mode requires application code')
         application = self._qualified_class_name(
             package,
             parsed_apk.get_attribute_value('application', 'name'),
@@ -1225,9 +1230,7 @@ class GadgetPatcher:
         if self.split_output_dir.exists():
             if self.split_output_dir.is_symlink():
                 raise ValueError('Unsafe Gadget split output directory')
-            # codeql[py/path-injection]: validated beneath app_dir in _validate
             shutil.rmtree(self.split_output_dir)
-        # codeql[py/path-injection]: validated beneath app_dir in _validate
         self.split_output_dir.mkdir(parents=True)
         signed = []
         for index, split_apk in enumerate(self.split_apks):
