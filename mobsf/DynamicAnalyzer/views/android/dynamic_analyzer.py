@@ -256,7 +256,9 @@ def android_device_apps(request):
             profile = env.get_device_profile(probe_root=True)
             root_available = profile.has_root
         else:
-            root_available = env.supports_root_adbd()
+            root_available = (
+                int(env.get_android_sdk()) <= LEGACY_MOBSFY_MAX_API
+                and env.supports_root_adbd())
         logger.info('Loading applications installed on the selected device')
         device_packages = env.get_device_packages(refresh=refresh == '1')
         save_device_packages(identifier, device_packages)
@@ -821,7 +823,7 @@ def _dynamic_analyzer(request, checksum, api=False):
         if proxy_state_file and restored:
             proxy_state_file.unlink(missing_ok=True)
             release_android_analysis(identifier, checksum)
-        if gadget_marker:
+        if gadget_marker and replacement_started:
             gadget_marker.unlink(missing_ok=True)
         logger.exception('Dynamic Analyzer')
         return print_n_send_error_response(

@@ -1062,15 +1062,14 @@ class Environment:
             err_msg = ('VM\'s /system is not writable. '
                        'This VM cannot be used for '
                        'Dynamic Analysis.')
-            proc = subprocess.Popen([get_adb(),
-                                     '-s', self.identifier,
-                                     'shell',
-                                     'touch',
-                                     '/system/test'],
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-            _, stderr = proc.communicate()
-            if b'Read-only' in stderr:
+            proc = subprocess.run([get_adb(),
+                                   '-s', self.identifier,
+                                   'shell',
+                                   'touch',
+                                   '/system/test'],
+                                  capture_output=True,
+                                  timeout=30)
+            if b'Read-only' in proc.stderr:
                 logger.error(err_msg)
                 if runtime == 'emulator':
                     logger.error('Please start the AVD as per '
@@ -1159,7 +1158,8 @@ class Environment:
                  '-s', self.identifier,
                  'shell',
                  'cat',
-                 '/system/' + agent_file])
+                 '/system/' + agent_file],
+                timeout=30)
             if agent_str not in out:
                 return False
         except Exception:
@@ -1605,7 +1605,9 @@ class Environment:
                 forwards = self.adb_command(
                     ['forward', '--list'],
                     silent=True,
-                ) or b''
+                )
+                if forwards is None:
+                    return False
                 for line in forwards.decode(
                         'utf-8', 'ignore').splitlines():
                     parts = line.split()

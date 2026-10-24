@@ -1662,7 +1662,7 @@ function dump(){
 }
   
 //Finish & Generate Report
-$("#stop").one( "click", function() {
+function stopAnalysis() {
   print_status("Collecting data...");
   //Stop Screen Casting if it's running
   var stext = $("#screen").text();
@@ -1674,14 +1674,17 @@ $("#stop").one( "click", function() {
       $('#stop').text("Please Wait...");
       print_status("Downloading logs.");
       print_status("Stopping Application.");
+      dump();
     } else{
       print_status('Failed to collect data.')
       print_status(json.message)
+      print_status('Click Generate Report again to retry cleanup.')
+      $("#stop").one("click", stopAnalysis);
     }
-    dump();
   });
   return false;  
-});
+}
+$("#stop").one("click", stopAnalysis);
 
 //end document.ready
 });
