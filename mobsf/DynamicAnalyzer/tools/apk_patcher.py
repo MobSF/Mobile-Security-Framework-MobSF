@@ -6,6 +6,7 @@ import os
 import re
 import secrets
 import shutil
+import signal
 import ssl
 import subprocess
 import threading
@@ -331,24 +332,69 @@ class GadgetPatcher:
 
     def _run(self, args, action, env=None):
         """Run a bounded build command without invoking a shell."""
+        process_options = {}
+        if os.name == 'nt':
+            process_options['creationflags'] = (
+                subprocess.CREATE_NEW_PROCESS_GROUP)
+        else:
+            process_options['start_new_session'] = True
+        process = subprocess.Popen(
+            args,
+            env=env,
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            **process_options,
+        )
         try:
-            result = subprocess.run(
-                args,
-                capture_output=True,
-                check=False,
-                env=env,
+            stdout, _ = process.communicate(
                 timeout=settings.BINARY_ANALYSIS_TIMEOUT,
             )
         except subprocess.TimeoutExpired as exp:
+            self._kill_process_tree(process)
             raise RuntimeError(f'{action} timed out') from exp
-        if result.returncode != 0:
+        if process.returncode != 0:
             logger.error(
                 '%s failed with exit code %d',
                 action,
-                result.returncode,
+                process.returncode,
             )
             raise RuntimeError(f'{action} failed')
-        return result.stdout
+        return stdout
+
+    @staticmethod
+    def _kill_process_tree(process):
+        """Terminate a timed-out build and all of its descendants."""
+        if os.name == 'nt':
+            try:
+                subprocess.run(
+                    [
+                        'taskkill',
+                        '/F',
+                        '/T',
+                        '/PID',
+                        str(process.pid),
+                    ],
+                    capture_output=True,
+                    check=False,
+                    timeout=30,
+                )
+            except (OSError, subprocess.TimeoutExpired):
+                process.kill()
+        else:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            except OSError:
+                process.kill()
+        for pipe in (process.stdout, process.stderr):
+            if pipe:
+                pipe.close()
+        try:
+            process.wait(timeout=30)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait()
 
     def _decompile(self):
         """Decode resources and smali with the existing apktool."""
@@ -439,9 +485,10 @@ class GadgetPatcher:
         application = root.find('application')
         if not package or application is None:
             raise RuntimeError('Android manifest has no application')
-        if root.get('split'):
+        if (root.get('split')
+                or root.get(f'{ANDROID_ATTR}isSplitRequired') == 'true'):
             raise ValueError(
-                'Frida Gadget requires the base APK, not a feature split')
+                'Frida Gadget requires a standalone base APK')
         if root.get(f'{ANDROID_ATTR}sharedUserId'):
             raise ValueError('Shared-user APKs cannot be safely re-signed')
         application.set(f'{ANDROID_ATTR}hasCode', 'true')
