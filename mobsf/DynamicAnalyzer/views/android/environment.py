@@ -1378,6 +1378,33 @@ class Environment:
             return False
         return True
 
+    def stop_frida_server(self):
+        """Stop a Frida server before starting an in-app Gadget."""
+        running = self.adb_command(
+            ['pidof', 'fd_server'], True, True, timeout=5)
+        if not running or not running.strip():
+            return True
+        logger.info('Stopping Frida Server before starting Frida Gadget')
+        if self.get_environment() == 'physical':
+            if self.root_status == 'not_checked':
+                self.probe_root()
+            if self.root_method == 'none':
+                logger.error(
+                    'A running Frida server conflicts with Frida Gadget, '
+                    'but Android root is unavailable')
+                return False
+            self.root_command(
+                ['pkill', '-f', 'fd_server'], timeout=5, silent=True)
+        else:
+            self.adb_command(
+                ['pkill', '-f', 'fd_server'], True, True, timeout=5)
+        running = self.adb_command(
+            ['pidof', 'fd_server'], True, True, timeout=5)
+        if running and running.strip():
+            logger.error('Unable to stop the conflicting Frida server')
+            return False
+        return True
+
     def get_frida_device(self, gadget=False):
         """Return a Frida device for the selected Android transport."""
         if not gadget and self.get_environment() != 'physical':

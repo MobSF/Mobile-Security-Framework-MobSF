@@ -5,7 +5,6 @@ import os
 import re
 import json
 from pathlib import Path
-from threading import Thread
 import logging
 
 from django.shortcuts import render
@@ -27,6 +26,7 @@ from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
     strict_package_check,
+    valid_android_device_identifier,
 )
 from mobsf.MobSF.views.authentication import (
     login_required,
@@ -37,6 +37,22 @@ from mobsf.MobSF.views.authorization import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _analysis_identifier(request, checksum):
+    """Return the device bound to this dynamic-analysis session."""
+    state_file = (
+        Path(settings.UPLD_DIR) / checksum / '.mobsf-proxy-state')
+    if state_file.is_file() and not state_file.is_symlink():
+        try:
+            state = json.loads(state_file.read_text(encoding='utf-8'))
+            identifier = state.get('identifier')
+            if valid_android_device_identifier(identifier):
+                return identifier
+        except (OSError, ValueError, TypeError, AttributeError):
+            logger.warning('Unable to read Android analysis device state')
+    return get_device(request)
+
 
 # AJAX
 
@@ -53,14 +69,15 @@ def get_runtime_dependencies(request, api=False):
         checksum = request.POST['hash']
         if not is_md5(checksum):
             return invalid_params(api)
-        identifier = get_device(request)
+        identifier = _analysis_identifier(request, checksum)
         package = get_package_name(checksum, identifier)
         if not package:
             return invalid_params(api)
-        if not get_dependencies(package, checksum, identifier):
+        success, error = get_dependencies(package, checksum, identifier)
+        if not success:
             return send_response({
                 'status': 'failed',
-                'message': 'Unable to connect to Frida',
+                'message': error or 'Unable to connect to Frida',
             }, api)
         return send_response(
             {'status': 'ok'},
@@ -102,9 +119,12 @@ def instrument(request, api=False):
         if (is_attack_pattern(default_hooks)
                 or is_attack_pattern(auxiliary_hooks)
                 or not is_md5(md5_hash)
+                or action not in ('spawn', 'session', 'ps', 'get')
+                or (pid and action != 'session')
+                or (pid and (not pid.isdigit() or not new_pkg))
                 or (new_pkg and not strict_package_check(new_pkg))):
             return invalid_params(api)
-        identifier = get_device(request)
+        identifier = _analysis_identifier(request, md5_hash)
         package = get_package_name(md5_hash, identifier)
         if not package and not new_pkg:
             return invalid_params(api)
@@ -126,11 +146,12 @@ def instrument(request, api=False):
             }, api)
         if action == 'spawn':
             logger.info('Starting Instrumentation')
-            if not frida_obj.spawn():
+            if not frida_obj.instrument():
                 return send_response({
                     'status': 'failed',
                     'message': (
-                        'Unable to launch the app or connect to Frida'
+                        frida_obj.last_error
+                        or 'Unable to launch and instrument the app'
                     ),
                 }, api)
         elif action == 'ps':
@@ -142,20 +163,28 @@ def instrument(request, api=False):
         if action in ('spawn', 'session'):
             if pid and pid.isdigit():
                 # Attach to a different pid/bundle id
-                args = (int(pid), new_pkg)
                 logger.info('Attaching to %s [PID: %s]', new_pkg, pid)
+                if not frida_obj.instrument(int(pid), new_pkg):
+                    return send_response({
+                        'status': 'failed',
+                        'message': (
+                            frida_obj.last_error
+                            or 'Unable to attach and inject Frida'
+                        ),
+                    }, api)
             else:
                 if action == 'session':
                     logger.info('Injecting to existing frida session')
                     if not frida_obj.reuse_session():
                         return send_response({
                             'status': 'failed',
-                            'message': 'No reusable Frida session is active',
+                            'message': (
+                                frida_obj.last_error
+                                or 'No reusable Frida session is active'
+                            ),
                         }, api)
                     data['status'] = 'ok'
                     return send_response(data, api)
-                args = (None, None)
-            Thread(target=frida_obj.session, args=args, daemon=True).start()
         data['status'] = 'ok'
     except Exception as exp:
         logger.exception('Instrumentation failed')
@@ -300,11 +329,10 @@ def get_dependencies(package, checksum, identifier=None):
     if location.exists():
         location.write_text('')
     if frd.reuse_session(replace=False):
-        return True
-    if not frd.spawn():
-        return False
-    Thread(target=frd.session, args=(None, None), daemon=True).start()
-    return True
+        return True, ''
+    if frd.instrument(completion_timeout=30):
+        return True, ''
+    return False, frd.last_error
 
 
 def dependency_analysis(package, app_dir):
