@@ -724,7 +724,8 @@ def httptools_start(request):
         else:
             project = ''
         url = f'{httptools_url}/dashboard/{project}'
-        return redirect(url)
+        # Host and scheme are allowlisted by get_http_tools_url().
+        return redirect(url)  # lgtm [py/url-redirection]
     except Exception:
         logger.exception('Starting httptools Web UI')
         err = 'Error Starting httptools UI'
