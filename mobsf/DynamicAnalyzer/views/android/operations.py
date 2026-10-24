@@ -1,6 +1,7 @@
 # -*- coding: utf_8 -*-
 """Dynamic Analyzer Operations."""
 from contextlib import contextmanager
+from functools import wraps
 import json
 import hashlib
 import logging
@@ -8,7 +9,6 @@ import os
 import random
 import re
 import shlex
-import subprocess
 import tempfile
 import threading
 import time
@@ -31,7 +31,6 @@ from mobsf.MobSF.security import (
 )
 from mobsf.MobSF.utils import (
     docker_translate_localhost,
-    get_adb,
     is_md5,
     is_number,
     strict_package_check,
@@ -177,6 +176,25 @@ def android_analysis_lifecycle(timeout=300):
             if descriptor is not None:
                 os.close(descriptor)
             _ANDROID_ANALYSIS_LIFECYCLE_LOCK.release()
+
+
+def android_analysis_operation(view):
+    """Serialize one authenticated Android analysis endpoint."""
+    @wraps(view)
+    def wrapped(request, *args, **kwargs):
+        api = kwargs.get(
+            'api',
+            args[0] if args and isinstance(args[0], bool) else False,
+        )
+        try:
+            with android_analysis_lifecycle():
+                return view(request, *args, **kwargs)
+        except TimeoutError as exp:
+            return send_response({
+                'status': 'failed',
+                'message': str(exp),
+            }, api)
+    return wrapped
 
 
 def _read_analysis_claim(claim_file):
@@ -522,6 +540,7 @@ def mobsfy(request, api=False):
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
+@android_analysis_operation
 def execute_adb(request, api=False):
     """Execute ADB Commands."""
     data = {'status': 'ok', 'message': ''}
@@ -533,25 +552,17 @@ def execute_adb(request, api=False):
                 'status': 'failed',
                 'message': 'Android analysis is no longer active',
             }, api)
-        identifier = env.identifier
-        args = [get_adb(),
-                '-s',
-                identifier]
-        stdout = b''
-        stderr = b''
-        try:
-            proc = subprocess.Popen(
-                args + cmd.split(' '),  # lgtm [py/command-line-injection]
-                stdout=subprocess.PIPE,  # Expected, cmd execute inside VM/AVD
-                stderr=subprocess.PIPE)
-            stdout, stderr = proc.communicate()
-        except Exception:
-            logger.exception('Executing ADB Commands')
-        if stdout or stderr:
-            out = stdout or stderr
-            out = out.decode('utf8', 'ignore')
-        else:
-            out = ''
+        output = env.adb_command(
+            cmd.split(' '),  # lgtm [py/command-line-injection]
+            silent=True,
+            timeout=120,
+        )
+        if output is None:
+            return send_response({
+                'status': 'failed',
+                'message': 'ADB command failed or timed out',
+            }, api)
+        out = output.decode('utf8', 'ignore')
         data = {'status': 'ok', 'message': out}
     return send_response(data, api)
 
@@ -561,6 +572,7 @@ def execute_adb(request, api=False):
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
+@android_analysis_operation
 def get_component(request):
     """Get Android Component."""
     data = {}
@@ -585,6 +597,7 @@ def get_component(request):
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
+@android_analysis_operation
 def run_apk(request):
     """Run Android APK."""
     data = {}
@@ -611,6 +624,7 @@ def run_apk(request):
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
+@android_analysis_operation
 def take_screenshot(request, api=False):
     """Take Screenshot."""
     logger.info('Taking screenshot')
@@ -648,6 +662,7 @@ def take_screenshot(request, api=False):
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
+@android_analysis_operation
 def screen_cast(request):
     """ScreenCast."""
     data = {
@@ -673,6 +688,7 @@ def screen_cast(request):
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
+@android_analysis_operation
 def touch(request):
     """Sending Touch/Swipe/Text Events."""
     data = {
@@ -764,9 +780,9 @@ def touch(request):
             else:
                 data['message'] = 'Unsupported input event'
                 return data
-        threading.Thread(target=env.adb_command,
-                         args=(['input'] + args, True),
-                         daemon=True).start()
+        if env.adb_command(['input'] + args, True) is None:
+            data['message'] = 'Failed to send input event'
+            return send_response(data)
         data = {'status': 'ok'}
     except Exception as exp:
         logger.exception('Sending Touchscreen Events')
@@ -778,6 +794,7 @@ def touch(request):
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
+@android_analysis_operation
 def mobsf_ca(request, api=False):
     """Install and Remove MobSF Proxy RootCA."""
     data = {}
@@ -805,6 +822,7 @@ def mobsf_ca(request, api=False):
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
+@android_analysis_operation
 def global_proxy(request, api=False):
     """Set/unset global proxy."""
     data = {}

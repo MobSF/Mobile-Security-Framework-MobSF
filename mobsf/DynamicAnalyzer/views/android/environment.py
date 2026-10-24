@@ -359,7 +359,7 @@ class Environment:
         return success
 
     def adb_command(
-            self, cmd_list, shell=False, silent=False, timeout=None):
+            self, cmd_list, shell=False, silent=False, timeout=120):
         """ADB Command wrapper."""
         args = [get_adb(),
                 '-s',
