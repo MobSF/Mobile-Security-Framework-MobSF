@@ -55,6 +55,10 @@ _FRIDA_FORWARD_LOCK = threading.Lock()
 _MOBSF_FRIDA_FORWARDS = {}
 _DEVICE_PACKAGE_CACHE = {}
 _DEVICE_PACKAGE_CACHE_LOCK = threading.Lock()
+_ADB_DEVICE_LOCKS_GUARD = threading.Lock()
+_ADB_DEVICE_LOCKS = {}
+_ANDROID_USER_CACHE = {}
+_ANDROID_USER_CACHE_TTL = 300
 _DEVICE_PACKAGE_CACHE_TTL = 300
 _DEVICE_NOT_PROVIDED = object()
 
@@ -83,6 +87,123 @@ class DeviceProfile:
     @property
     def has_root(self):
         return self.root_method != 'none'
+
+
+_PACKAGE_BLOCK = re.compile(r'^\s*Package \[([^\]]+)\]')
+_VERSION_NAME = re.compile(r'^\s*versionName=(.*)$')
+_APP_LABEL = re.compile(r'^\s*application-label:(.*)$')
+_APP_LABEL_LOCALE = re.compile(
+    r'^\s*application-label-[\w-]+:(.*)$')
+
+
+def _clean_package_display(value, limit):
+    """Keep a short single-line label from dumpsys output."""
+    if not isinstance(value, str):
+        return ''
+    cleaned = ''.join(
+        ch for ch in value
+        if ch.isprintable() and ch not in '\t\r\n'
+    ).strip()
+    if (len(cleaned) >= 2
+            and cleaned[0] == cleaned[-1]
+            and cleaned[0] in '\'"'):
+        cleaned = cleaned[1:-1].strip()
+    if cleaned.casefold() in ('', 'null', 'none'):
+        return ''
+    return cleaned[:limit]
+
+
+def parse_package_display(dump, packages):
+    """Return app label and versionName for the requested packages."""
+    details = {}
+    current = None
+    if not dump or not packages:
+        return details
+    for line in dump.splitlines():
+        header = _PACKAGE_BLOCK.match(line)
+        if header:
+            name = header.group(1)
+            current = name if name in packages else None
+            if current is not None and current not in details:
+                details[current] = {'name': '', 'version': ''}
+            continue
+        if current is None:
+            continue
+        info = details[current]
+        if not info['version']:
+            version = _VERSION_NAME.match(line)
+            if version:
+                info['version'] = _clean_package_display(
+                    version.group(1), 40)
+                continue
+        label = _APP_LABEL.match(line)
+        if label:
+            cleaned = _clean_package_display(label.group(1), 80)
+            if cleaned:
+                info['name'] = cleaned
+            continue
+        if not info['name']:
+            locale_label = _APP_LABEL_LOCALE.match(line)
+            if locale_label:
+                info['name'] = _clean_package_display(
+                    locale_label.group(1), 80)
+    return details
+
+
+def scanned_package_display(packages):
+    """Use an existing scan when the device does not provide a label."""
+    found = {}
+    if not packages:
+        return found
+    rows = StaticAnalyzerAndroid.objects.filter(
+        PACKAGE_NAME__in=packages,
+    ).values_list('PACKAGE_NAME', 'APP_NAME', 'VERSION_NAME', 'MD5')
+    for package, app_name, version_name, checksum in rows:
+        if package not in packages:
+            continue
+        info = found.setdefault(
+            package, {'name': '', 'version': '', 'report': ''})
+        name = _clean_package_display(app_name, 80)
+        version = _clean_package_display(version_name, 40)
+        if name:
+            info['name'] = name
+        if version and not info['version']:
+            info['version'] = version
+        if (not info['report']
+                and isinstance(checksum, str)
+                and dynamic_report_exists(checksum)):
+            info['report'] = checksum.lower()
+    return found
+
+
+def dynamic_report_exists(checksum):
+    """Return whether this checksum already has a dynamic report."""
+    if not re.fullmatch(r'[a-fA-F0-9]{32}', checksum or ''):
+        return False
+    logcat = Path(settings.UPLD_DIR) / checksum.lower() / 'logcat.txt'
+    return logcat.is_file() and not logcat.is_symlink()
+
+
+def _safe_exec_args(args):
+    """Allow only literal adb exec-out arguments."""
+    if not isinstance(args, (list, tuple)):
+        return False
+    for arg in args:
+        if (not isinstance(arg, str)
+                or '..' in arg
+                or not re.fullmatch(r'[A-Za-z0-9_./=~+:%,-]{1,400}', arg)):
+            return False
+    return True
+
+
+def _device_adb_lock(identifier):
+    """Serialize adb traffic for one device."""
+    with _ADB_DEVICE_LOCKS_GUARD:
+        lock = _ADB_DEVICE_LOCKS.get(identifier)
+        if lock is None:
+            lock = threading.RLock()
+            _ADB_DEVICE_LOCKS[identifier] = lock
+        return lock
 
 
 class Environment:
@@ -422,11 +543,12 @@ class Environment:
         args += cmd_list
         self.adb_timed_out = False
         try:
-            result = subprocess.check_output(  # lgtm[py/command-line-injection]
-                args,
-                stderr=subprocess.STDOUT,
-                timeout=timeout,
-            )
+            with _device_adb_lock(self.identifier):
+                result = subprocess.check_output(  # lgtm[py/command-line-injection]
+                    args,
+                    stderr=subprocess.STDOUT,
+                    timeout=timeout,
+                )
             return result
         except subprocess.TimeoutExpired:
             self.adb_timed_out = True
@@ -446,6 +568,27 @@ class Environment:
             if not silent:
                 logger.exception('Error Running ADB Command')
             return None
+
+    def adb_exec_out(self, args, timeout=30):
+        """Run one adb exec-out command and return raw stdout."""
+        if (not self.identifier
+                or not valid_android_device_identifier(self.identifier)):
+            return None
+        if not args or not _safe_exec_args(args):
+            logger.warning('Rejected Android exec-out arguments')
+            return None
+        try:
+            with _device_adb_lock(self.identifier):
+                proc = subprocess.run(
+                    [get_adb(), '-s', self.identifier, 'exec-out', *args],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.DEVNULL,
+                    timeout=min(int(timeout), 60),
+                    check=False,
+                )
+        except (OSError, subprocess.TimeoutExpired, ValueError):
+            return None
+        return proc.stdout or None
 
     def probe_root(self):
         """Detect a non-interactive root command without assumptions."""
@@ -854,46 +997,61 @@ class Environment:
         return self.get_android_properties().get(
             'ro.build.version.sdk', '')
 
-    def get_device_packages(self, refresh=False):
-        """Get all packages from device."""
+    def _fresh_package_cache(self, refresh, announce):
+        if refresh:
+            return None
         now = time.monotonic()
         with _DEVICE_PACKAGE_CACHE_LOCK:
             cached = _DEVICE_PACKAGE_CACHE.get(self.identifier)
-            if (not refresh
-                    and cached
-                    and now - cached['created'] < _DEVICE_PACKAGE_CACHE_TTL):
-                logger.info(
-                    'Using cached Android package inventory (%d apps)',
-                    len(cached['packages']),
-                )
-                return cached['packages']
-        logger.info(
-            'Hashing installed Android applications. '
-            'This may take several seconds on a physical device.')
+            if (not cached
+                    or now - cached['created'] >= _DEVICE_PACKAGE_CACHE_TTL):
+                return None
+            packages = cached['packages']
+        if announce:
+            logger.info(
+                'Using cached Android package inventory (%d apps)',
+                len(packages),
+            )
+        return packages
+
+    def get_device_packages(self, refresh=False, announce=True):
+        """Get all packages from device."""
+        cached = self._fresh_package_cache(refresh, announce)
+        if cached is not None:
+            return cached
+        with _device_adb_lock(self.identifier):
+            cached = self._fresh_package_cache(refresh, announce=False)
+            if cached is not None:
+                return cached
+            return self._load_device_packages()
+
+    def _load_device_packages(self):
+        """Read and cache the installed third-party packages."""
+        now = time.monotonic()
+        logger.info('Listing installed Android applications')
         started = time.monotonic()
         device_packages = {}
-        script = (
-            'pm list packages -f -3 | while IFS= read -r entry; do '
-            'apk=${entry#package:}; package=${apk##*=}; apk=${apk%=*}; '
-            'checksum=$(md5sum "$apk" 2>/dev/null | cut -d" " -f1); '
-            'printf "%s\\t%s\\t%s\\n" "$checksum" "$package" "$apk"; '
-            'done'
+        out = self.adb_command(
+            ['pm', 'list', 'packages', '-f', '-3'],
+            True,
+            True,
+            timeout=30,
         )
-        out = self.adb_command([script], True, True)
         if not out:
             logger.warning('Android package inventory returned no data')
             return device_packages
         for line in out.decode('utf-8', 'ignore').splitlines():
-            parts = line.split('\t', 2)
-            if len(parts) != 3:
+            if not line.startswith('package:'):
                 continue
-            checksum, package, apk = parts
-            if (not re.fullmatch(r'[a-fA-F0-9]{32}', checksum)
+            apk, separator, package = line[len('package:'):].rpartition('=')
+            if (not separator
                     or package == 'opensecurity.clipdump'
                     or not re.fullmatch(r'[A-Za-z][\w.-]{1,255}', package)
+                    or '..' in package
                     or not apk.startswith('/data/app/')):
                 continue
-            device_packages[checksum.lower()] = (package, apk)
+            device_packages[package] = (package, apk)
+        device_packages = self._with_package_display(device_packages)
         with _DEVICE_PACKAGE_CACHE_LOCK:
             _DEVICE_PACKAGE_CACHE[self.identifier] = {
                 'created': now,
@@ -905,6 +1063,51 @@ class Environment:
             time.monotonic() - started,
         )
         return device_packages
+
+    def _with_package_display(self, device_packages):
+        """Attach app label and version without dropping package paths."""
+        packages = {
+            details[0]
+            for details in device_packages.values()
+            if details and isinstance(details[0], str)
+        }
+        display = {}
+        if packages:
+            raw = self.adb_command(
+                ['dumpsys', 'package'],
+                True,
+                True,
+                timeout=60,
+            )
+            if raw:
+                display = parse_package_display(
+                    raw.decode('utf-8', 'ignore'),
+                    packages,
+                )
+            else:
+                logger.info(
+                    'Device package metadata is unavailable')
+            scanned = scanned_package_display(packages)
+            for package, info in scanned.items():
+                current = display.setdefault(
+                    package, {'name': '', 'version': '', 'report': ''})
+                if not current['name']:
+                    current['name'] = info['name']
+                if not current['version']:
+                    current['version'] = info['version']
+                if not current.get('report'):
+                    current['report'] = info.get('report', '')
+        enriched = {}
+        for package_name, details in device_packages.items():
+            info = display.get(details[0], {})
+            enriched[package_name] = (
+                details[0],
+                details[1],
+                info.get('name', ''),
+                info.get('version', ''),
+                info.get('report', ''),
+            )
+        return enriched
 
     def download_apk_packages(self, apk_paths, out_file):
         """Download APK package(s)."""
@@ -943,13 +1146,44 @@ class Environment:
                     archive.write(apk_file, apk_file.name)
             return 'apks'
 
+    def android_user_ids(self):
+        """Return Android user ids, including a work profile when present."""
+        now = time.monotonic()
+        cached = _ANDROID_USER_CACHE.get(self.identifier)
+        if cached and now - cached[0] < _ANDROID_USER_CACHE_TTL:
+            return cached[1]
+        user_ids = [0]
+        out = self.adb_command(
+            ['pm', 'list', 'users'],
+            shell=True,
+            silent=True,
+            timeout=10,
+        )
+        if out:
+            for match in re.finditer(
+                    r'UserInfo\{(\d+):',
+                    out.decode('utf-8', 'ignore')):
+                user_id = int(match.group(1))
+                if user_id not in user_ids and user_id < 100000:
+                    user_ids.append(user_id)
+        user_ids = tuple(user_ids[:8])
+        _ANDROID_USER_CACHE[self.identifier] = (now, user_ids)
+        return user_ids
+
     def get_apk_packages(self, package):
-        """Get all APK packages from device."""
-        out = self.adb_command([
-            'pm',
-            'path',
-            package], True)
-        return out.decode('utf-8').strip()
+        """Get all APK paths for an installed package."""
+        if not strict_package_check(package):
+            return ''
+        for user_id in self.android_user_ids():
+            out = self.adb_command(
+                ['pm', 'path', '--user', str(user_id), package],
+                shell=True,
+                silent=True,
+                timeout=15,
+            )
+            if out and b'package:' in out:
+                return out.decode('utf-8', 'ignore').strip()
+        return ''
 
     def get_apk_paths(self, package):
         """Get validated APK paths for an installed package."""
@@ -967,6 +1201,36 @@ class Environment:
                 continue
             apk_paths.append(Path(raw_path))
         return apk_paths
+
+    def md5_device_file(self, apk_path):
+        """Hash one installed APK when an analyst pulls it."""
+        raw_path = apk_path.as_posix()
+        if (not is_safe_android_path(raw_path)
+                or not re.fullmatch(
+                    r'/data/app/[A-Za-z0-9_./=~+-]+\.apk',
+                    raw_path)):
+            logger.warning('Refusing to hash an unsafe APK path')
+            return None
+        out = self.adb_command(
+            ['md5sum', raw_path],
+            True,
+            True,
+            timeout=120,
+        )
+        if not out:
+            return None
+        checksum = out.decode('utf-8', 'ignore').split(maxsplit=1)[0]
+        if not re.fullmatch(r'[a-fA-F0-9]{32}', checksum):
+            return None
+        return checksum.lower()
+
+    @staticmethod
+    def base_apk(apk_paths):
+        """Prefer the base split, which identifies the installed app."""
+        for apk_path in apk_paths:
+            if apk_path.name == 'base.apk':
+                return apk_path
+        return apk_paths[0]
 
     def get_apk(self, checksum, package):
         """Download APK from device."""

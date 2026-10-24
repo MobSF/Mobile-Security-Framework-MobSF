@@ -52,6 +52,105 @@ textarea:focus {
     cursor: default;
 }
 {% endif %}
+
+.runtime-missing {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-left: 4px solid #ff4d4f;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 0.25rem;
+}
+.runtime-missing h5 {
+    color: #ff8a80;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+.runtime-missing p:last-child {
+    margin-bottom: 0;
+}
+
+.device-app-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 152px);
+    justify-content: start;
+    gap: 0.5rem;
+}
+.device-app-note {
+    grid-column: 1 / -1;
+}
+.device-app-card {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: none;
+}
+.device-app-card .card-body {
+    padding: 0.45rem 0.4rem 0.4rem;
+}
+.device-app-icon-wrap {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 0.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    background: rgba(0, 0, 0, 0.04);
+}
+.device-app-icon {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    border-radius: 14px;
+    font-size: 2.8rem;
+    line-height: 64px;
+}
+.device-app-name {
+    width: 100%;
+    min-height: 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.2;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.device-app-version {
+    width: 100%;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+.device-app-package {
+    width: 100%;
+    min-height: 0;
+    font-size: 0.62rem;
+    line-height: 1.2;
+    word-break: break-all;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.device-app-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+}
+.device-app-actions .btn {
+    width: 100%;
+    margin: 0;
+    padding: 0.15rem 0.35rem;
+    font-size: 0.68rem;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+.device-app-pull {
+    display: flex;
+    width: 100%;
+}
 </style>
 {% endblock %}
 {% block content %}
@@ -62,60 +161,42 @@ textarea:focus {
 
 
    <div class="row">
-          {% if online_devices %}
-          <div class="col-md-12">
-            <div class="card card-default">
-              <div class="card-header">
-                <h3 class="card-title">Android Device</h3>
-              </div>
-              <div class="card-body">
-                <form method="post" action="{% url "dynamic_android" %}" class="form-inline">
-                  {% csrf_token %}
-                  <label for="device_identifier" class="mr-2">Selected device</label>
-                  <select id="device_identifier" name="identifier" class="form-control mr-2">
-                    {% for device in devices %}
-                      {% if device.state == "device" %}
-                      <option value="{{ device.identifier }}" data-device-details="pending" {% if device.identifier == identifier %}selected{% endif %}>
-                        {{ device.details.model|default:device.identifier }} — {{ device.identifier }}
-                      </option>
-                      {% endif %}
-                    {% endfor %}
-                  </select>
-                  <button type="submit" class="btn btn-primary">Use Device</button>
-                </form>
-                {% if device_form.errors %}
-                <p class="text-danger mt-2">Select an online Android device.</p>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-          {% endif %}
-          {% if not identifier and not online_devices %}
-          <div class="col-md-12">
-            <div class="card bg-gradient-danger">
-              <div class="card-header">
-                <h3 class="card-title">Android Runtime not found!</h3>
-                <!-- /.card-tools -->
-              </div>
-              <!-- /.card-header -->
-              <div class="card-body">
-                 <p> MobSF cannot find android instance identifier. Make sure that an android instance is running and refresh this page.</p><p> If this error persists, Please set <i>ANALYZER_IDENTIFIER</i> in <strong>{{ settings_loc }}</strong> or via environment variable <strong>MOBSF_ANALYZER_IDENTIFIER</strong>.
-                      </p>
-              </div>
-              <!-- /.card-body -->
-            </div>
-            <!-- /.card -->
-          </div>
-          <!-- /.col -->
-          {% endif %}
           <div class="col-md-12">
             <div class="card bg-gradient-primary">
               <!-- /.card-header -->
               <div class="card-body">
-                  <div class="row">
+                  <h4>MobSF Dynamic Analyzer</h4>
+                  {% if not identifier and not online_devices %}
+                  <div class="runtime-missing" role="alert">
+                    <h5><i class="fa fa-exclamation-triangle"></i> Android Runtime not found!</h5>
+                    <p>MobSF cannot find android instance identifier. Make sure that an android instance is running and refresh this page.</p>
+                    <p>If this error persists, Please set <i>ANALYZER_IDENTIFIER</i> in <strong>{{ settings_loc }}</strong> or via environment variable <strong>MOBSF_ANALYZER_IDENTIFIER</strong>.</p>
+                  </div>
+                  {% endif %}
+                  {% if online_devices %}
+                  <h6 class="mt-3 mb-2"><strong>Choose a device for Dynamic Analysis:</strong></h6>
+                  <form method="post" action="{% url "dynamic_android" %}" id="android-device-form">
+                    {% csrf_token %}
+                    <select id="device_identifier" name="identifier" class="form-control" aria-label="Android device">
+                      {% if not identifier %}
+                      <option value="" selected>Select an Android device</option>
+                      {% endif %}
+                      {% for device in devices %}
+                        {% if device.state == "device" %}
+                        <option value="{{ device.identifier }}" data-device-details="pending" {% if device.identifier == identifier %}selected{% endif %}>
+                          {{ device.details.model|default:device.identifier }} — {{ device.identifier }}
+                        </option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                  </form>
+                  {% if device_form.errors %}
+                  <p class="mt-2 mb-0"><strong>Select an online Android device.</strong></p>
+                  {% endif %}
+                  {% endif %}
+                  <div class="row mt-3">
                      <div class="col-md-9">
-                        <h4>MobSF Dynamic Analyzer</h4>
-                        <p>
+                        <p class="mb-0">
                           {% if android_version %}
                             Android version >= <strong>9.0</strong> recommended<br/>
                             Detected Android Version: <strong>{{android_version}}</strong>, SDK: API level <strong>{{ android_sdk }}</strong> <br/>
@@ -127,17 +208,17 @@ textarea:focus {
                             <br/>For Android version <strong>4.1 - 4.3</strong>, set Android VM proxy as <strong>{% if proxy_ip %} {{ proxy_ip }}{% else %} <i>&lt;Host IP&gt;</i>{% endif %}:{{proxy_port}}</strong>
                             {% endif %}
                           {% endif %}
+                          {% if identifier %}
+                          Android instance: <strong>{{ identifier }}</strong>{% if runtime %} ({{ runtime }}){% endif %}
+                          {% endif %}
                         </p>
-                      </div>   
-                     <div class="col-md-3">
-                     <p>
+                      </div>
+                     <div class="col-md-3 text-md-right">
                         {% if runtime != "physical" %}
-                        <button class="btn btn-info disable" role="button"  data-toggle="modal" data-target="#mmobsfy">MobSFy Android Runtime</button>
+                        <button class="btn btn-info disable" role="button" data-toggle="modal" data-target="#mmobsfy">MobSFy Android Runtime</button>
                         {% endif %}
-                        <p>Android instance: <strong>{{ identifier }}</strong>{% if runtime %} ({{ runtime }}){% endif %}</p></div>
-                      </p>
-                    </div>
                      </div>
+                  </div>
               </div>
               <!-- /.card-body -->
             </div>
@@ -158,20 +239,11 @@ textarea:focus {
                       Refresh
                     </button>
                   </h4>
-                  <table class="table table-bordered table-hover table-striped">
-                    <thead>
-                    <tr>
-                        <th>APP</th>
-                        <th>LOCATION IN DEVICE</th>
-                        <th>ACTION</th>
-                    </tr>
-                    </thead>
-                    <tbody id="device_apps">
-                      <tr>
-                        <td colspan="3">{% if identifier %}Loading installed applications…{% else %}Select an Android device first.{% endif %}</td>
-                      </tr>
-                    </tbody>
-                </table>
+                  <div id="device_apps" class="device-app-gallery">
+                    <div class="device-app-note text-muted">
+                      {% if identifier %}Loading installed applications…{% else %}Select an Android device first.{% endif %}
+                    </div>
+                  </div>
               </br>
                   <h4> Apps Available</h4>
                 <table class="table table-bordered table-hover table-striped">
@@ -312,12 +384,11 @@ function submitWithLoader(form) {
 }
 
 const checksumPlaceholder = '00000000000000000000000000000000';
-const dynamicPathTemplate = "{% url 'dynamic_analyzer' checksum='00000000000000000000000000000000' %}";
-const staticPathTemplate = "{% url 'static_scan' checksum='00000000000000000000000000000000' %}";
+const pullUrl = "{% url 'android_pull_scan' %}";
+const iconUrl = "{% url 'android_device_app_icon' %}";
 const reportPathTemplate = "{% url 'dynamic_report' checksum='00000000000000000000000000000000' %}";
 const deviceDetailsUrl = "{% url 'android_device_details' %}";
 const csrfToken = '{{ csrf_token }}';
-const physicalRuntime = {% if runtime == "physical" %}true{% else %}false{% endif %};
 
 async function loadDeviceDetails() {
     const options = Array.from(
@@ -361,6 +432,17 @@ async function loadDeviceDetails() {
 }
 
 loadDeviceDetails();
+
+const deviceSelect = document.getElementById('device_identifier');
+if (deviceSelect) {
+    deviceSelect.addEventListener('change', () => {
+        if (!deviceSelect.value) {
+            return;
+        }
+        dynamic_loader();
+        deviceSelect.form.submit();
+    });
+}
 
 document.querySelectorAll('.dynamic-start-form').forEach((form) => {
     form.addEventListener('submit', async (event) => {
@@ -444,87 +526,299 @@ function addHiddenInput(form, name, value) {
     form.appendChild(input);
 }
 
-function actionForm(path, label, values) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'mb-3';
+function setText(element, value) {
+    element.textContent = typeof value === 'string' ? value : '';
+}
+
+function md5Path(template, checksum) {
+    if (typeof checksum !== 'string'
+            || !/^[a-f0-9]{32}$/i.test(checksum)) {
+        return '';
+    }
+    return template.replace(checksumPlaceholder, checksum.toLowerCase());
+}
+
+function isPackageName(value) {
+    return typeof value === 'string'
+        && /^[A-Za-z][\w.-]{1,255}$/.test(value)
+        && !value.includes('..');
+}
+
+function actionForm(path, label, values, className, iconClass) {
     const form = document.createElement('form');
     form.method = 'post';
     form.action = path;
+    form.className = 'd-inline';
     addHiddenInput(form, 'csrfmiddlewaretoken', csrfToken);
     Object.entries(values).forEach(([name, value]) => {
         addHiddenInput(form, name, value);
     });
     const button = document.createElement('button');
     button.type = 'submit';
-    button.className = 'btn btn-primary btn-sm';
-    button.textContent = label;
+    button.className = className || 'btn btn-primary btn-sm';
+    if (iconClass) {
+        const icon = document.createElement('i');
+        icon.className = iconClass;
+        icon.setAttribute('aria-hidden', 'true');
+        button.appendChild(icon);
+        button.appendChild(document.createTextNode(` ${label}`));
+    } else {
+        button.textContent = label;
+    }
     button.addEventListener('click', dynamic_loader);
     form.appendChild(button);
-    wrapper.appendChild(form);
-    return wrapper;
+    return form;
 }
 
-function showDeviceApps(packages, rootAvailable) {
-    const table = document.getElementById('device_apps');
-    table.replaceChildren();
-    const entries = Object.entries(packages);
-    if (entries.length === 0) {
-        const row = table.insertRow();
-        const cell = row.insertCell();
-        cell.colSpan = 3;
-        cell.textContent = 'No third-party applications found.';
+function showDeviceMessage(text) {
+    const gallery = document.getElementById('device_apps');
+    gallery.replaceChildren();
+    const note = document.createElement('div');
+    note.className = 'device-app-note text-muted';
+    setText(note, text);
+    gallery.appendChild(note);
+}
+
+function packageFields(details) {
+    const fields = Array.isArray(details) ? details : [];
+    const text = (value) => (typeof value === 'string' ? value : '');
+    return {
+        packageName: text(fields[0]),
+        appName: text(fields[2]),
+        version: text(fields[3]),
+        reportChecksum: text(fields[4]),
+    };
+}
+
+let iconGeneration = 0;
+let iconActive = 0;
+const iconJobs = [];
+
+function queueDeviceIcon(img, title, packageName, version) {
+    const params = new URLSearchParams({package: packageName, meta: '1'});
+    if (version) {
+        params.set('v', version.slice(0, 40));
+    }
+    iconJobs.push({
+        generation: iconGeneration,
+        img,
+        title,
+        packageName,
+        src: `${iconUrl}?${params.toString()}`,
+    });
+    pumpDeviceIcons();
+}
+
+function applyResolvedName(job, encoded) {
+    if (job.generation !== iconGeneration || !job.title.isConnected) {
         return;
     }
-    entries.forEach(([checksum, details]) => {
-        const row = table.insertRow();
-        const appCell = row.insertCell();
-        const pathCell = row.insertCell();
-        const actionCell = row.insertCell();
-        appCell.textContent = details[0];
-        pathCell.textContent = details[1];
-        actionCell.className = 'text-center';
-        if (rootAvailable) {
-            const dynamicValues = {re_install: '0', install: '0'};
-            if (physicalRuntime) {
-                dynamicValues.device_mode = 'rooted';
-            }
-            actionCell.appendChild(actionForm(
-                dynamicPathTemplate.replace(checksumPlaceholder, checksum),
-                'Start Dynamic Analysis',
-                dynamicValues,
-            ));
-        } else {
-            const guidance = document.createElement('p');
-            guidance.className = 'text-muted';
-            guidance.textContent = (
-                'Root is unavailable. Pull and scan this app first.'
-            );
-            actionCell.appendChild(guidance);
+    let label = '';
+    try {
+        label = decodeURIComponent(encoded).replace(/\s+/g, ' ').trim();
+    } catch (error) {
+        return;
+    }
+    if (!label
+            || label.startsWith('@')
+            || label.length > 80
+            || label === job.packageName
+            || job.title.textContent !== job.packageName) {
+        return;
+    }
+    setText(job.title, label);
+    job.title.title = label;
+    job.img.alt = label;
+    const body = job.title.parentElement;
+    if (!body || body.querySelector('.device-app-package')) {
+        return;
+    }
+    const packageName = document.createElement('div');
+    packageName.className = 'device-app-package text-muted';
+    packageName.title = job.packageName;
+    setText(packageName, job.packageName);
+    const version = body.querySelector('.device-app-version');
+    const actions = body.querySelector('.device-app-actions');
+    if (version) {
+        version.insertAdjacentElement('afterend', packageName);
+    } else if (actions) {
+        body.insertBefore(packageName, actions);
+    } else {
+        body.appendChild(packageName);
+    }
+}
+
+function pumpDeviceIcons() {
+    const generation = iconGeneration;
+    while (iconActive < 3 && iconJobs.length) {
+        const job = iconJobs.shift();
+        if (job.generation !== generation) {
+            continue;
         }
-        const staticForm = actionForm(
-            staticPathTemplate.replace(checksumPlaceholder, checksum),
-            'Pull & Static Analysis',
-            {},
+        iconActive += 1;
+        const finish = () => {
+            iconActive = Math.max(0, iconActive - 1);
+            pumpDeviceIcons();
+        };
+        const useAndroidMark = () => {
+            const mark = document.createElement('i');
+            mark.className = 'fab fa-android text-success device-app-icon';
+            mark.setAttribute('aria-hidden', 'true');
+            if (job.img.isConnected) {
+                job.img.replaceWith(mark);
+            }
+        };
+        fetch(job.src, {credentials: 'same-origin'})
+            .then((response) => {
+                if (job.generation !== iconGeneration) {
+                    return null;
+                }
+                const encoded = response.headers.get('X-App-Label');
+                if (encoded) {
+                    applyResolvedName(job, encoded);
+                }
+                if (!response.ok || response.status === 204) {
+                    return null;
+                }
+                return response.blob();
+            })
+            .then((blob) => {
+                if (job.generation !== iconGeneration
+                        || !blob
+                        || !blob.size) {
+                    if (job.generation === iconGeneration) {
+                        useAndroidMark();
+                    }
+                    finish();
+                    return;
+                }
+                const url = URL.createObjectURL(blob);
+                job.img.addEventListener('load', () => {
+                    URL.revokeObjectURL(url);
+                    finish();
+                    if (!job.img.naturalWidth) {
+                        useAndroidMark();
+                    }
+                }, {once: true});
+                job.img.addEventListener('error', () => {
+                    URL.revokeObjectURL(url);
+                    finish();
+                    useAndroidMark();
+                }, {once: true});
+                job.img.src = url;
+            })
+            .catch(() => {
+                if (job.generation === iconGeneration) {
+                    useAndroidMark();
+                }
+                finish();
+            });
+    }
+}
+
+function showDeviceApps(packages) {
+    iconGeneration += 1;
+    iconJobs.length = 0;
+    const gallery = document.getElementById('device_apps');
+    gallery.replaceChildren();
+    const entries = Object.entries(packages);
+    if (entries.length === 0) {
+        showDeviceMessage('No third-party applications found.');
+        return;
+    }
+    entries.sort((left, right) => {
+        const a = packageFields(left[1]);
+        const b = packageFields(right[1]);
+        const aKey = (a.appName || a.packageName).toLocaleLowerCase();
+        const bKey = (b.appName || b.packageName).toLocaleLowerCase();
+        return aKey.localeCompare(bKey);
+    });
+    entries.forEach(([, details]) => {
+        const fields = packageFields(details);
+        const card = document.createElement('div');
+        card.className = 'card device-app-card h-100';
+        const body = document.createElement('div');
+        body.className = 'card-body d-flex flex-column align-items-center text-center';
+        const iconWrap = document.createElement('div');
+        iconWrap.className = 'device-app-icon-wrap';
+        const title = document.createElement('div');
+        title.className = 'device-app-name';
+        const heading = fields.appName || fields.packageName;
+        setText(title, heading);
+        title.title = heading;
+        if (isPackageName(fields.packageName)) {
+            const icon = document.createElement('img');
+            icon.className = 'device-app-icon';
+            icon.alt = heading;
+            icon.width = 64;
+            icon.height = 64;
+            queueDeviceIcon(
+                icon,
+                title,
+                fields.packageName,
+                fields.version,
+            );
+            iconWrap.appendChild(icon);
+        } else {
+            const mark = document.createElement('i');
+            mark.className = 'fab fa-android text-success device-app-icon';
+            mark.setAttribute('aria-hidden', 'true');
+            iconWrap.appendChild(mark);
+        }
+        body.appendChild(iconWrap);
+        body.appendChild(title);
+        if (fields.version) {
+            const version = document.createElement('div');
+            version.className = 'device-app-version';
+            setText(version, fields.version);
+            body.appendChild(version);
+        }
+        if (fields.packageName && fields.packageName !== title.textContent) {
+            const packageName = document.createElement('div');
+            packageName.className = 'device-app-package text-muted';
+            packageName.title = fields.packageName;
+            setText(packageName, fields.packageName);
+            body.appendChild(packageName);
+        }
+        const reportPath = md5Path(
+            reportPathTemplate,
+            fields.reportChecksum,
         );
-        staticForm.querySelector('button').className = 'btn btn-warning btn-sm';
-        actionCell.appendChild(staticForm);
-        const report = document.createElement('a');
-        report.className = 'btn btn-info btn-sm';
-        report.href = reportPathTemplate.replace(checksumPlaceholder, checksum);
-        report.textContent = 'View Report';
-        actionCell.appendChild(report);
+        const actions = document.createElement('div');
+        actions.className = 'device-app-actions mt-auto pt-2';
+        if (isPackageName(fields.packageName)) {
+            const pull = actionForm(
+                pullUrl,
+                'Pull & Scan',
+                {package: fields.packageName},
+                'btn btn-warning btn-sm',
+                'fa fa-download',
+            );
+            pull.classList.add('device-app-pull');
+            actions.appendChild(pull);
+        }
+        if (reportPath) {
+            const report = document.createElement('a');
+            report.className = 'btn btn-info btn-sm';
+            report.href = reportPath;
+            report.title = 'View report';
+            const reportIcon = document.createElement('i');
+            reportIcon.className = 'fas fa-file-alt';
+            reportIcon.setAttribute('aria-hidden', 'true');
+            report.appendChild(reportIcon);
+            report.appendChild(document.createTextNode(' Report'));
+            actions.appendChild(report);
+        }
+        body.appendChild(actions);
+        card.appendChild(body);
+        gallery.appendChild(card);
     });
 }
 
 async function loadDeviceApps(refresh = false) {
-    const table = document.getElementById('device_apps');
-    table.replaceChildren();
-    const loadingRow = table.insertRow();
-    const loadingCell = loadingRow.insertCell();
-    loadingCell.colSpan = 3;
-    loadingCell.textContent = refresh
+    showDeviceMessage(refresh
         ? 'Refreshing installed applications…'
-        : 'Loading installed applications…';
+        : 'Loading installed applications…');
     try {
         const suffix = refresh ? '?refresh=1' : '';
         const response = await fetch(
@@ -535,13 +829,13 @@ async function loadDeviceApps(refresh = false) {
         if (!response.ok || result.status !== 'ok') {
             throw new Error(result.message || 'Unable to load applications');
         }
-        showDeviceApps(result.packages, result.root_available);
+        showDeviceApps(result.packages);
     } catch (error) {
-        table.replaceChildren();
-        const row = table.insertRow();
-        const cell = row.insertCell();
-        cell.colSpan = 3;
-        cell.textContent = error.message;
+        showDeviceMessage(
+            typeof error.message === 'string' && error.message
+                ? error.message
+                : 'Unable to load applications',
+        );
     }
 }
 
