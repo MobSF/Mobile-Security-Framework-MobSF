@@ -11,7 +11,6 @@ from mobsf.DynamicAnalyzer.views.android.frida_core import (
     Frida,
 )
 from mobsf.DynamicAnalyzer.tools.webproxy import (
-    get_http_tools_url,
     get_traffic,
     stop_httptools,
 )
@@ -57,7 +56,7 @@ def run_tls_tests(request, md5_hash, env, package, test_pkg, duration):
     env.install_mobsf_ca('remove')
     env.run_app(package)
     env.wait(duration)
-    stop_httptools(get_http_tools_url(request))
+    stop_httptools()
     traffic = get_traffic(test_pkg)
     res = detect_traffic(traffic)
     if res['http']:
@@ -70,7 +69,7 @@ def run_tls_tests(request, md5_hash, env, package, test_pkg, duration):
     env.configure_proxy(test_pkg, request)
     env.run_app(package)
     env.wait(duration)
-    stop_httptools(get_http_tools_url(request))
+    stop_httptools()
     traffic = get_traffic(test_pkg)
     res = detect_traffic(traffic)
     if res['http']:
@@ -97,7 +96,7 @@ def run_tls_tests(request, md5_hash, env, package, test_pkg, duration):
         env.wait(duration)
     finally:
         Frida.close_active(md5_hash, env.identifier, package)
-    stop_httptools(get_http_tools_url(request))
+    stop_httptools()
     traffic = get_traffic(test_pkg)
     res = detect_traffic(traffic)
     if res['http']:

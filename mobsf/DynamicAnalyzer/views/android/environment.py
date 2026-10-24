@@ -25,7 +25,6 @@ from frida import __version__ as frida_version
 
 from mobsf.DynamicAnalyzer.tools.webproxy import (
     get_ca_file,
-    get_http_tools_url,
     start_proxy,
     stop_httptools,
 )
@@ -510,7 +509,7 @@ class Environment:
             self.install_mobsf_ca('install')
         proxy_port = settings.PROXY_PORT
         logger.info('Starting HTTPS Proxy on %s', proxy_port)
-        stop_httptools(get_http_tools_url(request))
+        stop_httptools()
         start_proxy(proxy_port, project)
 
     def install_mobsf_ca(self, action):

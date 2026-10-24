@@ -6,6 +6,7 @@ import hashlib
 import logging
 import os
 import random
+import re
 import shlex
 import subprocess
 import tempfile
@@ -31,7 +32,6 @@ from mobsf.MobSF.security import (
 from mobsf.MobSF.utils import (
     docker_translate_localhost,
     get_adb,
-    get_device,
     is_md5,
     is_number,
     strict_package_check,
@@ -216,6 +216,31 @@ def _read_android_analysis_state(checksum):
     return state
 
 
+def valid_android_analysis_id(analysis_id):
+    """Validate an opaque Android analysis generation identifier."""
+    return bool(
+        isinstance(analysis_id, str)
+        and re.fullmatch(r'[0-9a-f]{32}', analysis_id),
+    )
+
+
+def get_requested_android_analysis(request, checksum):
+    """Resolve an exact analysis generation submitted by the client."""
+    if not is_md5(checksum):
+        return None, None
+    state = _read_android_analysis_state(checksum)
+    if not state:
+        return None, None
+    identifier = request.POST.get('identifier')
+    analysis_id = request.POST.get('analysis_id')
+    if (not valid_android_device_identifier(identifier)
+            or not valid_android_analysis_id(analysis_id)
+            or state.get('identifier') != identifier
+            or state.get('analysis_id') != analysis_id):
+        return None, None
+    return identifier, analysis_id
+
+
 def get_android_analysis_claim(identifier):
     """Return the checksum currently owning a device."""
     claim_file = _analysis_claim_file(identifier)
@@ -233,10 +258,11 @@ def get_android_capture_claim():
     return claim.get('identifier'), claim.get('checksum')
 
 
-def android_analysis_is_active(identifier, checksum):
+def android_analysis_is_active(identifier, checksum, analysis_id):
     """Check exact device, capture, and initialized analysis ownership."""
     if (not valid_android_device_identifier(identifier)
             or not is_md5(checksum)
+            or not valid_android_analysis_id(analysis_id)
             or get_android_analysis_claim(identifier) != checksum
             or get_android_capture_claim() != (identifier, checksum)):
         return False
@@ -245,6 +271,7 @@ def android_analysis_is_active(identifier, checksum):
         state
         and state.get('identifier') == identifier
         and state.get('checksum') == checksum
+        and state.get('analysis_id') == analysis_id
         and state.get('analysis_ready') is True
         and state.get('finalizing') is not True
         and state.get('cleanup_complete') is not True,
@@ -280,6 +307,17 @@ def set_android_frida_target(identifier, checksum, package):
     state['frida_target_package'] = package
     write_android_analysis_state(checksum, state)
     return True
+
+
+def _active_analysis_environment(request):
+    """Return the environment for the exact active client generation."""
+    checksum = request.POST.get('hash')
+    identifier, analysis_id = get_requested_android_analysis(
+        request, checksum)
+    if not android_analysis_is_active(
+            identifier, checksum, analysis_id):
+        return None
+    return Environment(identifier)
 
 
 def claim_android_analysis(identifier, checksum):
@@ -489,12 +527,13 @@ def execute_adb(request, api=False):
     data = {'status': 'ok', 'message': ''}
     cmd = request.POST['cmd']
     if cmd:
-        identifier = get_device(request)
-        if not identifier:
+        env = _active_analysis_environment(request)
+        if env is None:
             return send_response({
                 'status': 'failed',
-                'message': 'No Android device selected',
+                'message': 'Android analysis is no longer active',
             }, api)
+        identifier = env.identifier
         args = [get_adb(),
                 '-s',
                 identifier]
@@ -526,7 +565,9 @@ def get_component(request):
     """Get Android Component."""
     data = {}
     try:
-        env = Environment(get_device(request))
+        env = _active_analysis_environment(request)
+        if env is None:
+            return invalid_params()
         comp = request.POST['component']
         bin_hash = request.POST['hash']
         if is_attack_pattern(comp) or not is_md5(bin_hash):
@@ -548,7 +589,9 @@ def run_apk(request):
     """Run Android APK."""
     data = {}
     try:
-        env = Environment(get_device(request))
+        env = _active_analysis_environment(request)
+        if env is None:
+            return invalid_params()
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params()
@@ -573,7 +616,9 @@ def take_screenshot(request, api=False):
     logger.info('Taking screenshot')
     data = {}
     try:
-        env = Environment(get_device(request))
+        env = _active_analysis_environment(request)
+        if env is None:
+            return invalid_params(api)
         bin_hash = request.POST['hash']
         if not is_md5(bin_hash):
             return invalid_params(api)
@@ -609,7 +654,9 @@ def screen_cast(request):
         'status': 'failed',
         'message': 'Failed to stream screen'}
     try:
-        env = Environment(get_device(request))
+        env = _active_analysis_environment(request)
+        if env is None:
+            return send_response(data)
         b64dat = env.screen_stream()
         if not b64dat:
             return send_response(data)
@@ -633,7 +680,9 @@ def touch(request):
         'message': '',
     }
     try:
-        env = Environment(get_device(request))
+        env = _active_analysis_environment(request)
+        if env is None:
+            return send_response(data)
         x = request.POST['x']
         y = request.POST['y']
         event = request.POST['event']
@@ -733,7 +782,9 @@ def mobsf_ca(request, api=False):
     """Install and Remove MobSF Proxy RootCA."""
     data = {}
     try:
-        env = Environment(get_device(request))
+        env = _active_analysis_environment(request)
+        if env is None:
+            return invalid_params(api)
         action = request.POST['action']
         if action == 'install':
             env.install_mobsf_ca(action)
@@ -758,7 +809,9 @@ def global_proxy(request, api=False):
     """Set/unset global proxy."""
     data = {}
     try:
-        env = Environment(get_device(request))
+        env = _active_analysis_environment(request)
+        if env is None:
+            return invalid_params(api)
         version = env.get_android_version()
         action = request.POST['action']
         if action == 'set':
