@@ -5,7 +5,6 @@ import logging
 import os
 import time
 from pathlib import Path
-from json import dump
 from urllib.parse import quote, urlsplit
 
 from shelljob import proc
@@ -39,6 +38,7 @@ from mobsf.DynamicAnalyzer.views.android.operations import (
     get_package_name,
     release_android_analysis,
     save_device_packages,
+    write_android_analysis_state,
 )
 from mobsf.DynamicAnalyzer.tools.webproxy import (
     get_http_tools_url,
@@ -381,6 +381,7 @@ def _dynamic_analyzer(request, checksum, api=False):
         previous_proxy = ''
         gadget_marker = None
         proxy_state_file = None
+        analysis_state = {}
         claim_new = False
         analysis_ready = False
         reverse_enabled = False
@@ -723,14 +724,15 @@ def _dynamic_analyzer(request, checksum, api=False):
                 raise RuntimeError(
                     'Failed to configure Android proxy forwarding')
             reverse_enabled = True
-        with proxy_state_file.open('w', encoding='utf-8') as state:
-            dump({
-                'identifier': identifier,
-                'checksum': checksum,
-                'package': package,
-                'proxy': previous_proxy,
-                'remove_reverse': reverse_created,
-            }, state)
+        analysis_state = {
+            'identifier': identifier,
+            'checksum': checksum,
+            'package': package,
+            'proxy': previous_proxy,
+            'remove_reverse': reverse_created,
+            'analysis_ready': False,
+        }
+        write_android_analysis_state(checksum, analysis_state)
         # Apply Global Proxy to device
         env.set_global_proxy(version)
         proxy_configured = True
@@ -772,6 +774,8 @@ def _dynamic_analyzer(request, checksum, api=False):
                     api)
         if selected_mode == 'gadget':
             gadget_marker.write_text(identifier, encoding='utf-8')
+        analysis_state['analysis_ready'] = True
+        write_android_analysis_state(checksum, analysis_state)
         logger.info('Testing Environment is Ready!')
         device_model = env.get_android_properties().get(
             'ro.product.model', '')
@@ -816,7 +820,9 @@ def _dynamic_analyzer(request, checksum, api=False):
     finally:
         if (claim_new
                 and not analysis_ready
-                and valid_android_device_identifier(identifier)):
+                and valid_android_device_identifier(identifier)
+                and (proxy_state_file is None
+                     or not proxy_state_file.exists())):
             release_android_analysis(identifier, checksum)
 
 

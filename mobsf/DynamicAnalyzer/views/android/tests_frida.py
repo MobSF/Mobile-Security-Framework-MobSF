@@ -18,6 +18,8 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
 )
 from mobsf.MobSF.security import is_attack_pattern
 from mobsf.DynamicAnalyzer.views.android.operations import (
+    android_analysis_is_active,
+    android_analysis_lifecycle,
     android_analysis_state_file,
     get_package_name,
 )
@@ -63,6 +65,18 @@ def _analysis_identifier(request, checksum):
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def get_runtime_dependencies(request, api=False):
+    """Serialize dependency instrumentation with analysis cleanup."""
+    try:
+        with android_analysis_lifecycle():
+            return _get_runtime_dependencies(request, api)
+    except TimeoutError as exp:
+        return send_response({
+            'status': 'failed',
+            'message': str(exp),
+        }, api)
+
+
+def _get_runtime_dependencies(request, api=False):
     """Get App runtime dependencies."""
     data = {
         'status': 'failed',
@@ -72,6 +86,11 @@ def get_runtime_dependencies(request, api=False):
         if not is_md5(checksum):
             return invalid_params(api)
         identifier = _analysis_identifier(request, checksum)
+        if not android_analysis_is_active(identifier, checksum):
+            return send_response({
+                'status': 'failed',
+                'message': 'Android analysis is no longer active',
+            }, api)
         package = get_package_name(checksum, identifier)
         if not package:
             return invalid_params(api)
@@ -94,6 +113,18 @@ def get_runtime_dependencies(request, api=False):
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
 def instrument(request, api=False):
+    """Serialize Frida startup with analysis setup and cleanup."""
+    try:
+        with android_analysis_lifecycle():
+            return _instrument(request, api)
+    except TimeoutError as exp:
+        return send_response({
+            'status': 'failed',
+            'message': str(exp),
+        }, api)
+
+
+def _instrument(request, api=False):
     """Instrument app with frida."""
     data = {
         'status': 'failed',
@@ -127,6 +158,11 @@ def instrument(request, api=False):
                 or (new_pkg and not strict_package_check(new_pkg))):
             return invalid_params(api)
         identifier = _analysis_identifier(request, md5_hash)
+        if not android_analysis_is_active(identifier, md5_hash):
+            return send_response({
+                'status': 'failed',
+                'message': 'Android analysis is no longer active',
+            }, api)
         package = get_package_name(md5_hash, identifier)
         if not package and not new_pkg:
             return invalid_params(api)
