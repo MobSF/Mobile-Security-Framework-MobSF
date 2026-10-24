@@ -91,7 +91,8 @@ def run_tls_tests(request, md5_hash, env, package, test_pkg, duration):
         None,
         env.identifier,
     )
-    frd.spawn()
+    if not frd.spawn():
+        raise RuntimeError('Unable to start Frida instrumentation')
     Thread(target=frd.session, args=(None, None), daemon=True).start()
     env.wait(duration)
     stop_httptools(get_http_tools_url(request))

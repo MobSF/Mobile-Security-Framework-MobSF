@@ -354,7 +354,9 @@
                         <div class="box-footer">
                           <button id="frida_spawn" type="submit" class="btn btn-success btn-sm"><i class="far fa-play-circle"></i> Spawn & Inject</button>
                           <button id="frida_session" type="submit" class="btn btn-success btn-sm" disabled><i class="fas fa-redo"></i> Inject </button>
+                          {% if device_mode != "gadget" %}
                           <button id="frida_attach" type="submit" class="btn btn-success btn-sm"><i class="fas fa-bug"></i> Attach </button>
+                          {% endif %}
                           <button id="frida_get" class="btn btn-primary btn-sm" hidden><i class="fas fa-code"></i> Injected Code</button>
                        </div>
                       </div>  <!--Frida options, hidden for xposed -->
