@@ -7,8 +7,9 @@ import time
 import requests
 
 from django.conf import settings
+from django.http.request import split_domain_port, validate_host
 
-from mobsf.MobSF.utils import upstream_proxy
+from mobsf.MobSF.utils import get_network, upstream_proxy
 
 logger = logging.getLogger(__name__)
 
@@ -114,8 +115,20 @@ def get_traffic(package):
 
 
 def get_http_tools_url(req):
-    """Get httptools URL from request."""
-    scheme = req.scheme
-    ip = req.get_host().split(':')[0]
-    port = settings.PROXY_PORT
-    return f'{scheme}://{ip}:{str(port)}'
+    """Get a validated browser URL for the local httptools UI."""
+    domain, _ = split_domain_port(req.get_host())
+    allowed_hosts = [
+        host for host in settings.ALLOWED_HOSTS
+        if host != '*'
+    ]
+    allowed_hosts.extend((
+        'localhost',
+        '::1',
+        *get_network(),
+    ))
+    if not domain or not validate_host(domain, allowed_hosts):
+        raise ValueError('Untrusted HTTPTools redirect host')
+    scheme = req.scheme if req.scheme in ('http', 'https') else 'http'
+    if ':' in domain:
+        domain = f'[{domain}]'
+    return f'{scheme}://{domain}:{settings.PROXY_PORT}'
