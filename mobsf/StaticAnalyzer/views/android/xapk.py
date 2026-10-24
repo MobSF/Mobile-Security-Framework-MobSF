@@ -75,9 +75,10 @@ def handle_xapk(app_dic):
         if not isinstance(split_file, str):
             continue
         full_path = app_dic['app_dir'] / split_file
-        if (is_safe_path(app_dic['app_dir'], full_path, split_file)
-                and _regular_file(full_path)):
-            splits.append(full_path)
+        if (not is_safe_path(app_dic['app_dir'], full_path, split_file)
+                or not _regular_file(full_path)):
+            continue
+        splits.append(full_path)
         if a.get('id') == 'base':
             base_apk = full_path
     if base_apk and _regular_file(base_apk):
