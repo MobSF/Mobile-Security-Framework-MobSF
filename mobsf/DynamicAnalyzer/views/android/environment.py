@@ -98,6 +98,7 @@ class Environment:
         self.root_status = 'not_checked'
         self._profile = None
         self._android_properties = None
+        self._runtime = None
 
     def wait(self, sec):
         """Wait in Seconds."""
@@ -755,6 +756,8 @@ class Environment:
 
     def get_environment(self):
         """Identify the environment."""
+        if self._runtime:
+            return self._runtime
         values = self.get_android_properties()
         combined = '\n'.join(values.values()).lower()
         genymotion_version = values.get(
@@ -762,18 +765,19 @@ class Environment:
         if ('genymotion' in combined
                 or any(char.isdigit() for char in genymotion_version)):
             logger.info('Found Genymotion Android VM')
-            return 'genymotion'
+            self._runtime = 'genymotion'
         elif 'corellium' in combined:
             logger.info('Found Corellium ARM Android VM')
-            return 'corellium'
+            self._runtime = 'corellium'
         elif ('emulator' in combined
                 or 'generic_x86' in combined
                 or values.get('ro.kernel.qemu') == '1'
                 or values.get('ro.boot.qemu') == '1'):
             logger.info('Found Android Studio Emulator')
-            return 'emulator'
+            self._runtime = 'emulator'
         else:
-            return 'physical'
+            self._runtime = 'physical'
+        return self._runtime
 
     def get_android_properties(self):
         """Read and cache the Android property map in one ADB call."""
