@@ -1,5 +1,6 @@
 # -*- coding: utf_8 -*-
 """Dynamic Analyzer Operations."""
+from contextlib import contextmanager
 import json
 import hashlib
 import logging
@@ -8,6 +9,7 @@ import random
 import shlex
 import subprocess
 import threading
+import time
 from pathlib import Path
 
 from django.conf import settings
@@ -41,6 +43,7 @@ from mobsf.MobSF.views.authorization import (
 )
 
 logger = logging.getLogger(__name__)
+_ANDROID_ANALYSIS_LIFECYCLE_LOCK = threading.Lock()
 
 
 # Helpers
@@ -96,6 +99,58 @@ def _capture_claim_file():
     return Path(settings.DWD_DIR) / 'android-capture-owner.json'
 
 
+@contextmanager
+def android_analysis_lifecycle(timeout=300):
+    """Serialize Android setup and teardown across MobSF workers."""
+    lock_file = Path(settings.DWD_DIR) / 'android-analysis-lifecycle.lock'
+    lock_file.parent.mkdir(parents=True, exist_ok=True)
+    deadline = time.monotonic() + timeout
+    if not _ANDROID_ANALYSIS_LIFECYCLE_LOCK.acquire(timeout=timeout):
+        raise TimeoutError(
+            'Another Android analysis operation is still running',
+        )
+    descriptor = None
+    locked = False
+    try:
+        descriptor = os.open(lock_file, os.O_RDWR | os.O_CREAT, 0o600)
+        if os.fstat(descriptor).st_size == 0:
+            os.write(descriptor, b'\0')
+        while not locked:
+            try:
+                if os.name == 'nt':
+                    import msvcrt
+                    os.lseek(descriptor, 0, os.SEEK_SET)
+                    msvcrt.locking(descriptor, msvcrt.LK_NBLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(
+                        descriptor,
+                        fcntl.LOCK_EX | fcntl.LOCK_NB,
+                    )
+                locked = True
+            except OSError as exp:
+                if time.monotonic() >= deadline:
+                    raise TimeoutError(
+                        'Another Android analysis operation is still running',
+                    ) from exp
+                time.sleep(0.1)
+        yield
+    finally:
+        try:
+            if locked:
+                if os.name == 'nt':
+                    import msvcrt
+                    os.lseek(descriptor, 0, os.SEEK_SET)
+                    msvcrt.locking(descriptor, msvcrt.LK_UNLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(descriptor, fcntl.LOCK_UN)
+        finally:
+            if descriptor is not None:
+                os.close(descriptor)
+            _ANDROID_ANALYSIS_LIFECYCLE_LOCK.release()
+
+
 def _read_analysis_claim(claim_file):
     """Read one validated local analysis claim."""
     if not claim_file.is_file() or claim_file.is_symlink():
@@ -121,6 +176,14 @@ def get_android_analysis_claim(identifier):
         return None
     claim = _read_analysis_claim(claim_file)
     return claim.get('checksum') if claim else None
+
+
+def get_android_capture_claim():
+    """Return the active Android HTTP capture owner."""
+    claim = _read_analysis_claim(_capture_claim_file())
+    if not claim:
+        return None
+    return claim.get('identifier'), claim.get('checksum')
 
 
 def claim_android_analysis(identifier, checksum):
