@@ -544,10 +544,13 @@ def dynamic_analyzer(request, checksum, api=False):
                     'Frida Gadget mode must install the patched APK',
                     api,
                 )
-            split_apks = GadgetPatcher.find_split_apks(
-                app_dir,
-                apk_path,
-            )
+            try:
+                split_apks = GadgetPatcher.find_split_apks(
+                    app_dir,
+                    apk_path,
+                )
+            except ValueError as exp:
+                return print_n_send_error_response(request, str(exp), api)
             scan_suffix = (
                 Path(static_android_db.FILE_NAME).suffix.lower()
                 if static_android_db else '.apk'

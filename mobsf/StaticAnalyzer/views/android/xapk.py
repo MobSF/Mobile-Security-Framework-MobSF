@@ -113,9 +113,11 @@ def _collect_split_apks(app_dir, members):
         if not _regular_file(full_path):
             continue
         splits.append(full_path)
-        if apk.endswith('base.apk'):
+        if apk.endswith(('base.apk', 'base-master.apk')):
             base_apk = full_path
-        elif 'config.' not in apk.lower() and fallback_apk is None:
+        elif ('config.' not in apk.lower()
+                and not apk.startswith('standalones/')
+                and fallback_apk is None):
             fallback_apk = full_path
     return base_apk or fallback_apk, splits
 

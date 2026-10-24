@@ -138,8 +138,8 @@ class GadgetPatcher:
                 return abi
         return None
 
-    @staticmethod
-    def find_split_apks(app_dir, base_apk):
+    @classmethod
+    def find_split_apks(cls, app_dir, base_apk):
         """Find regular sibling APKs retained by static analysis."""
         upload_root = Path(settings.UPLD_DIR).resolve()
         app_dir = Path(app_dir).resolve()
@@ -186,7 +186,19 @@ class GadgetPatcher:
                     or is_pipe_or_link(candidate)):
                 raise ValueError('Invalid split APK path')
             splits.append(candidate)
-        return tuple(sorted(splits))
+        # bundletool sets can carry standalone APKs and extra variants
+        selected = {}
+        for split_apk in sorted(splits):
+            split_name = cls.split_manifest(split_apk)[0]
+            if not split_name:
+                continue
+            if split_name in selected:
+                raise ValueError(
+                    'Multi-variant .apks sets are not supported; pull the '
+                    'installed app from the device or use bundletool '
+                    'extract-apks')
+            selected[split_name] = split_apk
+        return tuple(sorted(selected.values()))
 
     @classmethod
     def compatible_splits(cls, split_apks, selected_abi):
