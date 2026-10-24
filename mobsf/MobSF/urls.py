@@ -212,7 +212,7 @@ urlpatterns = [
     re_path(r'^api/v1/ios/device_report_json$',
             api_iddz.api_device_report_json),
 ]
-if settings.API_ONLY == '0':
+if not settings.API_ONLY:
     urlpatterns.extend([
         # General
         re_path(r'^$', home.index, name='home'),
