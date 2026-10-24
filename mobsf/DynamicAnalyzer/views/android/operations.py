@@ -53,36 +53,103 @@ def _device_packages_file(identifier):
     return Path(settings.DWD_DIR) / f'packages-{digest}.json'
 
 
+def android_analysis_state_file(checksum):
+    """Return trusted state for one Android analysis."""
+    if not is_md5(checksum):
+        return None
+    return (
+        Path(settings.DWD_DIR)
+        / f'android-analysis-state-{checksum}.json'
+    )
+
+
+def android_gadget_marker_file(checksum):
+    """Return the trusted Gadget-mode marker for one analysis."""
+    if not is_md5(checksum):
+        return None
+    return Path(settings.DWD_DIR) / f'android-gadget-{checksum}.state'
+
+
+def android_frida_owner_file(checksum):
+    """Return the trusted Frida worker owner file for one analysis."""
+    if not is_md5(checksum):
+        return None
+    return (
+        Path(settings.DWD_DIR)
+        / f'android-frida-owner-{checksum}.state'
+    )
+
+
 def _analysis_claim_file(identifier):
     """Return the ownership record for one Android device."""
     if not valid_android_device_identifier(identifier):
         return None
     digest = hashlib.sha256(identifier.encode('utf-8')).hexdigest()
-    return Path(settings.DWD_DIR) / f'android-analysis-{digest}.json'
+    return (
+        Path(settings.DWD_DIR)
+        / f'android-device-claim-{digest}.json'
+    )
+
+
+def _capture_claim_file():
+    """Return the singleton HTTP capture ownership record."""
+    return Path(settings.DWD_DIR) / 'android-capture-owner.json'
+
+
+def _read_analysis_claim(claim_file):
+    """Read one validated local analysis claim."""
+    if not claim_file.is_file() or claim_file.is_symlink():
+        return None
+    try:
+        claim = json.loads(claim_file.read_text(encoding='utf-8'))
+    except (OSError, ValueError, TypeError):
+        return None
+    if not isinstance(claim, dict):
+        return None
+    identifier = claim.get('identifier')
+    checksum = claim.get('checksum')
+    if (not valid_android_device_identifier(identifier)
+            or not is_md5(checksum)):
+        return None
+    return claim
+
+
+def get_android_analysis_claim(identifier):
+    """Return the checksum currently owning a device."""
+    claim_file = _analysis_claim_file(identifier)
+    if claim_file is None:
+        return None
+    claim = _read_analysis_claim(claim_file)
+    return claim.get('checksum') if claim else None
 
 
 def claim_android_analysis(identifier, checksum):
-    """Atomically claim a device for one analysis hash."""
-    if not is_md5(checksum):
-        return False
-    for state_file in Path(settings.UPLD_DIR).glob(
-            '*/.mobsf-proxy-state'):
-        if (not state_file.is_file()
-                or state_file.is_symlink()
-                or not is_md5(state_file.parent.name)):
-            continue
-        try:
-            state = json.loads(state_file.read_text(encoding='utf-8'))
-        except (OSError, ValueError, TypeError):
-            continue
-        if (isinstance(state, dict)
-                and state.get('identifier') == identifier
-                and state_file.parent.name != checksum):
-            return False
+    """Atomically claim shared capture and one Android device."""
     claim_file = _analysis_claim_file(identifier)
-    if claim_file is None:
+    if claim_file is None or not is_md5(checksum):
         return False
     claim_file.parent.mkdir(parents=True, exist_ok=True)
+    capture_file = _capture_claim_file()
+    capture_created = False
+    try:
+        descriptor = os.open(
+            capture_file,
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+            0o600,
+        )
+    except FileExistsError:
+        capture = _read_analysis_claim(capture_file)
+        if (not capture
+                or capture.get('identifier') != identifier
+                or capture.get('checksum') != checksum):
+            return False
+    else:
+        with os.fdopen(descriptor, 'w', encoding='utf-8') as target:
+            json.dump({
+                'identifier': identifier,
+                'checksum': checksum,
+            }, target)
+        capture_created = True
     try:
         descriptor = os.open(
             claim_file,
@@ -90,17 +157,15 @@ def claim_android_analysis(identifier, checksum):
             0o600,
         )
     except FileExistsError:
-        if not claim_file.is_file() or claim_file.is_symlink():
-            return False
-        try:
-            claim = json.loads(claim_file.read_text(encoding='utf-8'))
-        except (OSError, ValueError, TypeError):
-            return False
-        return (
-            isinstance(claim, dict)
+        claim = _read_analysis_claim(claim_file)
+        claimed = bool(
+            claim
             and claim.get('identifier') == identifier
-            and claim.get('checksum') == checksum
+            and claim.get('checksum') == checksum,
         )
+        if capture_created and not claimed:
+            capture_file.unlink(missing_ok=True)
+        return claimed
     with os.fdopen(descriptor, 'w', encoding='utf-8') as target:
         json.dump({
             'identifier': identifier,
@@ -110,21 +175,26 @@ def claim_android_analysis(identifier, checksum):
 
 
 def release_android_analysis(identifier, checksum=None):
-    """Release a MobSF-owned device analysis claim."""
+    """Release MobSF-owned device and shared capture claims."""
     claim_file = _analysis_claim_file(identifier)
-    if (claim_file is None
-            or not claim_file.is_file()
-            or claim_file.is_symlink()):
+    if claim_file is None:
         return
-    try:
-        claim = json.loads(claim_file.read_text(encoding='utf-8'))
-    except (OSError, ValueError, TypeError):
+    claim = _read_analysis_claim(claim_file)
+    if not claim:
         return
-    if not isinstance(claim, dict):
-        return
-    if checksum is not None and claim.get('checksum') != checksum:
+    owner_checksum = claim.get('checksum')
+    if checksum is not None and owner_checksum != checksum:
         return
     claim_file.unlink(missing_ok=True)
+    for other_file in Path(settings.DWD_DIR).glob(
+            'android-device-claim-*.json'):
+        other = _read_analysis_claim(other_file)
+        if other and other.get('checksum') == owner_checksum:
+            return
+    capture_file = _capture_claim_file()
+    capture = _read_analysis_claim(capture_file)
+    if capture and capture.get('checksum') == owner_checksum:
+        capture_file.unlink(missing_ok=True)
 
 
 def save_device_packages(identifier, packages):

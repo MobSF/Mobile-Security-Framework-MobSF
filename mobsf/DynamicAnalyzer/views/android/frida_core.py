@@ -9,6 +9,8 @@ from django.conf import settings
 
 import frida
 
+import psutil
+
 from mobsf.DynamicAnalyzer.views.android.environment import Environment
 from mobsf.DynamicAnalyzer.views.android.frida_scripts import (
     class_pattern,
@@ -20,6 +22,10 @@ from mobsf.DynamicAnalyzer.views.android.frida_scripts import (
 )
 from mobsf.DynamicAnalyzer.views.common.frida import (
     get_bridge_loader,
+)
+from mobsf.DynamicAnalyzer.views.android.operations import (
+    android_frida_owner_file,
+    android_gadget_marker_file,
 )
 from mobsf.MobSF.security import sanitize_for_logging
 
@@ -64,8 +70,11 @@ class Frida:
         self.frida_log = self.apk_dir / 'mobsf_frida_out.txt'
         self.deps = self.apk_dir / 'mobsf_app_deps.txt'
         self.clipboard = self.apk_dir / 'mobsf_app_clipboard.txt'
-        self.gadget_marker = self.apk_dir / '.mobsf-gadget-mode'
-        self.owner_file = self.apk_dir / '.mobsf-frida-owner'
+        self.gadget_marker = android_gadget_marker_file(self.hash)
+        self.owner_file = android_frida_owner_file(self.hash)
+        if self.gadget_marker is None or self.owner_file is None:
+            raise ValueError('Invalid Android analysis hash')
+        self.owner_file.parent.mkdir(parents=True, exist_ok=True)
         self.completion_event = threading.Event()
         self.last_error = ''
         self.bridge_loader = get_bridge_loader()
@@ -80,13 +89,7 @@ class Frida:
 
     @staticmethod
     def _process_alive(pid):
-        try:
-            os.kill(pid, 0)
-        except ProcessLookupError:
-            return False
-        except OSError:
-            return True
-        return True
+        return psutil.pid_exists(pid)
 
     def _claim_owner(self):
         """Claim this analysis session for the current worker process."""
@@ -110,6 +113,16 @@ class Frida:
                     ).strip()
                     if owner == process_token:
                         return True
+                    if ':' not in owner:
+                        age = time.time() - self.owner_file.stat().st_mtime
+                        if age < 30:
+                            self.last_error = (
+                                'Frida session ownership is initializing; '
+                                'retry this operation')
+                            logger.warning(self.last_error)
+                            return False
+                        self.owner_file.unlink(missing_ok=True)
+                        continue
                     pid_text = owner.partition(':')[0]
                     if pid_text == str(os.getpid()):
                         self.owner_file.unlink(missing_ok=True)
@@ -165,8 +178,9 @@ class Frida:
                 entry = _ACTIVE_SESSIONS.pop(key, None)
             if entry:
                 cls._close_entry(entry)
-            owner_file = (
-                Path(settings.UPLD_DIR) / app_hash / '.mobsf-frida-owner')
+            owner_file = android_frida_owner_file(app_hash)
+            if owner_file is None:
+                return
             process_token = _session_owner_token()
             try:
                 if (not owner_file.is_symlink()
@@ -445,7 +459,6 @@ class Frida:
                         'pid': self.pid,
                         'package': target_package,
                     }
-                registered = True
                 if started:
                     device.resume(self.pid)
                 api = script.exports_sync
@@ -456,6 +469,7 @@ class Frida:
                     logger.error(
                         'Timed out waiting for Frida script completion')
                     return False
+                registered = True
                 logger.info('Frida session is active')
                 return True
             except frida.NotSupportedError:
@@ -473,6 +487,10 @@ class Frida:
                 logger.exception('Error Connecting to Frida')
             finally:
                 if not registered:
+                    with _ACTIVE_SESSIONS_LOCK:
+                        active = _ACTIVE_SESSIONS.get(key)
+                        if active and active['session'] is session:
+                            _ACTIVE_SESSIONS.pop(key, None)
                     if script:
                         try:
                             script.unload()

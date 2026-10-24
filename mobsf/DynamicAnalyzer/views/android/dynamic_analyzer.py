@@ -28,7 +28,10 @@ from mobsf.DynamicAnalyzer.views.android.environment import (
 )
 from mobsf.DynamicAnalyzer.views.android.frida_core import Frida
 from mobsf.DynamicAnalyzer.views.android.operations import (
+    android_analysis_state_file,
+    android_gadget_marker_file,
     claim_android_analysis,
+    get_android_analysis_claim,
     get_package_name,
     release_android_analysis,
     save_device_packages,
@@ -360,6 +363,9 @@ def dynamic_analyzer(request, checksum, api=False):
         previous_proxy = ''
         gadget_marker = None
         proxy_state_file = None
+        claim_new = False
+        analysis_ready = False
+        reverse_enabled = False
         analysis_form = AndroidDynamicAnalysisForm(request.POST)
         if not analysis_form.is_valid():
             return print_n_send_error_response(
@@ -424,6 +430,68 @@ def dynamic_analyzer(request, checksum, api=False):
         version = profile.android_version
         selected_mode = device_mode
         runtime_prepared = False
+        app_dir = Path(settings.UPLD_DIR) / checksum
+        gadget_marker = android_gadget_marker_file(checksum)
+        proxy_state_file = android_analysis_state_file(checksum)
+        if gadget_marker is None or proxy_state_file is None:
+            raise RuntimeError('Invalid dynamic-analysis state path')
+        if gadget_marker.is_symlink() or proxy_state_file.is_symlink():
+            raise RuntimeError('Unsafe dynamic-analysis state path')
+        existing_state = {}
+        if proxy_state_file.is_file():
+            try:
+                with proxy_state_file.open(encoding='utf-8') as state:
+                    existing_state = json.load(state)
+            except (OSError, ValueError, TypeError):
+                logger.warning(
+                    'Unable to read previous Android proxy state')
+            if not isinstance(existing_state, dict):
+                existing_state = {}
+        active_identifier = existing_state.get('identifier')
+        if (valid_android_device_identifier(active_identifier)
+                and active_identifier != identifier):
+            logger.info(
+                'Moving Android analysis from %s to %s',
+                active_identifier,
+                identifier,
+            )
+            previous_env = Environment(active_identifier)
+            if not previous_env.connect():
+                return print_n_send_error_response(
+                    request,
+                    'The previous analysis device is unavailable. Connect '
+                    'it and retry so MobSF can restore its proxy settings.',
+                    api,
+                )
+            previous_proxy = existing_state.get('proxy', '')
+            if not isinstance(previous_proxy, str):
+                previous_proxy = ''
+            Frida.close_active(
+                checksum, active_identifier, package)
+            previous_env.adb_command(
+                ['am', 'force-stop', package], True, True)
+            previous_env.remove_frida_forward()
+            if not previous_env.restore_global_proxy(previous_proxy):
+                return print_n_send_error_response(
+                    request,
+                    'Failed to clean up the previous analysis device',
+                    api,
+                )
+            if existing_state.get('remove_reverse') is True:
+                previous_env.disable_adb_reverse_tcp()
+            release_android_analysis(active_identifier, checksum)
+            proxy_state_file.unlink(missing_ok=True)
+            gadget_marker.unlink(missing_ok=True)
+            existing_state = {}
+        claim_new = (
+            get_android_analysis_claim(identifier) != checksum)
+        if not claim_android_analysis(identifier, checksum):
+            return print_n_send_error_response(
+                request,
+                'Another Android analysis is active. Finish it before '
+                'starting a different app or device.',
+                api,
+            )
         if selected_mode == 'gadget' and version < 5:
             return print_n_send_error_response(
                 request,
@@ -526,57 +594,6 @@ def dynamic_analyzer(request, checksum, api=False):
                     'Select Frida Gadget mode.',
                     api,
                 )
-        app_dir = Path(settings.UPLD_DIR) / checksum
-        gadget_marker = app_dir / '.mobsf-gadget-mode'
-        proxy_state_file = app_dir / '.mobsf-proxy-state'
-        if gadget_marker.is_symlink() or proxy_state_file.is_symlink():
-            raise RuntimeError('Unsafe dynamic-analysis state path')
-        existing_state = {}
-        if proxy_state_file.is_file():
-            try:
-                with proxy_state_file.open(encoding='utf-8') as state:
-                    existing_state = json.load(state)
-            except (OSError, ValueError, TypeError):
-                logger.warning(
-                    'Unable to read previous Android proxy state')
-            if not isinstance(existing_state, dict):
-                existing_state = {}
-        active_identifier = existing_state.get('identifier')
-        if (valid_android_device_identifier(active_identifier)
-                and active_identifier != identifier):
-            logger.info(
-                'Moving Android analysis from %s to %s',
-                active_identifier,
-                identifier,
-            )
-            previous_env = Environment(active_identifier)
-            if not previous_env.connect():
-                return print_n_send_error_response(
-                    request,
-                    'The previous analysis device is unavailable. Connect '
-                    'it and retry so MobSF can restore its proxy settings.',
-                    api,
-                )
-            previous_proxy = existing_state.get('proxy', '')
-            if not isinstance(previous_proxy, str):
-                previous_proxy = ''
-            Frida.close_active(
-                checksum, active_identifier, package)
-            previous_env.adb_command(
-                ['am', 'force-stop', package], True, True)
-            previous_env.remove_frida_forward()
-            if not previous_env.restore_global_proxy(previous_proxy):
-                return print_n_send_error_response(
-                    request,
-                    'Failed to clean up the previous analysis device',
-                    api,
-                )
-            if existing_state.get('remove_reverse') is True:
-                previous_env.disable_adb_reverse_tcp()
-            release_android_analysis(active_identifier, checksum)
-            proxy_state_file.unlink(missing_ok=True)
-            gadget_marker.unlink(missing_ok=True)
-            existing_state = {}
         # Clean up previous analysis
         env.adb_command(['am', 'force-stop', package], True, True)
         Frida.close_active(checksum, identifier, package)
@@ -655,13 +672,6 @@ def dynamic_analyzer(request, checksum, api=False):
                 )
         else:
             gadget_marker.unlink(missing_ok=True)
-        if not claim_android_analysis(identifier, checksum):
-            return print_n_send_error_response(
-                request,
-                'This Android device already has an active analysis. '
-                'Finish that analysis before starting another app.',
-                api,
-            )
         current_proxy = env.get_global_proxy()
         saved_proxy = existing_state.get('proxy')
         if isinstance(saved_proxy, str):
@@ -690,13 +700,16 @@ def dynamic_analyzer(request, checksum, api=False):
             install_ca=selected_mode != 'gadget',
         )
         # Supported in Android 5+
-        if (version >= 5
-                and not env.has_adb_reverse_tcp()
-                and not env.enable_adb_reverse_tcp(version)):
-            raise RuntimeError('Failed to configure Android proxy forwarding')
+        if version >= 5 and not env.has_adb_reverse_tcp():
+            if not env.enable_adb_reverse_tcp(version):
+                raise RuntimeError(
+                    'Failed to configure Android proxy forwarding')
+            reverse_enabled = True
         with proxy_state_file.open('w', encoding='utf-8') as state:
             dump({
                 'identifier': identifier,
+                'checksum': checksum,
+                'package': package,
                 'proxy': previous_proxy,
                 'remove_reverse': reverse_created,
             }, state)
@@ -758,6 +771,7 @@ def dynamic_analyzer(request, checksum, api=False):
                    'exported_activities': exported_activities,
                    'deeplinks': deeplinks,
                    'title': 'Dynamic Analyzer'}
+        analysis_ready = True
         template = 'dynamic_analysis/android/dynamic_analyzer.html'
         if api:
             return context
@@ -769,6 +783,8 @@ def dynamic_analyzer(request, checksum, api=False):
                 env.disable_adb_reverse_tcp()
         else:
             restored = False
+            if env and reverse_enabled:
+                env.disable_adb_reverse_tcp()
         if proxy_state_file and restored:
             proxy_state_file.unlink(missing_ok=True)
             release_android_analysis(identifier, checksum)
@@ -779,6 +795,11 @@ def dynamic_analyzer(request, checksum, api=False):
             request,
             'Dynamic Analysis Failed.',
             api)
+    finally:
+        if (claim_new
+                and not analysis_ready
+                and valid_android_device_identifier(identifier)):
+            release_android_analysis(identifier, checksum)
 
 
 @login_required
