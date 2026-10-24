@@ -43,6 +43,7 @@ from mobsf.MobSF.utils import (
     get_proxy_ip,
     is_file_exists,
     python_list,
+    strict_package_check,
     valid_android_device_identifier,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
@@ -1029,6 +1030,23 @@ class Environment:
 
     def archive_app_data(self, package, output_file):
         """Archive application data when the selected device permits it."""
+        if (not isinstance(package, str)
+                or not strict_package_check(package)):
+            logger.error('Invalid package for application data archive')
+            return 'failed'
+        upload_root = Path(settings.UPLD_DIR).resolve()
+        output_path = Path(output_file)
+        try:
+            raw_output = output_path.resolve().relative_to(
+                upload_root).as_posix()
+        except (OSError, ValueError):
+            logger.error('Application data archive path is outside uploads')
+            return 'failed'
+        if (is_pipe_or_link(output_path)
+                or not is_safe_path(
+                    upload_root, output_path, raw_output)):
+            logger.error('Unsafe application data archive path')
+            return 'failed'
         archive = f'/data/local/tmp/mobsf-{package}.tar'
         runtime = self.get_environment()
         try:
@@ -1057,7 +1075,7 @@ class Environment:
                 if result is None:
                     return 'failed'
             pulled = self.adb_command(
-                ['pull', archive, output_file],
+                ['pull', archive, output_path.as_posix()],
                 silent=True,
             )
             return 'ok' if pulled is not None else 'failed'
