@@ -8,10 +8,12 @@ from django.core.management.base import BaseCommand, CommandError
 
 from mobsf.DynamicAnalyzer.views.android.environment import Environment
 from mobsf.DynamicAnalyzer.views.android.operations import (
+    android_gadget_marker_file,
     release_android_analysis,
 )
 from mobsf.MobSF.utils import (
     get_android_devices,
+    is_md5,
     valid_android_device_identifier,
 )
 
@@ -26,8 +28,9 @@ class Command(BaseCommand):
     @staticmethod
     def _proxy_states():
         states = {}
-        upload_dir = Path(settings.UPLD_DIR)
-        for state_file in upload_dir.glob('*/.mobsf-proxy-state'):
+        state_dir = Path(settings.DWD_DIR)
+        for state_file in state_dir.glob(
+                'android-analysis-state-*.json'):
             if not state_file.is_file() or state_file.is_symlink():
                 continue
             try:
@@ -39,7 +42,9 @@ class Command(BaseCommand):
             if not isinstance(state, dict):
                 continue
             identifier = state.get('identifier')
-            if not valid_android_device_identifier(identifier):
+            checksum = state.get('checksum')
+            if (not valid_android_device_identifier(identifier)
+                    or not is_md5(checksum)):
                 continue
             states.setdefault(identifier, []).append((state_file, state))
         for entries in states.values():
@@ -90,11 +95,13 @@ class Command(BaseCommand):
             if not env.remove_frida_forward():
                 restored = False
             if restored:
-                for state_file, _ in entries:
+                for state_file, state in entries:
                     state_file.unlink(missing_ok=True)
-                    gadget_marker = (
-                        state_file.parent / '.mobsf-gadget-mode')
-                    gadget_marker.unlink(missing_ok=True)
+                    checksum = state.get('checksum')
+                    gadget_marker = android_gadget_marker_file(
+                        checksum)
+                    if gadget_marker:
+                        gadget_marker.unlink(missing_ok=True)
                 release_android_analysis(identifier)
                 self.stdout.write(
                     f'Restored Android device {identifier}')

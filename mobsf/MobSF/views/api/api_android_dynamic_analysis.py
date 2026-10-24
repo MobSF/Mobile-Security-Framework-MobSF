@@ -180,6 +180,8 @@ def api_stop_analysis(request):
         request, True, identifier=identifier)
     if logs['status'] != 'ok':
         return make_api_response(logs, 500)
+    if logs.get('analysis_inactive'):
+        return make_api_response(logs, 200)
     resp = tests_common.download_data(
         request, True, identifier=identifier)
     if resp['status'] == 'ok':

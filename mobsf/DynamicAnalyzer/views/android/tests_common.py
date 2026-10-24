@@ -14,6 +14,9 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
     send_response,
 )
 from mobsf.DynamicAnalyzer.views.android.operations import (
+    android_analysis_state_file,
+    android_gadget_marker_file,
+    get_android_analysis_claim,
     get_package_name,
     release_android_analysis,
 )
@@ -58,9 +61,10 @@ def get_analysis_identifier(request, md5_hash):
     """Resolve the device bound to an active analysis."""
     if not is_md5(md5_hash):
         return None
-    apk_dir = Path(settings.UPLD_DIR) / md5_hash
-    state_file = apk_dir / '.mobsf-proxy-state'
-    gadget_marker = apk_dir / '.mobsf-gadget-mode'
+    state_file = android_analysis_state_file(md5_hash)
+    gadget_marker = android_gadget_marker_file(md5_hash)
+    if state_file is None or gadget_marker is None:
+        return None
     identifier = None
     if state_file.is_file() and not state_file.is_symlink():
         try:
@@ -283,8 +287,10 @@ def collect_logs(request, api=False, identifier=None):
         if not is_md5(md5_hash):
             return invalid_params(api)
         apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
-        state_file = Path(apk_dir) / '.mobsf-proxy-state'
-        gadget_marker = Path(apk_dir) / '.mobsf-gadget-mode'
+        state_file = android_analysis_state_file(md5_hash)
+        gadget_marker = android_gadget_marker_file(md5_hash)
+        if state_file is None or gadget_marker is None:
+            return invalid_params(api)
         proxy_state = {}
         if state_file.is_file() and not state_file.is_symlink():
             try:
@@ -302,6 +308,15 @@ def collect_logs(request, api=False, identifier=None):
             identifier = get_analysis_identifier(request, md5_hash)
         if not valid_android_device_identifier(identifier):
             return invalid_params(api)
+        claim_checksum = get_android_analysis_claim(identifier)
+        if (not state_file.exists()
+                and claim_checksum
+                and claim_checksum != md5_hash):
+            return send_response({
+                'status': 'ok',
+                'analysis_inactive': True,
+                'message': 'Analysis was already cleaned up',
+            }, api)
         env = Environment(identifier)
         package = get_package_name(md5_hash, env.identifier)
         if not package:
@@ -382,11 +397,11 @@ def tls_tests(request, api=False):
         if not is_md5(md5_hash):
             return invalid_params(api)
         gadget_marker = (
-            Path(settings.UPLD_DIR)
-            / md5_hash
-            / '.mobsf-gadget-mode'
+            android_gadget_marker_file(md5_hash)
         )
-        if ((gadget_marker.is_file() and not gadget_marker.is_symlink())
+        if (gadget_marker is None
+                or (gadget_marker.is_file()
+                    and not gadget_marker.is_symlink())
                 or env.get_environment() == 'physical'):
             return send_response({
                 'status': 'failed',
