@@ -121,6 +121,7 @@ def get_executable_hashes():
         'idevicename',
         'pkill',
         'iproxy',
+        'keytool',
     ]
     for sbin in system_bins:
         bin_path = which(sbin)
@@ -649,6 +650,25 @@ def is_safe_path(safe_root, check_path, raw_file):
         return False
 
 
+def is_safe_android_path(check_path, safe_root='/data/app'):
+    """Validate an absolute path reported by an Android device."""
+    if not isinstance(check_path, str) or not isinstance(safe_root, str):
+        return False
+    safe_root = posixpath.normpath(safe_root)
+    if (not posixpath.isabs(check_path)
+            or not check_path.startswith(f'{safe_root}/')):
+        return False
+    relative = check_path[len(safe_root) + 1:]
+    if is_path_traversal(relative):
+        return False
+    normalized = posixpath.normpath(check_path)
+    try:
+        return posixpath.commonpath(
+            (safe_root, normalized)) == safe_root
+    except ValueError:
+        return False
+
+
 def clean_filename(filename, replace=' '):
     """Sanitize filename for Windows compatibility."""
     if system() == 'Windows':
@@ -673,7 +693,13 @@ def cmd_injection_check(data):
 
 def is_pipe_or_link(path):
     """Check for named pipe or symlink."""
-    return os.path.islink(path) or stat.S_ISFIFO(os.stat(path).st_mode)
+    try:
+        mode = os.lstat(path).st_mode
+    except FileNotFoundError:
+        return False
+    except (OSError, TypeError, ValueError):
+        return True
+    return stat.S_ISLNK(mode) or stat.S_ISFIFO(mode)
 
 
 def is_attack_pattern(user_input):

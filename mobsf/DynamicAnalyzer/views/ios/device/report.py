@@ -24,7 +24,6 @@ from mobsf.DynamicAnalyzer.views.ios.device.dynamic_analyzer import (
     validate_and_connect_device,
 )
 from mobsf.DynamicAnalyzer.tools.webproxy import (
-    get_http_tools_url,
     stop_httptools,
 )
 from mobsf.MobSF.utils import (
@@ -100,7 +99,7 @@ def download_data_device(request, bundle_id, api=False):
         logger.info('Downloading app container data')
         download_app_data_device(ios_device, checksum)
         # Stop HTTPS Proxy
-        stop_httptools(get_http_tools_url(request))
+        stop_httptools()
         # Move HTTP raw logs to download directory
         flows = Path.home() / '.httptools' / 'flows'
         webf = flows / f'{bundle_id}.flow.txt'
