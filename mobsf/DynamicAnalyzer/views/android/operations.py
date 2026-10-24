@@ -20,11 +20,14 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
     send_response,
 )
-from mobsf.MobSF.security import is_attack_pattern
 from mobsf.DynamicAnalyzer.views.android.environment import (
     Environment,
 )
-from mobsf.MobSF.security import cmd_injection_check
+from mobsf.MobSF.security import (
+    cmd_injection_check,
+    is_attack_pattern,
+    is_path_traversal,
+)
 from mobsf.MobSF.utils import (
     docker_translate_localhost,
     get_adb,
@@ -243,8 +246,40 @@ def android_analysis_is_active(identifier, checksum):
         and state.get('identifier') == identifier
         and state.get('checksum') == checksum
         and state.get('analysis_ready') is True
+        and state.get('finalizing') is not True
         and state.get('cleanup_complete') is not True,
     )
+
+
+def get_android_frida_target(identifier, checksum):
+    """Return the validated package currently targeted by Frida."""
+    state = _read_android_analysis_state(checksum)
+    if not state or state.get('identifier') != identifier:
+        return None
+    package = state.get('frida_target_package')
+    if (isinstance(package, str)
+            and strict_package_check(package)
+            and not is_path_traversal(package)):
+        return package
+    return None
+
+
+def set_android_frida_target(identifier, checksum, package):
+    """Persist the package needed for cross-worker Frida teardown."""
+    if (not isinstance(package, str)
+            or not strict_package_check(package)
+            or is_path_traversal(package)):
+        return False
+    state = _read_android_analysis_state(checksum)
+    if (not state
+            or state.get('identifier') != identifier
+            or state.get('analysis_ready') is not True
+            or state.get('finalizing') is True
+            or state.get('cleanup_complete') is True):
+        return False
+    state['frida_target_package'] = package
+    write_android_analysis_state(checksum, state)
+    return True
 
 
 def claim_android_analysis(identifier, checksum):

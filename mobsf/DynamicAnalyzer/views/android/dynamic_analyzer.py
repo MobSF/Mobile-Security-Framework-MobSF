@@ -35,6 +35,7 @@ from mobsf.DynamicAnalyzer.views.android.operations import (
     claim_android_analysis,
     get_android_analysis_claim,
     get_android_capture_claim,
+    get_android_frida_target,
     get_package_name,
     release_android_analysis,
     save_device_packages,
@@ -314,12 +315,6 @@ def android_package_status(request):
         elif mode == 'auto':
             profile = env.get_device_profile(probe_root=True)
             selected_mode = 'rooted' if profile.has_root else 'gadget'
-        if (mode == 'auto'
-                and selected_mode != 'gadget'
-                and env.get_android_version() >= 5
-                and env.is_mobsfyied(env.get_android_version())
-                and not env.run_frida_server()):
-            selected_mode = 'gadget'
         installed = env.has_package(package)
         gadget_state = 'none'
         gadget_fallback_possible = (
@@ -485,8 +480,17 @@ def _dynamic_analyzer(request, checksum, api=False):
             previous_proxy = existing_state.get('proxy', '')
             if not isinstance(previous_proxy, str):
                 previous_proxy = ''
-            Frida.close_active(
-                checksum, active_identifier, package)
+            frida_target = (
+                get_android_frida_target(active_identifier, checksum)
+                or package
+            )
+            if not Frida.close_active(
+                    checksum, active_identifier, frida_target):
+                return print_n_send_error_response(
+                    request,
+                    'Failed to close the previous Frida session',
+                    api,
+                )
             previous_env.adb_command(
                 ['am', 'force-stop', package], True, True)
             previous_env.remove_frida_forward()
@@ -509,12 +513,6 @@ def _dynamic_analyzer(request, checksum, api=False):
                 request,
                 'Another Android analysis is active. Finish it before '
                 'starting a different app or device.',
-                api,
-            )
-        if selected_mode == 'gadget' and version < 5:
-            return print_n_send_error_response(
-                request,
-                'Frida Gadget mode requires Android 5 or later',
                 api,
             )
         if physical:
@@ -554,6 +552,12 @@ def _dynamic_analyzer(request, checksum, api=False):
                   and selected_mode != 'gadget'):
                 msg = f'Cannot prepare {identifier} for dynamic analysis'
                 return print_n_send_error_response(request, msg, api)
+        if selected_mode == 'gadget' and version < 5:
+            return print_n_send_error_response(
+                request,
+                'Frida Gadget mode requires Android 5 or later',
+                api,
+            )
         logger.info(
             'Selected Android dynamic analysis mode: %s',
             selected_mode,
@@ -615,7 +619,13 @@ def _dynamic_analyzer(request, checksum, api=False):
                 )
         # Clean up previous analysis
         env.adb_command(['am', 'force-stop', package], True, True)
-        Frida.close_active(checksum, identifier, package)
+        frida_target = (
+            get_android_frida_target(identifier, checksum)
+            or package
+        )
+        if not Frida.close_active(
+                checksum, identifier, frida_target):
+            raise RuntimeError('Failed to close the active Frida session')
         env.remove_frida_forward()
         env.dz_cleanup(checksum)
         apk_path = app_dir / f'{checksum}.apk'

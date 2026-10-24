@@ -16,12 +16,16 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
     send_response,
 )
-from mobsf.MobSF.security import is_attack_pattern
+from mobsf.MobSF.security import (
+    is_attack_pattern,
+    is_path_traversal,
+)
 from mobsf.DynamicAnalyzer.views.android.operations import (
     android_analysis_is_active,
     android_analysis_lifecycle,
     android_analysis_state_file,
     get_package_name,
+    set_android_frida_target,
 )
 from mobsf.MobSF.utils import (
     get_device,
@@ -155,7 +159,9 @@ def _instrument(request, api=False):
                 or action not in ('spawn', 'session', 'ps', 'get')
                 or (pid and action != 'session')
                 or (pid and (not pid.isdigit() or not new_pkg))
-                or (new_pkg and not strict_package_check(new_pkg))):
+                or (new_pkg
+                    and (not strict_package_check(new_pkg)
+                         or is_path_traversal(new_pkg)))):
             return invalid_params(api)
         identifier = _analysis_identifier(request, md5_hash)
         if not android_analysis_is_active(identifier, md5_hash):
@@ -184,6 +190,12 @@ def _instrument(request, api=False):
             }, api)
         if action == 'spawn':
             logger.info('Starting Instrumentation')
+            if not set_android_frida_target(
+                    identifier, md5_hash, package):
+                return send_response({
+                    'status': 'failed',
+                    'message': 'Unable to persist Frida session ownership',
+                }, api)
             if not frida_obj.instrument():
                 return send_response({
                     'status': 'failed',
@@ -202,6 +214,14 @@ def _instrument(request, api=False):
             if pid and pid.isdigit():
                 # Attach to a different pid/bundle id
                 logger.info('Attaching to %s [PID: %s]', new_pkg, pid)
+                if not set_android_frida_target(
+                        identifier, md5_hash, new_pkg):
+                    return send_response({
+                        'status': 'failed',
+                        'message': (
+                            'Unable to persist Frida session ownership'
+                        ),
+                    }, api)
                 if not frida_obj.instrument(int(pid), new_pkg):
                     return send_response({
                         'status': 'failed',
@@ -368,6 +388,8 @@ def get_dependencies(package, checksum, identifier=None):
         location.write_text('')
     if frd.reuse_session(replace=False):
         return True, ''
+    if not set_android_frida_target(identifier, checksum, package):
+        return False, 'Unable to persist Frida session ownership'
     if frd.instrument(completion_timeout=30):
         return True, ''
     return False, frd.last_error
