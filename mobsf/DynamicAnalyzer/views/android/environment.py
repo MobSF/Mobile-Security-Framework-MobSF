@@ -620,12 +620,20 @@ class Environment:
         """Restore a previously recorded global HTTP proxy."""
         results = []
         if value:
+            proxy = re.fullmatch(
+                r'(?:[A-Za-z0-9._-]+|\[[0-9A-Fa-f:.%]+\]):'
+                r'(?P<port>\d{1,5})',
+                value,
+            )
+            if not proxy or int(proxy.group('port')) > 65535:
+                logger.error('Refusing to restore an invalid proxy value')
+                return False
             results.append(self.adb_command([
                 'settings',
                 'put',
                 'global',
                 'http_proxy',
-                value,
+                shlex.quote(value),
             ], True))
         else:
             results.append(self.adb_command([

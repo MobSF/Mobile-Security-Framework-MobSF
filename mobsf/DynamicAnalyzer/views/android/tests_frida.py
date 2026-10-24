@@ -18,6 +18,7 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
 )
 from mobsf.MobSF.security import is_attack_pattern
 from mobsf.DynamicAnalyzer.views.android.operations import (
+    android_analysis_state_file,
     get_package_name,
 )
 from mobsf.MobSF.utils import (
@@ -41,9 +42,10 @@ logger = logging.getLogger(__name__)
 
 def _analysis_identifier(request, checksum):
     """Return the device bound to this dynamic-analysis session."""
-    state_file = (
-        Path(settings.UPLD_DIR) / checksum / '.mobsf-proxy-state')
-    if state_file.is_file() and not state_file.is_symlink():
+    state_file = android_analysis_state_file(checksum)
+    if (state_file is not None
+            and state_file.is_file()
+            and not state_file.is_symlink()):
         try:
             state = json.loads(state_file.read_text(encoding='utf-8'))
             identifier = state.get('identifier')
