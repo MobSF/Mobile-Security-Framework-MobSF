@@ -2,7 +2,6 @@
 """Security tests on data in transit."""
 import re
 import logging
-from threading import Thread
 from json import dump
 from pathlib import Path
 
@@ -91,10 +90,13 @@ def run_tls_tests(request, md5_hash, env, package, test_pkg, duration):
         None,
         env.identifier,
     )
-    if not frd.spawn():
-        raise RuntimeError('Unable to start Frida instrumentation')
-    Thread(target=frd.session, args=(None, None), daemon=True).start()
-    env.wait(duration)
+    if not frd.instrument():
+        raise RuntimeError(
+            frd.last_error or 'Unable to start Frida instrumentation')
+    try:
+        env.wait(duration)
+    finally:
+        Frida.close_active(md5_hash, env.identifier, package)
     stop_httptools(get_http_tools_url(request))
     traffic = get_traffic(test_pkg)
     res = detect_traffic(traffic)

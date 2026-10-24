@@ -1,7 +1,9 @@
 import logging
+import os
 import threading
 from pathlib import Path
 import time
+import uuid
 
 from django.conf import settings
 
@@ -23,6 +25,23 @@ from mobsf.DynamicAnalyzer.views.common.frida import (
 logger = logging.getLogger(__name__)
 _ACTIVE_SESSIONS = {}
 _ACTIVE_SESSIONS_LOCK = threading.RLock()
+_SESSION_LOCKS = {}
+_SESSION_LOCKS_GUARD = threading.Lock()
+_SESSION_OWNER_PID = os.getpid()
+_SESSION_OWNER_TOKEN = f'{_SESSION_OWNER_PID}:{uuid.uuid4().hex}'
+_SESSION_OWNER_TOKEN_LOCK = threading.Lock()
+
+
+def _session_owner_token():
+    """Return a process-unique token, including after a prefork."""
+    global _SESSION_OWNER_PID  # pylint: disable=global-statement
+    global _SESSION_OWNER_TOKEN  # pylint: disable=global-statement
+    pid = os.getpid()
+    with _SESSION_OWNER_TOKEN_LOCK:
+        if pid != _SESSION_OWNER_PID:
+            _SESSION_OWNER_PID = pid
+            _SESSION_OWNER_TOKEN = f'{pid}:{uuid.uuid4().hex}'
+        return _SESSION_OWNER_TOKEN
 
 
 class Frida:
@@ -45,10 +64,85 @@ class Frida:
         self.deps = self.apk_dir / 'mobsf_app_deps.txt'
         self.clipboard = self.apk_dir / 'mobsf_app_clipboard.txt'
         self.gadget_marker = self.apk_dir / '.mobsf-gadget-mode'
+        self.owner_file = self.apk_dir / '.mobsf-frida-owner'
+        self.completion_event = threading.Event()
+        self.last_error = ''
         self.bridge_loader = get_bridge_loader()
 
     def _session_key(self):
-        return (self.hash, self.identifier, self.package)
+        return (self.hash, self.identifier)
+
+    @classmethod
+    def _operation_lock(cls, key):
+        with _SESSION_LOCKS_GUARD:
+            return _SESSION_LOCKS.setdefault(key, threading.RLock())
+
+    @staticmethod
+    def _process_alive(pid):
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            return False
+        except OSError:
+            return True
+        return True
+
+    def _claim_owner(self):
+        """Claim this analysis session for the current worker process."""
+        process_token = _session_owner_token()
+        for _ in range(2):
+            try:
+                flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
+                descriptor = os.open(self.owner_file, flags, 0o600)
+                with os.fdopen(descriptor, 'w', encoding='utf-8') as target:
+                    target.write(process_token)
+                return True
+            except FileExistsError:
+                try:
+                    if self.owner_file.is_symlink():
+                        self.last_error = 'Unsafe Frida owner state path'
+                        logger.error('Unsafe Frida owner state path')
+                        return False
+                    owner = self.owner_file.read_text(
+                        encoding='utf-8',
+                        errors='ignore',
+                    ).strip()
+                    if owner == process_token:
+                        return True
+                    pid_text = owner.partition(':')[0]
+                    if pid_text == str(os.getpid()):
+                        self.owner_file.unlink(missing_ok=True)
+                        continue
+                    if pid_text.isdigit() and self._process_alive(
+                            int(pid_text)):
+                        self.last_error = (
+                            'The active Frida session belongs to another '
+                            'MobSF worker; retry this operation')
+                        logger.error(
+                            self.last_error)
+                        return False
+                    self.owner_file.unlink(missing_ok=True)
+                except OSError:
+                    self.last_error = 'Unable to inspect Frida session owner'
+                    logger.exception('Unable to inspect Frida session owner')
+                    return False
+        return False
+
+    def _release_owner(self):
+        process_token = _session_owner_token()
+        try:
+            if self.owner_file.is_symlink():
+                return
+            owner = self.owner_file.read_text(
+                encoding='utf-8',
+                errors='ignore',
+            ).strip()
+            if owner == process_token:
+                self.owner_file.unlink(missing_ok=True)
+        except FileNotFoundError:
+            pass
+        except OSError:
+            logger.exception('Unable to release Frida session ownership')
 
     @staticmethod
     def _close_entry(entry):
@@ -62,32 +156,43 @@ class Frida:
             pass
 
     @classmethod
-    def close_active(cls, app_hash, identifier, package):
+    def close_active(cls, app_hash, identifier, package=None):
         """Close the active Frida session for one analysis."""
-        key = (app_hash, identifier, package)
-        with _ACTIVE_SESSIONS_LOCK:
-            entry = _ACTIVE_SESSIONS.pop(key, None)
-        if entry:
-            cls._close_entry(entry)
+        key = (app_hash, identifier)
+        with cls._operation_lock(key):
+            with _ACTIVE_SESSIONS_LOCK:
+                entry = _ACTIVE_SESSIONS.pop(key, None)
+            if entry:
+                cls._close_entry(entry)
+            owner_file = (
+                Path(settings.UPLD_DIR) / app_hash / '.mobsf-frida-owner')
+            process_token = _session_owner_token()
+            try:
+                if (not owner_file.is_symlink()
+                        and owner_file.read_text(
+                            encoding='utf-8',
+                            errors='ignore',
+                ).strip() == process_token):
+                    owner_file.unlink(missing_ok=True)
+            except FileNotFoundError:
+                pass
+            except OSError:
+                logger.exception('Unable to release Frida session ownership')
 
-    def reuse_session(self, replace=True, temporary_lifetime=3):
+    def reuse_session(self, replace=True, completion_timeout=30):
         """Inject through an existing Frida session."""
         key = self._session_key()
-        entry = None
-        for _ in range(15):
+        with self._operation_lock(key):
+            if not self._claim_owner():
+                return False
             with _ACTIVE_SESSIONS_LOCK:
                 entry = _ACTIVE_SESSIONS.get(key)
-            if entry:
-                break
-            time.sleep(0.2)
-        if not entry:
-            return False
-        temporary_script = None
-        with _ACTIVE_SESSIONS_LOCK:
-            entry = _ACTIVE_SESSIONS.get(key)
             if not entry:
+                self._release_owner()
                 return False
+            script = None
             try:
+                self.completion_event.clear()
                 script = entry['session'].create_script(self.get_script())
                 script.on('message', self.frida_response)
                 script.load()
@@ -103,21 +208,24 @@ class Frida:
                         pass
                     logger.info('Reloaded Frida script in the active session')
                     return True
-                temporary_script = script
             except Exception:
                 logger.exception('Failed to reuse the active Frida session')
-                stale = _ACTIVE_SESSIONS.pop(key, None)
-        if temporary_script:
-            time.sleep(temporary_lifetime)
+                if script:
+                    try:
+                        script.unload()
+                    except Exception:
+                        pass
+                return False
+            completed = self.completion_event.wait(completion_timeout)
             try:
-                temporary_script.unload()
+                script.unload()
             except Exception:
                 pass
+            if not completed:
+                logger.error('Timed out waiting for temporary Frida script')
+                return False
             logger.info('Completed temporary Frida injection')
             return True
-        if stale:
-            self._close_entry(stale)
-        return False
 
     def get_scripts(self, script_type, selected_scripts):
         """Get Frida Scripts."""
@@ -143,8 +251,14 @@ class Frida:
             if itm == 'enum_class':
                 scripts.append(get_loaded_classes())
             elif itm == 'get_dependencies':
-                scripts.append(get_loaded_classes().replace(
-                    '[AUXILIARY] ', '[RUNTIME-DEPS] '))
+                scripts.append(
+                    get_loaded_classes()
+                    .replace('[AUXILIARY] ', '[RUNTIME-DEPS] ')
+                    .replace(
+                        '[AUXILIARY-DONE]',
+                        '[RUNTIME-DEPS-DONE]',
+                    ),
+                )
             elif itm == 'string_catch':
                 scripts.append(string_catch())
             elif itm == 'string_compare':
@@ -170,7 +284,7 @@ class Frida:
         rpc_script = ','.join(rpc_list)
         rpc = f'rpc.exports = {{ \n{rpc_script}\n }};'
         combined = '\n'.join(scripts)
-        final = f'{rpc}\n setTimeout(function() {{ \n{combined}\n }}, 1000)'
+        final = f'{rpc}\n{combined}'
 
         # Use bridges only for Frida 17.0.0+
         if self.bridge_loader.is_required_and_available():
@@ -195,7 +309,9 @@ class Frida:
             msg = message['payload']
             api_mon = 'MobSF-API-Monitor: '
             aux = '[AUXILIARY] '
+            aux_done = '[AUXILIARY-DONE]'
             deps = '[RUNTIME-DEPS] '
+            deps_done = '[RUNTIME-DEPS-DONE]'
             clip = 'mobsf-android-clipboard:'
             if not isinstance(msg, str):
                 msg = str(msg)
@@ -208,6 +324,10 @@ class Frida:
                 info = msg.replace(deps, '')
                 self.write_log(self.deps, f'{info}\n')
                 self.write_log(self.frida_log, f'{info}\n')
+            elif msg == deps_done:
+                self.completion_event.set()
+            elif msg == aux_done:
+                logger.debug('[Frida] Auxiliary script completed')
             elif msg.startswith(aux):
                 msg = msg.replace(aux, '[*] ')
                 self.write_log(self.frida_log, f'{msg}\n')
@@ -217,122 +337,101 @@ class Frida:
         else:
             logger.error('[Frida] %s', message)
 
-    def spawn(self, retry=True):
-        """Frida Spawn."""
-        try:
-            env = Environment(self.identifier)
-            self.clean_up()
-            if self.gadget_marker.exists():
-                self.close_active(
-                    self.hash, self.identifier, self.package)
-                if not env.run_app(self.package):
-                    logger.error('Unable to launch the Gadget-injected app')
-                    return False
-                for attempt in range(5):
-                    try:
-                        device = env.get_frida_device(gadget=True)
-                        application = device.get_frontmost_application()
-                        if (application
-                                and application.pid
-                                and application.identifier in (
-                                    self.package,
-                                    're.frida.Gadget',
-                                )):
-                            self.pid = application.pid
-                            return True
-                        applications = device.enumerate_applications(
-                            scope='minimal')
-                        for application in applications:
-                            if (application.identifier in (
-                                    self.package,
-                                    're.frida.Gadget',
-                            )
-                                    and application.pid):
-                                self.pid = application.pid
-                                return True
-                    except (frida.ServerNotRunningError,
-                            frida.TimedOutError,
-                            frida.TransportError):
-                        if attempt == 4:
-                            raise
-                        time.sleep(1)
-                return False
-            if not env.run_frida_server():
-                return False
-            device = env.get_frida_device()
-            logger.info('Spawning %s', self.package)
-            self.pid = device.spawn([self.package])
-            device.resume(self.pid)
-            time.sleep(1)
-            return True
-        except frida.NotSupportedError:
-            logger.exception('Not Supported Error')
-            return False
-        except frida.ServerNotRunningError:
-            logger.warning('Frida server is not running')
-            if retry:
-                time.sleep(1)
-                return self.spawn(False)
-        except frida.TimedOutError:
-            logger.error('Timed out while waiting for device to appear')
-        except (frida.ProcessNotFoundError,
-                frida.ProcessNotRespondingError,
-                frida.TransportError,
-                frida.InvalidOperationError):
-            pass
-        except Exception:
-            logger.exception('Error Connecting to Frida')
-        return False
+    def _find_gadget_process(self, device):
+        application = device.get_frontmost_application()
+        if (application
+                and application.pid
+                and application.identifier in (
+                    self.package,
+                    're.frida.Gadget',
+                )):
+            return application.pid
+        applications = device.enumerate_applications(scope='minimal')
+        for application in applications:
+            if (application.identifier in (
+                    self.package,
+                    're.frida.Gadget',
+            )
+                    and application.pid):
+                return application.pid
+        return None
 
-    def session(self, pid, package):
-        """Use existing session to inject frida scripts."""
-        try:
+    def instrument(self, pid=None, package=None, completion_timeout=None):
+        """Start and synchronously instrument an Android process."""
+        key = self._session_key()
+        with self._operation_lock(key):
+            if not self._claim_owner():
+                return False
             env = Environment(self.identifier)
+            gadget = self.gadget_marker.exists()
+            device = None
+            session = None
+            script = None
+            started = False
+            registered = False
+            target_package = package if pid and package else self.package
             try:
-                device = env.get_frida_device(
-                    gadget=self.gadget_marker.exists())
-                if pid and package:
-                    self.pid = pid
-                    self.package = package
-                key = self._session_key()
+                if gadget and pid:
+                    logger.error(
+                        'PID attachment is unavailable in Frida Gadget mode')
+                    return False
                 with _ACTIVE_SESSIONS_LOCK:
                     previous = _ACTIVE_SESSIONS.pop(key, None)
                 if previous:
                     self._close_entry(previous)
-                if self.pid is None:
-                    front = device.get_frontmost_application()
-                    if (front
-                            and front.pid
-                            and front.identifier in (
-                                self.package,
-                                're.frida.Gadget',
-                            )):
-                        self.pid = front.pid
+                self.clean_up()
+                self.completion_event.clear()
+                if gadget:
+                    if not env.stop_frida_server():
+                        return False
+                    env.adb_command(
+                        ['am', 'force-stop', self.package], True, True)
+                    if not env.run_app(self.package):
+                        logger.error(
+                            'Unable to launch the Gadget-injected app')
+                        return False
+                    started = True
+                    for attempt in range(5):
+                        try:
+                            device = env.get_frida_device(gadget=True)
+                            self.pid = self._find_gadget_process(device)
+                            if self.pid:
+                                break
+                        except (frida.ServerNotRunningError,
+                                frida.TimedOutError,
+                                frida.TransportError):
+                            if attempt == 4:
+                                raise
+                        time.sleep(1)
+                    if not self.pid:
+                        logger.error('Unable to find the Gadget process')
+                        return False
+                else:
+                    if not env.run_frida_server():
+                        return False
+                    device = env.get_frida_device()
+                    if pid:
+                        self.pid = pid
+                    else:
+                        logger.info('Spawning %s', target_package)
+                        env.adb_command(
+                            ['am', 'force-stop', target_package], True, True)
+                        self.pid = device.spawn([target_package])
+                        started = True
                 session = device.attach(self.pid)
-                time.sleep(2)
-            except frida.NotSupportedError:
-                logger.exception('Not Supported Error')
-                return
-            except Exception:
-                logger.exception('Cannot attach to pid, spawning again')
-                if not self.spawn():
-                    return
-                device = env.get_frida_device(
-                    gadget=self.gadget_marker.exists())
-                session = device.attach(self.pid)
-                time.sleep(2)
-            if session and device and self.pid:
                 script = session.create_script(self.get_script())
                 script.on('message', self.frida_response)
                 script.load()
-                api = script.exports_sync
-                self.api_handler(api)
 
                 def detached(*_args):
+                    removed = False
                     with _ACTIVE_SESSIONS_LOCK:
                         active = _ACTIVE_SESSIONS.get(key)
                         if active and active['session'] is session:
                             _ACTIVE_SESSIONS.pop(key, None)
+                            removed = True
+                    if removed:
+                        self._release_owner()
 
                 session.on('detached', detached)
                 with _ACTIVE_SESSIONS_LOCK:
@@ -340,17 +439,59 @@ class Frida:
                         'session': session,
                         'script': script,
                         'pid': self.pid,
+                        'package': target_package,
                     }
+                registered = True
+                if started:
+                    device.resume(self.pid)
+                api = script.exports_sync
+                self.api_handler(api)
+                if (completion_timeout is not None
+                        and not self.completion_event.wait(
+                            completion_timeout)):
+                    logger.error(
+                        'Timed out waiting for Frida script completion')
+                    return False
                 logger.info('Frida session is active')
-        except frida.NotSupportedError:
-            logger.exception('Not Supported Error')
-        except (frida.ProcessNotFoundError,
-                frida.ProcessNotRespondingError,
-                frida.TransportError,
-                frida.InvalidOperationError):
-            pass
-        except Exception:
-            logger.exception('Error Connecting to Frida')
+                return True
+            except frida.NotSupportedError:
+                logger.exception('Not Supported Error')
+            except frida.ServerNotRunningError:
+                logger.warning('Frida server is not running')
+            except frida.TimedOutError:
+                logger.error('Timed out while waiting for device to appear')
+            except (frida.ProcessNotFoundError,
+                    frida.ProcessNotRespondingError,
+                    frida.TransportError,
+                    frida.InvalidOperationError):
+                logger.exception('Frida instrumentation failed')
+            except Exception:
+                logger.exception('Error Connecting to Frida')
+            finally:
+                if not registered:
+                    if script:
+                        try:
+                            script.unload()
+                        except Exception:
+                            pass
+                    if session:
+                        try:
+                            session.detach()
+                        except Exception:
+                            pass
+                    if started:
+                        env.adb_command(
+                            ['am', 'force-stop', target_package], True, True)
+                    self._release_owner()
+            return False
+
+    def spawn(self, retry=True):
+        """Start and instrument the analyzed package."""
+        return self.instrument()
+
+    def session(self, pid, package):
+        """Start instrumentation or attach to a rooted process."""
+        return self.instrument(pid, package)
 
     def ps(self):
         """Get running process pid."""
