@@ -6,7 +6,6 @@
 {% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static "others/css/terminal.css" %}" type="text/css">
-<link rel="stylesheet" href="{% static "others/css/devices.min.css" %}" type="text/css">
 <link rel="stylesheet" href="{% static "codemirror/codemirror.css" %}" type="text/css">
 <link rel="stylesheet" href="{% static "enlighterjs/enlighterjs.min.css" %}" />
 <link rel="stylesheet" href="{% static "codemirror/lint.css" %}" type="text/css">
@@ -78,6 +77,76 @@
         margin-top: 10px;
     }
 
+    .device-preview {
+      box-sizing: border-box;
+      width: 420px;
+      max-width: calc(100% - 24px);
+      margin: 0 auto;
+      padding: 10px;
+      overflow: hidden;
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 24px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+      transition: width 0.2s ease;
+    }
+
+    .device-preview.landscape {
+      max-width: calc(100% - 24px);
+    }
+
+    .device-preview-screen {
+      display: block;
+      width: 100%;
+      height: auto;
+      margin: 0 auto;
+      background: #000;
+      border-radius: 14px;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .device-navigation {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      margin-top: 8px;
+      padding: 4px 16px 0;
+    }
+
+    .device-nav-button {
+      width: 52px;
+      height: 36px;
+      color: #f9fafb;
+      background: transparent;
+      border: 0;
+      border-radius: 10px;
+      transition: background-color 0.15s ease, opacity 0.15s ease;
+    }
+
+    .device-nav-button:hover:not(:disabled),
+    .device-nav-button:focus:not(:disabled) {
+      background: #374151;
+      outline: none;
+    }
+
+    .device-nav-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.35;
+    }
+
+    @media (max-width: 576px) {
+      .device-preview {
+        max-width: 100%;
+        padding: 6px;
+        border-radius: 16px;
+      }
+      .device-preview-screen {
+        border-radius: 10px;
+      }
+    }
+
 </style>
 
 {% endblock %}
@@ -89,16 +158,35 @@
 <div class="content-wrapper">
   <div class="content-header">
     <div class="container-fluid">
-      <div class="row mb-2">
-        <div id="mobsf_header" align="center" style="padding-left: 20px;">
-            <h2><strong>Dynamic Analyzer </strong>- {{ package }}</h2>
+      <div class="row mb-2 align-items-start">
+        <div id="mobsf_header" class="col-md-8">
+          <h2><strong>Dynamic Analyzer </strong>- {{ package }}</h2>
+        </div>
+        <div class="col-md-4 text-md-right pt-2">
+          <strong>Device:</strong>
+          {% if device_model %}{{ device_model }} — {% endif %}{{ device_identifier }}
+          <span class="badge badge-secondary">{{ device_mode|title }}</span>
         </div>
       </div>
     </div>
   </div>
    <div class="container-fluid">
 
-   
+   {% if device_mode == "gadget" %}
+   <div class="alert alert-warning">
+     {% if root_ca_embedded %}
+     This session uses an APK injected with Frida Gadget and MobSF Root CA.
+     XML network-security pins are removed.
+     {% else %}
+     This split APK session uses an APK injected with Frida Gadget. Split
+     resources are preserved, so the MobSF Root CA is not embedded.
+     {% endif %}
+     The app may not work if it uses custom signature checks, Play Integrity,
+     certificate pinning, or requires its original code signing certificate.
+     Those checks must be patched separately.
+   </div>
+   {% endif %}
+
    <div class="row">
           <div class="col-md-12">
             <div class="card card-default">
@@ -106,10 +194,14 @@
               <div class="card-body">
                  <div id="but" align="center">
                   <a href="#" id="screen" class="btn btn-primary" role="button"><i class="fa fa-mobile-alt"></i> Show Screen</a>
+                  {% if device_mode != "gadget" %}
                   <a href="#" id="rootca" class="btn btn-primary" role="button"><i class="fa fa-certificate"></i> Remove Root CA</a>
+                  {% endif %}
                   {% if android_version >= 5 %}
                   <a href="#" id="proxy" class="btn btn-primary" role="button"><i class="fas fa-eye-slash"></i> Unset HTTP(S) Proxy</a>
+                  {% if tls_tests_available %}
                   <a href="#" id="tls_test" class="btn btn-primary" role="button"  data-toggle="modal" data-target="#tls_modal"><i class="fa fa-lock"></i> TLS/SSL Security Tester</a>
+                  {% endif %}
                   {% endif %}
                   <a href="#" id="expactt" class="btn btn-primary" role="button"><i class="fa fa-language"></i> Exported Activity Tester</a>
                   <a href="#" id="actt" class="btn btn-primary" role="button"><i class="fa fa-rocket"></i> Activity Tester</a>
@@ -134,14 +226,19 @@
               <!-- /.card-header -->
               <div class="card-body">
                 <div align="center">
-                  <div class="marvel-device htc-one">
-                  <div class="top-bar"></div>
-                  <div class="camera"></div>
-                  <div class="sensor"></div>
-                  <div class="speaker"></div>
-                  <div class="screen" id="container" tabindex="0" style="outline: none;">
-                  <img width="320" height="580" src="{% url 'download' %}screen/screen.png" id="my" onerror="$('#my').attr('src','/static/img/loading.jpg')" style="background-color:black;">
-                  </div>
+                  <div class="device-preview" id="container" tabindex="0" style="outline: none;">
+                    <img src="{% url 'download' %}screen/screen.png" class="device-preview-screen" id="my" draggable="false" alt="Android device screen" onerror="$('#my').attr('src','/static/img/loading.jpg')">
+                    <div class="device-navigation" aria-label="Android navigation controls">
+                      <button type="button" class="device-nav-button" data-android-key="back" title="Back" aria-label="Back" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                      </button>
+                      <button type="button" class="device-nav-button" data-android-key="home" title="Home" aria-label="Home" disabled>
+                        <i class="far fa-circle"></i>
+                      </button>
+                      <button type="button" class="device-nav-button" data-android-key="recents" title="App Switcher" aria-label="App Switcher" disabled>
+                        <i class="far fa-square"></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -263,7 +360,9 @@
                         <div class="box-footer">
                           <button id="frida_spawn" type="submit" class="btn btn-success btn-sm"><i class="far fa-play-circle"></i> Spawn & Inject</button>
                           <button id="frida_session" type="submit" class="btn btn-success btn-sm" disabled><i class="fas fa-redo"></i> Inject </button>
+                          {% if device_mode != "gadget" %}
                           <button id="frida_attach" type="submit" class="btn btn-success btn-sm"><i class="fas fa-bug"></i> Attach </button>
+                          {% endif %}
                           <button id="frida_get" class="btn btn-primary btn-sm" hidden><i class="fas fa-code"></i> Injected Code</button>
                        </div>
                       </div>  <!--Frida options, hidden for xposed -->
@@ -573,7 +672,6 @@
 <script src="{% static "codemirror/jshint.js" %}"></script>
 <script src="{% static "codemirror/lint.js" %}"></script>
 <script src="{% static "codemirror/javascript-lint.js" %}"></script>
-<script src="{% static "others/js/swipe.js" %}"></script>
 <script src="{% static "enlighterjs/enlighterjs.min.js" %}"></script>
 <script>
 // Loading Spinner
@@ -615,6 +713,7 @@ function aux_click(cb) {
 function action(url, data, on_success){
   //Add CSRF
   data.csrfmiddlewaretoken ='{{ csrf_token }}';
+  data.identifier = '{{ device_identifier|escapejs }}';
   $.ajax({
     url : url, 
     type : "POST",
@@ -993,27 +1092,57 @@ setInterval( function () {
 // View Screen
 var screen_width, screen_height;
 var screenfunc;
+const screenImage = document.getElementById('my');
+const screenContainer = document.getElementById('container');
+
+function resizeDevicePreview() {
+  if (!screen_width || !screen_height) {
+    return;
+  }
+  const styles = window.getComputedStyle(screenContainer);
+  const horizontalPadding = (
+    parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight)
+  );
+  const parentWidth = screenContainer.parentElement.clientWidth;
+  const maximumWidth = screen_width > screen_height ? 760 : 420;
+  const widthForViewportHeight = (
+    window.innerHeight * 0.72 * screen_width / screen_height
+    + horizontalPadding
+  );
+  const frameWidth = Math.min(
+    maximumWidth,
+    Math.max(120, parentWidth - 24),
+    widthForViewportHeight
+  );
+  screenContainer.style.width = Math.floor(frameWidth) + 'px';
+}
+
+screenImage.addEventListener('load', function() {
+  if (touch === "on" && this.naturalWidth && this.naturalHeight) {
+    screen_width = this.naturalWidth;
+    screen_height = this.naturalHeight;
+    screenContainer.classList.toggle(
+      'landscape',
+      screen_width > screen_height
+    );
+    resizeDevicePreview();
+    console.log(
+      'Screen Resolution: ' + screen_width + 'x' + screen_height
+    );
+  }
+});
+window.addEventListener('resize', resizeDevicePreview);
 $("#screen").click(function() {
       var stext = $("#screen").text();
       if (stext.includes("Show Screen")){
           $("#screen").html("<i class='fa fa-mobile'></i> Stop Screen");
           print_status('Screen streaming started.')
           touch = "on";
+          $('.device-nav-button').prop('disabled', false);
           screenfunc = setInterval(function(){
               // Capture Screen
               action('{% url 'screen_cast' %}', {}, function(json) {
                 if (json.status == 'ok'){
-                  if (screen_width === undefined || screen_height === undefined){
-                    // Get Screen Resolution from Image
-                    var i = new Image();
-                    i.onload = function(){
-                      screen_width = i.width;
-                      screen_height = i.height;
-                      console.log('Screen Resolution: ' + screen_width + 'x' + screen_height)
-                      i = null;
-                    };
-                    i.src = json.message;
-                  }
                   $('#my').attr('src', json.message);
                 } else
                   console.log(json.message)
@@ -1025,6 +1154,7 @@ $("#screen").click(function() {
           $('#my').attr('src', '/static/img/loading.jpg');
           clearInterval(screenfunc);
           touch = "off";
+          $('.device-nav-button').prop('disabled', true);
       }
       return false;  
 }); 
@@ -1032,9 +1162,17 @@ $("#screen").click(function() {
 
 // Touch Events
 var touch = "off";
-function android_input(event, x, y){
+function android_input(event, x, y, endX = 0, endY = 0){
   if ( touch === "on"){
-    action('{% url 'android_touch' %}', { event, x, y, max_x: screen_width, max_y:screen_height}, function(json) {
+    action('{% url 'android_touch' %}', {
+      event,
+      x,
+      y,
+      end_x: endX,
+      end_y: endY,
+      max_x: screen_width,
+      max_y: screen_height
+    }, function(json) {
         if (json.status==='ok')
           console.log('Event: ' + event);
         else
@@ -1043,31 +1181,89 @@ function android_input(event, x, y){
   }
 }
 
-var xaxis, yaxis = 0;
-
-function getXY(e, t){
-      // X-Y axis for clicks
-      var offset = $(t).offset();
-      var x = e.pageX - offset.left;
-      var y = e.pageY - offset.top;
-      xaxis = x * (screen_width/320); 
-      yaxis = y * (screen_height/580);
-      console.log('X Axis: '+ xaxis + " Y Axis: "+ yaxis);
-}
-
-// Touch Screen Click Events
-var pressedTime;
-var releaseTime;
-$("#my").on( "mousedown", function() {
-  pressedTime = new Date().getTime();
+$('.device-nav-button').on('click', function(e) {
+  e.preventDefault();
+  android_input($(this).data('android-key'), 0, 0);
+  $('#container').trigger('focus');
 });
 
-$("#my").on( "mouseup", function(e) {
-  releaseTime = new Date().getTime();
-  getXY(e, this);
-  if (releaseTime - pressedTime < 300 && touch === "on") {
-          android_input('touch', xaxis, yaxis);
+function getXY(e, t){
+      const rect = t.getBoundingClientRect();
+      if (!screen_width || !screen_height
+          || rect.width <= 0 || rect.height <= 0) {
+        return null;
       }
+      const renderedX = Math.max(
+        0, Math.min(e.clientX - rect.left, rect.width)
+      );
+      const renderedY = Math.max(
+        0, Math.min(e.clientY - rect.top, rect.height)
+      );
+      const x = Math.min(
+        screen_width - 1,
+        Math.round(renderedX * screen_width / rect.width)
+      );
+      const y = Math.min(
+        screen_height - 1,
+        Math.round(renderedY * screen_height / rect.height)
+      );
+      console.log('X Axis: '+ x + " Y Axis: "+ y);
+      return {x, y};
+}
+
+// Touch Screen Tap and Swipe Events
+var pointerStart = null;
+$("#my").on("pointerdown", function(e) {
+  const point = e.originalEvent || e;
+  const coordinates = getXY(point, this);
+  if (!coordinates || touch !== "on") {
+    return;
+  }
+  pointerStart = {
+    x: coordinates.x,
+    y: coordinates.y,
+    time: performance.now(),
+    id: point.pointerId
+  };
+  if (this.setPointerCapture && point.pointerId !== undefined) {
+    this.setPointerCapture(point.pointerId);
+  }
+  e.preventDefault();
+});
+
+$("#my").on("pointerup", function(e) {
+  const point = e.originalEvent || e;
+  const coordinates = getXY(point, this);
+  if (!pointerStart || !coordinates || touch !== "on") {
+    pointerStart = null;
+    return;
+  }
+  const elapsed = performance.now() - pointerStart.time;
+  const distance = Math.hypot(
+    coordinates.x - pointerStart.x,
+    coordinates.y - pointerStart.y
+  );
+  const tapThreshold = Math.max(
+    24,
+    Math.min(screen_width, screen_height) * 0.03
+  );
+  if (distance <= tapThreshold && elapsed < 500) {
+    android_input('touch', coordinates.x, coordinates.y);
+  } else if (distance > tapThreshold) {
+    android_input(
+      'swipe',
+      pointerStart.x,
+      pointerStart.y,
+      coordinates.x,
+      coordinates.y
+    );
+  }
+  pointerStart = null;
+  e.preventDefault();
+});
+
+$("#my").on("pointercancel", function() {
+  pointerStart = null;
 });
 
 
@@ -1134,35 +1330,6 @@ $('#container').on('keypress', function(event) {
 	event.stopPropagation();
   }
 });
-
-
-// Touch Swipe Events
-const box = document.getElementById("my");
-const classes = Swipe.directions();
-const swipe = new Swipe(box, {
-  corners: true,
-  minDistance: 100
-});
-
-swipe.addEventListener("after", direction => {
-  if (touch === "on") {
-    switch(direction){
-      case 'up': case 'leftup': case 'rightup':
-        android_input('swipe_down', xaxis, yaxis)
-        break;
-      case 'down': case 'leftdown': case 'rightdown':
-        android_input('swipe_up', xaxis, yaxis)
-        break;
-      case 'left':
-        android_input('swipe_right', xaxis, yaxis)
-        break;
-      case 'right':
-        android_input('swipe_left', xaxis, yaxis)
-        break;
-    }
-}
-});
-
 
 //Screenshot
 $("#ss").click(function() {
@@ -1328,7 +1495,15 @@ $("#run_app").click(function() {
 // Logcat Stream
 $("#logstream").click(function() {
     print_status("Logcat Steaming started.");
-    setTimeout(function(){ window.open(document.location.origin + '/logcat/?package={{ package }}', '_blank');}, 500);   
+    setTimeout(function(){
+      window.open(
+        document.location.origin
+        + '/logcat/?package={{ package|urlencode }}'
+        + '&identifier='
+        + encodeURIComponent('{{ device_identifier|escapejs }}'),
+        '_blank'
+      );
+    }, 500);
     return false;  
 }); 
 
@@ -1368,7 +1543,6 @@ function frida_instrument(frida_action, pid=null, new_pkg=null){
     });
 
     if (frida_action === 'spawn'){
-      document.getElementById('frida_session').disabled = false;
       print_status("Instrumenting the application with Frida.");
     } else if (frida_action === 'session' && pid === null){
       print_status("Injecting Frida script to existing session.");
@@ -1393,6 +1567,8 @@ function frida_instrument(frida_action, pid=null, new_pkg=null){
     }, function(json) {
       if (json.status !== "ok")
         print_status(json.message);
+      else if (frida_action === 'spawn')
+        document.getElementById('frida_session').disabled = false;
       // Attach to a running process
       if (frida_action == 'ps' && json.message && json.message.length > 0 && Array.isArray(json.message)){
         $("#process_select").empty();
@@ -1471,12 +1647,17 @@ $("#deps").click(function() {
 function dump(){
   action(document.location.origin + '/download_data/', { hash: '{{ hash }}'}, function(json) {
     if (json.status==="ok"){
-      print_status("Application data dumped!");
+      if (json.data_collected === false)
+        print_status(json.message);
+      else
+        print_status("Application data dumped!");
       print_status("Generating Report...Please Wait!");
       //Call reporting
       window.location = document.location.origin+"/dynamic_report/{{ hash }}";
     } else {
-      print_status(json.message);
+      print_status("Application data was not collected: " + json.message);
+      print_status("Generating partial report...Please Wait!");
+      window.location = document.location.origin+"/dynamic_report/{{ hash }}";
     }
   });
 }

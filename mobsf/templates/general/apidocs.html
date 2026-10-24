@@ -1496,6 +1496,7 @@
            <hr />
             <h2><a id="get-apps-api"></a><strong>Get Apps API</strong></h2>
             <p>Get Apps available for Dynamic Analysis. You must perform static analysis before attempting dynamic analysis.</p>
+            <p>When more than one Android device is online, pass its ADB identifier as the optional <code>identifier</code> query parameter. The response includes the detected <code>devices</code> list.</p>
             <ul>
               <li>
                 <p><strong>URL:</strong> <code>/api/v1/dynamic/get_apps</code></p>
@@ -1563,7 +1564,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl --url http://localhost:8000/api/v1/dynamic/get_apps -H "Authorization:  {{ api_key}}"
+                    <pre><code>curl --url "http://localhost:8000/api/v1/dynamic/get_apps?identifier=192.168.56.139:5555" -H "Authorization:  {{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>
@@ -1573,6 +1574,7 @@
             <hr />
             <h2><a id="start-analysis-api"></a><strong>Start Dynamic Analysis API</strong></h2>
             <p>Start MobSF Dynamic Analyzer. Ensure that dynamic analysis environment (Android VM/Emulator/Device) is configured and running before calling this API.</p>
+            <p><code>auto</code> uses rooted runtime preparation when available and otherwise falls back to Frida Gadget on Android 5 or later, including jailed emulators and VMs. Gadget mode changes the APK signature and requires confirmation before replacing an existing installation. Single APKs embed the MobSF Root CA; split APK sets preserve binary resources, re-sign every required split, and install atomically with <code>adb install-multiple</code>, relying on Frida TLS hooks instead of an embedded CA. Rooted physical-device mode does not require a writable <code>/system</code> partition; legacy VM preparation does.</p>
             <ul>
               <li>
                 <p><strong>URL:</strong> <code>/api/v1/dynamic/start_analysis</code></p>
@@ -1609,6 +1611,26 @@
                 <tr>
                   <td>install</td>
                   <td>0 or 1, default is 1</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>device_mode</td>
+                  <td>auto, rooted, or gadget; default is auto</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>identifier</td>
+                  <td>online ADB device identifier; required when multiple devices are connected unless a web session has selected one</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>uninstall_existing</td>
+                  <td>Set to 1 to explicitly authorize uninstalling an existing package before installing a re-signed Gadget APK; local app data will be lost</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>replace_existing_gadget</td>
+                  <td>Set to 1 to explicitly replace an unknown or third-party Gadget injection; MobSF-patched APKs refresh automatically</td>
                   <td>No</td>
                 </tr>
               </tbody>
@@ -1655,7 +1677,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/start_analysis --data "hash=3a552566097a8de588b8184b059b0158" -H "Authorization:  {{ api_key}}"
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/start_analysis --data "hash=3a552566097a8de588b8184b059b0158&amp;device_mode=auto&amp;identifier=192.168.56.139:5555" -H "Authorization:  {{ api_key}}"
                   </code></pre>
                   </li>
                 </ul>

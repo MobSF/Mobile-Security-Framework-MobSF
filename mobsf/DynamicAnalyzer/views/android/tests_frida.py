@@ -5,7 +5,6 @@ import os
 import re
 import json
 from pathlib import Path
-from threading import Thread
 import logging
 
 from django.shortcuts import render
@@ -22,10 +21,14 @@ from mobsf.DynamicAnalyzer.views.android.operations import (
     get_package_name,
 )
 from mobsf.MobSF.utils import (
+    get_device,
     is_file_exists,
+    is_gadget_analysis,
     is_md5,
     print_n_send_error_response,
+    read_analysis_state,
     strict_package_check,
+    valid_android_device_identifier,
 )
 from mobsf.MobSF.views.authentication import (
     login_required,
@@ -36,6 +39,15 @@ from mobsf.MobSF.views.authorization import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _analysis_identifier(request, checksum):
+    """Return the device bound to this dynamic-analysis session."""
+    identifier = read_analysis_state(checksum).get('identifier')
+    if valid_android_device_identifier(identifier):
+        return identifier
+    return get_device(request)
+
 
 # AJAX
 
@@ -52,10 +64,16 @@ def get_runtime_dependencies(request, api=False):
         checksum = request.POST['hash']
         if not is_md5(checksum):
             return invalid_params(api)
-        package = get_package_name(checksum)
+        identifier = _analysis_identifier(request, checksum)
+        package = get_package_name(checksum, identifier)
         if not package:
             return invalid_params(api)
-        get_dependencies(package, checksum)
+        success, error = get_dependencies(package, checksum, identifier)
+        if not success:
+            return send_response({
+                'status': 'failed',
+                'message': error or 'Unable to connect to Frida',
+            }, api)
         return send_response(
             {'status': 'ok'},
             api)
@@ -96,9 +114,13 @@ def instrument(request, api=False):
         if (is_attack_pattern(default_hooks)
                 or is_attack_pattern(auxiliary_hooks)
                 or not is_md5(md5_hash)
+                or action not in ('spawn', 'session', 'ps', 'get')
+                or (pid and action != 'session')
+                or (pid and (not pid.isdigit() or not new_pkg))
                 or (new_pkg and not strict_package_check(new_pkg))):
             return invalid_params(api)
-        package = get_package_name(md5_hash)
+        identifier = _analysis_identifier(request, md5_hash)
+        package = get_package_name(md5_hash, identifier)
         if not package and not new_pkg:
             return invalid_params(api)
         frida_obj = Frida(md5_hash,
@@ -106,10 +128,27 @@ def instrument(request, api=False):
                           default_hooks.split(','),
                           auxiliary_hooks.split(','),
                           extras,
-                          code)
+                          code,
+                          identifier)
+        gadget_mode = is_gadget_analysis(md5_hash)
+        if gadget_mode and (action == 'ps' or pid):
+            return send_response({
+                'status': 'failed',
+                'message': (
+                    'Process enumeration and PID attachment are unavailable '
+                    'in Frida Gadget mode'
+                ),
+            }, api)
         if action == 'spawn':
             logger.info('Starting Instrumentation')
-            frida_obj.spawn()
+            if not frida_obj.instrument():
+                return send_response({
+                    'status': 'failed',
+                    'message': (
+                        frida_obj.last_error
+                        or 'Unable to launch and instrument the app'
+                    ),
+                }, api)
         elif action == 'ps':
             logger.info('Enumerating running applications')
             data['message'] = frida_obj.ps()
@@ -119,14 +158,28 @@ def instrument(request, api=False):
         if action in ('spawn', 'session'):
             if pid and pid.isdigit():
                 # Attach to a different pid/bundle id
-                args = (int(pid), new_pkg)
                 logger.info('Attaching to %s [PID: %s]', new_pkg, pid)
+                if not frida_obj.instrument(int(pid), new_pkg):
+                    return send_response({
+                        'status': 'failed',
+                        'message': (
+                            frida_obj.last_error
+                            or 'Unable to attach and inject Frida'
+                        ),
+                    }, api)
             else:
-                # Injecting to existing session/spawn
                 if action == 'session':
                     logger.info('Injecting to existing frida session')
-                args = (None, None)
-            Thread(target=frida_obj.session, args=args, daemon=True).start()
+                    if not frida_obj.reuse_session():
+                        return send_response({
+                            'status': 'failed',
+                            'message': (
+                                frida_obj.last_error
+                                or 'No reusable Frida session is active'
+                            ),
+                        }, api)
+                    data['status'] = 'ok'
+                    return send_response(data, api)
         data['status'] = 'ok'
     except Exception as exp:
         logger.exception('Instrumentation failed')
@@ -256,7 +309,7 @@ def apimon_analysis(app_dir):
     return api_details, strings
 
 
-def get_dependencies(package, checksum):
+def get_dependencies(package, checksum, identifier=None):
     """Get 3rd party dependencies at runtime."""
     frd = Frida(
         checksum,
@@ -265,12 +318,18 @@ def get_dependencies(package, checksum):
         ['get_dependencies'],
         None,
         None,
+        identifier,
     )
     location = Path(frd.deps)
     if location.exists():
         location.write_text('')
-    frd.spawn()
-    Thread(target=frd.session, args=(None, None), daemon=True).start()
+    if frd.reuse_session(replace=False):
+        return True, ''
+    if frd.last_error:
+        return False, frd.last_error
+    if frd.instrument(completion_timeout=30):
+        return True, ''
+    return False, frd.last_error
 
 
 def dependency_analysis(package, app_dir):
