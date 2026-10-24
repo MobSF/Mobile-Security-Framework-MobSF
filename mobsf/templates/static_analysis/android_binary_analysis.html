@@ -2440,11 +2440,11 @@
 <script src="{% static "amcharts/animated.js" %}"></script>
 <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script>
-  function addDynamicInput(form, name) {
+  function addDynamicInput(form, name, value = '1') {
     const input = document.createElement('input');
     input.type = 'hidden';
     input.name = name;
-    input.value = '1';
+    input.value = value;
     form.appendChild(input);
   }
 
@@ -2470,6 +2470,7 @@
             status.message || 'Unable to check the installed app',
           );
         }
+        addDynamicInput(form, 'identifier', status.identifier);
         if (status.confirmation_required
             || status.gadget_replacement_required) {
           const warnings = [];

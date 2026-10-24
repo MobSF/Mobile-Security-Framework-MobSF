@@ -779,7 +779,7 @@ def touch(request):
                 args = ['tap', touch_x, touch_y]
             else:
                 data['message'] = 'Unsupported input event'
-                return data
+                return send_response(data)
         if env.adb_command(['input'] + args, True) is None:
             data['message'] = 'Failed to send input event'
             return send_response(data)

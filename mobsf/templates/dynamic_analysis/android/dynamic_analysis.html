@@ -201,6 +201,7 @@ textarea:focus {
                               <div class="mb-3">
                                 <form method="post" action="{% url "dynamic_analyzer" checksum=e.MD5 %}" class="dynamic-start-form" data-hash="{{ e.MD5 }}">
                                   {% csrf_token %}
+                                  <input type="hidden" name="identifier" value="{{ identifier }}">
                                   {% if android_version >= 5 %}
                                   <select name="device_mode" class="form-control form-control-sm mb-2" aria-label="Android analysis mode">
                                     <option value="auto">Auto detect</option>
@@ -214,6 +215,7 @@ textarea:focus {
                               <div class="mb-3">
                                 <form method="post" action="{% url "dynamic_analyzer" checksum=e.MD5 %}" class="dynamic-start-form" data-hash="{{ e.MD5 }}">
                                   {% csrf_token %}
+                                  <input type="hidden" name="identifier" value="{{ identifier }}">
                                   <input type="hidden" name="re_install" value="0">
                                   {% if runtime == "physical" %}
                                   <input type="hidden" name="device_mode" value="rooted">
@@ -308,6 +310,7 @@ const staticPathTemplate = "{% url 'static_scan' checksum='000000000000000000000
 const reportPathTemplate = "{% url 'dynamic_report' checksum='00000000000000000000000000000000' %}";
 const deviceDetailsUrl = "{% url 'android_device_details' %}";
 const csrfToken = '{{ csrf_token }}';
+const selectedIdentifier = '{{ identifier|escapejs }}';
 const physicalRuntime = {% if runtime == "physical" %}true{% else %}false{% endif %};
 
 async function loadDeviceDetails() {
@@ -361,6 +364,7 @@ document.querySelectorAll('.dynamic-start-form').forEach((form) => {
         const payload = new FormData();
         payload.append('csrfmiddlewaretoken', csrfToken);
         payload.append('hash', form.dataset.hash);
+        payload.append('identifier', selectedIdentifier);
         payload.append('device_mode', mode);
         try {
             const response = await fetch(
@@ -476,7 +480,11 @@ function showDeviceApps(packages, rootAvailable) {
         pathCell.textContent = details[1];
         actionCell.className = 'text-center';
         if (rootAvailable) {
-            const dynamicValues = {re_install: '0', install: '0'};
+            const dynamicValues = {
+                identifier: selectedIdentifier,
+                re_install: '0',
+                install: '0',
+            };
             if (physicalRuntime) {
                 dynamicValues.device_mode = 'rooted';
             }
@@ -496,7 +504,7 @@ function showDeviceApps(packages, rootAvailable) {
         const staticForm = actionForm(
             staticPathTemplate.replace(checksumPlaceholder, checksum),
             'Pull & Static Analysis',
-            {},
+            {identifier: selectedIdentifier},
         );
         staticForm.querySelector('button').className = 'btn btn-warning btn-sm';
         actionCell.appendChild(staticForm);
@@ -518,9 +526,12 @@ async function loadDeviceApps(refresh = false) {
         ? 'Refreshing installed applications…'
         : 'Loading installed applications…';
     try {
-        const suffix = refresh ? '?refresh=1' : '';
+        const params = new URLSearchParams({
+            identifier: selectedIdentifier,
+            refresh: refresh ? '1' : '0',
+        });
         const response = await fetch(
-            "{% url 'android_device_apps' %}" + suffix,
+            "{% url 'android_device_apps' %}?" + params.toString(),
             {credentials: 'same-origin'},
         );
         const result = await response.json();

@@ -40,7 +40,8 @@ class Command(BaseCommand):
             except (OSError, ValueError, TypeError):
                 logger.warning('Ignoring invalid Android proxy state')
                 continue
-            if not isinstance(state, dict):
+            if (not isinstance(state, dict)
+                    or state.get('analysis_released') is True):
                 continue
             identifier = state.get('identifier')
             checksum = state.get('checksum')

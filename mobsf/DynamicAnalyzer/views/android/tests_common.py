@@ -317,9 +317,15 @@ def _download_data(request, api=False, identifier=None):
         data = {'status': 'failed', 'message': str(exp)}
     finally:
         if owns_analysis:
-            state_file.unlink(missing_ok=True)
             gadget_marker.unlink(missing_ok=True)
             release_android_analysis(identifier, md5_hash)
+            state.update({
+                'analysis_ready': False,
+                'analysis_released': True,
+                'cleanup_complete': True,
+                'finalizing': False,
+            })
+            write_android_analysis_state(md5_hash, state)
     return send_response(data, api)
 
 # AJAX
@@ -374,14 +380,16 @@ def _collect_logs(request, api=False, identifier=None):
                 or proxy_state.get('analysis_id') != analysis_id):
             return invalid_params(api)
         claim_checksum = get_android_analysis_claim(identifier)
-        if (not state_file.exists()
-                and claim_checksum
-                and claim_checksum != md5_hash):
+        if (claim_checksum != md5_hash
+                and proxy_state.get('analysis_released') is True
+                and proxy_state.get('cleanup_complete') is True):
             return send_response({
                 'status': 'ok',
                 'analysis_inactive': True,
                 'message': 'Analysis was already cleaned up',
             }, api)
+        if claim_checksum != md5_hash:
+            return invalid_params(api)
         if (claim_checksum == md5_hash
                 and proxy_state.get('cleanup_complete') is True):
             return send_response({

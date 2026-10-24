@@ -1,6 +1,8 @@
 """File upload to iOS form."""
 from django import forms
 
+from mobsf.MobSF.utils import valid_android_device_identifier
+
 
 class AndroidDeviceSelectionForm(forms.Form):
     """Restrict device selection to connected ADB identifiers."""
@@ -19,6 +21,7 @@ class AndroidDeviceSelectionForm(forms.Form):
 class AndroidDynamicAnalysisForm(forms.Form):
     """Validate Android dynamic-analysis preparation options."""
 
+    identifier = forms.CharField(required=False, max_length=255)
     device_mode = forms.ChoiceField(
         required=False,
         choices=(
@@ -43,6 +46,14 @@ class AndroidDynamicAnalysisForm(forms.Form):
         required=False,
         choices=(('0', '0'), ('1', '1')),
     )
+
+    def clean_identifier(self):
+        """Validate an optional page-bound Android identifier."""
+        identifier = self.cleaned_data['identifier']
+        if (identifier
+                and not valid_android_device_identifier(identifier)):
+            raise forms.ValidationError('Invalid Android device identifier')
+        return identifier
 
 
 class UploadFileForm(forms.Form):

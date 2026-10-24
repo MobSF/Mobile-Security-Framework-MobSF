@@ -17,6 +17,7 @@ from tempfile import gettempdir
 from xml.etree import ElementTree as XmlElementTree
 
 from defusedxml import ElementTree
+from defusedxml.common import DefusedXmlException
 
 from django.conf import settings
 
@@ -436,6 +437,55 @@ class GadgetPatcher:
         """Return an XML tag without an optional namespace."""
         return element.tag.rsplit('}', 1)[-1]
 
+    def _resolve_cleartext_policy(self, policy):
+        """Resolve a boolean resource without widening cleartext access."""
+        normalized = policy.strip().lower()
+        if normalized in ('true', 'false'):
+            return normalized
+        reference = re.fullmatch(
+            r'@(?:[A-Za-z][\w.]*:)?bool/([a-zA-Z0-9_]+)',
+            policy,
+        )
+        if not reference:
+            logger.warning(
+                'Unsupported usesCleartextTraffic value; denying cleartext')
+            return 'false'
+        resource_name = reference.group(1)
+        policies = set()
+        incomplete = False
+        for resource in (self.work_dir / 'res').glob('values*/*.xml'):
+            if not resource.is_file() or is_pipe_or_link(resource):
+                continue
+            try:
+                root = ElementTree.parse(resource).getroot()
+            except (OSError, ElementTree.ParseError, DefusedXmlException):
+                incomplete = True
+                continue
+            for element in root:
+                local_tag = self._local_xml_tag(element)
+                is_boolean = (
+                    local_tag == 'bool'
+                    or (
+                        local_tag == 'item'
+                        and element.get('type') == 'bool'
+                    )
+                )
+                if (not is_boolean
+                        or element.get('name') != resource_name):
+                    continue
+                value = (element.text or '').strip().lower()
+                if value in ('true', 'false'):
+                    policies.add(value)
+                else:
+                    incomplete = True
+        if policies == {'true'} and not incomplete:
+            return 'true'
+        if policies != {'false'} or incomplete:
+            logger.warning(
+                'Ambiguous usesCleartextTraffic resource; '
+                'denying cleartext')
+        return 'false'
+
     def _configure_network_security(self, manifest, application, digest):
         """Embed the MobSF CA and remove XML network-security pins."""
         ca_file = Path(get_ca_file()).resolve()
@@ -461,12 +511,15 @@ class GadgetPatcher:
             f'{ANDROID_ATTR}networkSecurityConfig')
         cleartext_policy = application.get(
             f'{ANDROID_ATTR}usesCleartextTraffic')
-        if cleartext_policy not in ('true', 'false'):
+        if cleartext_policy is None:
             parsed_apk = androguard_apk.APK(
                 self.apk_file.as_posix())
             target_sdk = parsed_apk.get_effective_target_sdk_version()
             cleartext_policy = (
                 'false' if target_sdk >= 28 else 'true')
+        else:
+            cleartext_policy = self._resolve_cleartext_policy(
+                cleartext_policy)
         if network_config:
             reference = re.fullmatch(
                 r'@(?:[A-Za-z][\w.]*:)?xml/([a-zA-Z0-9_]+)',

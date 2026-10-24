@@ -262,6 +262,7 @@ def android_device_apps(request):
         save_device_packages(identifier, device_packages)
         return JsonResponse({
             'status': 'ok',
+            'identifier': identifier,
             'packages': device_packages,
             'root_available': root_available,
         })
@@ -327,6 +328,7 @@ def android_package_status(request):
             gadget_state, _ = GadgetPatcher.inspect(apk_path)
         return JsonResponse({
             'status': 'ok',
+            'identifier': identifier,
             'installed': installed,
             'selected_mode': selected_mode,
             'gadget_fallback_possible': gadget_fallback_possible,
@@ -462,6 +464,9 @@ def _dynamic_analyzer(request, checksum, api=False):
                 logger.warning(
                     'Unable to read previous Android proxy state')
             if not isinstance(existing_state, dict):
+                existing_state = {}
+            if existing_state.get('analysis_released') is True:
+                proxy_state_file.unlink(missing_ok=True)
                 existing_state = {}
         active_identifier = existing_state.get('identifier')
         if (valid_android_device_identifier(active_identifier)
