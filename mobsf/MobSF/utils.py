@@ -38,6 +38,7 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
+from mobsf.MobSF.env import flag_from_value
 from mobsf.MobSF. init import api_key
 
 from . import settings
@@ -104,7 +105,7 @@ def upstream_proxy(flaw_type):
             proxies = {flaw_type: proxy_host}
     else:
         proxies = {flaw_type: None}
-    verify = settings.UPSTREAM_PROXY_SSL_VERIFY in ('1', '"1"')
+    verify = settings.UPSTREAM_PROXY_SSL_VERIFY
     return proxies, verify
 
 
@@ -1060,10 +1061,9 @@ def get_android_src_dir(app_dir, typ):
 
 
 def settings_enabled(attr):
-    """Get settings state if present."""
-    disabled = ('', ' ', '""', '" "', '0', '"0"', False)
+    """Return True when a boolean setting is exactly enabled."""
     try:
-        return getattr(settings, attr) not in disabled
+        return flag_from_value(getattr(settings, attr))
     except Exception:
         return False
 

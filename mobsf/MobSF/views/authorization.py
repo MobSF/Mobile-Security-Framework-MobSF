@@ -61,7 +61,7 @@ def permission_required(perm):
             sig = signature(view)
             arguments = sig.bind(request, *args, **kwargs)
             api = arguments.arguments.get('api')
-            if settings.DISABLE_AUTHENTICATION == '1' or api:
+            if settings.DISABLE_AUTHENTICATION or api:
                 # Disable authorization for all functions
                 return view(request, *args, **kwargs)
             # Enforce authorization for all web function calls
@@ -77,7 +77,7 @@ def has_permission(request, permission, api):
     try:
         if request.user.is_staff:
             return True
-        if settings.DISABLE_AUTHENTICATION == '1' or api:
+        if settings.DISABLE_AUTHENTICATION or api:
             return True
         if request.user.has_perm(permission.value):
             return True
@@ -110,7 +110,7 @@ def create_authorization_roles():
 @staff_member_required
 def users(request):
     """Show all users."""
-    if settings.DISABLE_AUTHENTICATION == '1':
+    if settings.DISABLE_AUTHENTICATION:
         return redirect('/')
     users = get_user_model().objects.all()
     context = {
@@ -124,7 +124,7 @@ def users(request):
 @login_required
 @staff_member_required
 def create_user(request):
-    if settings.DISABLE_AUTHENTICATION == '1':
+    if settings.DISABLE_AUTHENTICATION:
         return redirect('/')
     if request.method == 'POST':
         form = RegisterForm(request.POST)
@@ -171,7 +171,7 @@ def create_user(request):
 def delete_user(request):
     data = {'deleted': 'Failed to delete user'}
     try:
-        if settings.DISABLE_AUTHENTICATION == '1':
+        if settings.DISABLE_AUTHENTICATION:
             return redirect('/')
         username = request.POST.get('username')
         if not username:
