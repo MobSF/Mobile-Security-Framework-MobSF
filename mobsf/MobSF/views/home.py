@@ -196,7 +196,7 @@ def api_docs(request):
     """Api Docs Route."""
     key = '*******'
     try:
-        if (settings.DISABLE_AUTHENTICATION == '1'
+        if (settings.DISABLE_AUTHENTICATION
                 or request.user.is_staff
                 or request.user.groups.filter(name=MAINTAINER_GROUP).exists()):
             key = api_key(settings.MOBSF_HOME)

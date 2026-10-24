@@ -101,7 +101,7 @@ def prepare_django_request(request):
         'script_name': request.get_full_path_info(),
         'get_data': request.GET.copy(),
         'post_data': request.POST.copy(),
-        'lowercase_urlencoding': bool(settings.IDP_IS_ADFS == '1'),
+        'lowercase_urlencoding': settings.IDP_IS_ADFS,
         'query_string': request.META['QUERY_STRING'],
         'sp_url': sp_url,
     }
@@ -141,7 +141,7 @@ def get_user_role(roles):
 def saml_login(request):
     """Handle SSO Login."""
     try:
-        if settings.DISABLE_AUTHENTICATION == '1':
+        if settings.DISABLE_AUTHENTICATION:
             return redirect('/')
         req = prepare_django_request(request)
         auth = init_saml_auth(req)
@@ -162,7 +162,7 @@ def saml_login(request):
 def saml_acs(request):
     """Handle SSO Assertion Consumer Service."""
     try:
-        if settings.DISABLE_AUTHENTICATION == '1':
+        if settings.DISABLE_AUTHENTICATION:
             return redirect('/')
         req = prepare_django_request(request)
         auth = init_saml_auth(req)

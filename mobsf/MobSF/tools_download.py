@@ -15,6 +15,7 @@ from urllib.request import (
     getproxies,
 )
 
+from mobsf.MobSF.env import env_flag
 from mobsf.MobSF.exceptions import PathTraversalError
 
 logging.basicConfig(
@@ -26,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 def standalone_upstream_proxy():
     """Set upstream Proxy for urllib - standalone."""
-    upstream_proxy_enabled = bool(os.getenv('MOBSF_UPSTREAM_PROXY_ENABLED', ''))
+    upstream_proxy_enabled = env_flag('MOBSF_UPSTREAM_PROXY_ENABLED', '0')
 
     if upstream_proxy_enabled:
         upstream_proxy_username = os.getenv('MOBSF_UPSTREAM_PROXY_USERNAME', '')
@@ -58,8 +59,7 @@ def standalone_upstream_proxy():
     else:
         proxies = {}
 
-    upstream_proxy_ssl_verify = os.getenv('MOBSF_UPSTREAM_PROXY_SSL_VERIFY', '1')
-    verify = upstream_proxy_ssl_verify in ('1', '"1"')
+    verify = env_flag('MOBSF_UPSTREAM_PROXY_SSL_VERIFY', '1')
     return proxies, verify
 
 
@@ -75,7 +75,7 @@ def download_file(url, file_path):
         logger.info('Using system proxies (SSL verify: %s)', verify)
     else:
         # Check if MobSF upstream proxy is explicitly configured
-        upstream_proxy_enabled = bool(os.getenv('MOBSF_UPSTREAM_PROXY_ENABLED', ''))
+        upstream_proxy_enabled = env_flag('MOBSF_UPSTREAM_PROXY_ENABLED', '0')
 
         if upstream_proxy_enabled:
             proxies, verify = standalone_upstream_proxy()
