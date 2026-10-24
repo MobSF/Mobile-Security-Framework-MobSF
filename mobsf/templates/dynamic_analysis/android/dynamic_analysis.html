@@ -389,6 +389,7 @@ const iconUrl = "{% url 'android_device_app_icon' %}";
 const reportPathTemplate = "{% url 'dynamic_report' checksum='00000000000000000000000000000000' %}";
 const deviceDetailsUrl = "{% url 'android_device_details' %}";
 const csrfToken = '{{ csrf_token }}';
+const selectedIdentifier = '{{ identifier|escapejs }}';
 
 async function loadDeviceDetails() {
     const options = Array.from(
@@ -594,8 +595,13 @@ let iconGeneration = 0;
 let iconActive = 0;
 const iconJobs = [];
 
-function queueDeviceIcon(img, title, packageName, version) {
-    const params = new URLSearchParams({package: packageName, meta: '1'});
+function queueDeviceIcon(
+        img, title, packageName, version, deviceIdentifier) {
+    const params = new URLSearchParams({
+        identifier: deviceIdentifier,
+        package: packageName,
+        meta: '1',
+    });
     if (version) {
         params.set('v', version.slice(0, 40));
     }
@@ -716,7 +722,7 @@ function pumpDeviceIcons() {
     }
 }
 
-function showDeviceApps(packages) {
+function showDeviceApps(packages, deviceIdentifier) {
     iconGeneration += 1;
     iconJobs.length = 0;
     const gallery = document.getElementById('device_apps');
@@ -757,6 +763,7 @@ function showDeviceApps(packages) {
                 title,
                 fields.packageName,
                 fields.version,
+                deviceIdentifier,
             );
             iconWrap.appendChild(icon);
         } else {
@@ -790,7 +797,10 @@ function showDeviceApps(packages) {
             const pull = actionForm(
                 pullUrl,
                 'Pull & Scan',
-                {package: fields.packageName},
+                {
+                    identifier: deviceIdentifier,
+                    package: fields.packageName,
+                },
                 'btn btn-warning btn-sm',
                 'fa fa-download',
             );
@@ -820,16 +830,19 @@ async function loadDeviceApps(refresh = false) {
         ? 'Refreshing installed applications…'
         : 'Loading installed applications…');
     try {
-        const suffix = refresh ? '?refresh=1' : '';
+        const params = new URLSearchParams({
+            identifier: selectedIdentifier,
+            refresh: refresh ? '1' : '0',
+        });
         const response = await fetch(
-            "{% url 'android_device_apps' %}" + suffix,
+            "{% url 'android_device_apps' %}?" + params.toString(),
             {credentials: 'same-origin'},
         );
         const result = await response.json();
         if (!response.ok || result.status !== 'ok') {
             throw new Error(result.message || 'Unable to load applications');
         }
-        showDeviceApps(result.packages);
+        showDeviceApps(result.packages, result.identifier);
     } catch (error) {
         showDeviceMessage(
             typeof error.message === 'string' && error.message

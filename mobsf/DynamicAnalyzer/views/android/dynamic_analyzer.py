@@ -22,6 +22,7 @@ from django.views.decorators.http import require_http_methods
 
 from mobsf.DynamicAnalyzer.forms import (
     AndroidDeviceSelectionForm,
+    AndroidDeviceTargetForm,
     AndroidDynamicAnalysisForm,
     AndroidPullScanForm,
 )
@@ -234,6 +235,12 @@ def android_device_details(request):
 def android_device_apps(request):
     """Load installed device apps without blocking the main page."""
     try:
+        target_form = AndroidDeviceTargetForm(request.GET)
+        if not target_form.is_valid():
+            return JsonResponse({
+                'status': 'failed',
+                'message': 'Invalid Android device',
+            }, status=400)
         identifier = get_device(request)
         if not identifier:
             return JsonResponse({
@@ -257,6 +264,7 @@ def android_device_apps(request):
         save_device_packages(identifier, device_packages)
         return JsonResponse({
             'status': 'ok',
+            'identifier': identifier,
             'packages': device_packages,
         })
     except Exception:
@@ -833,7 +841,7 @@ def pull_and_scan(request):
         if not form.is_valid():
             return print_n_send_error_response(
                 request,
-                'Invalid package name')
+                'Invalid package name or Android device')
         package = form.cleaned_data['package']
         try:
             identifier = get_device(request)
