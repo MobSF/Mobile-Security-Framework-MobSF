@@ -7,16 +7,15 @@ import time
 import requests
 
 from django.conf import settings
+from django.http.request import split_domain_port
 
 from mobsf.MobSF.utils import upstream_proxy
 
 logger = logging.getLogger(__name__)
 
 
-def stop_httptools(url):
-    """Kill httptools."""
-    # httptools is a local subprocess. Never use the request Host header for
-    # this server-side call; ALLOWED_HOSTS may be configured broadly.
+def stop_httptools():
+    """Kill the local httptools process."""
     local_url = f'http://127.0.0.1:{settings.PROXY_PORT}'
     # Invoke HTTPtools UI Kill Request
     try:
@@ -114,8 +113,10 @@ def get_traffic(package):
 
 
 def get_http_tools_url(req):
-    """Get httptools URL from request."""
-    scheme = req.scheme
-    ip = req.get_host().split(':')[0]
-    port = settings.PROXY_PORT
-    return f'{scheme}://{ip}:{str(port)}'
+    """Get a validated browser URL for the local httptools UI."""
+    # get_host() enforces ALLOWED_HOSTS
+    domain, _ = split_domain_port(req.get_host())
+    if not domain:
+        raise ValueError('Untrusted HTTPTools redirect host')
+    scheme = req.scheme if req.scheme in ('http', 'https') else 'http'
+    return f'{scheme}://{domain}:{settings.PROXY_PORT}'
