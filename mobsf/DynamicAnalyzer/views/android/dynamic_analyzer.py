@@ -9,8 +9,10 @@ from urllib.parse import quote, urlsplit
 from shelljob import proc
 
 
-from django.http import (JsonResponse,
-                         StreamingHttpResponse)
+from django.http import (
+    JsonResponse,
+    StreamingHttpResponse,
+)
 from django.conf import settings
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -20,6 +22,7 @@ from django.views.decorators.http import require_http_methods
 from mobsf.DynamicAnalyzer.forms import (
     AndroidDeviceSelectionForm,
     AndroidDynamicAnalysisForm,
+    AndroidPullScanForm,
 )
 from mobsf.DynamicAnalyzer.tools.apk_patcher import GadgetPatcher
 from mobsf.DynamicAnalyzer.views.android.environment import (
@@ -245,20 +248,12 @@ def android_device_apps(request):
                 'status': 'failed',
                 'message': 'Selected Android device is unavailable',
             }, status=503)
-        logger.info('Inspecting selected Android device capabilities')
-        runtime = env.get_environment()
-        if runtime == 'physical':
-            profile = env.get_device_profile(probe_root=True)
-            root_available = profile.has_root
-        else:
-            root_available = env.supports_root_adbd()
         logger.info('Loading applications installed on the selected device')
         device_packages = env.get_device_packages(refresh=refresh == '1')
         save_device_packages(identifier, device_packages)
         return JsonResponse({
             'status': 'ok',
             'packages': device_packages,
-            'root_available': root_available,
         })
     except Exception:
         logger.exception('Loading Android device apps')
@@ -788,6 +783,65 @@ def logcat(request, api=False):
         logger.exception('Logcat Streaming')
         err = 'Error in Logcat streaming'
         return print_n_send_error_response(request, err, api)
+
+
+@login_required
+@permission_required(Permissions.SCAN)
+@require_http_methods(['POST'])
+def pull_and_scan(request):
+    """Hash, pull, and scan one installed app."""
+    try:
+        form = AndroidPullScanForm(request.POST)
+        if not form.is_valid():
+            return print_n_send_error_response(
+                request,
+                'Invalid package name')
+        package = form.cleaned_data['package']
+        try:
+            identifier = get_device(request)
+        except Exception:
+            return print_n_send_error_response(
+                request,
+                'Cannot connect to Android Runtime')
+        if not identifier:
+            return print_n_send_error_response(
+                request,
+                'No Android device selected')
+        env = Environment(identifier)
+        if not env.connect():
+            return print_n_send_error_response(
+                request,
+                'Selected Android device is unavailable')
+        apk_paths = env.get_apk_paths(package)
+        if not apk_paths:
+            return print_n_send_error_response(
+                request,
+                'Cannot find the installed APK')
+        checksum = env.md5_device_file(Environment.base_apk(apk_paths))
+        if not isinstance(checksum, str) or not is_md5(checksum):
+            return print_n_send_error_response(
+                request,
+                'Cannot hash the installed APK')
+        scan_type = env.get_apk(checksum, package)
+        if not scan_type:
+            return print_n_send_error_response(
+                request,
+                'Failed to download APK file')
+        file_name = f'{package}.apk'
+        if scan_type == 'apks':
+            file_name = f'{file_name}s'
+        add_to_recent_scan({
+            'analyzer': 'static_analyzer',
+            'status': 'success',
+            'hash': checksum,
+            'scan_type': scan_type,
+            'file_name': file_name,
+        })
+        return redirect('static_analyzer', checksum)
+    except Exception:
+        logger.exception('Pull and scan')
+        return print_n_send_error_response(
+            request, 'Pull and scan failed')
 
 
 @login_required
