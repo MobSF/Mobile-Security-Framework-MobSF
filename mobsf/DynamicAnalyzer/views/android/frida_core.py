@@ -70,8 +70,8 @@ class Frida:
         if entry:
             cls._close_entry(entry)
 
-    def reuse_session(self):
-        """Reload instrumentation through an existing Frida session."""
+    def reuse_session(self, replace=True, temporary_lifetime=3):
+        """Inject through an existing Frida session."""
         key = self._session_key()
         entry = None
         for _ in range(15):
@@ -82,6 +82,7 @@ class Frida:
             time.sleep(0.2)
         if not entry:
             return False
+        temporary_script = None
         with _ACTIVE_SESSIONS_LOCK:
             entry = _ACTIVE_SESSIONS.get(key)
             if not entry:
@@ -92,18 +93,28 @@ class Frida:
                 script.load()
                 api = script.exports_sync
                 self.api_handler(api)
-                old_script = entry['script']
-                entry['script'] = script
                 self.pid = entry['pid']
-                try:
-                    old_script.unload()
-                except Exception:
-                    pass
-                logger.info('Reloaded Frida script in the active session')
-                return True
+                if replace:
+                    old_script = entry['script']
+                    entry['script'] = script
+                    try:
+                        old_script.unload()
+                    except Exception:
+                        pass
+                    logger.info('Reloaded Frida script in the active session')
+                    return True
+                temporary_script = script
             except Exception:
                 logger.exception('Failed to reuse the active Frida session')
                 stale = _ACTIVE_SESSIONS.pop(key, None)
+        if temporary_script:
+            time.sleep(temporary_lifetime)
+            try:
+                temporary_script.unload()
+            except Exception:
+                pass
+            logger.info('Completed temporary Frida injection')
+            return True
         if stale:
             self._close_entry(stale)
         return False

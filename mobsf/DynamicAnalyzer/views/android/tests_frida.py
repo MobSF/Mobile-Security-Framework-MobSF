@@ -57,7 +57,11 @@ def get_runtime_dependencies(request, api=False):
         package = get_package_name(checksum, identifier)
         if not package:
             return invalid_params(api)
-        get_dependencies(package, checksum, identifier)
+        if not get_dependencies(package, checksum, identifier):
+            return send_response({
+                'status': 'failed',
+                'message': 'Unable to connect to Frida',
+            }, api)
         return send_response(
             {'status': 'ok'},
             api)
@@ -286,8 +290,12 @@ def get_dependencies(package, checksum, identifier=None):
     location = Path(frd.deps)
     if location.exists():
         location.write_text('')
-    frd.spawn()
+    if frd.reuse_session(replace=False):
+        return True
+    if not frd.spawn():
+        return False
     Thread(target=frd.session, args=(None, None), daemon=True).start()
+    return True
 
 
 def dependency_analysis(package, app_dir):
