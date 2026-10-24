@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import secrets
 import time
 from pathlib import Path
 from urllib.parse import quote, urlsplit
@@ -376,6 +377,7 @@ def _dynamic_analyzer(request, checksum, api=False):
         gadget_marker = None
         proxy_state_file = None
         analysis_state = {}
+        analysis_id = None
         claim_new = False
         analysis_ready = False
         reverse_enabled = False
@@ -514,6 +516,15 @@ def _dynamic_analyzer(request, checksum, api=False):
                 'starting a different app or device.',
                 api,
             )
+        analysis_id = secrets.token_hex(16)
+        if existing_state:
+            existing_state.update({
+                'analysis_id': analysis_id,
+                'analysis_ready': False,
+                'finalizing': False,
+                'cleanup_complete': False,
+            })
+            write_android_analysis_state(checksum, existing_state)
         if physical:
             if device_mode == 'auto':
                 selected_mode = (
@@ -736,6 +747,7 @@ def _dynamic_analyzer(request, checksum, api=False):
         analysis_state = {
             'identifier': identifier,
             'checksum': checksum,
+            'analysis_id': analysis_id,
             'package': package,
             'proxy': previous_proxy,
             'remove_reverse': reverse_created,
@@ -795,6 +807,7 @@ def _dynamic_analyzer(request, checksum, api=False):
                    'root_ca_embedded': root_ca_embedded,
                    'device_identifier': identifier,
                    'device_model': device_model,
+                   'analysis_id': analysis_id,
                    'tls_tests_available': (
                        not physical and selected_mode != 'gadget'),
                    'version': settings.MOBSF_VER,
@@ -857,7 +870,7 @@ def _httptools_start(request):
                 'Finish the active Android analysis before opening HTTPTools',
             )
         httptools_url = get_http_tools_url(request)
-        stop_httptools(httptools_url)
+        stop_httptools()
         start_httptools_ui(settings.PROXY_PORT)
         time.sleep(3)
         logger.info('httptools UI started')

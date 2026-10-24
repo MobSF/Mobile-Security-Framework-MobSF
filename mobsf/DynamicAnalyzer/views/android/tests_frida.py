@@ -23,17 +23,15 @@ from mobsf.MobSF.security import (
 from mobsf.DynamicAnalyzer.views.android.operations import (
     android_analysis_is_active,
     android_analysis_lifecycle,
-    android_analysis_state_file,
     get_package_name,
+    get_requested_android_analysis,
     set_android_frida_target,
 )
 from mobsf.MobSF.utils import (
-    get_device,
     is_file_exists,
     is_md5,
     print_n_send_error_response,
     strict_package_check,
-    valid_android_device_identifier,
 )
 from mobsf.MobSF.views.authentication import (
     login_required,
@@ -48,18 +46,7 @@ logger = logging.getLogger(__name__)
 
 def _analysis_identifier(request, checksum):
     """Return the device bound to this dynamic-analysis session."""
-    state_file = android_analysis_state_file(checksum)
-    if (state_file is not None
-            and state_file.is_file()
-            and not state_file.is_symlink()):
-        try:
-            state = json.loads(state_file.read_text(encoding='utf-8'))
-            identifier = state.get('identifier')
-            if valid_android_device_identifier(identifier):
-                return identifier
-        except (OSError, ValueError, TypeError, AttributeError):
-            logger.warning('Unable to read Android analysis device state')
-    return get_device(request)
+    return get_requested_android_analysis(request, checksum)
 
 
 # AJAX
@@ -89,8 +76,10 @@ def _get_runtime_dependencies(request, api=False):
         checksum = request.POST['hash']
         if not is_md5(checksum):
             return invalid_params(api)
-        identifier = _analysis_identifier(request, checksum)
-        if not android_analysis_is_active(identifier, checksum):
+        identifier, analysis_id = _analysis_identifier(
+            request, checksum)
+        if not android_analysis_is_active(
+                identifier, checksum, analysis_id):
             return send_response({
                 'status': 'failed',
                 'message': 'Android analysis is no longer active',
@@ -163,8 +152,10 @@ def _instrument(request, api=False):
                     and (not strict_package_check(new_pkg)
                          or is_path_traversal(new_pkg)))):
             return invalid_params(api)
-        identifier = _analysis_identifier(request, md5_hash)
-        if not android_analysis_is_active(identifier, md5_hash):
+        identifier, analysis_id = _analysis_identifier(
+            request, md5_hash)
+        if not android_analysis_is_active(
+                identifier, md5_hash, analysis_id):
             return send_response({
                 'status': 'failed',
                 'message': 'Android analysis is no longer active',
@@ -190,8 +181,17 @@ def _instrument(request, api=False):
             }, api)
         if action == 'spawn':
             logger.info('Starting Instrumentation')
+            if not frida_obj.claim_controller():
+                return send_response({
+                    'status': 'failed',
+                    'message': (
+                        frida_obj.last_error
+                        or 'Another worker owns the Frida session'
+                    ),
+                }, api)
             if not set_android_frida_target(
                     identifier, md5_hash, package):
+                frida_obj.release_controller()
                 return send_response({
                     'status': 'failed',
                     'message': 'Unable to persist Frida session ownership',
@@ -214,8 +214,17 @@ def _instrument(request, api=False):
             if pid and pid.isdigit():
                 # Attach to a different pid/bundle id
                 logger.info('Attaching to %s [PID: %s]', new_pkg, pid)
+                if not frida_obj.claim_controller():
+                    return send_response({
+                        'status': 'failed',
+                        'message': (
+                            frida_obj.last_error
+                            or 'Another worker owns the Frida session'
+                        ),
+                    }, api)
                 if not set_android_frida_target(
                         identifier, md5_hash, new_pkg):
+                    frida_obj.release_controller()
                     return send_response({
                         'status': 'failed',
                         'message': (
@@ -388,7 +397,13 @@ def get_dependencies(package, checksum, identifier=None):
         location.write_text('')
     if frd.reuse_session(replace=False):
         return True, ''
+    if not frd.claim_controller():
+        return False, (
+            frd.last_error
+            or 'Another worker owns the Frida session'
+        )
     if not set_android_frida_target(identifier, checksum, package):
+        frd.release_controller()
         return False, 'Unable to persist Frida session ownership'
     if frd.instrument(completion_timeout=30):
         return True, ''

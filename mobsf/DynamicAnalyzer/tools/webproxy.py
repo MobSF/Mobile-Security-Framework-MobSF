@@ -14,10 +14,8 @@ from mobsf.MobSF.utils import get_network, upstream_proxy
 logger = logging.getLogger(__name__)
 
 
-def stop_httptools(url):
-    """Kill httptools."""
-    # httptools is a local subprocess. Never use the request Host header for
-    # this server-side call; ALLOWED_HOSTS may be configured broadly.
+def stop_httptools():
+    """Stop the local HTTPTools process through fixed loopback URLs."""
     local_url = f'http://127.0.0.1:{settings.PROXY_PORT}'
     # Invoke HTTPtools UI Kill Request
     try:

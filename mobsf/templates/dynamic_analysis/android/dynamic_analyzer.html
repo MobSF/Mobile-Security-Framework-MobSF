@@ -899,7 +899,7 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
 
 
     function get_comp(comp){
-      action(document.location.origin + '/get_component/', { component: comp, hash: '{{ hash }}'}, function(json) {
+      action(document.location.origin + '/get_component/', { component: comp, hash: '{{ hash }}', identifier: '{{ device_identifier }}', analysis_id: '{{ analysis_id }}'}, function(json) {
           if (json.status==="ok")
             output(json.message, true, true);
           else
@@ -908,7 +908,7 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
     }
 
     function execute_adb(exec_cmd){
-      action(document.location.origin + '/execute_adb/', { cmd: exec_cmd }, function(json) {
+      action(document.location.origin + '/execute_adb/', { cmd: exec_cmd, hash: '{{ hash }}', identifier: '{{ device_identifier }}', analysis_id: '{{ analysis_id }}' }, function(json) {
           if (json.status==="ok")
             output(json.message, true, true);
       });
@@ -1141,7 +1141,7 @@ $("#screen").click(function() {
           $('.device-nav-button').prop('disabled', false);
           screenfunc = setInterval(function(){
               // Capture Screen
-              action('{% url 'screen_cast' %}', {}, function(json) {
+              action('{% url 'screen_cast' %}', {hash: '{{ hash }}', identifier: '{{ device_identifier }}', analysis_id: '{{ analysis_id }}'}, function(json) {
                 if (json.status == 'ok'){
                   $('#my').attr('src', json.message);
                 } else
@@ -1171,7 +1171,10 @@ function android_input(event, x, y, endX = 0, endY = 0){
       end_x: endX,
       end_y: endY,
       max_x: screen_width,
-      max_y: screen_height
+      max_y: screen_height,
+      hash: '{{ hash }}',
+      identifier: '{{ device_identifier }}',
+      analysis_id: '{{ analysis_id }}'
     }, function(json) {
         if (json.status==='ok')
           console.log('Event: ' + event);
@@ -1334,7 +1337,7 @@ $('#container').on('keypress', function(event) {
 //Screenshot
 $("#ss").click(function() {
   print_status("Taking a screenshot.");
-  action(document.location.origin + '/screenshot/', {hash: '{{ hash }}'}, function(json) {
+  action(document.location.origin + '/screenshot/', {hash: '{{ hash }}', identifier: '{{ device_identifier }}', analysis_id: '{{ analysis_id }}'}, function(json) {
     if (json.status==="ok"){
         print_status("Screenshot taken!");
     } else {
@@ -1357,7 +1360,7 @@ $("#rootca").click(function() {
     $("#rootca").html("<i class='fa fa-certificate'></i> Remove Root CA");
     act = "install";
   }
-  action(document.location.origin + '/mobsf_ca/', {action: act}, function(json) {
+  action(document.location.origin + '/mobsf_ca/', {action: act, hash: '{{ hash }}', identifier: '{{ device_identifier }}', analysis_id: '{{ analysis_id }}'}, function(json) {
       if (json.message === "installed")
         print_status("MobSF Root CA installed successfully.");
       else if (json.message === "removed")
@@ -1381,7 +1384,7 @@ $("#proxy").click(function() {
     $("#proxy").html("<i class='fas fa-eye-slash'></i> Unset HTTP(S) Proxy");
     act = "set";
   }
-  action(document.location.origin + '/global_proxy/', {action: act}, function(json) {
+  action(document.location.origin + '/global_proxy/', {action: act, hash: '{{ hash }}', identifier: '{{ device_identifier }}', analysis_id: '{{ analysis_id }}'}, function(json) {
       if (json.message === "set")
         print_status("MobSF Global HTTP(S) interception proxy is applied.");
       else if (json.message === "unset")
@@ -1393,7 +1396,7 @@ $("#proxy").click(function() {
 });
 
 function start_activity(activity){
-  action('{% url "start_activity" %}', {hash: '{{ hash }}', 'activity': activity}, function(json) {
+  action('{% url "start_activity" %}', {hash: '{{ hash }}', identifier: '{{ device_identifier }}', analysis_id: '{{ analysis_id }}', 'activity': activity}, function(json) {
     if (json.status === "ok")
         print_status("Activity Started");
     else
@@ -1402,7 +1405,7 @@ function start_activity(activity){
 }
 
 function start_deeplink(url){
-  action('{% url "start_deeplink" %}', {hash: '{{ hash }}', 'url': url}, function(json) {
+  action('{% url "start_deeplink" %}', {hash: '{{ hash }}', identifier: '{{ device_identifier }}', analysis_id: '{{ analysis_id }}', 'url': url}, function(json) {
     if (json.status === "ok")
       print_status("Deeplink Triggered");
     else
@@ -1411,7 +1414,7 @@ function start_deeplink(url){
 }
 
 function activity_tester(test){
-  action(document.location.origin + '/activity_tester/', {hash: '{{ hash }}', 'test': test}, function(json) {
+  action(document.location.origin + '/activity_tester/', {hash: '{{ hash }}', identifier: '{{ device_identifier }}', analysis_id: '{{ analysis_id }}', 'test': test}, function(json) {
     if (json.status === "ok")
       if (test === 'exported')
         print_status("Exported Activity testing completed.");
@@ -1445,7 +1448,7 @@ $('#run_tls_tests').click(function()  {
   print_tls_progress("Running TLS Pinning/Certificate Transparency Bypass test.")
   print_tls_progress(msg)
   dynamic_loader();
-  action(document.location.origin + '/tls_tests/', {hash: '{{ hash }}'}, function(json) {
+  action(document.location.origin + '/tls_tests/', {hash: '{{ hash }}', identifier: '{{ device_identifier }}', analysis_id: '{{ analysis_id }}'}, function(json) {
     if (json.status === "ok"){
       stop_loader();
       // print_tls_progress(JSON.stringify(json.tls_tests))
@@ -1482,7 +1485,7 @@ $('#run_tls_tests').click(function()  {
 // Run APK for Xposed
 $("#run_app").click(function() {
     print_status("Launching App");
-    action(document.location.origin + '/run_apk/', {hash: '{{ hash }}'}, function(json) {
+    action(document.location.origin + '/run_apk/', {hash: '{{ hash }}', identifier: '{{ device_identifier }}', analysis_id: '{{ analysis_id }}'}, function(json) {
       if (json.status==="ok"){
           print_status("Application launched.");
       } else {
@@ -1558,6 +1561,8 @@ function frida_instrument(frida_action, pid=null, new_pkg=null){
       pid, // attach pid
       new_package: new_pkg, // attach package
       hash: '{{ hash }}',
+      identifier: '{{ device_identifier }}',
+      analysis_id: '{{ analysis_id }}',
       default_hooks: default_hooks.join(","),
       auxiliary_hooks: auxiliary_hooks.join(","),
       class_name: $('#class_name').val(),
@@ -1633,7 +1638,7 @@ $("#frida_get").click(function() {
 //Frida Get Runtime Dependencies
 $("#deps").click(function() {
     print_status("Getting application runtime dependencies.");
-    action(document.location.origin + '/get_dependencies/', {hash: '{{ hash }}'}, function(json) {
+    action(document.location.origin + '/get_dependencies/', {hash: '{{ hash }}', identifier: '{{ device_identifier }}', analysis_id: '{{ analysis_id }}'}, function(json) {
       if (json.status==="ok"){
           print_status("Dependencies collected!");
       } else {
@@ -1645,7 +1650,7 @@ $("#deps").click(function() {
 
 //Dump App data
 function dump(){
-  action(document.location.origin + '/download_data/', { hash: '{{ hash }}'}, function(json) {
+  action(document.location.origin + '/download_data/', { hash: '{{ hash }}', identifier: '{{ device_identifier }}', analysis_id: '{{ analysis_id }}'}, function(json) {
     if (json.status==="ok"){
       if (json.data_collected === false)
         print_status(json.message);
@@ -1669,7 +1674,7 @@ $("#stop").one( "click", function() {
   var stext = $("#screen").text();
   if (stext.includes("Stop Screen"))
     $("#screen").click();
-  action(document.location.origin + '/collect_logs/', { hash: '{{ hash }}'}, function(json) {
+  action(document.location.origin + '/collect_logs/', { hash: '{{ hash }}', identifier: '{{ device_identifier }}', analysis_id: '{{ analysis_id }}'}, function(json) {
     if (json.status==="ok"){
       $('#stop').addClass("btn btn-success");
       $('#stop').text("Please Wait...");

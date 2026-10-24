@@ -732,14 +732,9 @@ class GadgetPatcher:
         cleartext_policy = application.get(
             f'{ANDROID_ATTR}usesCleartextTraffic')
         if cleartext_policy not in ('true', 'false'):
-            target_sdk = 1
-            uses_sdk = manifest.find('uses-sdk')
-            if uses_sdk is not None:
-                try:
-                    target_sdk = int(uses_sdk.get(
-                        f'{ANDROID_ATTR}targetSdkVersion', '1'))
-                except ValueError:
-                    target_sdk = 1
+            parsed_apk = androguard_apk.APK(
+                self.apk_file.as_posix())
+            target_sdk = parsed_apk.get_effective_target_sdk_version()
             cleartext_policy = (
                 'false' if target_sdk >= 28 else 'true')
         if network_config:
