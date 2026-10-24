@@ -10,11 +10,10 @@ from json import dump
 from shelljob import proc
 
 
-from django.http import (HttpResponseRedirect,
-                         JsonResponse,
+from django.http import (JsonResponse,
                          StreamingHttpResponse)
 from django.conf import settings
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.db.models import ObjectDoesNotExist
 from django.views.decorators.http import require_http_methods
 
@@ -29,7 +28,9 @@ from mobsf.DynamicAnalyzer.views.android.environment import (
 )
 from mobsf.DynamicAnalyzer.views.android.frida_core import Frida
 from mobsf.DynamicAnalyzer.views.android.operations import (
+    claim_android_analysis,
     get_package_name,
+    release_android_analysis,
     save_device_packages,
 )
 from mobsf.DynamicAnalyzer.tools.webproxy import (
@@ -87,7 +88,7 @@ def android_dynamic_analysis(request, api=False):
         if request.method == 'POST' and device_form.is_valid():
             request.session['android_device_identifier'] = (
                 device_form.cleaned_data['identifier'])
-            return HttpResponseRedirect(request.path)
+            return redirect('dynamic_android')
         apks = StaticAnalyzerAndroid.objects.filter(
             APP_TYPE='apk')
 
@@ -320,7 +321,7 @@ def dynamic_analyzer(request, checksum, api=False):
             if api:
                 return print_n_send_error_response(
                     request, get_android_dm_exception_msg(), api)
-            return HttpResponseRedirect('/android/dynamic_analysis/')
+            return redirect('dynamic_android')
         package = get_package_name(checksum, identifier)
         if not package:
             return print_n_send_error_response(
@@ -414,10 +415,16 @@ def dynamic_analyzer(request, checksum, api=False):
                    'MobSFying the android runtime environment')
             logger.warning(msg)
             if not env.mobsfy_init():
-                return print_n_send_error_response(
-                    request,
-                    'Failed to MobSFy the instance',
-                    api)
+                if device_mode == 'auto' and version >= 5:
+                    logger.warning(
+                        'MobSFy preparation failed; '
+                        'falling back to Frida Gadget')
+                    selected_mode = 'gadget'
+                else:
+                    return print_n_send_error_response(
+                        request,
+                        'Failed to MobSFy the instance',
+                        api)
             if version < 5:
                 # Start Clipboard monitor
                 env.start_clipmon()
@@ -492,6 +499,7 @@ def dynamic_analyzer(request, checksum, api=False):
                 )
             if existing_state.get('remove_reverse') is True:
                 previous_env.disable_adb_reverse_tcp()
+            release_android_analysis(active_identifier, checksum)
             proxy_state_file.unlink(missing_ok=True)
             gadget_marker.unlink(missing_ok=True)
             existing_state = {}
@@ -573,6 +581,13 @@ def dynamic_analyzer(request, checksum, api=False):
                 )
         else:
             gadget_marker.unlink(missing_ok=True)
+        if not claim_android_analysis(identifier, checksum):
+            return print_n_send_error_response(
+                request,
+                'This Android device already has an active analysis. '
+                'Finish that analysis before starting another app.',
+                api,
+            )
         current_proxy = env.get_global_proxy()
         saved_proxy = existing_state.get('proxy')
         if isinstance(saved_proxy, str):
@@ -642,6 +657,7 @@ def dynamic_analyzer(request, checksum, api=False):
                     env.disable_adb_reverse_tcp()
                 if restored:
                     proxy_state_file.unlink(missing_ok=True)
+                    release_android_analysis(identifier, checksum)
                 msg = 'This APK cannot be installed on the Android device.'
                 if selected_mode != 'gadget':
                     msg = f'{msg}\n{output}'
@@ -681,6 +697,7 @@ def dynamic_analyzer(request, checksum, api=False):
             restored = False
         if proxy_state_file and restored:
             proxy_state_file.unlink(missing_ok=True)
+            release_android_analysis(identifier, checksum)
         if gadget_marker:
             gadget_marker.unlink(missing_ok=True)
         logger.exception('Dynamic Analyzer')
@@ -707,7 +724,7 @@ def httptools_start(request):
         else:
             project = ''
         url = f'{httptools_url}/dashboard/{project}'
-        return HttpResponseRedirect(url)
+        return redirect(url)
     except Exception:
         logger.exception('Starting httptools Web UI')
         err = 'Error Starting httptools UI'
@@ -814,7 +831,7 @@ def trigger_static_analysis(request, checksum):
             'file_name': file_name,
         }
         add_to_recent_scan(data)
-        return HttpResponseRedirect(f'/static_analyzer/{checksum}/')
+        return redirect('static_analyzer', checksum)
     except Exception:
         msg = 'On device APK Static Analysis'
         logger.exception(msg)

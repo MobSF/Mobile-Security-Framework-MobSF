@@ -21,6 +21,7 @@ from mobsf.DynamicAnalyzer.views.android.frida_scripts import (
 from mobsf.DynamicAnalyzer.views.common.frida import (
     get_bridge_loader,
 )
+from mobsf.MobSF.security import sanitize_for_logging
 
 logger = logging.getLogger(__name__)
 _ACTIVE_SESSIONS = {}
@@ -413,7 +414,10 @@ class Frida:
                     if pid:
                         self.pid = pid
                     else:
-                        logger.info('Spawning %s', target_package)
+                        logger.info(
+                            'Spawning %s',
+                            sanitize_for_logging(target_package),
+                        )
                         env.adb_command(
                             ['am', 'force-stop', target_package], True, True)
                         self.pid = device.spawn([target_package])

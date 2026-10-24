@@ -29,6 +29,7 @@ from mobsf.MobSF.utils import (
     is_md5,
     is_number,
     strict_package_check,
+    valid_android_device_identifier,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.MobSF.views.authentication import (
@@ -50,6 +51,80 @@ def _device_packages_file(identifier):
         return None
     digest = hashlib.sha256(identifier.encode('utf-8')).hexdigest()
     return Path(settings.DWD_DIR) / f'packages-{digest}.json'
+
+
+def _analysis_claim_file(identifier):
+    """Return the ownership record for one Android device."""
+    if not valid_android_device_identifier(identifier):
+        return None
+    digest = hashlib.sha256(identifier.encode('utf-8')).hexdigest()
+    return Path(settings.DWD_DIR) / f'android-analysis-{digest}.json'
+
+
+def claim_android_analysis(identifier, checksum):
+    """Atomically claim a device for one analysis hash."""
+    if not is_md5(checksum):
+        return False
+    for state_file in Path(settings.UPLD_DIR).glob(
+            '*/.mobsf-proxy-state'):
+        if (not state_file.is_file()
+                or state_file.is_symlink()
+                or not is_md5(state_file.parent.name)):
+            continue
+        try:
+            state = json.loads(state_file.read_text(encoding='utf-8'))
+        except (OSError, ValueError, TypeError):
+            continue
+        if (isinstance(state, dict)
+                and state.get('identifier') == identifier
+                and state_file.parent.name != checksum):
+            return False
+    claim_file = _analysis_claim_file(identifier)
+    if claim_file is None:
+        return False
+    claim_file.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        descriptor = os.open(
+            claim_file,
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+            0o600,
+        )
+    except FileExistsError:
+        if not claim_file.is_file() or claim_file.is_symlink():
+            return False
+        try:
+            claim = json.loads(claim_file.read_text(encoding='utf-8'))
+        except (OSError, ValueError, TypeError):
+            return False
+        return (
+            isinstance(claim, dict)
+            and claim.get('identifier') == identifier
+            and claim.get('checksum') == checksum
+        )
+    with os.fdopen(descriptor, 'w', encoding='utf-8') as target:
+        json.dump({
+            'identifier': identifier,
+            'checksum': checksum,
+        }, target)
+    return True
+
+
+def release_android_analysis(identifier, checksum=None):
+    """Release a MobSF-owned device analysis claim."""
+    claim_file = _analysis_claim_file(identifier)
+    if (claim_file is None
+            or not claim_file.is_file()
+            or claim_file.is_symlink()):
+        return
+    try:
+        claim = json.loads(claim_file.read_text(encoding='utf-8'))
+    except (OSError, ValueError, TypeError):
+        return
+    if not isinstance(claim, dict):
+        return
+    if checksum is not None and claim.get('checksum') != checksum:
+        return
+    claim_file.unlink(missing_ok=True)
 
 
 def save_device_packages(identifier, packages):
@@ -74,20 +149,33 @@ def get_package_name(checksum, identifier=None):
             else None
         )
     except Exception:
-        pkg_file = _device_packages_file(identifier)
-        if pkg_file is None:
-            return None
-        if not pkg_file.exists():
-            return None
-        with pkg_file.open(encoding='utf-8') as src:
-            packages = json.load(src)
-        if packages.get(checksum):
-            package = packages[checksum][0]
-            return (
-                package
-                if isinstance(package, str) and strict_package_check(package)
-                else None
-            )
+        if identifier:
+            package_files = (_device_packages_file(identifier),)
+        else:
+            package_files = Path(settings.DWD_DIR).glob(
+                'packages-*.json')
+        for package_file in package_files:
+            if (package_file is None
+                    or not package_file.is_file()
+                    or package_file.is_symlink()):
+                continue
+            try:
+                with package_file.open(encoding='utf-8') as src:
+                    packages = json.load(src)
+            except (OSError, ValueError, TypeError):
+                continue
+            if not isinstance(packages, dict):
+                continue
+            details = packages.get(checksum)
+            if (isinstance(details, (list, tuple))
+                    and details):
+                package = details[0]
+                return (
+                    package
+                    if (isinstance(package, str)
+                        and strict_package_check(package))
+                    else None
+                )
         return None
 # AJAX
 

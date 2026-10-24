@@ -780,22 +780,14 @@ class GadgetPatcher:
             for path in config_paths
         )
 
-        removed_pins = 0
-        trusted_configs = 0
         for config_path in config_paths:
-            pins, trusted = self._patch_network_security_config(
+            self._patch_network_security_config(
                 config_path,
                 ca_reference,
                 cleartext_policy,
             )
-            removed_pins += pins
-            trusted_configs += trusted
         logger.info(
-            'Ensured MobSF Root CA trust in %d configuration(s) '
-            'and removed %d XML pin set(s)',
-            trusted_configs,
-            removed_pins,
-        )
+            'Configured MobSF Root CA trust and XML pin handling')
 
     def _patch_network_security_config(
             self, config_path, ca_reference, cleartext_policy):
