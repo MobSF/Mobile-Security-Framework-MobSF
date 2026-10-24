@@ -132,9 +132,15 @@ def instrument(request, api=False):
                 args = (int(pid), new_pkg)
                 logger.info('Attaching to %s [PID: %s]', new_pkg, pid)
             else:
-                # Injecting to existing session/spawn
                 if action == 'session':
                     logger.info('Injecting to existing frida session')
+                    if not frida_obj.reuse_session():
+                        return send_response({
+                            'status': 'failed',
+                            'message': 'No reusable Frida session is active',
+                        }, api)
+                    data['status'] = 'ok'
+                    return send_response(data, api)
                 args = (None, None)
             Thread(target=frida_obj.session, args=args, daemon=True).start()
         data['status'] = 'ok'

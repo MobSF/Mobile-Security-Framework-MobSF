@@ -1541,7 +1541,6 @@ function frida_instrument(frida_action, pid=null, new_pkg=null){
     });
 
     if (frida_action === 'spawn'){
-      document.getElementById('frida_session').disabled = false;
       print_status("Instrumenting the application with Frida.");
     } else if (frida_action === 'session' && pid === null){
       print_status("Injecting Frida script to existing session.");
@@ -1566,6 +1565,8 @@ function frida_instrument(frida_action, pid=null, new_pkg=null){
     }, function(json) {
       if (json.status !== "ok")
         print_status(json.message);
+      else if (frida_action === 'spawn')
+        document.getElementById('frida_session').disabled = false;
       // Attach to a running process
       if (frida_action == 'ps' && json.message && json.message.length > 0 && Array.isArray(json.message)){
         $("#process_select").empty();
