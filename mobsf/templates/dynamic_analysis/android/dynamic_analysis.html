@@ -302,6 +302,15 @@ function dynamic_loader(){
     loadingOverlay.classList.remove('hidden');
 }
 
+function submitWithLoader(form) {
+    const submitButton = form.querySelector('[type="submit"]');
+    if (submitButton) {
+        submitButton.disabled = true;
+    }
+    dynamic_loader();
+    window.setTimeout(() => form.submit(), 50);
+}
+
 const checksumPlaceholder = '00000000000000000000000000000000';
 const dynamicPathTemplate = "{% url 'dynamic_analyzer' checksum='00000000000000000000000000000000' %}";
 const staticPathTemplate = "{% url 'static_scan' checksum='00000000000000000000000000000000' %}";
@@ -420,8 +429,7 @@ document.querySelectorAll('.dynamic-start-form').forEach((form) => {
                     addHiddenInput(form, 'replace_existing_gadget', '1');
                 }
             }
-            dynamic_loader();
-            form.submit();
+            submitWithLoader(form);
         } catch (error) {
             Swal.fire('Unable to start analysis', error.message, 'error');
         }

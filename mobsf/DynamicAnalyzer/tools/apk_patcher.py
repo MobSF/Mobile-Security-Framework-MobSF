@@ -1,4 +1,5 @@
 """Build a signed APK containing Frida Gadget."""
+import functools
 import hashlib
 import json
 import logging
@@ -33,8 +34,10 @@ from mobsf.MobSF.security import (
 from mobsf.MobSF.utils import (
     find_java_binary,
     is_file_exists,
+    scan_state_file,
     sha256,
 )
+from mobsf.StaticAnalyzer.tools.androguard4 import apk as androguard_apk
 
 logger = logging.getLogger(__name__)
 ANDROID_NS = 'http://schemas.android.com/apk/res/android'
@@ -48,6 +51,16 @@ SUPPORTED_ABIS = {
 }
 PATCH_METADATA = 'assets/mobsf/gadget.json'
 PATCH_SCHEMA = 1
+
+
+@functools.lru_cache(maxsize=256)
+def _read_split_manifest(path, mtime_ns, size):
+    parsed = androguard_apk.APK(path)
+    return (
+        parsed.get_attribute_value('manifest', 'split'),
+        parsed.get_package(),
+        parsed.get_androidversion_code(),
+    )
 
 
 class GadgetPatcher:
@@ -70,26 +83,152 @@ class GadgetPatcher:
             }
 
     @classmethod
-    def select_abi(cls, apk_file, device_abis):
+    def select_abi(cls, apk_file, device_abis, split_apks=None):
         """Select an ABI supported by both the device and APK."""
-        app_abis = cls.apk_abis(apk_file)
+        required_abis = []
+        base_abis = cls.apk_abis(apk_file)
+        if base_abis:
+            required_abis.append(base_abis)
+        config_abis = set()
+        for split_apk in split_apks or ():
+            split_abis = cls.apk_abis(split_apk)
+            config_abi = cls.split_config_abi(split_apk)
+            if config_abi:
+                config_abis.add(config_abi)
+            elif split_abis:
+                required_abis.append(split_abis)
         for abi in device_abis:
-            if abi in SUPPORTED_ABIS and (
-                    not app_abis or abi in app_abis):
+            if (abi in SUPPORTED_ABIS
+                    and (not config_abis or abi in config_abis)
+                    and all(
+                        abi in abi_set for abi_set in required_abis
+                    )):
                 return abi
         raise ValueError(
             'APK native libraries are incompatible with the Android device')
 
+    @staticmethod
+    def split_manifest(apk_file):
+        """Return the split name, package, and version code of an APK."""
+        apk_file = Path(apk_file)
+        try:
+            stat = apk_file.stat()
+            return _read_split_manifest(
+                apk_file.as_posix(), stat.st_mtime_ns, stat.st_size)
+        except Exception as exp:
+            raise ValueError('Unable to read the APK manifest') from exp
+
+    @classmethod
+    def split_config_abi(cls, split_apk):
+        """Return the ABI represented by a configuration split."""
+        abi_tokens = {
+            'armeabi': 'armeabi',
+            'armeabi-v7a': 'armeabi_v7a',
+            'arm64-v8a': 'arm64_v8a',
+            'x86': 'x86',
+            'x86_64': 'x86_64',
+        }
+        split_name = cls.split_manifest(split_apk)[0]
+        name = (split_name or '').lower().replace('-', '_')
+        for abi, token in abi_tokens.items():
+            if re.search(
+                    rf'(?:^|[._])config[._]{re.escape(token)}(?:$|[.])',
+                    name,
+            ):
+                return abi
+        return None
+
+    @classmethod
+    def find_split_apks(cls, app_dir, base_apk):
+        """Find regular sibling APKs retained by static analysis."""
+        upload_root = Path(settings.UPLD_DIR).resolve()
+        app_dir = Path(app_dir).resolve()
+        base_apk = Path(base_apk).resolve()
+        try:
+            app_relative = app_dir.relative_to(upload_root).as_posix()
+        except ValueError as exp:
+            raise ValueError(
+                'Analysis directory is outside the upload root') from exp
+        if (app_relative != app_dir.name
+                or not is_safe_path(upload_root, app_dir, app_relative)):
+            raise ValueError('Unsafe analysis directory')
+        metadata_file = scan_state_file(app_dir.name, 'split-apks.json')
+        if (not metadata_file.is_file()
+                or metadata_file.is_symlink()
+                or metadata_file.stat().st_size > 65536):
+            return ()
+        try:
+            metadata = json.loads(
+                metadata_file.read_text(encoding='utf-8'))
+        except (OSError, ValueError, TypeError) as exp:
+            raise ValueError('Invalid split APK metadata') from exp
+        members = metadata.get('splits') if isinstance(metadata, dict) else None
+        if not isinstance(members, list):
+            raise ValueError('Invalid split APK metadata')
+        splits = []
+        for member in members:
+            if not isinstance(member, str):
+                raise ValueError('Invalid split APK metadata')
+            candidate = (app_dir / member).resolve()
+            if (candidate == base_apk
+                    or candidate.name in (
+                        'mobsf-gadget.apk',
+                        'mobsf-gadget-unsigned.apk',
+                    )
+                    or 'mobsf-gadget-splits' in candidate.parts):
+                continue
+            try:
+                relative = candidate.relative_to(app_dir).as_posix()
+            except ValueError as exp:
+                raise ValueError('Invalid split APK path') from exp
+            if (not is_safe_path(
+                    app_dir, candidate, relative)
+                    or not candidate.is_file()
+                    or is_pipe_or_link(candidate)):
+                raise ValueError('Invalid split APK path')
+            splits.append(candidate)
+        # bundletool sets can carry standalone APKs and extra variants
+        selected = {}
+        for split_apk in sorted(splits):
+            split_name = cls.split_manifest(split_apk)[0]
+            if not split_name:
+                continue
+            if split_name in selected:
+                raise ValueError(
+                    'Multi-variant .apks sets are not supported; pull the '
+                    'installed app from the device or use bundletool '
+                    'extract-apks')
+            selected[split_name] = split_apk
+        return tuple(sorted(selected.values()))
+
+    @classmethod
+    def compatible_splits(cls, split_apks, selected_abi):
+        """Filter ABI configuration splits for the selected device ABI."""
+        compatible = []
+        for split_apk in split_apks:
+            config_abi = cls.split_config_abi(split_apk)
+            if config_abi and config_abi != selected_abi:
+                continue
+            compatible.append(split_apk)
+        return tuple(compatible)
+
     def __init__(
             self, app_dir, apk_file, android_abi,
-            replace_existing_gadget=False) -> None:
+            replace_existing_gadget=False, split_apks=None) -> None:
         self.app_dir = Path(app_dir).resolve()
         self.apk_file = Path(apk_file).resolve()
         self.android_abi = android_abi
         self.replace_existing_gadget = replace_existing_gadget
+        self.split_apks = tuple(
+            Path(path).resolve() for path in (split_apks or ()))
+        self.no_resource_rebuild = bool(self.split_apks)
+        self.root_ca_embedded = not self.no_resource_rebuild
         self.work_dir = self.app_dir / 'apktool_gadget'
         self.unsigned_apk = self.app_dir / 'mobsf-gadget-unsigned.apk'
         self.output_apk = self.app_dir / 'mobsf-gadget.apk'
+        self.split_output_dir = self.app_dir / 'mobsf-gadget-splits'
+        self.install_apks = []
+        self.used_cache = False
         static_tools = Path(settings.BASE_DIR) / 'StaticAnalyzer' / 'tools'
         if (settings.APKTOOL_BINARY
                 and is_file_exists(settings.APKTOOL_BINARY)):
@@ -173,6 +312,16 @@ class GadgetPatcher:
 
     def _validate(self):
         """Validate fixed inputs and required existing tools."""
+        upload_root = Path(settings.UPLD_DIR).resolve()
+        try:
+            app_relative = self.app_dir.relative_to(
+                upload_root).as_posix()
+        except ValueError as exp:
+            raise ValueError(
+                'Analysis directory is outside the upload root') from exp
+        if not is_safe_path(
+                upload_root, self.app_dir, app_relative):
+            raise ValueError('Unsafe analysis directory')
         if self.apk_file.suffix.lower() != '.apk':
             raise ValueError('Frida Gadget requires a single APK')
         if not is_safe_path(
@@ -188,6 +337,29 @@ class GadgetPatcher:
             raise ValueError(
                 f'Unsupported Android architecture: {self.android_abi}')
         self.validate_archive_size(self.apk_file)
+        for split_apk in self.split_apks:
+            if (split_apk.suffix.lower() != '.apk'
+                    or not is_safe_path(
+                        self.app_dir, split_apk, split_apk.name)
+                    or not split_apk.is_file()
+                    or is_pipe_or_link(split_apk)
+                    or split_apk == self.apk_file):
+                raise ValueError('Invalid split APK input')
+            self.validate_archive_size(split_apk)
+        if self.split_apks:
+            base_split, base_package, base_version = self.split_manifest(
+                self.apk_file)
+            if base_split:
+                raise ValueError(
+                    'Frida Gadget requires the base APK, not a feature split')
+            for split_apk in self.split_apks:
+                split_name, package, version = self.split_manifest(
+                    split_apk)
+                if (not split_name
+                        or package != base_package
+                        or version != base_version):
+                    raise ValueError(
+                        'Split APK package metadata does not match the base')
         gadget_state, metadata = self.inspect(self.apk_file)
         if gadget_state == 'third_party' and not self.replace_existing_gadget:
             raise ValueError(
@@ -195,6 +367,8 @@ class GadgetPatcher:
         self.gadget_state = gadget_state
         self.patch_metadata = metadata
         self.app_abis = self.apk_abis(self.apk_file)
+        for split_apk in self.split_apks:
+            self.app_abis.update(self.apk_abis(split_apk))
         if self.app_abis and self.android_abi not in self.app_abis:
             raise ValueError(
                 'APK native libraries are incompatible with the '
@@ -205,6 +379,14 @@ class GadgetPatcher:
                     f'Required Android tool is missing: {tool.name}')
         if self.work_dir.is_symlink():
             raise ValueError('Unsafe APK patching workspace')
+        if self.split_output_dir.is_symlink():
+            raise ValueError('Unsafe Gadget split output directory')
+        if not is_safe_path(
+                self.app_dir,
+                self.split_output_dir,
+                'mobsf-gadget-splits',
+        ):
+            raise ValueError('Unsafe Gadget split output directory')
 
     def _run(self, args, action, env=None):
         """Run a bounded build command without invoking a shell."""
@@ -283,12 +465,16 @@ class GadgetPatcher:
             self.apktool_path.as_posix(),
             'decode',
             '--force',
+        ]
+        if self.no_resource_rebuild:
+            args.append('--no-res')
+        args.extend([
             '--frame-path',
             gettempdir(),
             self.apk_file.as_posix(),
             '--output',
             self.work_dir.as_posix(),
-        ]
+        ])
         self._run(args, 'APK decoding')
 
     @staticmethod
@@ -303,9 +489,9 @@ class GadgetPatcher:
         return class_name
 
     @staticmethod
-    def _application_process(package, application):
+    def _application_process(package, configured_process=None):
         """Return the validated primary process name."""
-        process = application.get(f'{ANDROID_ATTR}process') or package
+        process = configured_process or package
         if process.startswith(':'):
             process = f'{package}{process}'
         if not re.fullmatch(r'[A-Za-z0-9_.:]+', process):
@@ -346,6 +532,8 @@ class GadgetPatcher:
 
     def _inject_loader(self):
         """Load Gadget from the app class or a generated subclass."""
+        if self.no_resource_rebuild:
+            return self._inject_split_loader()
         manifest = self.work_dir / 'AndroidManifest.xml'
         if not manifest.is_file() or is_pipe_or_link(manifest):
             raise RuntimeError('Decoded Android manifest is missing')
@@ -386,7 +574,10 @@ class GadgetPatcher:
         if not re.fullmatch(class_pattern, original):
             raise ValueError('Unsupported Android Application class name')
         digest = sha256(self.apk_file)[:12]
-        process = self._application_process(package, application)
+        process = self._application_process(
+            package,
+            application.get(f'{ANDROID_ATTR}process'),
+        )
         strategy = None
         if self.patch_metadata:
             original_application = self.patch_metadata.get(
@@ -454,6 +645,123 @@ class GadgetPatcher:
             encoding='utf-8',
             xml_declaration=True,
         )
+        return package
+
+    def _inject_split_loader(self):
+        """Inject Gadget without rebuilding split-dependent resources."""
+        try:
+            parsed_apk = androguard_apk.APK(self.apk_file.as_posix())
+        except Exception as exp:
+            raise ValueError('Unable to read the base APK manifest') from exp
+        package = parsed_apk.get_package()
+        if not package:
+            raise ValueError('Unable to read the split APK package')
+        if parsed_apk.get_attribute_value('manifest', 'sharedUserId'):
+            raise ValueError('Shared-user APKs cannot be safely re-signed')
+        if 'android.permission.INTERNET' not in parsed_apk.get_permissions():
+            raise ValueError(
+                'Split APK Gadget mode requires INTERNET permission '
+                'in the original base manifest')
+        if (parsed_apk.get_attribute_value(
+                'application', 'hasCode') == 'false'):
+            raise ValueError(
+                'Split APK Gadget mode requires application code')
+        application = self._qualified_class_name(
+            package,
+            parsed_apk.get_attribute_value('application', 'name'),
+        )
+        application_process = self._application_process(
+            package,
+            parsed_apk.get_attribute_value('application', 'process'),
+        )
+        candidate_processes = {application: application_process}
+        class_pattern = r'(?:[A-Za-z_$][\w$]*\.)*[A-Za-z_$][\w$]*'
+        if not re.fullmatch(class_pattern, application):
+            raise ValueError('Unsupported Android Application class name')
+        if self.patch_metadata:
+            loader_class = self.patch_metadata.get('loader_class')
+            loader_strategy = self.patch_metadata.get('loader_strategy')
+            original_application = self.patch_metadata.get(
+                'original_application')
+            if (not isinstance(loader_class, str)
+                    or not re.fullmatch(class_pattern, loader_class)
+                    or not isinstance(original_application, str)
+                    or not re.fullmatch(class_pattern, original_application)
+                    or loader_strategy not in (
+                        'existing_application',
+                        'existing_gadget',
+            )):
+                raise ValueError('Invalid MobSF Gadget loader metadata')
+            loader_smali = self._find_application_smali(loader_class)
+            if (not loader_smali
+                    or '"frida-gadget"' not in loader_smali.read_text(
+                        'utf-8', 'ignore')):
+                raise ValueError('MobSF Gadget loader is missing')
+            self.original_application = original_application
+            self.loader_class = loader_class
+            self.loader_strategy = loader_strategy
+            self.embedded_ca_resource = None
+            self.network_security_resources = ()
+            self.root_ca_embedded = False
+            return package
+
+        candidates = [application]
+        main_activity = parsed_apk.get_main_activity()
+        if main_activity:
+            main_activity = self._qualified_class_name(
+                package, main_activity)
+            manifest = parsed_apk.get_android_manifest_xml()
+            for alias in manifest.findall('.//activity-alias'):
+                alias_name = self._qualified_class_name(
+                    package,
+                    alias.get(f'{ANDROID_ATTR}name'),
+                )
+                if alias_name == main_activity:
+                    target = alias.get(f'{ANDROID_ATTR}targetActivity')
+                    if target:
+                        main_activity = self._qualified_class_name(
+                            package, target)
+                    break
+            main_process = application_process
+            for activity in manifest.findall('.//activity'):
+                activity_name = self._qualified_class_name(
+                    package,
+                    activity.get(f'{ANDROID_ATTR}name'),
+                )
+                if activity_name == main_activity:
+                    main_process = self._application_process(
+                        package,
+                        activity.get(f'{ANDROID_ATTR}process')
+                        or application_process,
+                    )
+                    break
+            candidate_processes[main_activity] = main_process
+            if main_activity not in candidates:
+                candidates.append(main_activity)
+        strategy = None
+        loader_class = None
+        for candidate in candidates:
+            if not re.fullmatch(class_pattern, candidate):
+                raise ValueError('Unsupported Android component class name')
+            strategy = self._inject_existing_application(
+                candidate,
+                candidate_processes[candidate],
+            )
+            if strategy:
+                loader_class = candidate
+                break
+        if not strategy or not loader_class:
+            raise ValueError(
+                'Split APK has no injectable Application or launcher class')
+        self.original_application = application
+        self.loader_class = loader_class
+        self.loader_strategy = strategy
+        self.embedded_ca_resource = None
+        self.network_security_resources = ()
+        self.root_ca_embedded = False
+        logger.warning(
+            'Split APK resources are preserved without embedding the '
+            'MobSF Root CA; use Frida TLS hooks for interception')
         return package
 
     @staticmethod
@@ -722,6 +1030,33 @@ class GadgetPatcher:
             json.dumps(config, separators=(',', ':')),
             encoding='utf-8',
         )
+        if self.no_resource_rebuild:
+            self._store_gadget_uncompressed(android_abi)
+
+    def _store_gadget_uncompressed(self, android_abi):
+        """Exclude Gadget libraries from compression in the rebuilt APK."""
+        # The split base keeps its binary manifest, which may disable
+        # extractNativeLibs; libraries must then be stored uncompressed
+        # so apksigner can page-align them.
+        apktool_yml = self.work_dir / 'apktool.yml'
+        if not apktool_yml.is_file() or is_pipe_or_link(apktool_yml):
+            raise RuntimeError('Decoded apktool.yml is missing')
+        entries = ''.join(
+            f'- lib/{android_abi}/{name}\n'
+            for name in ('libfrida-gadget.so', 'libfrida-gadget.config.so')
+        )
+        text = apktool_yml.read_text('utf-8')
+        match = re.search(r'^doNotCompress:(.*)\n', text, re.MULTILINE)
+        if match is None:
+            text = f'{text.rstrip()}\ndoNotCompress:\n{entries}'
+        elif match.group(1).strip() in ('', '[]'):
+            text = (
+                f'{text[:match.start()]}doNotCompress:\n{entries}'
+                f'{text[match.end():]}'
+            )
+        else:
+            raise RuntimeError('Unsupported apktool.yml doNotCompress format')
+        apktool_yml.write_text(text, encoding='utf-8')
 
     def _build(self):
         """Rebuild the decoded APK."""
@@ -870,6 +1205,7 @@ class GadgetPatcher:
             'network_security_resources': list(
                 self.network_security_resources),
             'signing_certificate_sha256': signing_digest,
+            'split_apks_sha256': self._split_digests(),
         }
         metadata_file = self.work_dir / PATCH_METADATA
         metadata_file.parent.mkdir(parents=True, exist_ok=True)
@@ -890,12 +1226,21 @@ class GadgetPatcher:
             state, metadata = self.inspect(self.output_apk)
             if state != 'mobsf' or not metadata:
                 return None
-            ca_digest = sha256(Path(get_ca_file()).resolve())[:12]
-            expected_ca = f'res/raw/mobsf_ca_{ca_digest}.pem'
+            if self.no_resource_rebuild:
+                expected_ca = None
+                if not all(
+                        path.is_file() and not is_pipe_or_link(path)
+                        for path in self._signed_split_paths()):
+                    return None
+            else:
+                ca_digest = sha256(Path(get_ca_file()).resolve())[:12]
+                expected_ca = f'res/raw/mobsf_ca_{ca_digest}.pem'
             expected_signer = self._signing_certificate_digest()
             if (
                 metadata.get('patch_revision') == 3
                 and metadata.get('source_apk_sha256') == sha256(self.apk_file)
+                and metadata.get('split_apks_sha256', [])
+                == self._split_digests()
                 and metadata.get('frida_version') == frida_version
                 and metadata.get('android_abi') == self.android_abi
                 and metadata.get('ca_resource') == expected_ca
@@ -903,14 +1248,15 @@ class GadgetPatcher:
                 == expected_signer
             ):
                 logger.info('Using cached Frida Gadget APK')
+                self.used_cache = True
                 return self.output_apk
         except Exception:
             logger.warning(
                 'Ignoring invalid cached Frida Gadget APK')
         return None
 
-    def _sign(self):
-        """Sign and verify the rebuilt APK with the MobSF signing key."""
+    def _sign_apk(self, source_apk, output_apk, label):
+        """Sign and verify one APK with the MobSF signing key."""
         keystore, password = self._signing_credentials()
         env = os.environ.copy()
         env['MOBSF_KEYSTORE_PASSWORD'] = password
@@ -928,19 +1274,68 @@ class GadgetPatcher:
             '--key-pass',
             'env:MOBSF_KEYSTORE_PASSWORD',
             '--out',
-            self.output_apk.as_posix(),
-            self.unsigned_apk.as_posix(),
+            output_apk.as_posix(),
+            source_apk.as_posix(),
         ]
-        self._run(sign, 'APK signing', env)
+        self._run(sign, f'{label} signing', env)
         verify = [
             find_java_binary(),
             '-jar',
             self.apksigner_path.as_posix(),
             'verify',
             '--verbose',
-            self.output_apk.as_posix(),
+            output_apk.as_posix(),
         ]
-        self._run(verify, 'APK signature verification')
+        self._run(verify, f'{label} signature verification')
+
+    def _sign(self):
+        """Sign and verify the rebuilt APK with the MobSF signing key."""
+        self._sign_apk(
+            self.unsigned_apk,
+            self.output_apk,
+            'APK',
+        )
+
+    def _split_digests(self):
+        """Return the SHA-256 of every input split, in install order."""
+        return [sha256(split_apk) for split_apk in self.split_apks]
+
+    def _signed_split_paths(self):
+        """Return the signed output path of every input split."""
+        paths = []
+        for index, split_apk in enumerate(self.split_apks):
+            name = split_apk.name
+            if not re.fullmatch(r'[A-Za-z0-9_.+-]+\.apk', name):
+                name = 'split.apk'
+            output_apk = self.split_output_dir / f'{index:03d}-{name}'
+            relative = output_apk.relative_to(self.app_dir).as_posix()
+            if not is_safe_path(self.app_dir, output_apk, relative):
+                raise ValueError('Unsafe signed split output path')
+            paths.append(output_apk)
+        return paths
+
+    def _sign_split_apks(self):
+        """Re-sign every required split with the MobSF signing key."""
+        if not self.split_apks:
+            return []
+        if self.split_output_dir.exists():
+            if self.split_output_dir.is_symlink():
+                raise ValueError('Unsafe Gadget split output directory')
+            shutil.rmtree(self.split_output_dir)
+        self.split_output_dir.mkdir(parents=True)
+        signed = self._signed_split_paths()
+        try:
+            for index, (split_apk, output_apk) in enumerate(
+                    zip(self.split_apks, signed)):
+                self._sign_apk(
+                    split_apk,
+                    output_apk,
+                    f'Split APK {index + 1}',
+                )
+        except Exception:
+            shutil.rmtree(self.split_output_dir, ignore_errors=True)
+            raise
+        return signed
 
     def _verify_artifact(self):
         """Verify the expected Gadget files are present."""
@@ -950,9 +1345,10 @@ class GadgetPatcher:
             PATCH_METADATA,
             f'lib/{android_abi}/libfrida-gadget.so',
             f'lib/{android_abi}/libfrida-gadget.config.so',
-            self.embedded_ca_resource,
             *self.network_security_resources,
         }
+        if self.embedded_ca_resource:
+            expected.add(self.embedded_ca_resource)
         with zipfile.ZipFile(self.output_apk) as apk:
             if not expected.issubset(apk.namelist()):
                 raise RuntimeError('Signed APK is missing Frida Gadget files')
@@ -965,7 +1361,13 @@ class GadgetPatcher:
                 threading.Lock(),
             )
         with patch_lock:
-            return self._patch()
+            base_apk = self._patch()
+            signed_splits = (
+                self._signed_split_paths()
+                if self.used_cache else self._sign_split_apks()
+            )
+            self.install_apks = [base_apk, *signed_splits]
+            return base_apk
 
     def _patch(self):
         """Run the serialized Gadget build."""
