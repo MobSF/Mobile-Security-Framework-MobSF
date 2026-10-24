@@ -7,6 +7,7 @@ import secrets
 import shutil
 import subprocess
 import threading
+import weakref
 import zipfile
 from pathlib import Path
 from tempfile import gettempdir
@@ -47,7 +48,8 @@ class GadgetPatcher:
     """Create an independently signed, single-ABI Gadget APK."""
 
     _keystore_lock = threading.Lock()
-    _patch_lock = threading.Lock()
+    _patch_locks = weakref.WeakValueDictionary()
+    _patch_locks_guard = threading.Lock()
 
     def __init__(self, app_dir, apk_file, android_abi) -> None:
         self.app_dir = Path(app_dir).resolve()
@@ -179,6 +181,9 @@ class GadgetPatcher:
         application = root.find('application')
         if not package or application is None:
             raise RuntimeError('Android manifest has no application')
+        if root.get('split'):
+            raise ValueError(
+                'Frida Gadget requires the base APK, not a feature split')
         if root.get(f'{ANDROID_ATTR}sharedUserId'):
             raise ValueError('Shared-user APKs cannot be safely re-signed')
         application.set(f'{ANDROID_ATTR}hasCode', 'true')
@@ -214,15 +219,26 @@ class GadgetPatcher:
                 break
         if original_smali:
             source = original_smali.read_text('utf-8', 'ignore')
-            if re.search(
-                    r'(?m)^\.class\b[^\n]*\bfinal\b',
-                    source):
+            class_directive = re.search(
+                r'(?m)^\.class\s+(?P<declaration>[^\n]+)$',
+                source,
+            )
+            class_tokens = (
+                class_directive.group('declaration').split()
+                if class_directive else []
+            )
+            if 'final' in class_tokens[:-1]:
                 raise ValueError(
                     'Final Android Application classes cannot be wrapped')
         digest = sha256(self.apk_file)[:12]
         loader = f'com.mobsf.g{digest}.MobSFApplication'
         loader_type = f'L{loader.replace(".", "/")};'
         parent_type = f'L{original.replace(".", "/")};'
+        process = application.get(f'{ANDROID_ATTR}process') or package
+        if process.startswith(':'):
+            process = f'{package}{process}'
+        if not re.fullmatch(r'[A-Za-z0-9_.:]+', process):
+            raise ValueError('Unsupported Android application process name')
         application.set(f'{ANDROID_ATTR}name', loader)
         application.set(f'{ANDROID_ATTR}extractNativeLibs', 'true')
         smali = self.work_dir / 'smali' / Path(*loader.split('.'))
@@ -234,10 +250,33 @@ class GadgetPatcher:
                 f'.super {parent_type}',
                 '',
                 '.method static constructor <clinit>()V',
-                '    .locals 1',
-                '    const-string v0, "frida-gadget"',
-                '    invoke-static {v0}, '
+                '    .locals 2',
+                '    sget v0, Landroid/os/Build$VERSION;->SDK_INT:I',
+                '    const/16 v1, 0x1c',
+                '    if-lt v0, v1, :legacy_process_name',
+                '    invoke-static {}, '
+                'Landroid/app/Application;->getProcessName()'
+                'Ljava/lang/String;',
+                '    move-result-object v0',
+                '    goto :check_process_name',
+                '',
+                '    :legacy_process_name',
+                '    invoke-static {}, '
+                'Landroid/app/ActivityThread;->currentProcessName()'
+                'Ljava/lang/String;',
+                '    move-result-object v0',
+                '',
+                '    :check_process_name',
+                f'    const-string v1, "{process}"',
+                '    invoke-virtual {v1, v0}, '
+                'Ljava/lang/String;->equals(Ljava/lang/Object;)Z',
+                '    move-result v0',
+                '    if-eqz v0, :done',
+                '    const-string v1, "frida-gadget"',
+                '    invoke-static {v1}, '
                 'Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V',
+                '',
+                '    :done',
                 '    return-void',
                 '.end method',
                 '',
@@ -438,7 +477,12 @@ class GadgetPatcher:
 
     def patch(self):
         """Build, sign, and return a Frida Gadget APK."""
-        with self._patch_lock:
+        with self._patch_locks_guard:
+            patch_lock = self._patch_locks.setdefault(
+                self.app_dir,
+                threading.Lock(),
+            )
+        with patch_lock:
             return self._patch()
 
     def _patch(self):
