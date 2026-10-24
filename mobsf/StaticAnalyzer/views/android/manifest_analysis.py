@@ -148,8 +148,10 @@ def _check_url(host, w_url):
                 'status': False}
 
 
-def get_browsable_activities(node, ns):
+def get_browsable_activities(node, ns, verdicts=None):
     """Get Browsable Activities."""
+    if verdicts is None:
+        verdicts = {}
     try:
         browse_dic = {}
         schemes = []
@@ -192,7 +194,9 @@ def get_browsable_activities(node, ns):
                         and host
                             and host != '*'):
                         host = host.replace('*.', '').replace('#', '')
-                        if not valid_host(host):
+                        if host not in verdicts:
+                            verdicts[host] = valid_host(host)
+                        if not verdicts[host]:
                             logger.warning('Invalid Host: %s', host)
                             continue
                         shost = f'{scheme}://{host}'
@@ -246,6 +250,7 @@ def manifest_analysis(app_dic, man_data_dic):
         ret_list = []
         exported = []
         browsable_activities = {}
+        verdicts = {}
         permission_dict = {}
         do_netsec = False
         debuggable = False
@@ -337,7 +342,7 @@ def manifest_analysis(app_dic, man_data_dic):
                     item = node.getAttribute(f'{ns}:name')
                     item = escape_manifest_attribute(item)
                     # Browsable Activities
-                    browse_dic = get_browsable_activities(node, ns)
+                    browse_dic = get_browsable_activities(node, ns, verdicts)
                     if browse_dic['browsable']:
                         browsable_activities[node.getAttribute(
                             f'{ns}:name')] = browse_dic
