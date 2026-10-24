@@ -118,7 +118,7 @@ def get_http_tools_url(req):
     if domain.startswith('[') and domain.endswith(']'):
         domain = domain[1:-1]
     allowed_hosts = [
-        host for host in settings.ALLOWED_HOSTS
+        host.strip('[]') for host in settings.ALLOWED_HOSTS
         if host != '*'
     ]
     allowed_hosts.extend((
