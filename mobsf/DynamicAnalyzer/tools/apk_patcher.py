@@ -643,6 +643,8 @@ class GadgetPatcher:
         package = parsed_apk.get_package()
         if not package:
             raise ValueError('Unable to read the split APK package')
+        if parsed_apk.get_attribute_value('manifest', 'sharedUserId'):
+            raise ValueError('Shared-user APKs cannot be safely re-signed')
         if 'android.permission.INTERNET' not in parsed_apk.get_permissions():
             raise ValueError(
                 'Split APK Gadget mode requires INTERNET permission '
