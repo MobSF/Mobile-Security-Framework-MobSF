@@ -19,13 +19,13 @@ from mobsf.MobSF.utils import (
     append_scan_status,
     find_java_binary,
     is_file_exists,
+    scan_state_file,
 )
 
 logger = logging.getLogger(__name__)
-SPLIT_METADATA = '.mobsf-split-apks.json'
 
 
-def _write_split_metadata(app_dir, primary, splits):
+def _write_split_metadata(checksum, app_dir, primary, splits):
     """Persist the exact sibling APKs retained from the outer container."""
     app_dir = Path(app_dir)
     relatives = []
@@ -38,9 +38,8 @@ def _write_split_metadata(app_dir, primary, splits):
             continue
         if is_safe_path(app_dir, split_apk, relative):
             relatives.append(relative)
-    metadata = app_dir / SPLIT_METADATA
-    if metadata.is_symlink():
-        raise ValueError('Unsafe split APK metadata path')
+    metadata = scan_state_file(checksum, 'split-apks.json')
+    metadata.parent.mkdir(parents=True, exist_ok=True)
     with metadata.open('w', encoding='utf-8') as target:
         dump({'splits': sorted(relatives)}, target)
 
@@ -82,7 +81,7 @@ def handle_xapk(app_dic):
         if a.get('id') == 'base':
             base_apk = full_path
     if base_apk and _regular_file(base_apk):
-        _write_split_metadata(app_dic['app_dir'], base_apk, splits)
+        _write_split_metadata(checksum, app_dic['app_dir'], base_apk, splits)
         move(base_apk, apk)
         return True
     return None
@@ -176,7 +175,7 @@ def handle_split_apk(app_dic):
     )
     if primary is None:
         return None
-    _write_split_metadata(app_dir, primary, splits)
+    _write_split_metadata(checksum, app_dir, primary, splits)
     move(primary, apks)
     # Sibling contents share one cap. The container unzip above keeps its
     # own cap, matching the previous single-archive limit.

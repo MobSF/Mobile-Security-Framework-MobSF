@@ -34,6 +34,7 @@ from mobsf.MobSF.security import (
 from mobsf.MobSF.utils import (
     find_java_binary,
     is_file_exists,
+    scan_state_file,
     sha256,
 )
 from mobsf.StaticAnalyzer.tools.androguard4 import apk as androguard_apk
@@ -50,7 +51,6 @@ SUPPORTED_ABIS = {
 }
 PATCH_METADATA = 'assets/mobsf/gadget.json'
 PATCH_SCHEMA = 1
-SPLIT_METADATA = '.mobsf-split-apks.json'
 
 
 @functools.lru_cache(maxsize=256)
@@ -149,9 +149,10 @@ class GadgetPatcher:
         except ValueError as exp:
             raise ValueError(
                 'Analysis directory is outside the upload root') from exp
-        if not is_safe_path(upload_root, app_dir, app_relative):
+        if (app_relative != app_dir.name
+                or not is_safe_path(upload_root, app_dir, app_relative)):
             raise ValueError('Unsafe analysis directory')
-        metadata_file = app_dir / SPLIT_METADATA
+        metadata_file = scan_state_file(app_dir.name, 'split-apks.json')
         if (not metadata_file.is_file()
                 or metadata_file.is_symlink()
                 or metadata_file.stat().st_size > 65536):

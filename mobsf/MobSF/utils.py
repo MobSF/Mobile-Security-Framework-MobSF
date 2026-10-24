@@ -52,6 +52,7 @@ SCAN_STATE_FILES = (
     'proxy-state',
     'gadget-mode',
     'frida-owner',
+    'split-apks.json',
 )
 # Regex to capture strings between quotes or <string> tag
 STRINGS_REGEX = re.compile(r'(?<=\")(.+?)(?=\")|(?<=\<string>)(.+?)(?=\<)')
