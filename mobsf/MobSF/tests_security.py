@@ -54,6 +54,7 @@ class PathTraversalTests(SimpleTestCase):
             with self.subTest(path=path):
                 self.assertTrue(is_path_traversal(path))
 
+    @mock.patch.object(security, 'IS_WINDOWS', False)
     def test_safe_paths(self):
         for path in ('res/drawable/icon.png', 'com/example/con/Foo.java',
                      'AndroidManifest.xml', 'a/./b.txt', '', None):

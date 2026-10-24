@@ -48,17 +48,14 @@ SUPPRESSED = 'suppressed'
 def get_package(checksum):
     """Get package from checksum."""
     try:
-        andpkg = StaticAnalyzerAndroid.objects.get(
-            MD5=checksum)
-        return andpkg.PACKAGE_NAME
+        andpkg = StaticAnalyzerAndroid.objects.filter(
+            MD5=checksum).values_list('PACKAGE_NAME', flat=True).first()
+        if andpkg is not None:
+            return andpkg
+        return StaticAnalyzerIOS.objects.filter(
+            MD5=checksum).values_list('BUNDLE_ID', flat=True).first()
     except Exception:
-        pass
-    try:
-        iospkg = StaticAnalyzerIOS.objects.get(
-            MD5=checksum)
-        return iospkg.BUNDLE_ID
-    except Exception:
-        pass
+        logger.exception('Failed to get package name')
     return None
 
 
@@ -135,16 +132,14 @@ def suppress_by_files(request, api=False):
         sup_config = SuppressFindings.objects.filter(
             PACKAGE_NAME=package, SUPPRESS_TYPE='code')
         # Do Lookups
-        android_static_db = StaticAnalyzerAndroid.objects.filter(
-            MD5=checksum)
-        ios_static_db = StaticAnalyzerIOS.objects.filter(
-            MD5=checksum)
-        if android_static_db.exists():
-            code_res = python_dict(android_static_db[0].CODE_ANALYSIS)
-        elif ios_static_db.exists():
-            code_res = python_dict(ios_static_db[0].CODE_ANALYSIS)
-        else:
+        code_res = StaticAnalyzerAndroid.objects.filter(
+            MD5=checksum).values_list('CODE_ANALYSIS', flat=True).first()
+        if code_res is None:
+            code_res = StaticAnalyzerIOS.objects.filter(
+                MD5=checksum).values_list('CODE_ANALYSIS', flat=True).first()
+        if code_res is None:
             return send_response(data, api)
+        code_res = python_dict(code_res)
         files_to_suppress = list(code_res[rule]['files'].keys())
         if sup_config.exists():
             # Update Record

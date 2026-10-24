@@ -279,9 +279,9 @@ def recent_scans(request, page_size=10, page_number=1):
 
     android = StaticAnalyzerAndroid.objects.filter(
         MD5__in=md5_list).only(
-            'PACKAGE_NAME', 'VERSION_NAME', 'FILE_NAME', 'MD5')
+            'PACKAGE_NAME', 'VERSION_NAME', 'FILE_NAME', 'MD5', 'ICON_PATH')
     ios = StaticAnalyzerIOS.objects.filter(
-        MD5__in=md5_list).only('FILE_NAME', 'MD5')
+        MD5__in=md5_list).only('FILE_NAME', 'MD5', 'ICON_PATH')
 
     updir = Path(settings.UPLD_DIR)
     icon_mapping = {}
