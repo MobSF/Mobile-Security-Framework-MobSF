@@ -380,6 +380,7 @@ def _dynamic_analyzer(request, checksum, api=False):
         analysis_id = None
         claim_new = False
         analysis_ready = False
+        replacement_started = False
         reverse_enabled = False
         analysis_form = AndroidDynamicAnalysisForm(request.POST)
         if not analysis_form.is_valid():
@@ -517,14 +518,21 @@ def _dynamic_analyzer(request, checksum, api=False):
                 api,
             )
         analysis_id = secrets.token_hex(16)
-        if existing_state:
-            existing_state.update({
-                'analysis_id': analysis_id,
-                'analysis_ready': False,
-                'finalizing': False,
-                'cleanup_complete': False,
-            })
-            write_android_analysis_state(checksum, existing_state)
+
+        def begin_replacement():
+            """Invalidate the prior generation before device mutation."""
+            nonlocal replacement_started
+            if replacement_started:
+                return
+            replacement_started = True
+            if existing_state:
+                existing_state.update({
+                    'analysis_id': analysis_id,
+                    'analysis_ready': False,
+                    'finalizing': False,
+                    'cleanup_complete': False,
+                })
+                write_android_analysis_state(checksum, existing_state)
         if physical:
             if device_mode == 'auto':
                 selected_mode = (
@@ -550,6 +558,7 @@ def _dynamic_analyzer(request, checksum, api=False):
                 )
                 selected_mode = 'gadget'
             else:
+                begin_replacement()
                 runtime_prepared = env.connect_n_mount()
             if (not runtime_prepared
                     and selected_mode != 'gadget'
@@ -573,23 +582,24 @@ def _dynamic_analyzer(request, checksum, api=False):
             'Selected Android dynamic analysis mode: %s',
             selected_mode,
         )
-        if (selected_mode != 'gadget'
-                and not runtime_prepared
-                and not env.connect_n_mount()):
-            if device_mode == 'auto' and version >= 5:
-                logger.warning(
-                    'Android runtime preparation is unavailable; '
-                    'falling back to Frida Gadget')
-                selected_mode = 'gadget'
-            else:
-                msg = f'Cannot prepare {identifier} for dynamic analysis'
-                return print_n_send_error_response(request, msg, api)
+        if selected_mode != 'gadget' and not runtime_prepared:
+            begin_replacement()
+            if not env.connect_n_mount():
+                if device_mode == 'auto' and version >= 5:
+                    logger.warning(
+                        'Android runtime preparation is unavailable; '
+                        'falling back to Frida Gadget')
+                    selected_mode = 'gadget'
+                else:
+                    msg = f'Cannot prepare {identifier} for dynamic analysis'
+                    return print_n_send_error_response(request, msg, api)
         logger.info('Android Version identified as %s', version)
         xposed_first_run = False
         if selected_mode != 'gadget' and not env.is_mobsfyied(version):
             msg = ('This Android instance is not MobSFyed/Outdated.\n'
                    'MobSFying the android runtime environment')
             logger.warning(msg)
+            begin_replacement()
             if not env.mobsfy_init():
                 if device_mode == 'auto' and version >= 5:
                     logger.warning(
@@ -613,33 +623,23 @@ def _dynamic_analyzer(request, checksum, api=False):
                    ' all Xposed modules. And finally'
                    ' restart the device once again.')
             return print_n_send_error_response(request, msg, api)
-        if (selected_mode != 'gadget'
-                and version >= 5
-                and not env.run_frida_server()):
-            if device_mode == 'auto':
-                logger.warning(
-                    'Frida Server is unavailable; '
-                    'falling back to Frida Gadget')
-                selected_mode = 'gadget'
-            else:
-                return print_n_send_error_response(
-                    request,
-                    'Frida Server cannot run on this Android runtime. '
-                    'Select Frida Gadget mode.',
-                    api,
-                )
-        # Clean up previous analysis
-        env.adb_command(['am', 'force-stop', package], True, True)
-        frida_target = (
-            get_android_frida_target(identifier, checksum)
-            or package
-        )
-        if not Frida.close_active(
-                checksum, identifier, frida_target):
-            raise RuntimeError('Failed to close the active Frida session')
-        env.remove_frida_forward()
-        env.dz_cleanup(checksum)
+        if selected_mode != 'gadget' and version >= 5:
+            begin_replacement()
+            if not env.run_frida_server():
+                if device_mode == 'auto':
+                    logger.warning(
+                        'Frida Server is unavailable; '
+                        'falling back to Frida Gadget')
+                    selected_mode = 'gadget'
+                else:
+                    return print_n_send_error_response(
+                        request,
+                        'Frida Server cannot run on this Android runtime. '
+                        'Select Frida Gadget mode.',
+                        api,
+                    )
         apk_path = app_dir / f'{checksum}.apk'
+        package_installed = False
         if selected_mode == 'gadget':
             if install != '1':
                 return print_n_send_error_response(
@@ -687,6 +687,19 @@ def _dynamic_analyzer(request, checksum, api=False):
                 replace_existing_gadget=replace_existing_gadget == '1',
             )
             apk_path = patcher.patch()
+        # Clean up previous analysis
+        begin_replacement()
+        env.adb_command(['am', 'force-stop', package], True, True)
+        frida_target = (
+            get_android_frida_target(identifier, checksum)
+            or package
+        )
+        if not Frida.close_active(
+                checksum, identifier, frida_target):
+            raise RuntimeError('Failed to close the active Frida session')
+        env.remove_frida_forward()
+        env.dz_cleanup(checksum)
+        if selected_mode == 'gadget':
             if package_installed and not env.uninstall_package(package):
                 return print_n_send_error_response(
                     request,

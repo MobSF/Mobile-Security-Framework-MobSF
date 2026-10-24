@@ -16,6 +16,7 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
 from mobsf.DynamicAnalyzer.views.android.operations import (
     android_analysis_is_active,
     android_analysis_lifecycle,
+    android_analysis_operation,
     android_analysis_state_file,
     android_gadget_marker_file,
     get_android_analysis_claim,
@@ -83,6 +84,7 @@ def _active_analysis_environment(request, checksum):
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
+@android_analysis_operation
 def start_activity(request, api=False):
     """Launch a specific activity."""
     try:
@@ -122,6 +124,7 @@ def start_activity(request, api=False):
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
+@android_analysis_operation
 def start_deeplink(request, api=False):
     """Launch a specific deeplink."""
     try:
@@ -150,6 +153,7 @@ def start_deeplink(request, api=False):
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
+@android_analysis_operation
 def activity_tester(request, api=False):
     """Exported & non exported activity Tester."""
     data = {}
