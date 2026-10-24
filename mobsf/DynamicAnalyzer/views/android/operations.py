@@ -27,6 +27,7 @@ from mobsf.MobSF.utils import (
     get_device,
     is_md5,
     is_number,
+    strict_package_check,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.MobSF.views.authentication import (
@@ -47,7 +48,12 @@ def get_package_name(checksum):
     try:
         static_android_db = StaticAnalyzerAndroid.objects.get(
             MD5=checksum)
-        return static_android_db.PACKAGE_NAME
+        package = static_android_db.PACKAGE_NAME
+        return (
+            package
+            if isinstance(package, str) and strict_package_check(package)
+            else None
+        )
     except Exception:
         pkg_file = Path(settings.DWD_DIR) / 'packages.json'
         if not pkg_file.exists():
@@ -55,7 +61,12 @@ def get_package_name(checksum):
         with pkg_file.open(encoding='utf-8') as src:
             packages = json.load(src)
         if packages.get(checksum):
-            return packages[checksum][0]
+            package = packages[checksum][0]
+            return (
+                package
+                if isinstance(package, str) and strict_package_check(package)
+                else None
+            )
         return None
 # AJAX
 
