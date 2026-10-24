@@ -311,6 +311,9 @@ class GadgetPatcher:
         if self.split_apks:
             base_manifest = androguard_apk.APK(
                 self.apk_file.as_posix())
+            if base_manifest.get_attribute_value('manifest', 'split'):
+                raise ValueError(
+                    'Frida Gadget requires the base APK, not a feature split')
             base_package = base_manifest.get_package()
             base_version = base_manifest.get_androidversion_code()
             for split_apk in self.split_apks:
@@ -453,9 +456,9 @@ class GadgetPatcher:
         return class_name
 
     @staticmethod
-    def _application_process(package, application):
+    def _application_process(package, configured_process=None):
         """Return the validated primary process name."""
-        process = application.get(f'{ANDROID_ATTR}process') or package
+        process = configured_process or package
         if process.startswith(':'):
             process = f'{package}{process}'
         if not re.fullmatch(r'[A-Za-z0-9_.:]+', process):
@@ -538,7 +541,10 @@ class GadgetPatcher:
         if not re.fullmatch(class_pattern, original):
             raise ValueError('Unsupported Android Application class name')
         digest = sha256(self.apk_file)[:12]
-        process = self._application_process(package, application)
+        process = self._application_process(
+            package,
+            application.get(f'{ANDROID_ATTR}process'),
+        )
         strategy = None
         if self.patch_metadata:
             original_application = self.patch_metadata.get(
@@ -622,6 +628,11 @@ class GadgetPatcher:
             package,
             parsed_apk.get_attribute_value('application', 'name'),
         )
+        application_process = self._application_process(
+            package,
+            parsed_apk.get_attribute_value('application', 'process'),
+        )
+        candidate_processes = {application: application_process}
         class_pattern = r'(?:[A-Za-z_$][\w$]*\.)*[A-Za-z_$][\w$]*'
         if not re.fullmatch(class_pattern, application):
             raise ValueError('Unsupported Android Application class name')
@@ -669,6 +680,20 @@ class GadgetPatcher:
                         main_activity = self._qualified_class_name(
                             package, target)
                     break
+            main_process = application_process
+            for activity in manifest.findall('.//activity'):
+                activity_name = self._qualified_class_name(
+                    package,
+                    activity.get(f'{ANDROID_ATTR}name'),
+                )
+                if activity_name == main_activity:
+                    main_process = self._application_process(
+                        package,
+                        activity.get(f'{ANDROID_ATTR}process')
+                        or application_process,
+                    )
+                    break
+            candidate_processes[main_activity] = main_process
             if main_activity not in candidates:
                 candidates.append(main_activity)
         strategy = None
@@ -676,7 +701,10 @@ class GadgetPatcher:
         for candidate in candidates:
             if not re.fullmatch(class_pattern, candidate):
                 raise ValueError('Unsupported Android component class name')
-            strategy = self._inject_existing_application(candidate)
+            strategy = self._inject_existing_application(
+                candidate,
+                candidate_processes[candidate],
+            )
             if strategy:
                 loader_class = candidate
                 break
