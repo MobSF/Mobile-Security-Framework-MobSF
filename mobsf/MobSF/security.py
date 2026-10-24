@@ -122,6 +122,7 @@ def get_executable_hashes():
         'pkill',
         'iproxy',
         'keytool',
+        'keytool.exe',
     ]
     for sbin in system_bins:
         bin_path = which(sbin)
