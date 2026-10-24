@@ -194,6 +194,25 @@ def _read_analysis_claim(claim_file):
     return claim
 
 
+def _read_android_analysis_state(checksum):
+    """Read validated trusted state for one Android analysis."""
+    state_file = android_analysis_state_file(checksum)
+    if (state_file is None
+            or not state_file.is_file()
+            or state_file.is_symlink()):
+        return None
+    try:
+        state = json.loads(state_file.read_text(encoding='utf-8'))
+    except (OSError, ValueError, TypeError):
+        return None
+    if (not isinstance(state, dict)
+            or state.get('checksum') != checksum
+            or not valid_android_device_identifier(
+                state.get('identifier'))):
+        return None
+    return state
+
+
 def get_android_analysis_claim(identifier):
     """Return the checksum currently owning a device."""
     claim_file = _analysis_claim_file(identifier)
@@ -218,17 +237,9 @@ def android_analysis_is_active(identifier, checksum):
             or get_android_analysis_claim(identifier) != checksum
             or get_android_capture_claim() != (identifier, checksum)):
         return False
-    state_file = android_analysis_state_file(checksum)
-    if (state_file is None
-            or not state_file.is_file()
-            or state_file.is_symlink()):
-        return False
-    try:
-        state = json.loads(state_file.read_text(encoding='utf-8'))
-    except (OSError, ValueError, TypeError):
-        return False
+    state = _read_android_analysis_state(checksum)
     return bool(
-        isinstance(state, dict)
+        state
         and state.get('identifier') == identifier
         and state.get('checksum') == checksum
         and state.get('analysis_ready') is True
@@ -258,6 +269,15 @@ def claim_android_analysis(identifier, checksum):
                 != capture.get('checksum')):
             capture_file.unlink(missing_ok=True)
             capture = None
+        else:
+            paired_state = _read_android_analysis_state(
+                capture.get('checksum'))
+            if (not paired_state
+                    or paired_state.get('identifier')
+                    != capture.get('identifier')):
+                capture_claim_file.unlink(missing_ok=True)
+                capture_file.unlink(missing_ok=True)
+                capture = None
     device_claim = _read_analysis_claim(claim_file)
     if (claim_file.exists() or claim_file.is_symlink()) and not device_claim:
         claim_file.unlink(missing_ok=True)
