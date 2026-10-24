@@ -1,5 +1,6 @@
 # -*- coding: utf_8 -*-
 """Dynamic Analyzer Helpers."""
+import json
 import logging
 import os
 import re
@@ -13,7 +14,7 @@ import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from base64 import b64encode
-from hashlib import md5
+from hashlib import md5, sha256
 
 from django.conf import settings
 
@@ -1431,6 +1432,52 @@ class Environment:
             return False
         return True
 
+    def _frida_forward_state_file(self):
+        """Return the persistent ownership record for this device."""
+        digest = sha256(self.identifier.encode('utf-8')).hexdigest()
+        return (
+            Path(settings.DWD_DIR)
+            / f'android-frida-forward-{digest}.json'
+        )
+
+    def _read_frida_forward_state(self):
+        """Read a validated MobSF-owned Frida forward."""
+        state_file = self._frida_forward_state_file()
+        if not state_file.is_file() or state_file.is_symlink():
+            return None
+        try:
+            state = json.loads(state_file.read_text(encoding='utf-8'))
+        except (OSError, ValueError, TypeError):
+            return None
+        if (not isinstance(state, dict)
+                or state.get('identifier') != self.identifier):
+            return None
+        local = state.get('local')
+        if (not isinstance(local, str)
+                or not re.fullmatch(r'tcp:[1-9]\d{0,4}', local)
+                or int(local.split(':', 1)[1]) > 65535):
+            return None
+        return local
+
+    def _save_frida_forward_state(self, local):
+        """Persist exact forward ownership across worker processes."""
+        state_file = self._frida_forward_state_file()
+        state_file.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            descriptor = os.open(
+                state_file,
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+                0o600,
+            )
+        except FileExistsError:
+            return self._read_frida_forward_state()
+        with os.fdopen(descriptor, 'w', encoding='utf-8') as target:
+            json.dump({
+                'identifier': self.identifier,
+                'local': local,
+            }, target)
+        return local
+
     def get_frida_device(self, gadget=False):
         """Return a Frida device for the selected Android transport."""
         if not gadget and self.get_environment() != 'physical':
@@ -1448,8 +1495,16 @@ class Environment:
                 silent=True,
             ) or b''
             local = None
-            owned_local = _MOBSF_FRIDA_FORWARDS.get(
-                self.identifier)
+            state_file = self._frida_forward_state_file()
+            persisted_local = self._read_frida_forward_state()
+            if (persisted_local is None
+                    and state_file.is_file()
+                    and not state_file.is_symlink()):
+                state_file.unlink(missing_ok=True)
+            owned_local = (
+                persisted_local
+                or _MOBSF_FRIDA_FORWARDS.get(self.identifier)
+            )
             for line in forwards.decode('utf-8', 'ignore').splitlines():
                 parts = line.split()
                 if (len(parts) >= 3
@@ -1459,6 +1514,13 @@ class Environment:
                     local = parts[1]
                     break
             if not local:
+                if owned_local:
+                    stale_state = self._frida_forward_state_file()
+                    if (stale_state.is_file()
+                            and not stale_state.is_symlink()):
+                        stale_state.unlink(missing_ok=True)
+                    _MOBSF_FRIDA_FORWARDS.pop(
+                        self.identifier, None)
                 for attempt in range(1, 4):
                     result = self.adb_command(
                         ['forward', 'tcp:0', remote],
@@ -1472,11 +1534,25 @@ class Environment:
                     if (assigned.isdigit()
                             and 0 < int(assigned) < 65536):
                         local = f'tcp:{assigned}'
+                        recorded = self._save_frida_forward_state(local)
+                        if recorded and recorded != local:
+                            self.adb_command(
+                                ['forward', '--remove', local],
+                                silent=True,
+                            )
+                            local = recorded
+                        elif not recorded:
+                            self.adb_command(
+                                ['forward', '--remove', local],
+                                silent=True,
+                            )
+                            raise RuntimeError(
+                                'Unable to record Frida forward ownership')
                         _MOBSF_FRIDA_FORWARDS[self.identifier] = local
                         logger.info(
                             'Forwarded Frida for Android device on '
                             'local TCP port %s',
-                            assigned,
+                            local.rsplit(':', 1)[1],
                         )
                         break
                     logger.warning(
@@ -1504,10 +1580,29 @@ class Environment:
     def remove_frida_forward(self):
         """Remove the Frida port forward created by MobSF."""
         with _FRIDA_FORWARD_LOCK:
-            local = _MOBSF_FRIDA_FORWARDS.pop(
+            state_file = self._frida_forward_state_file()
+            memory_local = _MOBSF_FRIDA_FORWARDS.pop(
                 self.identifier, None)
+            local = (
+                self._read_frida_forward_state()
+                or memory_local
+            )
             if local:
                 self.adb_command(
                     ['forward', '--remove', local],
                     silent=True,
                 )
+                forwards = self.adb_command(
+                    ['forward', '--list'],
+                    silent=True,
+                ) or b''
+                for line in forwards.decode(
+                        'utf-8', 'ignore').splitlines():
+                    parts = line.split()
+                    if (len(parts) >= 2
+                            and parts[0] == self.identifier
+                            and parts[1] == local):
+                        return False
+            if state_file.is_file() and not state_file.is_symlink():
+                state_file.unlink(missing_ok=True)
+            return True

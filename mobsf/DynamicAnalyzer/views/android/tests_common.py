@@ -15,6 +15,7 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
 )
 from mobsf.DynamicAnalyzer.views.android.operations import (
     get_package_name,
+    release_android_analysis,
 )
 from mobsf.DynamicAnalyzer.views.android.environment import (
     Environment,
@@ -51,6 +52,36 @@ from mobsf.MobSF.views.authorization import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def get_analysis_identifier(request, md5_hash):
+    """Resolve the device bound to an active analysis."""
+    if not is_md5(md5_hash):
+        return None
+    apk_dir = Path(settings.UPLD_DIR) / md5_hash
+    state_file = apk_dir / '.mobsf-proxy-state'
+    gadget_marker = apk_dir / '.mobsf-gadget-mode'
+    identifier = None
+    if state_file.is_file() and not state_file.is_symlink():
+        try:
+            with state_file.open(encoding='utf-8') as source:
+                state = json.load(source)
+            if isinstance(state, dict):
+                identifier = state.get('identifier')
+        except (OSError, ValueError, TypeError):
+            logger.warning('Unable to read saved Android proxy state')
+    if (not valid_android_device_identifier(identifier)
+            and gadget_marker.is_file()
+            and not gadget_marker.is_symlink()):
+        marker_identifier = gadget_marker.read_text(
+            encoding='utf-8',
+            errors='ignore',
+        ).strip()
+        if valid_android_device_identifier(marker_identifier):
+            identifier = marker_identifier
+    if valid_android_device_identifier(identifier):
+        return identifier
+    return get_device(request)
 
 
 # AJAX
@@ -188,15 +219,19 @@ def activity_tester(request, api=False):
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
-def download_data(request, api=False):
+def download_data(request, api=False, identifier=None):
     """Download Application Data from Device."""
     logger.info('Downloading app data')
     data = {}
     try:
-        env = Environment(get_device(request))
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)
+        if identifier is None:
+            identifier = get_analysis_identifier(request, md5_hash)
+        if not valid_android_device_identifier(identifier):
+            return invalid_params(api)
+        env = Environment(identifier)
         package = get_package_name(md5_hash, env.identifier)
         if (not isinstance(package, str)
                 or not strict_package_check(package)):
@@ -239,7 +274,7 @@ def download_data(request, api=False):
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
-def collect_logs(request, api=False):
+def collect_logs(request, api=False, identifier=None):
     """Collecting Data and Cleanup."""
     logger.info('Collecting Data and Cleaning Up')
     data = {}
@@ -260,18 +295,13 @@ def collect_logs(request, api=False):
                     'Unable to read saved Android proxy state')
             if not isinstance(proxy_state, dict):
                 proxy_state = {}
-        identifier = proxy_state.get('identifier')
-        if (not valid_android_device_identifier(identifier)
-                and gadget_marker.is_file()
-                and not gadget_marker.is_symlink()):
-            marker_identifier = gadget_marker.read_text(
-                encoding='utf-8',
-                errors='ignore',
-            ).strip()
-            if valid_android_device_identifier(marker_identifier):
-                identifier = marker_identifier
+        bound_identifier = proxy_state.get('identifier')
+        if valid_android_device_identifier(bound_identifier):
+            identifier = bound_identifier
         if not valid_android_device_identifier(identifier):
-            identifier = get_device(request)
+            identifier = get_analysis_identifier(request, md5_hash)
+        if not valid_android_device_identifier(identifier):
+            return invalid_params(api)
         env = Environment(identifier)
         package = get_package_name(md5_hash, env.identifier)
         if not package:
@@ -320,6 +350,7 @@ def collect_logs(request, api=False):
             env.remove_frida_forward()
             if proxy_restored:
                 state_file.unlink(missing_ok=True)
+                release_android_analysis(env.identifier, md5_hash)
             gadget_marker.unlink(missing_ok=True)
             if not proxy_restored:
                 raise RuntimeError(

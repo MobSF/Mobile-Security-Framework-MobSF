@@ -7,6 +7,9 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from mobsf.DynamicAnalyzer.views.android.environment import Environment
+from mobsf.DynamicAnalyzer.views.android.operations import (
+    release_android_analysis,
+)
 from mobsf.MobSF.utils import (
     get_android_devices,
     valid_android_device_identifier,
@@ -84,12 +87,15 @@ class Command(BaseCommand):
                     remove_reverse = restored
             if remove_reverse:
                 env.disable_adb_reverse_tcp()
+            if not env.remove_frida_forward():
+                restored = False
             if restored:
                 for state_file, _ in entries:
                     state_file.unlink(missing_ok=True)
                     gadget_marker = (
                         state_file.parent / '.mobsf-gadget-mode')
                     gadget_marker.unlink(missing_ok=True)
+                release_android_analysis(identifier)
                 self.stdout.write(
                     f'Restored Android device {identifier}')
             else:
