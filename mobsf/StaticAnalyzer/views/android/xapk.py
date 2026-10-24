@@ -2,7 +2,7 @@
 """Handle XAPK File."""
 import logging
 import subprocess
-from json import load
+from json import dump, load
 from shutil import move
 from pathlib import Path
 
@@ -19,9 +19,29 @@ from mobsf.MobSF.utils import (
     append_scan_status,
     find_java_binary,
     is_file_exists,
+    scan_state_file,
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _write_split_metadata(checksum, app_dir, primary, splits):
+    """Persist the exact sibling APKs retained from the outer container."""
+    app_dir = Path(app_dir)
+    relatives = []
+    for split_apk in splits:
+        if split_apk == primary or not _regular_file(split_apk):
+            continue
+        try:
+            relative = split_apk.relative_to(app_dir).as_posix()
+        except ValueError:
+            continue
+        if is_safe_path(app_dir, split_apk, relative):
+            relatives.append(relative)
+    metadata = scan_state_file(checksum, 'split-apks.json')
+    metadata.parent.mkdir(parents=True, exist_ok=True)
+    with metadata.open('w', encoding='utf-8') as target:
+        dump({'splits': sorted(relatives)}, target)
 
 
 def handle_xapk(app_dic):
@@ -47,12 +67,23 @@ def handle_xapk(app_dic):
     if not apks:
         logger.error('Split APKs not found')
         return False
+    base_apk = None
+    splits = []
     for a in apks:
-        if a['id'] == 'base':
-            base_apk = app_dic['app_dir'] / a['file']
-            if is_safe_path(app_dic['app_dir'], base_apk, a['file']):
-                move(base_apk, apk)
-                return True
+        split_file = a.get('file')
+        if not isinstance(split_file, str):
+            continue
+        full_path = app_dic['app_dir'] / split_file
+        if (not is_safe_path(app_dic['app_dir'], full_path, split_file)
+                or not _regular_file(full_path)):
+            continue
+        splits.append(full_path)
+        if a.get('id') == 'base':
+            base_apk = full_path
+    if base_apk and _regular_file(base_apk):
+        _write_split_metadata(checksum, app_dic['app_dir'], base_apk, splits)
+        move(base_apk, apk)
+        return True
     return None
 
 
@@ -63,7 +94,6 @@ def _regular_file(path):
             return False
     except OSError:
         return False
-    # codeql[py/path-injection]: path already contained by is_safe_path
     return Path(path).is_file()
 
 
@@ -82,9 +112,11 @@ def _collect_split_apks(app_dir, members):
         if not _regular_file(full_path):
             continue
         splits.append(full_path)
-        if apk.endswith('base.apk'):
+        if apk.endswith(('base.apk', 'base-master.apk')):
             base_apk = full_path
-        elif 'config.' not in apk.lower() and fallback_apk is None:
+        elif ('config.' not in apk.lower()
+                and not apk.startswith('standalones/')
+                and fallback_apk is None):
             fallback_apk = full_path
     return base_apk or fallback_apk, splits
 
@@ -143,7 +175,7 @@ def handle_split_apk(app_dic):
     )
     if primary is None:
         return None
-    # codeql[py/path-injection]: primary is contained by is_safe_path
+    _write_split_metadata(checksum, app_dir, primary, splits)
     move(primary, apks)
     # Sibling contents share one cap. The container unzip above keeps its
     # own cap, matching the previous single-archive limit.

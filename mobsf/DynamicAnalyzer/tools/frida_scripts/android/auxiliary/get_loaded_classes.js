@@ -12,4 +12,5 @@ Java.perform(function() {
 		}
 		catch(err){}
 	});
+	send('[AUXILIARY-DONE]');
 });

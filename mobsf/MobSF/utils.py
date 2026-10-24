@@ -17,6 +17,7 @@ import string
 import subprocess
 import stat
 import sqlite3
+import time
 import unicodedata
 import threading
 from pathlib import Path
@@ -37,6 +38,7 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from mobsf.StaticAnalyzer.models import RecentScansDB
+from mobsf.MobSF.env import flag_from_value
 from mobsf.MobSF. init import api_key
 
 from . import settings
@@ -44,8 +46,15 @@ from . import settings
 
 logger = logging.getLogger(__name__)
 ADB_PATH = None
+ANDROID_DEVICE_SNAPSHOT = None
 BASE64_REGEX = re.compile(r'^[-A-Za-z0-9+/]*={0,3}$')
 MD5_REGEX = re.compile(r'^[0-9a-f]{32}$')
+SCAN_STATE_FILES = (
+    'proxy-state',
+    'gadget-mode',
+    'frida-owner',
+    'split-apks.json',
+)
 # Regex to capture strings between quotes or <string> tag
 STRINGS_REGEX = re.compile(r'(?<=\")(.+?)(?=\")|(?<=\<string>)(.+?)(?=\<)')
 # MobSF Custom regex to catch maximum URI like strings
@@ -96,7 +105,7 @@ def upstream_proxy(flaw_type):
             proxies = {flaw_type: proxy_host}
     else:
         proxies = {flaw_type: None}
-    verify = settings.UPSTREAM_PROXY_SSL_VERIFY in ('1', '"1"')
+    verify = settings.UPSTREAM_PROXY_SSL_VERIFY
     return proxies, verify
 
 
@@ -378,8 +387,13 @@ def find_process_by(name):
     """Return a set of process path matching name."""
     proc = set()
     for p in psutil.process_iter(attrs=['name']):
-        if (name == p.info['name']):
-            proc.add(p.exe())
+        try:
+            if name == p.info['name']:
+                proc.add(p.exe())
+        except (psutil.AccessDenied,
+                psutil.NoSuchProcess,
+                psutil.ZombieProcess):
+            continue
     return proc
 
 
@@ -416,22 +430,145 @@ def docker_translate_proxy_ip(ip):
     return ip
 
 
-def get_device():
+def valid_android_device_identifier(identifier):
+    """Validate an ADB device serial or network identifier."""
+    if not isinstance(identifier, str):
+        return False
+    identifier = identifier.strip()
+    if not identifier or len(identifier) > 255:
+        return False
+    serial = r'[A-Za-z0-9][A-Za-z0-9._:%-]*'
+    bracketed_ipv6 = r'\[[0-9A-Fa-f:.%]+\](?::\d{1,5})?'
+    return bool(re.fullmatch(
+        f'(?:{serial}|{bracketed_ipv6})',
+        identifier,
+    ))
+
+
+def get_android_devices():
+    """Return devices reported by the configured ADB server."""
+    devices = []
+    try:
+        output = subprocess.check_output(
+            [get_adb(), 'devices', '-l'],
+            stderr=subprocess.STDOUT,
+            timeout=10,
+        ).decode('utf-8', 'ignore')
+        for line in output.splitlines():
+            line = line.strip()
+            if not line or line.startswith('List of devices'):
+                continue
+            parts = line.split()
+            if len(parts) < 2:
+                continue
+            identifier, state = parts[:2]
+            if 'no permissions' in line:
+                state = 'no permissions'
+            if not valid_android_device_identifier(identifier):
+                logger.warning('Ignoring invalid ADB device identifier')
+                continue
+            details = {}
+            for item in parts[2:]:
+                if ':' in item:
+                    key, value = item.split(':', 1)
+                    details[key] = value
+            devices.append({
+                'identifier': identifier,
+                'state': state,
+                'details': details,
+            })
+    except Exception:
+        logger.exception('Failed to list Android devices')
+        return devices
+    snapshot = tuple(
+        (device['identifier'], device['state'])
+        for device in devices
+    )
+    global ANDROID_DEVICE_SNAPSHOT
+    if snapshot != ANDROID_DEVICE_SNAPSHOT:
+        online = sum(
+            device['state'] == 'device'
+            for device in devices
+        )
+        logger.info(
+            'Found %d Android device%s (%d online)',
+            len(devices),
+            '' if len(devices) == 1 else 's',
+            online,
+        )
+        ANDROID_DEVICE_SNAPSHOT = snapshot
+    return devices
+
+
+def get_device(request=None):
     """Get Device."""
+    if request is not None:
+        identifier = request.POST.get('identifier')
+        explicit_selection = bool(identifier)
+        session_selection = False
+        if not identifier:
+            identifier = request.GET.get('identifier')
+            explicit_selection = bool(identifier)
+        if not identifier:
+            identifier = request.session.get('android_device_identifier')
+            session_selection = bool(identifier)
+        if identifier and valid_android_device_identifier(identifier):
+            identifier = identifier.strip()
+            attempts = 3 if session_selection else 1
+            for attempt in range(attempts):
+                connected = {
+                    device['identifier']
+                    for device in get_android_devices()
+                    if device['state'] == 'device'
+                }
+                if identifier in connected:
+                    return identifier
+                translated = docker_translate_localhost(identifier)
+                if translated in connected:
+                    return translated
+                if attempt + 1 < attempts:
+                    time.sleep(0.25)
+            if explicit_selection:
+                logger.warning(
+                    'Requested Android device is not connected')
+            else:
+                logger.info(
+                    'Selected Android device is temporarily unavailable')
+            return None
+        if identifier:
+            if session_selection:
+                request.session.pop(
+                    'android_device_identifier', None)
+            logger.warning('Invalid Android device selection')
+            return None
     if os.getenv('ANALYZER_IDENTIFIER'):
-        return docker_translate_localhost(
-            os.getenv('ANALYZER_IDENTIFIER'))
+        identifier = os.getenv('ANALYZER_IDENTIFIER')
     elif settings.ANALYZER_IDENTIFIER:
-        return docker_translate_localhost(
-            settings.ANALYZER_IDENTIFIER)
+        identifier = settings.ANALYZER_IDENTIFIER
     else:
-        dev_id = ''
-        out = subprocess.check_output([get_adb(), 'devices']).splitlines()
-        if len(out) > 2:
-            dev_id = out[1].decode('utf-8').split('\t')[0]
-            if 'daemon started successfully' not in dev_id:
-                return docker_translate_localhost(dev_id)
+        online = [
+            device for device in get_android_devices()
+            if device['state'] == 'device'
+        ]
+        if len(online) == 1:
+            return online[0]['identifier']
+        if len(online) > 1:
+            if request is not None:
+                logger.info(
+                    'Multiple Android devices are online; '
+                    'waiting for device selection')
+            else:
+                logger.warning(
+                    'Multiple Android devices are connected. '
+                    'An explicit device identifier is required.')
+            return None
+        identifier = None
+    if identifier and valid_android_device_identifier(identifier):
+        return docker_translate_localhost(identifier.strip())
+    if identifier:
+        logger.error('Invalid Android device identifier')
     logger.error(get_android_dm_exception_msg())
+    return None
 
 
 def get_adb():
@@ -448,6 +585,11 @@ def get_adb():
             ADB_PATH = settings.ADB_BINARY
             return ADB_PATH
         if ADB_PATH:
+            return ADB_PATH
+        adb_name = 'adb.exe' if platform.system() == 'Windows' else 'adb'
+        adb_on_path = shutil.which(adb_name)
+        if adb_on_path:
+            ADB_PATH = adb_on_path
             return ADB_PATH
         if platform.system() == 'Windows':
             adb_loc = find_process_by('adb.exe')
@@ -470,10 +612,9 @@ def get_adb():
             os.environ['MOBSF_ADB'] = 'adb'
             logger.warning('Dynamic Analysis related '
                            'functions will not work. '
-                           '\nMake sure a Genymotion Android VM/'
-                           'Android Studio Emulator'
-                           ' is running before performing'
-                           ' Dynamic Analysis.')
+                           '\nMake sure ADB is installed and an authorized '
+                           'Android runtime or device is connected before '
+                           'performing Dynamic Analysis.')
     return 'adb'
 
 
@@ -616,6 +757,79 @@ def is_md5(user_input):
     if not stat:
         logger.error('Invalid scan hash')
     return stat
+
+
+def scan_state_root():
+    """Return the root of host-side scan state, outside upload dirs."""
+    return Path(settings.MOBSF_HOME) / 'scan_state'
+
+
+def scan_state_dir(checksum):
+    """Return the host-side state directory of a scan."""
+    if not isinstance(checksum, str) or not is_md5(checksum):
+        raise ValueError('Invalid scan hash')
+    return scan_state_root() / checksum
+
+
+def scan_state_file(checksum, name):
+    """Return a host-side state file path of a scan."""
+    if name not in SCAN_STATE_FILES:
+        raise ValueError('Invalid scan state name')
+    return scan_state_dir(checksum) / name
+
+
+def read_analysis_state(checksum):
+    """Read the Android dynamic analysis state of a scan."""
+    state_file = scan_state_file(checksum, 'proxy-state')
+    if not state_file.is_file() or state_file.is_symlink():
+        return {}
+    try:
+        state = json.loads(state_file.read_text(encoding='utf-8'))
+    except (OSError, ValueError, TypeError):
+        logger.warning('Ignoring invalid Android analysis state')
+        return {}
+    return state if isinstance(state, dict) else {}
+
+
+def write_analysis_state(checksum, state):
+    """Atomically write the Android dynamic analysis state of a scan."""
+    state_file = scan_state_file(checksum, 'proxy-state')
+    state_file.parent.mkdir(parents=True, exist_ok=True)
+    tmp_file = state_file.with_name(f'.{state_file.name}.tmp')
+    tmp_file.write_text(json.dumps(state), encoding='utf-8')
+    os.replace(tmp_file, state_file)
+
+
+def get_gadget_analysis(checksum):
+    """Return the device identifier of a Frida Gadget analysis."""
+    marker = scan_state_file(checksum, 'gadget-mode')
+    if not marker.is_file() or marker.is_symlink():
+        return None
+    try:
+        return marker.read_text(encoding='utf-8', errors='ignore').strip()
+    except OSError:
+        return None
+
+
+def is_gadget_analysis(checksum):
+    """Check if a scan is running in Frida Gadget mode."""
+    return get_gadget_analysis(checksum) is not None
+
+
+def set_gadget_analysis(checksum, identifier=None):
+    """Mark or unmark a scan as running in Frida Gadget mode."""
+    marker = scan_state_file(checksum, 'gadget-mode')
+    if not identifier:
+        marker.unlink(missing_ok=True)
+        return
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    marker.write_text(identifier, encoding='utf-8')
+
+
+def clear_analysis_state(checksum):
+    """Remove the Android dynamic analysis state of a scan."""
+    for name in ('proxy-state', 'gadget-mode'):
+        scan_state_file(checksum, name).unlink(missing_ok=True)
 
 
 def get_config_loc():
@@ -824,8 +1038,7 @@ def android_component(data):
 
 def get_android_dm_exception_msg():
     return (
-        'Is your Android VM/emulator running? MobSF cannot'
-        ' find the android device identifier.'
+        'MobSF cannot find an authorized Android runtime or device.'
         ' Please read official documentation.'
         ' If this error persists, set ANALYZER_IDENTIFIER in '
         f'{get_config_loc()} or via environment variable'
@@ -848,10 +1061,9 @@ def get_android_src_dir(app_dir, typ):
 
 
 def settings_enabled(attr):
-    """Get settings state if present."""
-    disabled = ('', ' ', '""', '" "', '0', '"0"', False)
+    """Return True when a boolean setting is exactly enabled."""
     try:
-        return getattr(settings, attr) not in disabled
+        return flag_from_value(getattr(settings, attr))
     except Exception:
         return False
 

@@ -8,6 +8,7 @@ MobSF and Django settings
 import logging
 import os
 
+from mobsf.MobSF.env import apply_config_flags, env_flag
 from mobsf.MobSF.init import (
     first_run,
     get_mobsf_home,
@@ -124,7 +125,7 @@ WINDOWS_EXTS = ('appx',)
 # REST API only mode
 # Set MOBSF_API_ONLY to 1 to enable REST API only mode
 # In this mode, web UI related urls are disabled.
-API_ONLY = os.getenv('MOBSF_API_ONLY', '0')
+API_ONLY = env_flag('MOBSF_API_ONLY', '0')
 
 # -----External URLS--------------------------
 MALTRAIL_DB_URL = ('https://github.com/stamparm/trails/'
@@ -173,7 +174,7 @@ DATABASES = {
 }
 # ===============================================
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
-DEBUG = bool(os.getenv('MOBSF_DEBUG', '0') == '1')
+DEBUG = env_flag('MOBSF_DEBUG', '0')
 DJANGO_LOG_LEVEL = DEBUG
 TEMPLATE_DEBUG = DEBUG
 ALLOWED_HOSTS = ['127.0.0.1', 'mobsf', '*']
@@ -336,7 +337,7 @@ LOGGING = {
         },
     },
 }
-ASYNC_ANALYSIS = bool(os.getenv('MOBSF_ASYNC_ANALYSIS', '0') == '1')
+ASYNC_ANALYSIS = env_flag('MOBSF_ASYNC_ANALYSIS', '0')
 ASYNC_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_ASYNC_ANALYSIS_TIMEOUT', '60'))
 Q_CLUSTER = {
     'name': 'scan_queue',
@@ -356,29 +357,27 @@ MULTIPROCESSING = os.getenv('MOBSF_MULTIPROCESSING')
 JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1000))
 SAST_TIMEOUT = int(os.getenv('MOBSF_SAST_TIMEOUT', 1000))
 BINARY_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_BINARY_ANALYSIS_TIMEOUT', 600))
-DISABLE_AUTHENTICATION = os.getenv('MOBSF_DISABLE_AUTHENTICATION')
+DISABLE_AUTHENTICATION = env_flag('MOBSF_DISABLE_AUTHENTICATION', '0')
 RATELIMIT = os.getenv('MOBSF_RATELIMIT', '7/m')
-USE_X_FORWARDED_HOST = bool(
-    os.getenv('MOBSF_USE_X_FORWARDED_HOST', '1') == '1')
-USE_X_FORWARDED_PORT = bool(
-    os.getenv('MOBSF_USE_X_FORWARDED_PORT', '1') == '1')
+USE_X_FORWARDED_HOST = env_flag('MOBSF_USE_X_FORWARDED_HOST', '1')
+USE_X_FORWARDED_PORT = env_flag('MOBSF_USE_X_FORWARDED_PORT', '1')
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # ===========================
 # ENTERPRISE FEATURE REQUESTS
 # ===========================
-EFR_01 = os.getenv('EFR_01', '0')
+EFR_01 = env_flag('EFR_01', '0')
 # SAML SSO
 # IdP Configuration
 IDP_METADATA_URL = os.getenv('MOBSF_IDP_METADATA_URL')
 IDP_ENTITY_ID = os.getenv('MOBSF_IDP_ENTITY_ID')
 IDP_SSO_URL = os.getenv('MOBSF_IDP_SSO_URL')
 IDP_X509CERT = os.getenv('MOBSF_IDP_X509CERT')
-IDP_IS_ADFS = os.getenv('MOBSF_IDP_IS_ADFS', '0')
+IDP_IS_ADFS = env_flag('MOBSF_IDP_IS_ADFS', '0')
 IDP_MAINTAINER_GROUP = os.getenv('MOBSF_IDP_MAINTAINER_GROUP', 'Maintainer')
 IDP_VIEWER_GROUP = os.getenv('MOBSF_IDP_VIEWER_GROUP', 'Viewer')
 # SP Configuration
 SP_HOST = os.getenv('MOBSF_SP_HOST')
-SP_ALLOW_PASSWORD = os.getenv('MOBSF_SP_ALLOW_PASSWORD', '0')
+SP_ALLOW_PASSWORD = env_flag('MOBSF_SP_ALLOW_PASSWORD', '0')
 # ===================
 # USER CONFIGURATION
 # ===================
@@ -416,24 +415,25 @@ else:
         'kotlinx/', 'kotlin/',
     }
     # Disable CVSSV2 Score by default
-    CVSS_SCORE_ENABLED = bool(os.getenv('MOBSF_CVSS_SCORE_ENABLED', ''))
+    CVSS_SCORE_ENABLED = os.getenv('MOBSF_CVSS_SCORE_ENABLED', '0') == '1'
     # NIAP Scan
-    NIAP_ENABLED = os.getenv('MOBSF_NIAP_ENABLED', '')
+    NIAP_ENABLED = os.getenv('MOBSF_NIAP_ENABLED', '0') == '1'
     # Permission to Code Mapping
-    PERM_MAPPING_ENABLED = os.getenv('MOBSF_PERM_MAPPING_ENABLED', '1')
+    PERM_MAPPING_ENABLED = os.getenv('MOBSF_PERM_MAPPING_ENABLED', '1') == '1'
     # Dex 2 Smali Conversion
-    DEX2SMALI_ENABLED = os.getenv('MOBSF_DEX2SMALI_ENABLED', '1')
+    DEX2SMALI_ENABLED = os.getenv('MOBSF_DEX2SMALI_ENABLED', '1') == '1'
     # Android Shared Object Binary Analysis
-    SO_ANALYSIS_ENABLED = os.getenv('MOBSF_SO_ANALYSIS_ENABLED', '1')
+    SO_ANALYSIS_ENABLED = os.getenv('MOBSF_SO_ANALYSIS_ENABLED', '1') == '1'
     # iOS Dynamic Library Binary Analysis
-    DYLIB_ANALYSIS_ENABLED = os.getenv('MOBSF_DYLIB_ANALYSIS_ENABLED', '1')
+    DYLIB_ANALYSIS_ENABLED = os.getenv(
+        'MOBSF_DYLIB_ANALYSIS_ENABLED', '1') == '1'
     # =================================================
     # --------------------------
     # MALWARE ANALYZER SETTINGS
     # --------------------------
 
-    DOMAIN_MALWARE_SCAN = os.getenv('MOBSF_DOMAIN_MALWARE_SCAN', '1')
-    APKID_ENABLED = os.getenv('MOBSF_APKID_ENABLED', '1')
+    DOMAIN_MALWARE_SCAN = os.getenv('MOBSF_DOMAIN_MALWARE_SCAN', '1') == '1'
+    APKID_ENABLED = os.getenv('MOBSF_APKID_ENABLED', '1') == '1'
     # ==================================================
     # ======WINDOWS STATIC ANALYSIS SETTINGS ===========
     # Private key
@@ -495,10 +495,10 @@ else:
 
     # ========UPSTREAM PROXY SETTINGS ==============
     # If you are behind a Proxy
-    UPSTREAM_PROXY_ENABLED = bool(os.getenv(
-        'MOBSF_UPSTREAM_PROXY_ENABLED', ''))
+    UPSTREAM_PROXY_ENABLED = os.getenv(
+        'MOBSF_UPSTREAM_PROXY_ENABLED', '0') == '1'
     UPSTREAM_PROXY_SSL_VERIFY = os.getenv(
-        'MOBSF_UPSTREAM_PROXY_SSL_VERIFY', '1')
+        'MOBSF_UPSTREAM_PROXY_SSL_VERIFY', '1') == '1'
     UPSTREAM_PROXY_TYPE = os.getenv('MOBSF_UPSTREAM_PROXY_TYPE', 'http')
     UPSTREAM_PROXY_IP = os.getenv('MOBSF_UPSTREAM_PROXY_IP', '127.0.0.1')
     UPSTREAM_PROXY_PORT = int(os.getenv('MOBSF_UPSTREAM_PROXY_PORT', '3128'))
@@ -510,15 +510,15 @@ else:
     # Get AppMonsta API from https://appmonsta.com/dashboard/get_api_key/
     APPMONSTA_API = os.getenv('MOBSF_APPMONSTA_API', '')
     # ----------VirusTotal (API v3)-----------------
-    VT_ENABLED = bool(os.getenv('MOBSF_VT_ENABLED', ''))
+    VT_ENABLED = os.getenv('MOBSF_VT_ENABLED', '0') == '1'
     VT_API_KEY = os.getenv('MOBSF_VT_API_KEY', '')
-    VT_UPLOAD = bool(os.getenv('MOBSF_VT_UPLOAD', ''))
-    # Before setting VT_ENABLED to True,
+    VT_UPLOAD = os.getenv('MOBSF_VT_UPLOAD', '0') == '1'
+    # Before setting MOBSF_VT_ENABLED=1,
     # Make sure VT_API_KEY is set to your VirusTotal API key
     # register at: https://www.virustotal.com/#/join-us
     # You can get your API KEY from:
     # https://www.virustotal.com/gui/user/<username>/apikey/
-    # Files will be uploaded to VirusTotal if VT_UPLOAD is True.
+    # Files will be uploaded to VirusTotal when MOBSF_VT_UPLOAD=1.
     # Files <=32MB use /files; larger files use /files/upload_url
     # (up to 650MB).
     # ===============================================
@@ -539,3 +539,7 @@ else:
     # CORELLIUM_PROJECT_ID is optional, MobSF will use any available project id
     # ===============================================
     # ^CONFIG-END^: Do not edit this line
+
+# Re-read flags from the environment after an older home config.py loads.
+# A hand-edited True is kept when that variable is unset.
+apply_config_flags(globals())
