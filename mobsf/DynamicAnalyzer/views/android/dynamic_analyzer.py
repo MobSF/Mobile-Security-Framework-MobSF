@@ -24,8 +24,8 @@ from mobsf.DynamicAnalyzer.forms import (
 )
 from mobsf.DynamicAnalyzer.tools.apk_patcher import GadgetPatcher
 from mobsf.DynamicAnalyzer.views.android.environment import (
-    ANDROID_API_SUPPORTED,
     Environment,
+    LEGACY_MOBSFY_MAX_API,
 )
 from mobsf.DynamicAnalyzer.views.android.frida_core import Frida
 from mobsf.DynamicAnalyzer.views.android.operations import (
@@ -141,7 +141,6 @@ def android_dynamic_analysis(request, api=False):
                    'runtime': runtime,
                    'devices': devices,
                    'online_devices': online_devices,
-                   'android_supported': ANDROID_API_SUPPORTED,
                    'proxy_ip': get_proxy_ip(identifier),
                    'proxy_port': settings.PROXY_PORT,
                    'settings_loc': get_config_loc(),
@@ -304,7 +303,7 @@ def android_package_status(request):
         selected_mode = mode
         if runtime != 'physical':
             if mode == 'auto':
-                if int(env.get_android_sdk()) > ANDROID_API_SUPPORTED:
+                if int(env.get_android_sdk()) > LEGACY_MOBSFY_MAX_API:
                     selected_mode = 'gadget'
                 else:
                     selected_mode = (
@@ -532,7 +531,7 @@ def _dynamic_analyzer(request, checksum, api=False):
         elif selected_mode != 'gadget':
             selected_mode = 'legacy'
             if (device_mode == 'auto'
-                    and profile.sdk > ANDROID_API_SUPPORTED):
+                    and profile.sdk > LEGACY_MOBSFY_MAX_API):
                 logger.info(
                     'Android API %s exceeds the legacy VM limit; '
                     'using Frida Gadget',
