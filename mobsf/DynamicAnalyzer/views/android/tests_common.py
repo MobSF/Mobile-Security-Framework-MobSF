@@ -3,6 +3,7 @@
 import logging
 import os
 import re
+from pathlib import Path
 
 from django.conf import settings
 from django.views.decorators.http import require_http_methods
@@ -27,10 +28,14 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
     get_http_tools_url,
     stop_httptools,
 )
-from mobsf.MobSF.security import cmd_injection_check
+from mobsf.MobSF.security import (
+    cmd_injection_check,
+    is_safe_path,
+)
 from mobsf.MobSF.utils import (
     is_md5,
     python_list,
+    strict_package_check,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.MobSF.views.authentication import (
@@ -71,6 +76,9 @@ def start_activity(request, api=False):
         static_android_db = StaticAnalyzerAndroid.objects.get(
             MD5=md5_hash)
         package = static_android_db.PACKAGE_NAME
+        if (not isinstance(package, str)
+                or not strict_package_check(package)):
+            return invalid_params(api)
         env.launch_n_capture(package, activity, outfile)
         data = {'status': 'ok'}
     except Exception as exp:
@@ -126,6 +134,9 @@ def activity_tester(request, api=False):
         static_android_db = StaticAnalyzerAndroid.objects.get(
             MD5=md5_hash)
         package = static_android_db.PACKAGE_NAME
+        if (not isinstance(package, str)
+                or not strict_package_check(package)):
+            return invalid_params(api)
         iden = ''
         if test == 'exported':
             iden = 'Exported '
@@ -183,22 +194,25 @@ def download_data(request, api=False):
         if not is_md5(md5_hash):
             return invalid_params(api)
         package = get_package_name(md5_hash)
-        if not package:
+        if (not isinstance(package, str)
+                or not strict_package_check(package)):
             data = {'status': 'failed',
-                    'message': 'App details not found in database'}
+                    'message': 'Invalid app details'}
             return send_response(data, api)
-        apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
+        apk_dir = Path(settings.UPLD_DIR) / md5_hash
         stop_httptools(get_http_tools_url(request))
-        files_loc = '/data/local/'
         logger.info('Archiving files created by app')
-        env.adb_command(['tar', '-cvf', files_loc + package + '.tar',
-                         '/data/data/' + package + '/'], True)
-        logger.info('Downloading Archive')
-        env.adb_command(['pull', files_loc + package + '.tar',
-                         apk_dir + package + '.tar'])
-        logger.info('Stopping ADB server')
-        env.adb_command(['kill-server'])
-        data = {'status': 'ok'}
+        archive_name = f'{package}.tar'
+        output_file = apk_dir / archive_name
+        if not is_safe_path(apk_dir, output_file, archive_name):
+            return invalid_params(api)
+        if env.archive_app_data(package, output_file.as_posix()):
+            data = {'status': 'ok'}
+        else:
+            data = {
+                'status': 'failed',
+                'message': 'Application data is not accessible',
+            }
     except Exception as exp:
         logger.exception('Downloading application data')
         data = {'status': 'failed', 'message': str(exp)}
@@ -244,6 +258,7 @@ def collect_logs(request, api=False):
         logger.info('Stopping app')
         # Unset Global Proxy
         env.unset_global_proxy()
+        env.remove_frida_forward()
         data = {'status': 'ok'}
     except Exception as exp:
         logger.exception('Data Collection & Clean Up failed')
