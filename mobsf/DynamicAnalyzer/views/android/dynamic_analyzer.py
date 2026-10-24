@@ -10,6 +10,7 @@ from shelljob import proc
 
 
 from django.http import (
+    HttpResponse,
     JsonResponse,
     StreamingHttpResponse,
 )
@@ -25,6 +26,9 @@ from mobsf.DynamicAnalyzer.forms import (
     AndroidPullScanForm,
 )
 from mobsf.DynamicAnalyzer.tools.apk_patcher import GadgetPatcher
+from mobsf.DynamicAnalyzer.views.android.device_icon import (
+    device_package_icon,
+)
 from mobsf.DynamicAnalyzer.views.android.environment import (
     ANDROID_API_SUPPORTED,
     Environment,
@@ -261,6 +265,40 @@ def android_device_apps(request):
             'status': 'failed',
             'message': 'Failed to load installed applications',
         }, status=500)
+
+
+@login_required
+@permission_required(Permissions.SCAN)
+@require_http_methods(['GET'])
+def android_device_app_icon(request):
+    """Return the launcher icon for one installed package."""
+    form = AndroidPullScanForm(request.GET)
+    if not form.is_valid():
+        return HttpResponse(status=204)
+    package = form.cleaned_data['package']
+    try:
+        identifier = get_device(request)
+        if not identifier:
+            return HttpResponse(status=204)
+        env = Environment(identifier)
+        if not env.connect():
+            return HttpResponse(status=204)
+        result = device_package_icon(env, package)
+    except Exception:
+        logger.exception('Loading an Android launcher icon')
+        return HttpResponse(status=204)
+    if not result:
+        return HttpResponse(status=204)
+    data, content_type, label = result
+    if data and content_type:
+        response = HttpResponse(data, content_type=content_type)
+    else:
+        response = HttpResponse(status=204)
+    if label:
+        response['X-App-Label'] = quote(label, safe='')
+    response['X-Content-Type-Options'] = 'nosniff'
+    response['Cache-Control'] = 'private, max-age=86400'
+    return response
 
 
 @login_required
