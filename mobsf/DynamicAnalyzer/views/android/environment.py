@@ -50,7 +50,7 @@ from mobsf.MobSF.utils import (
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 
 logger = logging.getLogger(__name__)
-ANDROID_API_SUPPORTED = 30
+LEGACY_MOBSFY_MAX_API = 30
 _FRIDA_FORWARD_LOCK = threading.Lock()
 _MOBSF_FRIDA_FORWARDS = {}
 _DEVICE_PACKAGE_CACHE = {}
@@ -1051,9 +1051,12 @@ class Environment:
                 if api:
                     logger.info('Android API Level '
                                 'identified as %s', api)
-                    if int(api) > ANDROID_API_SUPPORTED:
-                        logger.error('This API Level is not supported'
-                                     ' for Dynamic Analysis.')
+                    if int(api) > LEGACY_MOBSFY_MAX_API:
+                        logger.error(
+                            'Android API %s is unsupported for legacy '
+                            'MobSFy mode; use Auto or Frida Gadget',
+                            api,
+                        )
                         return False
             except Exception:
                 pass
