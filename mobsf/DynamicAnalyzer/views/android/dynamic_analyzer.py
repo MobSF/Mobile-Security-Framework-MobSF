@@ -463,11 +463,38 @@ def dynamic_analyzer(request, checksum, api=False):
         active_identifier = existing_state.get('identifier')
         if (valid_android_device_identifier(active_identifier)
                 and active_identifier != identifier):
-            return print_n_send_error_response(
-                request,
-                'This app already has an active analysis on another device',
-                api,
+            logger.info(
+                'Moving Android analysis from %s to %s',
+                active_identifier,
+                identifier,
             )
+            previous_env = Environment(active_identifier)
+            if not previous_env.connect():
+                return print_n_send_error_response(
+                    request,
+                    'The previous analysis device is unavailable. Connect '
+                    'it and retry so MobSF can restore its proxy settings.',
+                    api,
+                )
+            previous_proxy = existing_state.get('proxy', '')
+            if not isinstance(previous_proxy, str):
+                previous_proxy = ''
+            Frida.close_active(
+                checksum, active_identifier, package)
+            previous_env.adb_command(
+                ['am', 'force-stop', package], True, True)
+            previous_env.remove_frida_forward()
+            if not previous_env.restore_global_proxy(previous_proxy):
+                return print_n_send_error_response(
+                    request,
+                    'Failed to clean up the previous analysis device',
+                    api,
+                )
+            if existing_state.get('remove_reverse') is True:
+                previous_env.disable_adb_reverse_tcp()
+            proxy_state_file.unlink(missing_ok=True)
+            gadget_marker.unlink(missing_ok=True)
+            existing_state = {}
         # Clean up previous analysis
         env.adb_command(['am', 'force-stop', package], True, True)
         Frida.close_active(checksum, identifier, package)
