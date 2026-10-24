@@ -455,7 +455,7 @@ def _collect_logs(request, api=False, identifier=None):
                 frida_target,
             )
             if frida_closed:
-                env.remove_frida_forward()
+                frida_closed = env.remove_frida_forward()
             if proxy_restored and frida_closed:
                 proxy_state.update({
                     'identifier': env.identifier,

@@ -289,6 +289,7 @@ class Frida:
                     return True
             except Exception:
                 logger.exception('Failed to reuse the active Frida session')
+                self.last_error = 'Failed to inject into the active Frida session'
                 if script:
                     try:
                         script.unload()
@@ -302,6 +303,7 @@ class Frida:
                 pass
             if not completed:
                 logger.error('Timed out waiting for temporary Frida script')
+                self.last_error = 'Timed out waiting for temporary Frida script'
                 return False
             logger.info('Completed temporary Frida injection')
             return True

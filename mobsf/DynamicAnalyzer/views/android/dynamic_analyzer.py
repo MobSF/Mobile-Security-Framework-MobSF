@@ -502,8 +502,8 @@ def _dynamic_analyzer(request, checksum, api=False):
                 )
             previous_env.adb_command(
                 ['am', 'force-stop', package], True, True)
-            previous_env.remove_frida_forward()
-            if not previous_env.restore_global_proxy(previous_proxy):
+            if (not previous_env.remove_frida_forward()
+                    or not previous_env.restore_global_proxy(previous_proxy)):
                 return print_n_send_error_response(
                     request,
                     'Failed to clean up the previous analysis device',
@@ -716,6 +716,8 @@ def _dynamic_analyzer(request, checksum, api=False):
         else:
             gadget_marker.unlink(missing_ok=True)
         current_proxy = env.get_global_proxy()
+        if current_proxy is None:
+            raise RuntimeError('Unable to read the Android proxy setting')
         saved_proxy = existing_state.get('proxy')
         if isinstance(saved_proxy, str):
             previous_proxy = saved_proxy

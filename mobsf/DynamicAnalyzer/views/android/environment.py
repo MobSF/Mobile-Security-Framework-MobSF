@@ -608,10 +608,10 @@ class Environment:
             'global',
             'http_proxy',
         ], True, True)
-        if not output:
-            return ''
+        if output is None:
+            return None
         value = output.decode('utf-8', 'ignore').strip()
-        if value in ('null', ':0'):
+        if value in ('', 'null', ':0'):
             return ''
         return value
 

@@ -397,6 +397,8 @@ def get_dependencies(package, checksum, identifier=None):
         location.write_text('')
     if frd.reuse_session(replace=False):
         return True, ''
+    if frd.last_error:
+        return False, frd.last_error
     if not frd.claim_controller():
         return False, (
             frd.last_error
