@@ -29,7 +29,6 @@ from mobsf.MobSF.utils import (
 )
 from mobsf.DynamicAnalyzer.forms import UploadFileForm
 from mobsf.DynamicAnalyzer.tools.webproxy import (
-    get_http_tools_url,
     stop_httptools,
 )
 from mobsf.DynamicAnalyzer.views.common.shared import (
@@ -775,7 +774,7 @@ def download_data(request, bundle_id, api=False):
         logger.info('Downloading app container data')
         download_app_data(ci, checksum)
         # Stop HTTPS Proxy
-        stop_httptools(get_http_tools_url(request))
+        stop_httptools()
         # Move HTTP raw logs to download directory
         flows = Path.home() / '.httptools' / 'flows'
         webf = flows / f'{bundle_id}.flow.txt'

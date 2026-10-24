@@ -25,6 +25,7 @@ function renderMessage(data) {
 async function startStream() {
     const body = new URLSearchParams();
     body.append('app_package', '{{ package|escapejs }}');
+    body.append('identifier', '{{ identifier|escapejs }}');
     try {
         const response = await fetch('/logcat/', {
             method: 'POST',

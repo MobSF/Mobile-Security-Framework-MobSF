@@ -4,31 +4,43 @@ import logging
 import os
 import time
 from pathlib import Path
-from json import dump
+from urllib.parse import quote, urlsplit
 
 from shelljob import proc
 
 
-from django.http import (HttpResponseRedirect,
+from django.http import (JsonResponse,
                          StreamingHttpResponse)
 from django.conf import settings
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.db.models import ObjectDoesNotExist
 from django.views.decorators.http import require_http_methods
 
+from mobsf.DynamicAnalyzer.forms import (
+    AndroidDeviceSelectionForm,
+    AndroidDynamicAnalysisForm,
+)
+from mobsf.DynamicAnalyzer.tools.apk_patcher import GadgetPatcher
 from mobsf.DynamicAnalyzer.views.android.environment import (
     ANDROID_API_SUPPORTED,
     Environment,
 )
+from mobsf.DynamicAnalyzer.views.android.frida_core import Frida
 from mobsf.DynamicAnalyzer.views.android.operations import (
     get_package_name,
+    save_device_packages,
+    supersede_android_analyses,
 )
 from mobsf.DynamicAnalyzer.tools.webproxy import (
     get_http_tools_url,
     start_httptools_ui,
     stop_httptools,
 )
+from mobsf.MobSF.security import is_path_traversal
 from mobsf.MobSF.utils import (
+    clear_analysis_state,
+    get_android_devices,
     get_android_dm_exception_msg,
     get_config_loc,
     get_device,
@@ -37,8 +49,11 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
     python_dict,
     python_list,
+    set_gadget_analysis,
     strict_package_check,
+    write_analysis_state,
 )
+from mobsf.MobSF.forms import FormUtil
 from mobsf.MobSF.views.scanning import add_to_recent_scan
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.MobSF.views.authentication import (
@@ -54,6 +69,7 @@ logger = logging.getLogger(__name__)
 
 @login_required
 @permission_required(Permissions.SCAN)
+@require_http_methods(['GET', 'POST'])
 def android_dynamic_analysis(request, api=False):
     """Android Dynamic Analysis Entry point."""
     try:
@@ -61,6 +77,20 @@ def android_dynamic_analysis(request, api=False):
         device_packages = {}
         and_ver = None
         and_sdk = None
+        runtime = None
+        devices = get_android_devices()
+        online_devices = [
+            device for device in devices
+            if device['state'] == 'device'
+        ]
+        device_form = AndroidDeviceSelectionForm(
+            devices,
+            request.POST if request.method == 'POST' else None,
+        )
+        if request.method == 'POST' and device_form.is_valid():
+            request.session['android_device_identifier'] = (
+                device_form.cleaned_data['identifier'])
+            return redirect('dynamic_android')
         apks = StaticAnalyzerAndroid.objects.filter(
             APP_TYPE='apk')
 
@@ -78,27 +108,32 @@ def android_dynamic_analysis(request, api=False):
             }
             scan_apps.append(temp_dict)
         try:
-            identifier = get_device()
+            identifier = get_device(request)
         except Exception:
             return print_n_send_error_response(
                 request, get_android_dm_exception_msg(), api)
         try:
             if identifier:
+                logger.info('Using Android device %s', identifier)
                 env = Environment(identifier)
                 env.connect()
-                device_packages = env.get_device_packages()
-                if device_packages:
-                    pkg_file = Path(settings.DWD_DIR) / 'packages.json'
-                    with pkg_file.open('w', encoding='utf-8') as target:
-                        dump(device_packages, target)
+                if api:
+                    device_packages = env.get_device_packages()
+                    if device_packages:
+                        save_device_packages(
+                            identifier, device_packages)
                 and_ver = env.get_android_version()
                 and_sdk = env.get_android_sdk()
+                runtime = env.get_environment()
         except Exception:
             pass
         context = {'apps': scan_apps,
                    'identifier': identifier,
                    'android_version': and_ver,
                    'android_sdk': and_sdk,
+                   'runtime': runtime,
+                   'devices': devices,
+                   'online_devices': online_devices,
                    'android_supported': ANDROID_API_SUPPORTED,
                    'proxy_ip': get_proxy_ip(identifier),
                    'proxy_port': settings.PROXY_PORT,
@@ -108,11 +143,206 @@ def android_dynamic_analysis(request, api=False):
                    'version': settings.MOBSF_VER}
         if api:
             return context
+        context['device_form'] = device_form
         template = 'dynamic_analysis/android/dynamic_analysis.html'
         return render(request, template, context)
     except Exception as exp:
         logger.exception('Dynamic Analysis')
         return print_n_send_error_response(request, exp, api)
+
+
+@login_required
+@permission_required(Permissions.SCAN)
+@require_http_methods(['GET'])
+def android_device_details(request):
+    """Return display details for one connected Android device."""
+    try:
+        identifier = get_device(request)
+        if not identifier:
+            return JsonResponse({
+                'status': 'failed',
+                'message': 'No Android device selected',
+            }, status=400)
+        env = Environment(identifier)
+        if not env.connect():
+            return JsonResponse({
+                'status': 'failed',
+                'message': 'Selected Android device is unavailable',
+            }, status=503)
+        runtime = env.get_environment()
+        profile = env.get_device_profile(
+            probe_root=runtime == 'physical')
+        root_available = (
+            profile.has_root
+            if runtime == 'physical'
+            else env.supports_root_adbd()
+        )
+        properties = env.get_android_properties()
+
+        def product_property(name):
+            value = properties.get(name, '')
+            if not isinstance(value, str):
+                return ''
+            return ' '.join(value.split())[:80]
+
+        manufacturer = product_property('ro.product.manufacturer')
+        brand = product_property('ro.product.brand')
+        model = (
+            product_property('ro.product.marketname')
+            or product_property('ro.product.model')
+        )
+        maker = manufacturer or brand
+        if (maker and model
+                and model.casefold().startswith(maker.casefold())):
+            device_name = model
+        else:
+            device_name = ' '.join(
+                value for value in (maker, model) if value)
+        return JsonResponse({
+            'status': 'ok',
+            'identifier': identifier,
+            'device_name': device_name,
+            'manufacturer': manufacturer,
+            'brand': brand,
+            'android_version': f'{profile.android_version:g}',
+            'android_sdk': profile.sdk,
+            'android_abi': profile.abi,
+            'root_status': (
+                'Rooted' if root_available else 'Non-Root'),
+            'runtime': runtime.title(),
+        })
+    except Exception:
+        logger.exception('Loading Android device details')
+        return JsonResponse({
+            'status': 'failed',
+            'message': 'Failed to load Android device details',
+        }, status=500)
+
+
+@login_required
+@permission_required(Permissions.SCAN)
+@require_http_methods(['GET'])
+def android_device_apps(request):
+    """Load installed device apps without blocking the main page."""
+    try:
+        identifier = get_device(request)
+        if not identifier:
+            return JsonResponse({
+                'status': 'failed',
+                'message': 'No Android device selected',
+            }, status=400)
+        refresh = request.GET.get('refresh', '0')
+        if refresh not in ('0', '1'):
+            return JsonResponse({
+                'status': 'failed',
+                'message': 'Invalid refresh option',
+            }, status=400)
+        env = Environment(identifier)
+        if not env.connect():
+            return JsonResponse({
+                'status': 'failed',
+                'message': 'Selected Android device is unavailable',
+            }, status=503)
+        logger.info('Inspecting selected Android device capabilities')
+        runtime = env.get_environment()
+        if runtime == 'physical':
+            profile = env.get_device_profile(probe_root=True)
+            root_available = profile.has_root
+        else:
+            root_available = env.supports_root_adbd()
+        logger.info('Loading applications installed on the selected device')
+        device_packages = env.get_device_packages(refresh=refresh == '1')
+        save_device_packages(identifier, device_packages)
+        return JsonResponse({
+            'status': 'ok',
+            'packages': device_packages,
+            'root_available': root_available,
+        })
+    except Exception:
+        logger.exception('Loading Android device apps')
+        return JsonResponse({
+            'status': 'failed',
+            'message': 'Failed to load installed applications',
+        }, status=500)
+
+
+@login_required
+@permission_required(Permissions.SCAN)
+@require_http_methods(['POST'])
+def android_package_status(request):
+    """Check whether Gadget installation needs user confirmation."""
+    analysis_form = AndroidDynamicAnalysisForm(request.POST)
+    checksum = request.POST.get('hash')
+    if not analysis_form.is_valid() or not is_md5(checksum):
+        return JsonResponse({
+            'status': 'failed',
+            'message': 'Invalid parameters',
+        }, status=400)
+    identifier = get_device(request)
+    package = get_package_name(checksum, identifier)
+    if not package or not identifier:
+        return JsonResponse({
+            'status': 'failed',
+            'message': 'App or Android device is unavailable',
+        }, status=400)
+    try:
+        env = Environment(identifier)
+        if not env.connect():
+            raise RuntimeError('Selected Android device is unavailable')
+        mode = (
+            analysis_form.cleaned_data.get('device_mode')
+            or 'auto'
+        )
+        runtime = env.get_environment()
+        selected_mode = mode
+        if runtime != 'physical':
+            if mode == 'auto':
+                if int(env.get_android_sdk()) > ANDROID_API_SUPPORTED:
+                    selected_mode = 'gadget'
+                else:
+                    selected_mode = (
+                        'legacy'
+                        if env.supports_root_adbd() else 'gadget')
+            elif mode == 'rooted':
+                selected_mode = 'legacy'
+        elif mode == 'auto':
+            profile = env.get_device_profile(probe_root=True)
+            selected_mode = 'rooted' if profile.has_root else 'gadget'
+        if (mode == 'auto'
+                and selected_mode != 'gadget'
+                and env.get_android_version() >= 5
+                and env.is_mobsfyied(env.get_android_version())
+                and not env.run_frida_server()):
+            selected_mode = 'gadget'
+        installed = env.has_package(package)
+        gadget_state = 'none'
+        gadget_fallback_possible = (
+            selected_mode == 'gadget'
+            or (mode == 'auto' and env.get_android_version() >= 5)
+        )
+        if gadget_fallback_possible:
+            apk_path = (
+                Path(settings.UPLD_DIR) / checksum / f'{checksum}.apk')
+            gadget_state, _ = GadgetPatcher.inspect(apk_path)
+        return JsonResponse({
+            'status': 'ok',
+            'installed': installed,
+            'selected_mode': selected_mode,
+            'gadget_fallback_possible': gadget_fallback_possible,
+            'gadget_state': gadget_state,
+            'confirmation_required': (
+                installed and gadget_fallback_possible
+            ),
+            'gadget_replacement_required': (
+                gadget_state == 'third_party'
+            ),
+        })
+    except Exception:
+        logger.exception('Checking Android package status')
+        return JsonResponse({
+            'status': 'failed',
+            'message': 'Failed to check the installed application',
+        }, status=500)
 
 
 @login_required
@@ -125,8 +355,25 @@ def dynamic_analyzer(request, checksum, api=False):
         activities = None
         deeplinks = None
         exported_activities = None
-        reinstall = request.POST.get('re_install', '1')
-        install = request.POST.get('install', '1')
+        static_android_db = None
+        env = None
+        physical = False
+        proxy_configured = False
+        analysis_state = False
+        analysis_form = AndroidDynamicAnalysisForm(request.POST)
+        if not analysis_form.is_valid():
+            return print_n_send_error_response(
+                request,
+                FormUtil.errors_message(analysis_form),
+                api,
+            )
+        options = analysis_form.cleaned_data
+        device_mode = options.get('device_mode') or 'auto'
+        reinstall = options.get('re_install') or '1'
+        install = options.get('install') or '1'
+        uninstall_existing = options.get('uninstall_existing') or '0'
+        replace_existing_gadget = (
+            options.get('replace_existing_gadget') or '0')
         if not is_md5(checksum):
             # We need this check since checksum is not validated
             # in REST API
@@ -134,18 +381,23 @@ def dynamic_analyzer(request, checksum, api=False):
                 request,
                 'Invalid Hash',
                 api)
-        package = get_package_name(checksum)
+        try:
+            identifier = get_device(request)
+        except Exception:
+            identifier = None
+        if not identifier:
+            if api:
+                return print_n_send_error_response(
+                    request, get_android_dm_exception_msg(), api)
+            return redirect('dynamic_android')
+        package = get_package_name(checksum, identifier)
         if not package:
             return print_n_send_error_response(
                 request,
                 'Cannot get package name from checksum',
                 api)
         logger.info('Creating Dynamic Analysis Environment for %s', package)
-        try:
-            identifier = get_device()
-        except Exception:
-            return print_n_send_error_response(
-                request, get_android_dm_exception_msg(), api)
+        logger.info('Using Android device %s', identifier)
 
         # Get activities from the static analyzer results
         try:
@@ -162,21 +414,91 @@ def dynamic_analyzer(request, checksum, api=False):
                 'Failed to get Activities/Deeplinks. '
                 'Static Analysis not completed for the app.')
         env = Environment(identifier)
-        if not env.connect_n_mount():
-            msg = 'Cannot Connect to ' + identifier
+        if not env.connect():
+            msg = f'Cannot connect to {identifier}'
             return print_n_send_error_response(request, msg, api)
-        version = env.get_android_version()
+        runtime = env.get_environment()
+        physical = runtime == 'physical'
+        profile = env.get_device_profile(
+            probe_root=physical and device_mode != 'gadget')
+        version = profile.android_version
+        selected_mode = device_mode
+        runtime_prepared = False
+        if selected_mode == 'gadget' and version < 5:
+            return print_n_send_error_response(
+                request,
+                'Frida Gadget mode requires Android 5 or later',
+                api,
+            )
+        if physical:
+            if device_mode == 'auto':
+                selected_mode = (
+                    'rooted' if profile.has_root else 'gadget')
+            if selected_mode == 'rooted' and not profile.has_root:
+                return print_n_send_error_response(
+                    request,
+                    f'Android root is {profile.root_status}. For a stock '
+                    'device, select Pull & Static Analysis for the installed '
+                    'app, wait for the scan to complete, then start it from '
+                    'Apps Available using Frida Gadget.',
+                    api,
+                )
+        elif selected_mode != 'gadget':
+            selected_mode = 'legacy'
+            if (device_mode == 'auto'
+                    and profile.sdk > ANDROID_API_SUPPORTED):
+                logger.info(
+                    'Android API %s exceeds the legacy VM limit; '
+                    'using Frida Gadget',
+                    profile.sdk,
+                )
+                selected_mode = 'gadget'
+            else:
+                runtime_prepared = env.connect_n_mount()
+            if (not runtime_prepared
+                    and selected_mode != 'gadget'
+                    and device_mode == 'auto'
+                    and version >= 5):
+                logger.warning(
+                    'Rooted VM preparation is unavailable; '
+                    'falling back to Frida Gadget')
+                selected_mode = 'gadget'
+            elif (not runtime_prepared
+                  and selected_mode != 'gadget'):
+                msg = f'Cannot prepare {identifier} for dynamic analysis'
+                return print_n_send_error_response(request, msg, api)
+        logger.info(
+            'Selected Android dynamic analysis mode: %s',
+            selected_mode,
+        )
+        if (selected_mode != 'gadget'
+                and not runtime_prepared
+                and not env.connect_n_mount()):
+            if device_mode == 'auto' and version >= 5:
+                logger.warning(
+                    'Android runtime preparation is unavailable; '
+                    'falling back to Frida Gadget')
+                selected_mode = 'gadget'
+            else:
+                msg = f'Cannot prepare {identifier} for dynamic analysis'
+                return print_n_send_error_response(request, msg, api)
         logger.info('Android Version identified as %s', version)
         xposed_first_run = False
-        if not env.is_mobsfyied(version):
+        if selected_mode != 'gadget' and not env.is_mobsfyied(version):
             msg = ('This Android instance is not MobSFyed/Outdated.\n'
                    'MobSFying the android runtime environment')
             logger.warning(msg)
             if not env.mobsfy_init():
-                return print_n_send_error_response(
-                    request,
-                    'Failed to MobSFy the instance',
-                    api)
+                if device_mode == 'auto' and version >= 5:
+                    logger.warning(
+                        'MobSFy preparation failed; '
+                        'falling back to Frida Gadget')
+                    selected_mode = 'gadget'
+                else:
+                    return print_n_send_error_response(
+                        request,
+                        'Failed to MobSFy the instance',
+                        api)
             if version < 5:
                 # Start Clipboard monitor
                 env.start_clipmon()
@@ -189,34 +511,167 @@ def dynamic_analyzer(request, checksum, api=False):
                    ' all Xposed modules. And finally'
                    ' restart the device once again.')
             return print_n_send_error_response(request, msg, api)
-        # Clean up previous analysis
+        if (selected_mode != 'gadget'
+                and version >= 5
+                and not env.run_frida_server()):
+            if device_mode == 'auto':
+                logger.warning(
+                    'Frida Server is unavailable; '
+                    'falling back to Frida Gadget')
+                selected_mode = 'gadget'
+            else:
+                return print_n_send_error_response(
+                    request,
+                    'Frida Server cannot run on this Android runtime. '
+                    'Select Frida Gadget mode.',
+                    api,
+                )
+        app_dir = Path(settings.UPLD_DIR) / checksum
+        analysis_state = True
+        # A new analysis supersedes any previous one
+        supersede_android_analyses()
+        env.adb_command(['am', 'force-stop', package], True, True)
+        Frida.close_active(checksum, identifier, package)
+        env.remove_frida_forward()
         env.dz_cleanup(checksum)
+        apk_path = app_dir / f'{checksum}.apk'
+        install_apks = None
+        root_ca_embedded = True
+        if selected_mode == 'gadget':
+            if install != '1':
+                return print_n_send_error_response(
+                    request,
+                    'Frida Gadget mode must install the patched APK',
+                    api,
+                )
+            try:
+                split_apks = GadgetPatcher.find_split_apks(
+                    app_dir,
+                    apk_path,
+                )
+            except ValueError as exp:
+                return print_n_send_error_response(request, str(exp), api)
+            scan_suffix = (
+                Path(static_android_db.FILE_NAME).suffix.lower()
+                if static_android_db else '.apk'
+            )
+            if scan_suffix in ('.apks', '.xapk') and not split_apks:
+                return print_n_send_error_response(
+                    request,
+                    'Split APK metadata is unavailable; pull and scan '
+                    'the installed app again',
+                    api,
+                )
+            package_installed = env.has_package(package)
+            if package_installed and uninstall_existing != '1':
+                return print_n_send_error_response(
+                    request,
+                    'Confirmation is required before uninstalling the '
+                    'existing app and installing a re-signed Gadget APK.',
+                    api,
+                )
+            gadget_state, _ = GadgetPatcher.inspect(apk_path)
+            if (gadget_state == 'third_party'
+                    and replace_existing_gadget != '1'):
+                return print_n_send_error_response(
+                    request,
+                    'Confirmation is required before replacing an '
+                    'unknown Frida Gadget injection.',
+                    api,
+                )
+            selected_abi = GadgetPatcher.select_abi(
+                apk_path,
+                profile.abis,
+                split_apks,
+            )
+            split_apks = GadgetPatcher.compatible_splits(
+                split_apks,
+                selected_abi,
+            )
+            logger.info(
+                'Selected Frida Gadget ABI: %s',
+                selected_abi,
+            )
+            patcher = GadgetPatcher(
+                app_dir,
+                apk_path,
+                selected_abi,
+                replace_existing_gadget=replace_existing_gadget == '1',
+                split_apks=split_apks,
+            )
+            apk_path = patcher.patch()
+            install_apks = patcher.install_apks
+            root_ca_embedded = patcher.root_ca_embedded
+            if package_installed and not env.uninstall_package(package):
+                return print_n_send_error_response(
+                    request,
+                    'Failed to uninstall the existing application',
+                    api,
+                )
+        else:
+            set_gadget_analysis(checksum)
+        env.clear_proxy()
         # Configure Web Proxy
-        env.configure_proxy(package, request)
+        env.configure_proxy(
+            package,
+            request,
+            install_ca=selected_mode != 'gadget',
+        )
         # Supported in Android 5+
-        env.enable_adb_reverse_tcp(version)
+        if (version >= 5
+                and not env.has_adb_reverse_tcp()
+                and not env.enable_adb_reverse_tcp(version)):
+            raise RuntimeError('Failed to configure Android proxy forwarding')
+        write_analysis_state(checksum, {'identifier': identifier})
         # Apply Global Proxy to device
         env.set_global_proxy(version)
+        proxy_configured = True
+        if (version >= 4.4
+                and env.get_global_proxy() != env.get_mobsf_proxy(version)):
+            raise RuntimeError('Failed to configure the Android proxy')
         if install == '1':
-            # Install APK
-            apk_path = Path(settings.UPLD_DIR) / checksum / f'{checksum}.apk'
-            status, output = env.install_apk(
-                apk_path.as_posix(),
-                package,
-                reinstall)
+            if install_apks and len(install_apks) > 1:
+                status, output = env.install_apks(
+                    install_apks,
+                    package,
+                    '0',
+                    modify_verifier=False,
+                )
+            else:
+                status, output = env.install_apk(
+                    apk_path.as_posix(),
+                    package,
+                    (
+                        '0'
+                        if physical or selected_mode == 'gadget'
+                        else reinstall
+                    ),
+                    modify_verifier=selected_mode != 'gadget',
+                )
             if not status:
-                # Unset Proxy
-                env.unset_global_proxy()
-                msg = (f'This APK cannot be installed. Is this APK '
-                       f'compatible the Android VM/Emulator?\n{output}')
+                env.clear_proxy()
+                clear_analysis_state(checksum)
+                msg = 'This APK cannot be installed on the Android device.'
+                if selected_mode != 'gadget':
+                    msg = f'{msg}\n{output}'
                 return print_n_send_error_response(
                     request,
                     msg,
                     api)
+        if selected_mode == 'gadget':
+            set_gadget_analysis(checksum, identifier)
         logger.info('Testing Environment is Ready!')
+        device_model = env.get_android_properties().get(
+            'ro.product.model', '')
         context = {'package': package,
                    'hash': checksum,
                    'android_version': version,
+                   'device_mode': selected_mode,
+                   'root_ca_embedded': root_ca_embedded,
+                   'device_identifier': identifier,
+                   'device_model': device_model,
+                   'tls_tests_available': (
+                       not physical and selected_mode != 'gadget'),
                    'version': settings.MOBSF_VER,
                    'activities': activities,
                    'exported_activities': exported_activities,
@@ -227,6 +682,10 @@ def dynamic_analyzer(request, checksum, api=False):
             return context
         return render(request, template, context)
     except Exception:
+        if env and proxy_configured:
+            env.clear_proxy()
+        if analysis_state:
+            clear_analysis_state(checksum)
         logger.exception('Dynamic Analyzer')
         return print_n_send_error_response(
             request,
@@ -242,16 +701,24 @@ def httptools_start(request):
     logger.info('Starting httptools Web UI')
     try:
         httptools_url = get_http_tools_url(request)
-        stop_httptools(httptools_url)
+        stop_httptools()
         start_httptools_ui(settings.PROXY_PORT)
         time.sleep(3)
         logger.info('httptools UI started')
-        if request.POST['project']:
-            project = request.POST['project']
-        else:
-            project = ''
+        project = request.POST.get('project', '')
+        if (project
+                and (not strict_package_check(project)
+                     or is_path_traversal(project))):
+            raise ValueError('Invalid HTTPTools project')
+        project = quote(project, safe='')
         url = f'{httptools_url}/dashboard/{project}'
-        return HttpResponseRedirect(url)
+        trusted_netloc = urlsplit(httptools_url).netloc
+        if not url_has_allowed_host_and_scheme(
+                url,
+                allowed_hosts={trusted_netloc},
+                require_https=request.is_secure()):
+            raise ValueError('Untrusted HTTPTools redirect')
+        return redirect(url)
     except Exception:
         logger.exception('Starting httptools Web UI')
         err = 'Error Starting httptools UI'
@@ -267,8 +734,18 @@ def logcat(request, api=False):
         if request.method == 'GET':
             pkg = request.GET.get('package')
             if pkg and strict_package_check(pkg):
+                identifier = get_device(request)
+                if not identifier:
+                    return print_n_send_error_response(
+                        request,
+                        'Selected Android device is unavailable',
+                        api,
+                    )
                 template = 'dynamic_analysis/android/logcat.html'
-                return render(request, template, {'package': pkg})
+                return render(request, template, {
+                    'package': pkg,
+                    'identifier': identifier,
+                })
             return print_n_send_error_response(
                 request,
                 'Invalid package name',
@@ -285,7 +762,14 @@ def logcat(request, api=False):
                     api)
             adb = os.environ['MOBSF_ADB']
             g = proc.Group()
-            g.run([adb, 'logcat', app_pkg + ':V', '*:*'])
+            g.run([
+                adb,
+                '-s',
+                get_device(request),
+                'logcat',
+                app_pkg + ':V',
+                '*:*',
+            ])
 
             def read_process():
                 while g.is_pending():
@@ -315,16 +799,16 @@ def trigger_static_analysis(request, checksum):
             return print_n_send_error_response(
                 request,
                 'Invalid MD5')
-        package = get_package_name(checksum)
+        try:
+            identifier = get_device(request)
+        except Exception:
+            err = 'Cannot connect to Android Runtime'
+            return print_n_send_error_response(request, err)
+        package = get_package_name(checksum, identifier)
         if not package:
             return print_n_send_error_response(
                 request,
                 'Cannot get package name from checksum')
-        try:
-            identifier = get_device()
-        except Exception:
-            err = 'Cannot connect to Android Runtime'
-            return print_n_send_error_response(request, err)
         env = Environment(identifier)
         scan_type = env.get_apk(checksum, package)
         if not scan_type:
@@ -341,7 +825,7 @@ def trigger_static_analysis(request, checksum):
             'file_name': file_name,
         }
         add_to_recent_scan(data)
-        return HttpResponseRedirect(f'/static_analyzer/{checksum}/')
+        return redirect('static_analyzer', checksum)
     except Exception:
         msg = 'On device APK Static Analysis'
         logger.exception(msg)
