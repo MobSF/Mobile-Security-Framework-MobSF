@@ -673,7 +673,13 @@ def cmd_injection_check(data):
 
 def is_pipe_or_link(path):
     """Check for named pipe or symlink."""
-    return os.path.islink(path) or stat.S_ISFIFO(os.stat(path).st_mode)
+    try:
+        mode = os.lstat(path).st_mode
+    except FileNotFoundError:
+        return False
+    except (OSError, TypeError, ValueError):
+        return True
+    return stat.S_ISLNK(mode) or stat.S_ISFIFO(mode)
 
 
 def is_attack_pattern(user_input):
