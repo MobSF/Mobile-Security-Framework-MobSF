@@ -332,13 +332,18 @@ async function loadDeviceDetails() {
             if (!response.ok || details.status !== 'ok') {
                 return;
             }
-            option.textContent = [
+            const labels = [
                 `Android ${details.android_version}`,
                 `API ${details.android_sdk}`,
                 details.android_abi || 'Unknown ABI',
                 details.root_status,
                 details.runtime,
-            ].join(' · ') + ` — ${details.identifier}`;
+            ];
+            if (details.device_name) {
+                labels.unshift(details.device_name);
+            }
+            option.textContent = labels.join(' · ')
+                + ` — ${details.identifier}`;
             option.dataset.deviceDetails = 'loaded';
         } catch (error) {
             console.warn('Unable to load Android device details');

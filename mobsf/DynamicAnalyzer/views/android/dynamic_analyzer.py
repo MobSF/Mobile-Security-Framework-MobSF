@@ -175,9 +175,33 @@ def android_device_details(request):
             if runtime == 'physical'
             else env.supports_root_adbd()
         )
+        properties = env.get_android_properties()
+
+        def product_property(name):
+            value = properties.get(name, '')
+            if not isinstance(value, str):
+                return ''
+            return ' '.join(value.split())[:80]
+
+        manufacturer = product_property('ro.product.manufacturer')
+        brand = product_property('ro.product.brand')
+        model = (
+            product_property('ro.product.marketname')
+            or product_property('ro.product.model')
+        )
+        maker = manufacturer or brand
+        if (maker and model
+                and model.casefold().startswith(maker.casefold())):
+            device_name = model
+        else:
+            device_name = ' '.join(
+                value for value in (maker, model) if value)
         return JsonResponse({
             'status': 'ok',
             'identifier': identifier,
+            'device_name': device_name,
+            'manufacturer': manufacturer,
+            'brand': brand,
             'android_version': f'{profile.android_version:g}',
             'android_sdk': profile.sdk,
             'android_abi': profile.abi,
