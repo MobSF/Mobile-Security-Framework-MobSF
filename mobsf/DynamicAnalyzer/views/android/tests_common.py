@@ -14,12 +14,14 @@ from mobsf.DynamicAnalyzer.views.common.shared import (
     send_response,
 )
 from mobsf.DynamicAnalyzer.views.android.operations import (
+    android_analysis_is_active,
     android_analysis_lifecycle,
     android_analysis_state_file,
     android_gadget_marker_file,
     get_android_analysis_claim,
     get_package_name,
     release_android_analysis,
+    write_android_analysis_state,
 )
 from mobsf.DynamicAnalyzer.views.android.environment import (
     Environment,
@@ -435,8 +437,7 @@ def _collect_logs(request, api=False, identifier=None):
                     'checksum': md5_hash,
                     'cleanup_complete': True,
                 })
-                with state_file.open('w', encoding='utf-8') as target:
-                    json.dump(proxy_state, target)
+                write_android_analysis_state(md5_hash, proxy_state)
             if not proxy_restored:
                 raise RuntimeError(
                     'Failed to restore the Android proxy setting')
@@ -474,10 +475,16 @@ def _tls_tests(request, api=False):
     try:
         test_duration = 25
         test_package = 'tls_tests'
-        env = Environment(get_device(request))
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)
+        identifier = get_analysis_identifier(request, md5_hash)
+        if not android_analysis_is_active(identifier, md5_hash):
+            return send_response({
+                'status': 'failed',
+                'message': 'Android analysis is no longer active',
+            }, api)
+        env = Environment(identifier)
         gadget_marker = (
             android_gadget_marker_file(md5_hash)
         )

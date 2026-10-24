@@ -8,6 +8,7 @@ import os
 import random
 import shlex
 import subprocess
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -64,6 +65,30 @@ def android_analysis_state_file(checksum):
         Path(settings.DWD_DIR)
         / f'android-analysis-state-{checksum}.json'
     )
+
+
+def write_android_analysis_state(checksum, state):
+    """Atomically publish trusted Android analysis state."""
+    state_file = android_analysis_state_file(checksum)
+    if state_file is None or not isinstance(state, dict):
+        raise ValueError('Invalid Android analysis state')
+    state_file.parent.mkdir(parents=True, exist_ok=True)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(
+                mode='w',
+                encoding='utf-8',
+                dir=state_file.parent,
+                prefix=f'.{state_file.name}.',
+                delete=False) as target:
+            temporary = Path(target.name)
+            json.dump(state, target)
+            target.flush()
+            os.fsync(target.fileno())
+        os.replace(temporary, state_file)
+    finally:
+        if temporary:
+            temporary.unlink(missing_ok=True)
 
 
 def android_gadget_marker_file(checksum):
@@ -186,6 +211,31 @@ def get_android_capture_claim():
     return claim.get('identifier'), claim.get('checksum')
 
 
+def android_analysis_is_active(identifier, checksum):
+    """Check exact device, capture, and initialized analysis ownership."""
+    if (not valid_android_device_identifier(identifier)
+            or not is_md5(checksum)
+            or get_android_analysis_claim(identifier) != checksum
+            or get_android_capture_claim() != (identifier, checksum)):
+        return False
+    state_file = android_analysis_state_file(checksum)
+    if (state_file is None
+            or not state_file.is_file()
+            or state_file.is_symlink()):
+        return False
+    try:
+        state = json.loads(state_file.read_text(encoding='utf-8'))
+    except (OSError, ValueError, TypeError):
+        return False
+    return bool(
+        isinstance(state, dict)
+        and state.get('identifier') == identifier
+        and state.get('checksum') == checksum
+        and state.get('analysis_ready') is True
+        and state.get('cleanup_complete') is not True,
+    )
+
+
 def claim_android_analysis(identifier, checksum):
     """Atomically claim shared capture and one Android device."""
     claim_file = _analysis_claim_file(identifier)
@@ -193,6 +243,24 @@ def claim_android_analysis(identifier, checksum):
         return False
     claim_file.parent.mkdir(parents=True, exist_ok=True)
     capture_file = _capture_claim_file()
+    capture = _read_analysis_claim(capture_file)
+    if (capture_file.exists() or capture_file.is_symlink()) and not capture:
+        capture_file.unlink(missing_ok=True)
+    elif capture:
+        capture_claim_file = _analysis_claim_file(
+            capture.get('identifier'))
+        paired_claim = (
+            _read_analysis_claim(capture_claim_file)
+            if capture_claim_file else None
+        )
+        if (not paired_claim
+                or paired_claim.get('checksum')
+                != capture.get('checksum')):
+            capture_file.unlink(missing_ok=True)
+            capture = None
+    device_claim = _read_analysis_claim(claim_file)
+    if (claim_file.exists() or claim_file.is_symlink()) and not device_claim:
+        claim_file.unlink(missing_ok=True)
     capture_created = False
     try:
         descriptor = os.open(
@@ -244,6 +312,14 @@ def release_android_analysis(identifier, checksum=None):
         return
     claim = _read_analysis_claim(claim_file)
     if not claim:
+        claim_file.unlink(missing_ok=True)
+        capture_file = _capture_claim_file()
+        capture = _read_analysis_claim(capture_file)
+        if (not capture
+                or (capture.get('identifier') == identifier
+                    and (checksum is None
+                         or capture.get('checksum') == checksum))):
+            capture_file.unlink(missing_ok=True)
         return
     owner_checksum = claim.get('checksum')
     if checksum is not None and owner_checksum != checksum:
@@ -256,7 +332,8 @@ def release_android_analysis(identifier, checksum=None):
             return
     capture_file = _capture_claim_file()
     capture = _read_analysis_claim(capture_file)
-    if capture and capture.get('checksum') == owner_checksum:
+    if (not capture
+            or capture.get('checksum') == owner_checksum):
         capture_file.unlink(missing_ok=True)
 
 
