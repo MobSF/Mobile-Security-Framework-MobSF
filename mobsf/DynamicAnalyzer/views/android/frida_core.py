@@ -162,6 +162,16 @@ class Frida:
         except OSError:
             logger.exception('Unable to release Frida session ownership')
 
+    def claim_controller(self):
+        """Reserve this analysis's Frida controller before target changes."""
+        with self._operation_lock(self._session_key()):
+            return self._claim_owner()
+
+    def release_controller(self):
+        """Release a controller reservation that did not start a session."""
+        with self._operation_lock(self._session_key()):
+            self._release_owner()
+
     @staticmethod
     def _close_entry(entry):
         try:

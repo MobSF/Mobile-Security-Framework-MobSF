@@ -21,6 +21,7 @@ from mobsf.DynamicAnalyzer.views.android.operations import (
     get_android_analysis_claim,
     get_android_frida_target,
     get_package_name,
+    get_requested_android_analysis,
     release_android_analysis,
     write_android_analysis_state,
 )
@@ -35,7 +36,6 @@ from mobsf.DynamicAnalyzer.views.android.tests_tls import (
     run_tls_tests,
 )
 from mobsf.DynamicAnalyzer.tools.webproxy import (
-    get_http_tools_url,
     stop_httptools,
 )
 from mobsf.MobSF.security import (
@@ -43,7 +43,6 @@ from mobsf.MobSF.security import (
     is_safe_path,
 )
 from mobsf.MobSF.utils import (
-    get_device,
     is_md5,
     python_list,
     strict_package_check,
@@ -63,33 +62,19 @@ logger = logging.getLogger(__name__)
 
 def get_analysis_identifier(request, md5_hash):
     """Resolve the device bound to an active analysis."""
-    if not is_md5(md5_hash):
+    identifier, _ = get_requested_android_analysis(
+        request, md5_hash)
+    return identifier
+
+
+def _active_analysis_environment(request, checksum):
+    """Return the environment for the exact active client generation."""
+    identifier, analysis_id = get_requested_android_analysis(
+        request, checksum)
+    if not android_analysis_is_active(
+            identifier, checksum, analysis_id):
         return None
-    state_file = android_analysis_state_file(md5_hash)
-    gadget_marker = android_gadget_marker_file(md5_hash)
-    if state_file is None or gadget_marker is None:
-        return None
-    identifier = None
-    if state_file.is_file() and not state_file.is_symlink():
-        try:
-            with state_file.open(encoding='utf-8') as source:
-                state = json.load(source)
-            if isinstance(state, dict):
-                identifier = state.get('identifier')
-        except (OSError, ValueError, TypeError):
-            logger.warning('Unable to read saved Android proxy state')
-    if (not valid_android_device_identifier(identifier)
-            and gadget_marker.is_file()
-            and not gadget_marker.is_symlink()):
-        marker_identifier = gadget_marker.read_text(
-            encoding='utf-8',
-            errors='ignore',
-        ).strip()
-        if valid_android_device_identifier(marker_identifier):
-            identifier = marker_identifier
-    if valid_android_device_identifier(identifier):
-        return identifier
-    return get_device(request)
+    return Environment(identifier)
 
 
 # AJAX
@@ -101,13 +86,15 @@ def get_analysis_identifier(request, md5_hash):
 def start_activity(request, api=False):
     """Launch a specific activity."""
     try:
-        env = Environment(get_device(request))
         activity = request.POST['activity']
         md5_hash = request.POST['hash']
 
         valid_md5 = is_md5(md5_hash)
         valid_act = re.match(r'^[\w]+(\.[\w]+)*$', activity)
         if not valid_act or not valid_md5:
+            return invalid_params(api)
+        env = _active_analysis_environment(request, md5_hash)
+        if env is None:
             return invalid_params(api)
 
         app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
@@ -138,12 +125,14 @@ def start_activity(request, api=False):
 def start_deeplink(request, api=False):
     """Launch a specific deeplink."""
     try:
-        env = Environment(get_device(request))
         url = request.POST['url']
         md5_hash = request.POST['hash']
 
         valid_md5 = is_md5(md5_hash)
         if cmd_injection_check(url) or not valid_md5:
+            return invalid_params(api)
+        env = _active_analysis_environment(request, md5_hash)
+        if env is None:
             return invalid_params(api)
         env.adb_command(
             ['am', 'start', '-a',
@@ -165,10 +154,12 @@ def activity_tester(request, api=False):
     """Exported & non exported activity Tester."""
     data = {}
     try:
-        env = Environment(get_device(request))
         test = request.POST['test']
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
+            return invalid_params(api)
+        env = _active_analysis_environment(request, md5_hash)
+        if env is None:
             return invalid_params(api)
         app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         screen_dir = os.path.join(app_dir, 'screenshots-apk/')
@@ -250,8 +241,11 @@ def _download_data(request, api=False, identifier=None):
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)
-        if identifier is None:
-            identifier = get_analysis_identifier(request, md5_hash)
+        bound_identifier, analysis_id = get_requested_android_analysis(
+            request, md5_hash)
+        if identifier is not None and identifier != bound_identifier:
+            return invalid_params(api)
+        identifier = bound_identifier
         if not valid_android_device_identifier(identifier):
             return invalid_params(api)
         state_file = android_analysis_state_file(md5_hash)
@@ -275,6 +269,7 @@ def _download_data(request, api=False, identifier=None):
                 state = {}
         if (not isinstance(state, dict)
                 or state.get('identifier') != identifier
+                or state.get('analysis_id') != analysis_id
                 or state.get('cleanup_complete') is not True):
             return send_response({
                 'status': 'failed',
@@ -289,7 +284,7 @@ def _download_data(request, api=False, identifier=None):
                     'message': 'Invalid app details'}
             return send_response(data, api)
         apk_dir = Path(settings.UPLD_DIR) / md5_hash
-        stop_httptools(get_http_tools_url(request))
+        stop_httptools()
         logger.info('Archiving files created by app')
         archive_name = f'{package}.tar'
         output_file = apk_dir / archive_name
@@ -349,6 +344,13 @@ def _collect_logs(request, api=False, identifier=None):
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)
+        bound_identifier, analysis_id = get_requested_android_analysis(
+            request, md5_hash)
+        if identifier is not None and identifier != bound_identifier:
+            return invalid_params(api)
+        identifier = bound_identifier
+        if not valid_android_device_identifier(identifier):
+            return invalid_params(api)
         apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         state_file = android_analysis_state_file(md5_hash)
         gadget_marker = android_gadget_marker_file(md5_hash)
@@ -364,12 +366,8 @@ def _collect_logs(request, api=False, identifier=None):
                     'Unable to read saved Android proxy state')
             if not isinstance(proxy_state, dict):
                 proxy_state = {}
-        bound_identifier = proxy_state.get('identifier')
-        if valid_android_device_identifier(bound_identifier):
-            identifier = bound_identifier
-        if not valid_android_device_identifier(identifier):
-            identifier = get_analysis_identifier(request, md5_hash)
-        if not valid_android_device_identifier(identifier):
+        if (proxy_state.get('identifier') != identifier
+                or proxy_state.get('analysis_id') != analysis_id):
             return invalid_params(api)
         claim_checksum = get_android_analysis_claim(identifier)
         if (not state_file.exists()
@@ -496,8 +494,10 @@ def _tls_tests(request, api=False):
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)
-        identifier = get_analysis_identifier(request, md5_hash)
-        if not android_analysis_is_active(identifier, md5_hash):
+        identifier, analysis_id = get_requested_android_analysis(
+            request, md5_hash)
+        if not android_analysis_is_active(
+                identifier, md5_hash, analysis_id):
             return send_response({
                 'status': 'failed',
                 'message': 'Android analysis is no longer active',
