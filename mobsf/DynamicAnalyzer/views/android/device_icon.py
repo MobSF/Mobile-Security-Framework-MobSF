@@ -139,8 +139,8 @@ def _icon_from_device(env, package):
         return None, ''
     apk = _apk_from_remote(remote)
     if apk is None:
-        return None, ''
-    return _raster_icon(apk, source), _app_label(apk)
+        return _fallback_icon(source, package), ''
+    return _raster_icon(apk, source, package), _app_label(apk)
 
 
 def _apk_from_remote(remote):
@@ -361,7 +361,7 @@ def _clean_label(value):
     return cleaned
 
 
-def _raster_icon(apk, source):
+def _raster_icon(apk, source, package):
     resolved = None
     try:
         resource_id = _icon_resource_id(apk)
@@ -372,7 +372,7 @@ def _raster_icon(apk, source):
                 return resolved
     except Exception:
         logger.debug('Launcher icon resources could not be resolved')
-    return _fallback_icon(source) or resolved
+    return _fallback_icon(source, package) or resolved
 
 
 def _resolved_configs(apk, source, resource_id):
@@ -443,21 +443,40 @@ def _raster_for_id(apk, source, resource_id, seen):
     return None
 
 
-def _fallback_icon(source):
-    """Use a conventional launcher bitmap from any installed split."""
+def _fallback_icon(source, package):
+    """Use a conventional or package-branded bitmap from any split."""
     ranked = []
+    package_tokens = [
+        token.casefold()
+        for token in package.split('.')
+        if len(token) >= 4
+        and token.casefold() not in {
+            'android', 'mobile', 'application', 'apps',
+        }
+    ]
+    package_tokens = set(package_tokens[-2:])
     for split_order, apk_path in enumerate(source.paths):
         remote = source._open(apk_path)
         if remote is None:
             continue
         for name in remote.entries:
             lower = name.lower()
-            if 'ic_launcher' not in lower:
-                continue
             if not lower.endswith(
                     ('.png', '.webp', '.jpg', '.jpeg', '.gif')):
                 continue
             if not _safe_zip_name(name):
+                continue
+            basename = Path(lower).stem
+            launcher = 'ic_launcher' in basename
+            branded = (
+                any(token in basename for token in package_tokens)
+                and ('logo' in basename or 'icon' in basename)
+            )
+            app_icon = any(
+                token in basename
+                for token in ('app_icon', 'appicon', 'application_icon')
+            )
+            if not (launcher or branded or app_icon):
                 continue
             if 'xxhdpi' in lower:
                 score = 0
@@ -467,6 +486,10 @@ def _fallback_icon(source):
                 score = 2
             else:
                 score = 3
+            if branded:
+                score -= 20
+            if app_icon:
+                score -= 10
             if 'foreground' in lower:
                 score += 4
             if 'background' in lower:
