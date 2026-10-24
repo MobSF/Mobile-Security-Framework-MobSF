@@ -422,7 +422,10 @@ def file_download(dwd_file, filename, content_type):
         with open(dwd_file, 'r', encoding='utf-8') as file:
             svg_content = file.read()
             cleaned_svg = sanitize_svg(svg_content)
-            return create_response(cleaned_svg, is_binary=False)
+            response = create_response(cleaned_svg, is_binary=False)
+            response['Content-Security-Policy'] = (
+                "default-src 'none'; style-src 'unsafe-inline'")
+            return response
 
     # Handle all other binary file types
     with open(dwd_file, 'rb') as file:

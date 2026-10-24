@@ -31,13 +31,14 @@ Import only the helpers needed for the change:
 ```python
 from mobsf.MobSF.security import (
     # Path safety
-    is_path_traversal,   # Check raw string for .. sequences, absolute paths, URL encoding tricks
+    is_path_traversal,   # .., absolute paths, URL encoding, fullwidth forms; on Windows also ADS, CON/NUL, trailing dot/space
     is_safe_path,        # Containment check after path construction via realpath()
 
     # Input validation
-    is_attack_pattern,   # Detect shell injection: ;, $(), ||, &&
-    cmd_injection_check, # Detect OS command injection characters
-    is_pipe_or_link,     # Detect symlinks and named FIFOs before reading files
+    is_attack_pattern,   # Detect shell injection: ;, $(), |, &&, backticks, newlines (returns bool)
+    cmd_injection_check, # Detect OS command injection characters (raw and URL-encoded)
+    is_safe_windows_batch_arg, # Reject cmd.exe metacharacters in .bat/.cmd arguments
+    is_pipe_or_link,     # Detect symlinks, junctions, FIFOs, sockets and device files
 
     # Output sanitization
     sanitize_filename,   # Safe filename for Content-Disposition headers
@@ -48,8 +49,13 @@ from mobsf.MobSF.security import (
 
     # Network / SSRF
     valid_host,          # DNS-resolves host; rejects private/loopback/multicast IPs
+    safe_request,        # SSRF-safe, DNS-pinned outbound request with bounded response
 )
 ```
+
+`bleach` is deprecated upstream (no new features, security fixes only). Do not
+expand its use; when replacing `sanitize_svg`, pick a maintained SVG-aware
+sanitizer and keep serving SVG with a restrictive `Content-Security-Policy`.
 
 ---
 
