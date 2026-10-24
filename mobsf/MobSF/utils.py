@@ -1076,10 +1076,10 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 def append_scan_status(checksum, status, exception=None):
     """Append Scan Status to Database."""
     try:
-        db_obj = RecentScansDB.objects.get(MD5=checksum)
+        db_obj = RecentScansDB.objects.only('SCAN_LOGS').get(MD5=checksum)
         if status == 'init':
             db_obj.SCAN_LOGS = []
-            db_obj.save()
+            db_obj.save(update_fields=['SCAN_LOGS'])
             return
         current_logs = python_dict(db_obj.SCAN_LOGS)
         current_logs.append({
@@ -1087,7 +1087,7 @@ def append_scan_status(checksum, status, exception=None):
             'status': status,
             'exception': exception})
         db_obj.SCAN_LOGS = current_logs
-        db_obj.save()
+        db_obj.save(update_fields=['SCAN_LOGS'])
     except RecentScansDB.DoesNotExist:
         # Expected to fail for iOS Dynamic Analysis Report Generation
         # Calls MalwareScan and TrackerScan with different checksum
@@ -1099,9 +1099,10 @@ def append_scan_status(checksum, status, exception=None):
 def get_scan_logs(checksum):
     """Get the scan logs for the given checksum."""
     try:
-        db_entry = RecentScansDB.objects.filter(MD5=checksum)
-        if db_entry.exists():
-            return python_list(db_entry[0].SCAN_LOGS)
+        logs = RecentScansDB.objects.filter(
+            MD5=checksum).values_list('SCAN_LOGS', flat=True).first()
+        if logs is not None:
+            return python_list(logs)
     except Exception:
         msg = 'Fetching scan logs from the DB failed.'
         logger.exception(msg)

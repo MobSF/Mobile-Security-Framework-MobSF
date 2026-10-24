@@ -1,4 +1,9 @@
-"""Runtime Executable Tampering Detection."""
+"""Centralized security helpers.
+
+Path traversal and filesystem checks, input validation, output
+sanitization, SSRF-safe outbound requests, and runtime executable
+tampering detection.
+"""
 import functools
 import ipaddress
 import logging
@@ -6,6 +11,7 @@ import ntpath
 import os
 import posixpath
 import re
+import shlex
 import socket
 import stat
 import string
@@ -23,6 +29,7 @@ import requests
 from requests.adapters import HTTPAdapter
 
 from django.conf import settings
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from mobsf.MobSF.utils import (
     find_aapt,
@@ -38,11 +45,18 @@ _SKIP = [
     '.pyc', '.js',
     '.json', '.txt', '.md']
 EXECUTABLE_HASH_MAP = None
+IS_WINDOWS = os.name == 'nt'
+_CONTROL_CHARS_RE = re.compile(r'[\x00-\x1f\x7f]')
+
+
+def _hash_key(path):
+    """Return a canonical, case-normalized key for the executable hash map."""
+    return Path(os.path.normcase(os.path.realpath(path))).as_posix()
 
 
 def get_sha256(filepath):
     """Calculate sha256 hash of a file."""
-    return (filepath.as_posix(), sha256(filepath))
+    return (_hash_key(filepath), sha256(filepath))
 
 
 def get_all_files(dirlocs):
@@ -174,24 +188,62 @@ def store_exec_hashes_at_first_run():
                          'tampering detection')
 
 
+def _to_str(arg):
+    """Convert a subprocess argument to str."""
+    if isinstance(arg, (str, bytes, os.PathLike)):
+        return os.fsdecode(arg)
+    return str(arg)
+
+
+def _split_command(args, kwargs):
+    """Return the Popen command as a list of str arguments."""
+    cmd = args[0] if args else kwargs.get('args')
+    if cmd is None:
+        return []
+    if isinstance(cmd, os.PathLike):
+        return [os.fspath(cmd)]
+    if isinstance(cmd, (str, bytes)):
+        cmd = os.fsdecode(cmd)
+        try:
+            parts = shlex.split(cmd, posix=not IS_WINDOWS)
+        except ValueError:
+            parts = cmd.split()
+        if IS_WINDOWS:
+            parts = [p.strip('"') for p in parts]
+        return parts
+    return [_to_str(a) for a in cmd]
+
+
+def _resolve_executable(exec1):
+    """Return the filesystem path of the executable, or None."""
+    if '/' in exec1 or '\\' in exec1:
+        return exec1
+    return which(exec1)
+
+
 def subprocess_hook(oldfunc, *args, **kwargs):
-    if isinstance(args[0], str):
-        # arg is a string
-        agmtz = args[0].split()
-        exec1 = agmtz[0]
-    else:
-        # list of args
-        agmtz = args[0]
-        exec1 = agmtz[0]  # executable
+    agmtz = _split_command(args, kwargs)
+    executable = kwargs.get('executable')
+    exec1 = _to_str(executable) if executable else (
+        agmtz[0] if agmtz else None)
+    exec1_path = _resolve_executable(exec1) if exec1 else None
+    if not exec1_path:
+        # Let Popen raise its usual FileNotFoundError.
+        return oldfunc(*args, **kwargs)
+    if (IS_WINDOWS
+            and exec1_path.lower().endswith(('.bat', '.cmd'))
+            and not all(is_safe_windows_batch_arg(a) for a in agmtz[1:])):
+        msg = f'Unsafe argument passed to Windows batch file [{exec1_path}]'
+        logger.error(msg)
+        raise ValueError(msg)
+    if EXECUTABLE_HASH_MAP is None:
+        return oldfunc(*args, **kwargs)
+    exec1 = _hash_key(exec1_path)
     exec2 = None  # secondary executable
     for arg in agmtz:
-        if arg.endswith('.jar'):
-            exec2 = Path(arg).as_posix()
+        if arg.lower().endswith('.jar'):
+            exec2 = _hash_key(arg)
             break
-    if '/' in exec1 or '\\' in exec1:
-        exec1 = Path(exec1).as_posix()
-    else:
-        exec1 = Path(which(exec1)).as_posix()
     executable_in_hash_map = False
     if exec1 in EXECUTABLE_HASH_MAP:
         executable_in_hash_map = True
@@ -235,48 +287,54 @@ def wrap_function(oldfunction, newfunction):
 
 
 def sanitize_redirect(url):
-    """Sanitize Redirect URL."""
+    """Allow only same-site relative redirect paths."""
     root = '/'
-    if url.startswith('//'):
+    if not isinstance(url, str) or not url:
         return root
-    elif url.startswith('/'):
-        return url
-    return root
+    # Browsers drop tab/CR/LF inside URLs and treat backslash as slash,
+    # so '/\t/evil.com' and '/\\evil.com' become '//evil.com'.
+    if _CONTROL_CHARS_RE.search(url):
+        return root
+    if (not url.startswith('/')
+            or url.startswith(('//', '/\\'))
+            or not url_has_allowed_host_and_scheme(url, allowed_hosts=None)):
+        return root
+    return url
 
 
 def sanitize_filename(filename):
     """Sanitize Filename."""
     # Remove any characters
     # that are not alphanumeric, hyphens, underscores, or dots
-    safe_filename = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
+    safe_filename = re.sub(r'[^a-zA-Z0-9._-]', '_', str(filename))
     # Merge multiple underscores into one
     safe_filename = re.sub(r'__+', '_', safe_filename)
-    # Remove leading and trailing underscores
-    safe_filename = safe_filename.strip('_')
-    return safe_filename
+    # No leading/trailing dots or underscores: avoids '.', '..',
+    # hidden files and names Windows silently rewrites.
+    safe_filename = safe_filename.strip('._')
+    return safe_filename or 'file'
 
 
 def sanitize_for_logging(filename: str, max_length: int = 255) -> str:
-    """Sanitize a filename to prevent log injection."""
-    # Remove newline, carriage return, and other risky characters
-    filename = filename.replace('\n', '_').replace('\r', '_').replace('\t', '_')
-
+    """Sanitize a value to prevent log injection."""
     # Allow only safe characters (alphanumeric, underscore, dash, and period)
-    filename = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
+    filename = re.sub(r'[^a-zA-Z0-9._-]', '_', str(filename))
 
     # Truncate filename to the maximum allowed length
     return filename[:max_length]
 
 
 # IPv4 ranges that must never be contacted by SSRF-sensitive fetches.
-_DISALLOWED_IPV4_NETWORKS = (
+_DISALLOWED_IPV4_NETWORKS = tuple(ipaddress.IPv4Network(n) for n in (
     '127.0.0.0/8',
     '169.254.0.0/16',
     '172.16.0.0/12',
     '192.168.0.0/16',
     '10.0.0.0/8',
     '100.64.0.0/10',  # NOSONAR - RFC 6598 shared address space denylist
-)
+))
+DEFAULT_REQUEST_TIMEOUT = 10
+_SENSITIVE_HEADERS = ('authorization', 'cookie', 'proxy-authorization')
 _IPV6_TRANSLATION_NETWORKS = (
     ipaddress.IPv6Network('64:ff9b::/96'),
     ipaddress.IPv6Network('64:ff9b:1::/48'),
@@ -325,9 +383,8 @@ def is_disallowed_ip(ip_str):
         return True
 
     if isinstance(ip_obj, ipaddress.IPv4Address):
-        for network in _DISALLOWED_IPV4_NETWORKS:
-            if ip_obj in ipaddress.IPv4Network(network):
-                return True
+        if any(ip_obj in network for network in _DISALLOWED_IPV4_NETWORKS):
+            return True
     return False
 
 
@@ -388,7 +445,7 @@ def _validated_host(host):
         or parsed.query
         or parsed.params
         or parsed.fragment
-            or (port and port not in (80, 443))):
+            or (port is not None and port not in (80, 443))):
         return None
     return parsed
 
@@ -517,6 +574,7 @@ def safe_stream_request(method, url, *,
     Redirect targets are separately resolved, validated, and pinned. Proxy
     settings fail closed because the proxy—not MobSF—would resolve the host.
     """
+    kwargs.setdefault('timeout', DEFAULT_REQUEST_TIMEOUT)
     current_url = url
     redirects = 0
     while True:
@@ -531,7 +589,19 @@ def safe_stream_request(method, url, *,
                 and location and redirects < max_redirects):
             response.close()
             session.close()
-            current_url = urljoin(current_url, location)
+            next_url = urljoin(current_url, location)
+            current, nxt = urlparse(current_url), urlparse(next_url)
+            if current.scheme == 'https' and nxt.scheme != 'https':
+                raise ValueError('Redirect from HTTPS to HTTP is not allowed')
+            if (current.scheme, current.netloc) != (nxt.scheme, nxt.netloc):
+                kwargs['headers'] = {
+                    k: v for k, v in (kwargs.get('headers') or {}).items()
+                    if k.lower() not in _SENSITIVE_HEADERS}
+            if response.status_code == 303 and method.upper() != 'HEAD':
+                method = 'GET'
+                kwargs.pop('data', None)
+                kwargs.pop('json', None)
+            current_url = next_url
             redirects += 1
             continue
         try:
@@ -612,16 +682,23 @@ def is_path_traversal(user_input):
         logger.error('Path traversal attack detected with invalid path')
         return True
 
-    paths = [path]
+    paths = []
     try:
-        # Check single and double URL decoding (for example, %252e -> %2e -> .).
-        for _ in range(2):
-            paths.append(unquote(paths[-1]))
+        # NFKC folds fullwidth forms (U+FF0E, U+FF0F, U+FF3C) to ASCII,
+        # matching what Windows best-fit conversion does in ANSI APIs.
+        for base in (path, unicodedata.normalize('NFKC', path)):
+            decoded = [base]
+            # Single and double URL decoding (%252e -> %2e -> .).
+            for _ in range(2):
+                decoded.append(unquote(decoded[-1]))
+            for candidate in decoded:
+                paths.append(candidate)
+                paths.append(unicodedata.normalize('NFKC', candidate))
     except Exception:
         logger.error('Path traversal attack detected with invalid URL encoding')
         return True
 
-    for candidate in paths:
+    for candidate in dict.fromkeys(paths):
         drive, _ = ntpath.splitdrive(candidate)
         if ('\x00' in candidate
                 or candidate.startswith(('/', '\\'))
@@ -632,6 +709,38 @@ def is_path_traversal(user_input):
             return True
         if '..' in candidate:
             logger.error('Path traversal attack detected with invalid path')
+            return True
+        if IS_WINDOWS and _is_unsafe_windows_path(candidate):
+            logger.error('Path traversal attack detected with unsafe '
+                         'Windows path')
+            return True
+    return False
+
+
+_WINDOWS_RESERVED_NAMES = frozenset(
+    ['CON', 'PRN', 'AUX', 'NUL', 'CONIN$', 'CONOUT$']
+    + [f'COM{i}' for i in '123456789\u00b9\u00b2\u00b3']
+    + [f'LPT{i}' for i in '123456789\u00b9\u00b2\u00b3'])
+
+
+def _is_windows_reserved_name(name):
+    """Check if a path component is a Windows reserved device name."""
+    stem = name.split('.', 1)[0].rstrip(' ').upper()
+    return stem in _WINDOWS_RESERVED_NAMES
+
+
+def _is_unsafe_windows_path(path):
+    """Detect NTFS streams, device names and names Windows rewrites."""
+    # Drive letters are rejected before this, so any colon is an ADS.
+    if ':' in path:
+        return True
+    for component in re.split(r'[\\/]', path):
+        if not component or component == '.':
+            continue
+        # Windows strips trailing dots and spaces ('a.txt.' -> 'a.txt').
+        if component[-1] in '. ':
+            return True
+        if _is_windows_reserved_name(component):
             return True
     return False
 
@@ -677,35 +786,57 @@ def clean_filename(filename, replace=' '):
             filename = filename.replace(r, '_')
         cleaned_filename = unicodedata.normalize(
             'NFKD', filename).encode('ASCII', 'ignore').decode()
-        return ''.join(c for c in cleaned_filename if c in whitelist)
+        cleaned = ''.join(c for c in cleaned_filename if c in whitelist)
+        # Windows strips trailing dots/spaces and maps device names
+        # such as CON or NUL.txt to devices instead of files.
+        cleaned = cleaned.rstrip('. ')
+        if _is_windows_reserved_name(cleaned):
+            cleaned = f'_{cleaned}'
+        return cleaned or '_'
     return filename
+
+
+# Shell metacharacters, raw and URL-encoded.
+_CMD_INJECTION_RE = re.compile(
+    r';|&|\||`|\$\(|>|<|\n|\r'
+    r'|%3b|%26|%7c|%60|%24%28|%3e|%3c|%0a|%0d',
+    re.IGNORECASE)
+_ATTACK_PATTERN_RE = re.compile(r';|\$\(|\||&&|`|\n|\r')
+# Characters cmd.exe re-parses when Python launches a .bat/.cmd file,
+# even with list arguments (BatBadBut).
+_UNSAFE_BATCH_CHARS = frozenset('&|%^"<>!\r\n')
 
 
 def cmd_injection_check(data):
     """OS Cmd Injection check from Commix."""
-    breakers = [
-        ';', '%3B', '&', '%26', '&&',
-        '%26%26', '|', '%7C', '||',
-        '%7C%7C', '%0a', '%0d%0a',
-    ]
-    return any(i in data for i in breakers)
+    return bool(_CMD_INJECTION_RE.search(str(data)))
+
+
+def is_safe_windows_batch_arg(arg):
+    """Check if an argument is safe to pass to a Windows batch file."""
+    return not any(c in _UNSAFE_BATCH_CHARS for c in _to_str(arg))
 
 
 def is_pipe_or_link(path):
-    """Check for named pipe or symlink."""
+    """Check for symlinks, junctions, pipes, sockets and device files."""
     try:
         mode = os.lstat(path).st_mode
+        if os.path.isjunction(path):
+            return True
     except FileNotFoundError:
         return False
     except (OSError, TypeError, ValueError):
         return True
-    return stat.S_ISLNK(mode) or stat.S_ISFIFO(mode)
+    return (stat.S_ISLNK(mode)
+            or stat.S_ISFIFO(mode)
+            or stat.S_ISSOCK(mode)
+            or stat.S_ISCHR(mode)
+            or stat.S_ISBLK(mode))
 
 
 def is_attack_pattern(user_input):
     """Check for shell injection attack patterns."""
-    atk_pattern = re.compile(r';|\$\(|\|\||&&')
-    result = re.findall(atk_pattern, user_input)
+    result = bool(_ATTACK_PATTERN_RE.search(str(user_input)))
     if result:
         logger.error('Possible RCE attack detected')
     return result

@@ -279,9 +279,9 @@ def recent_scans(request, page_size=10, page_number=1):
 
     android = StaticAnalyzerAndroid.objects.filter(
         MD5__in=md5_list).only(
-            'PACKAGE_NAME', 'VERSION_NAME', 'FILE_NAME', 'MD5')
+            'PACKAGE_NAME', 'VERSION_NAME', 'FILE_NAME', 'MD5', 'ICON_PATH')
     ios = StaticAnalyzerIOS.objects.filter(
-        MD5__in=md5_list).only('FILE_NAME', 'MD5')
+        MD5__in=md5_list).only('FILE_NAME', 'MD5', 'ICON_PATH')
 
     updir = Path(settings.UPLD_DIR)
     icon_mapping = {}
@@ -422,7 +422,10 @@ def file_download(dwd_file, filename, content_type):
         with open(dwd_file, 'r', encoding='utf-8') as file:
             svg_content = file.read()
             cleaned_svg = sanitize_svg(svg_content)
-            return create_response(cleaned_svg, is_binary=False)
+            response = create_response(cleaned_svg, is_binary=False)
+            response['Content-Security-Policy'] = (
+                "default-src 'none'; style-src 'unsafe-inline'")
+            return response
 
     # Handle all other binary file types
     with open(dwd_file, 'rb') as file:

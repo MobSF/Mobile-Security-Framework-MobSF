@@ -27,7 +27,9 @@ def get_local_ipa_list():
     """Get local ipa list."""
     scan_apps = []
     ipas = StaticAnalyzerIOS.objects.filter(
-        FILE_NAME__endswith='.ipa')
+        FILE_NAME__endswith='.ipa').only(
+            'MD5', 'APP_NAME', 'APP_VERSION', 'FILE_NAME',
+            'BUNDLE_ID', 'MACHO_ANALYSIS')
     for ipa in reversed(ipas):
         bundle_hash = get_md5(ipa.BUNDLE_ID.encode('utf-8'))
         frida_dump = Path(

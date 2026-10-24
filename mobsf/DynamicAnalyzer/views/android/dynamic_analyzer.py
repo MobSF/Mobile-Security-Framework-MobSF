@@ -92,7 +92,9 @@ def android_dynamic_analysis(request, api=False):
                 device_form.cleaned_data['identifier'])
             return redirect('dynamic_android')
         apks = StaticAnalyzerAndroid.objects.filter(
-            APP_TYPE='apk')
+            APP_TYPE='apk').only(
+                'MD5', 'ICON_PATH', 'APP_NAME', 'VERSION_NAME',
+                'FILE_NAME', 'PACKAGE_NAME')
 
         for apk in reversed(apks):
 
