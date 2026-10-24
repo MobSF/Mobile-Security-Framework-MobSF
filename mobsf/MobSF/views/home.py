@@ -32,6 +32,7 @@ from mobsf.MobSF.utils import (
     key,
     print_n_send_error_response,
     python_dict,
+    scan_state_dir,
 )
 from mobsf.MobSF.init import api_key
 from mobsf.MobSF.security import is_safe_path, sanitize_filename, sanitize_svg
@@ -569,6 +570,10 @@ def delete_scan(request, api=False):
         app_upload_dir = os.path.join(settings.UPLD_DIR, md5_hash)
         if is_dir_exists(app_upload_dir):
             shutil.rmtree(app_upload_dir)
+        # Delete host-side scan state
+        state_dir = scan_state_dir(md5_hash)
+        if state_dir.is_dir() and not state_dir.is_symlink():
+            shutil.rmtree(state_dir)
         # Delete Download Dir Contents
         dw_dir = settings.DWD_DIR
         for item in os.listdir(dw_dir):

@@ -368,9 +368,9 @@
             {% else %}
               {% if app_type not in 'jar,aar,so' %}
             <li class="nav-item">
-              <form method="post" action="{% url "dynamic_analyzer" checksum=md5 %}">
+              <form method="post" action="{% url "dynamic_analyzer" checksum=md5 %}" class="dynamic-start-form" data-hash="{{ md5 }}">
                 {% csrf_token %}
-                <button type="submit" onclick="dynamic_loader()" class="nav-link btn btn-link text-left w-100">
+                <button type="submit" class="nav-link btn btn-link text-left w-100">
                   <i class="nav-icon fa fa-play-circle"></i>
                   <p>Start Dynamic Analysis</p>
                 </button>
@@ -631,9 +631,9 @@
                 </p>
                 <div>
                 {% if app_type not in 'jar,aar,so' %}
-                <form method="post" action="{% url 'dynamic_analyzer' checksum=md5 %}" class="d-inline">
+                <form method="post" action="{% url 'dynamic_analyzer' checksum=md5 %}" class="dynamic-start-form d-inline" data-hash="{{ md5 }}">
                   {% csrf_token %}
-                  <button type="submit" onclick="dynamic_loader()" class="btn btn-success"><i class="fa fa-play-circle"></i> Start Dynamic Analysis</button>
+                  <button type="submit" class="btn btn-success"><i class="fa fa-play-circle"></i> Start Dynamic Analysis</button>
                 </form>
                 {% endif %}
                 <button type="button" class="btn btn-warning" data-toggle="modal" data-target=".scan-logs-mdl"><i class="fa fa-list" aria-hidden="true"></i> Scan Logs</button>
@@ -2440,6 +2440,79 @@
 <script src="{% static "amcharts/animated.js" %}"></script>
 <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script>
+  function addDynamicInput(form, name) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = '1';
+    form.appendChild(input);
+  }
+
+  document.querySelectorAll('.dynamic-start-form').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const payload = new FormData();
+      payload.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+      payload.append('hash', form.dataset.hash);
+      payload.append('device_mode', 'auto');
+      try {
+        const response = await fetch(
+          "{% url 'android_package_status' %}",
+          {
+            method: 'POST',
+            body: payload,
+            credentials: 'same-origin',
+          },
+        );
+        const status = await response.json();
+        if (!response.ok || status.status !== 'ok') {
+          throw new Error(
+            status.message || 'Unable to check the installed app',
+          );
+        }
+        if (status.confirmation_required
+            || status.gadget_replacement_required) {
+          const warnings = [];
+          if (status.confirmation_required) {
+            warnings.push(
+              'Frida Gadget changes the APK signature. Continuing will '
+              + 'uninstall the existing app and delete its local app data.',
+            );
+          }
+          if (status.gadget_replacement_required) {
+            warnings.push(
+              'The APK contains an unknown Frida Gadget injection. MobSF '
+              + 'will replace its Gadget binaries and configuration.',
+            );
+          }
+          const decision = await Swal.fire({
+            title: 'Confirm Gadget repacking',
+            text: warnings.join(' '),
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: status.confirmation_required
+              ? 'Uninstall and re-sign'
+              : 'Replace Gadget',
+            cancelButtonText: 'Cancel',
+          });
+          if (!(decision.isConfirmed || decision.value)) {
+            return;
+          }
+          if (status.confirmation_required) {
+            addDynamicInput(form, 'uninstall_existing');
+          }
+          if (status.gadget_replacement_required) {
+            addDynamicInput(form, 'replace_existing_gadget');
+          }
+        }
+        dynamic_loader();
+        window.setTimeout(() => form.submit(), 50);
+      } catch (error) {
+        Swal.fire('Unable to start analysis', error.message, 'error');
+      }
+    });
+  });
+
   var list_suppressions_url = '{% url 'list_suppressions' %}';
   var suppress_by_files_url = '{% url 'suppress_by_files' %}';
   var suppress_by_rule_url = '{% url 'suppress_by_rule' %}';

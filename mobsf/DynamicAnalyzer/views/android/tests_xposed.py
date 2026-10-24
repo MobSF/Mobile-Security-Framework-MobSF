@@ -182,9 +182,9 @@ def base64_decode(args):
     return decoded
 
 
-def download_xposed_log(apk_dir):
+def download_xposed_log(apk_dir, identifier=None):
     """Download Xposed Output."""
-    env = Environment()
+    env = Environment(identifier)
     xposed_out = ('/data/data/'
                   'de.robv.android.xposed.installer'
                   '/log/error.log')
