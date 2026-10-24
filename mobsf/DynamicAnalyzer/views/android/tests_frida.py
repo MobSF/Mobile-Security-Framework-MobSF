@@ -115,6 +115,15 @@ def instrument(request, api=False):
                           extras,
                           code,
                           identifier)
+        gadget_mode = frida_obj.gadget_marker.exists()
+        if gadget_mode and (action == 'ps' or pid):
+            return send_response({
+                'status': 'failed',
+                'message': (
+                    'Process enumeration and PID attachment are unavailable '
+                    'in Frida Gadget mode'
+                ),
+            }, api)
         if action == 'spawn':
             logger.info('Starting Instrumentation')
             if not frida_obj.spawn():

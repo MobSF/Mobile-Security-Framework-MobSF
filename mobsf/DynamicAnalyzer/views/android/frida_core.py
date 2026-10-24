@@ -223,6 +223,8 @@ class Frida:
             env = Environment(self.identifier)
             self.clean_up()
             if self.gadget_marker.exists():
+                self.close_active(
+                    self.hash, self.identifier, self.package)
                 if not env.run_app(self.package):
                     logger.error('Unable to launch the Gadget-injected app')
                     return False
