@@ -858,7 +858,7 @@ class GadgetPatcher:
                 'type': 'listen',
                 'address': '127.0.0.1',
                 'port': 27042,
-                'on_load': 'resume',
+                'on_load': 'wait',
             },
         }
         config_file = library_dir / 'libfrida-gadget.config.so'
@@ -1001,7 +1001,7 @@ class GadgetPatcher:
                 'MobSF signing key')
         metadata = {
             'schema': PATCH_SCHEMA,
-            'patch_revision': 1,
+            'patch_revision': 2,
             'producer': 'MobSF',
             'package': package,
             'source_apk_sha256': sha256(self.apk_file),
@@ -1040,7 +1040,7 @@ class GadgetPatcher:
             expected_ca = f'res/raw/mobsf_ca_{ca_digest}.pem'
             expected_signer = self._signing_certificate_digest()
             if (
-                metadata.get('patch_revision') == 1
+                metadata.get('patch_revision') == 2
                 and metadata.get('source_apk_sha256') == sha256(self.apk_file)
                 and metadata.get('frida_version') == frida_version
                 and metadata.get('android_abi') == self.android_abi

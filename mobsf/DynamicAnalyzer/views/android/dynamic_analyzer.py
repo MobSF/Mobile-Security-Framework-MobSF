@@ -27,6 +27,7 @@ from mobsf.DynamicAnalyzer.views.android.environment import (
     ANDROID_API_SUPPORTED,
     Environment,
 )
+from mobsf.DynamicAnalyzer.views.android.frida_core import Frida
 from mobsf.DynamicAnalyzer.views.android.operations import (
     get_package_name,
     save_device_packages,
@@ -468,6 +469,9 @@ def dynamic_analyzer(request, checksum, api=False):
                 api,
             )
         # Clean up previous analysis
+        env.adb_command(['am', 'force-stop', package], True, True)
+        Frida.close_active(checksum, identifier, package)
+        env.remove_frida_forward()
         env.dz_cleanup(checksum)
         apk_path = app_dir / f'{checksum}.apk'
         install_apks = None
