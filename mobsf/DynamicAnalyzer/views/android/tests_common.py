@@ -19,6 +19,7 @@ from mobsf.DynamicAnalyzer.views.android.operations import (
 from mobsf.DynamicAnalyzer.views.android.environment import (
     Environment,
 )
+from mobsf.DynamicAnalyzer.views.android.frida_core import Frida
 from mobsf.DynamicAnalyzer.views.android.tests_xposed import (
     download_xposed_log,
 )
@@ -300,6 +301,7 @@ def collect_logs(request, api=False):
                 if current_proxy and current_proxy == mobsf_proxy:
                     proxy_restored = env.restore_global_proxy('')
                     env.disable_adb_reverse_tcp()
+            Frida.close_active(md5_hash, env.identifier, package)
             env.remove_frida_forward()
             if proxy_restored:
                 state_file.unlink(missing_ok=True)

@@ -1,6 +1,6 @@
 import logging
+import threading
 from pathlib import Path
-import sys
 import time
 
 from django.conf import settings
@@ -21,6 +21,8 @@ from mobsf.DynamicAnalyzer.views.common.frida import (
 )
 
 logger = logging.getLogger(__name__)
+_ACTIVE_SESSIONS = {}
+_ACTIVE_SESSIONS_LOCK = threading.RLock()
 
 
 class Frida:
@@ -44,6 +46,67 @@ class Frida:
         self.clipboard = self.apk_dir / 'mobsf_app_clipboard.txt'
         self.gadget_marker = self.apk_dir / '.mobsf-gadget-mode'
         self.bridge_loader = get_bridge_loader()
+
+    def _session_key(self):
+        return (self.hash, self.identifier, self.package)
+
+    @staticmethod
+    def _close_entry(entry):
+        try:
+            entry['script'].unload()
+        except Exception:
+            pass
+        try:
+            entry['session'].detach()
+        except Exception:
+            pass
+
+    @classmethod
+    def close_active(cls, app_hash, identifier, package):
+        """Close the active Frida session for one analysis."""
+        key = (app_hash, identifier, package)
+        with _ACTIVE_SESSIONS_LOCK:
+            entry = _ACTIVE_SESSIONS.pop(key, None)
+        if entry:
+            cls._close_entry(entry)
+
+    def reuse_session(self):
+        """Reload instrumentation through an existing Frida session."""
+        key = self._session_key()
+        entry = None
+        for _ in range(15):
+            with _ACTIVE_SESSIONS_LOCK:
+                entry = _ACTIVE_SESSIONS.get(key)
+            if entry:
+                break
+            time.sleep(0.2)
+        if not entry:
+            return False
+        with _ACTIVE_SESSIONS_LOCK:
+            entry = _ACTIVE_SESSIONS.get(key)
+            if not entry:
+                return False
+            try:
+                script = entry['session'].create_script(self.get_script())
+                script.on('message', self.frida_response)
+                script.load()
+                api = script.exports_sync
+                self.api_handler(api)
+                old_script = entry['script']
+                entry['script'] = script
+                self.pid = entry['pid']
+                try:
+                    old_script.unload()
+                except Exception:
+                    pass
+                logger.info('Reloaded Frida script in the active session')
+                return True
+            except Exception:
+                logger.exception('Failed to reuse the active Frida session')
+                stale = _ACTIVE_SESSIONS.pop(key, None)
+        if stale:
+            self._close_entry(stale)
+        return False
 
     def get_scripts(self, script_type, selected_scripts):
         """Get Frida Scripts."""
@@ -218,6 +281,11 @@ class Frida:
                 if pid and package:
                     self.pid = pid
                     self.package = package
+                key = self._session_key()
+                with _ACTIVE_SESSIONS_LOCK:
+                    previous = _ACTIVE_SESSIONS.pop(key, None)
+                if previous:
+                    self._close_entry(previous)
                 if self.pid is None:
                     front = device.get_frontmost_application()
                     if (front
@@ -246,9 +314,21 @@ class Frida:
                 script.load()
                 api = script.exports_sync
                 self.api_handler(api)
-                sys.stdin.read()
-                script.unload()
-                session.detach()
+
+                def detached(*_args):
+                    with _ACTIVE_SESSIONS_LOCK:
+                        active = _ACTIVE_SESSIONS.get(key)
+                        if active and active['session'] is session:
+                            _ACTIVE_SESSIONS.pop(key, None)
+
+                session.on('detached', detached)
+                with _ACTIVE_SESSIONS_LOCK:
+                    _ACTIVE_SESSIONS[key] = {
+                        'session': session,
+                        'script': script,
+                        'pid': self.pid,
+                    }
+                logger.info('Frida session is active')
         except frida.NotSupportedError:
             logger.exception('Not Supported Error')
         except (frida.ProcessNotFoundError,
