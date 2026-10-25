@@ -1,0 +1,39 @@
+<script>
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  if (!btn) {
+    return;
+  }
+  var icon = document.getElementById('theme-toggle-icon');
+
+  function isDark() {
+    return document.body.classList.contains('dark-mode');
+  }
+
+  function paint() {
+    var dark = isDark();
+    if (icon) {
+      icon.className = dark ? 'fas fa-sun' : 'fas fa-moon';
+    }
+    btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    var label = dark ? 'Switch to light mode' : 'Switch to dark mode';
+    btn.setAttribute('title', label);
+    btn.setAttribute('aria-label', label);
+  }
+
+  btn.addEventListener('click', function (event) {
+    event.preventDefault();
+    var dark = !isDark();
+    document.documentElement.classList.toggle('dark-mode', dark);
+    document.body.classList.toggle('dark-mode', dark);
+    try {
+      localStorage.setItem('mobsf-theme', dark ? 'dark' : 'light');
+    } catch (e) {}
+    if (window.mobsfApplyEnlighterTheme) {
+      window.mobsfApplyEnlighterTheme();
+    }
+    paint();
+  });
+  paint();
+})();
+</script>
