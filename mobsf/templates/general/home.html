@@ -204,30 +204,70 @@
                 xhr.send('hash=' + checksum);
            }
 
+            var uploadPending = [];
+            var uploadResults = [];
+            var uploadActive = false;
+            var uploadDone = 0;
+            var uploadTotal = 0;
+
             function progressHandler(event) {
                 var percent = (event.loaded / event.total) * 100;
-                console.log("Uploaded ..." + Math.round(percent));
-                _("progressBar").value = Math.round(percent);
-                _("status").innerText = Math.round(percent) + "% Uploaded ...";
+                var rounded = Math.round(percent);
+                _("progressBar").value = rounded;
+                if (uploadTotal > 1) {
+                    _("status").innerText = "Uploading " + uploadDone + " of " + uploadTotal + " — " + rounded + "%";
+                } else {
+                    _("status").innerText = rounded + "% Uploaded ...";
+                }
+            }
+            function finishUploads() {
+                var results = uploadResults.slice();
+                uploadResults = [];
+                if (!results.length) {
+                    _("progressBar").style.visibility = "hidden";
+                    return;
+                }
+                // One file keeps the report redirect. Several files would
+                // otherwise navigate away while later uploads are still open.
+                if (results.length === 1 && uploadTotal === 1) {
+                    responseHandler(results[0]);
+                    return;
+                }
+                load_result('{% url "recent" %}');
+            }
+            function noteUploadFailure(message) {
+                _("status").innerText = message;
+                startNextUpload();
             }
             function completeHandler(event) {
-                if(event.currentTarget.status === 403){
+                if (event.currentTarget.status === 403) {
+                    uploadPending = [];
+                    uploadActive = false;
                     _("status").innerText = "You do not have permission to upload!";
-                    return;
-                } else {
-                    try {
-                        var json = JSON.parse(event.target.responseText);
-                        responseHandler(json);
-                    } catch (error) {
-                        errorHandler(event);
+                    if (uploadResults.length) {
+                        finishUploads();
+                    } else {
+                        _("progressBar").style.visibility = "hidden";
                     }
+                    return;
+                }
+                try {
+                    var json = JSON.parse(event.target.responseText);
+                    if (json.status === 'error') {
+                        noteUploadFailure(json.description || "Upload Failed!");
+                        return;
+                    }
+                    uploadResults.push(json);
+                    startNextUpload();
+                } catch (error) {
+                    noteUploadFailure("Upload Failed!");
                 }
             }
             function errorHandler(event) {
-                _("status").innerText = "Upload Failed!";
+                noteUploadFailure("Upload Failed!");
             }
             function abortHandler(event) {
-                _("status").innerText = "Upload Aborted!";
+                noteUploadFailure("Upload Aborted!");
             }
           // Is valid file extensions
           function isValidExt(file_name){
@@ -252,12 +292,19 @@
                 return false;
           }
          // File Upload
-         function uploadFile(file, i) {
+         function uploadFile(file) {
            try {
                 if (!isValidExt(file.name) || !isValidMime(file.type)){
+                    startNextUpload();
                     return;
                 }
+                _("progressBar").value = 0;
                 _("progressBar").style.visibility = "visible";
+                if (uploadTotal > 1) {
+                    _("status").innerText = "Uploading " + uploadDone + " of " + uploadTotal + "...";
+                } else {
+                    _("status").innerText = "Uploading ...";
+                }
                 var url = '{% url "upload" %}'
                 var xhr = new XMLHttpRequest()
                 xhr.open('POST', url, true)
@@ -272,12 +319,48 @@
                 xhr.send(formdata)
             } catch (e) {
                 alert("Error:" + e);
+                startNextUpload();
             }
            }
-         
+
+           function startNextUpload() {
+                if (!uploadPending.length) {
+                    uploadActive = false;
+                    finishUploads();
+                    return;
+                }
+                var file = uploadPending.shift();
+                uploadDone += 1;
+                uploadFile(file);
+           }
+
+           function queueUploads(fileList) {
+                var accepted = [];
+                Array.prototype.forEach.call(fileList, function(file) {
+                    if (isValidExt(file.name) && isValidMime(file.type)) {
+                        accepted.push(file);
+                    }
+                });
+                if (!accepted.length) {
+                    return;
+                }
+                if (!uploadActive) {
+                    uploadPending = [];
+                    uploadResults = [];
+                    uploadDone = 0;
+                    uploadTotal = 0;
+                    uploadActive = true;
+                }
+                var starting = !uploadPending.length && uploadDone === 0;
+                uploadPending = uploadPending.concat(accepted);
+                uploadTotal += accepted.length;
+                if (starting) {
+                    startNextUpload();
+                }
+           }
+
            function handleFiles(files) {
-               files = [...files]
-               files.forEach(uploadFile)
+               queueUploads(files);
            }
          
            // Full Screen Drag & Drop File Upload
