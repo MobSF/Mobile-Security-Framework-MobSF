@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  {% include "base/theme_head.html" %}
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Internal Server Error</title>
@@ -13,11 +14,13 @@
   <!-- Tell the browser to be responsive to screen width -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Theme style -->
+  <link rel="stylesheet" href="{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
   <link rel="stylesheet" href="{% static "adminlte/dashboard/css/adminlte.min.css" %}">
   <!-- Google Font: Source Sans Pro -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
 </head>
 <body class="hold-transition sidebar-collapse layout-fixed layout-navbar-fixed">
+{% include "base/theme_body.html" %}
 <div class="wrapper">
 
     <!-- Navbar -->
@@ -36,7 +39,8 @@
           <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'donate' %}" class="nav-link">DONATE ♥</a></li>
           <li class="nav-item d-none d-sm-inline-block"><a target="_blank" href="https://mobsf.github.io/docs/#/" class="nav-link">DOCS</a></li>
           <li class="nav-item d-none d-sm-inline-block"><a href="{% url 'about' %}" class="nav-link">ABOUT</a></li>
-  
+          {% include "base/theme_toggle_button.html" %}
+
       <!-- SEARCH FORM -->
       <form class="form-inline ml-3" action="/search" method="GET">
         <div class="input-group input-group-sm">
@@ -51,6 +55,7 @@
   
     </ul>
     </nav>
+    {% include "base/theme_toggle.html" %}
     <!-- /.navbar -->
   
 

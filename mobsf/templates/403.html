@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  {% include "base/theme_head.html" %}
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Forbidden</title>
@@ -13,11 +14,13 @@
   <!-- Tell the browser to be responsive to screen width -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Theme style -->
+  <link rel="stylesheet" href="{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
   <link rel="stylesheet" href="{% static "adminlte/dashboard/css/adminlte.min.css" %}">
   <!-- Google Font: Source Sans Pro -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
 </head>
 <body class="hold-transition sidebar-collapse layout-fixed layout-navbar-fixed">
+{% include "base/theme_body.html" %}
 <div class="wrapper">
  {% include "base/nav.html" %}
 <div class="content-wrapper">

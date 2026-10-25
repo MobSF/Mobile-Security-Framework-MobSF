@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  {% include "base/theme_head.html" %}
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>{{title}}</title>
@@ -42,6 +43,7 @@
   {% endblock %}
 </head>
 <body class="hold-transition {% block sidebar_option %} {% endblock %} layout-fixed layout-navbar-fixed">
+{% include "base/theme_body.html" %}
 <div class="wrapper">
 {% include "base/nav.html" %}    
  <!-- sidebar-->

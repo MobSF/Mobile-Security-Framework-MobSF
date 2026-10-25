@@ -1,0 +1,27 @@
+<script>
+(function () {
+  var theme;
+  try {
+    theme = localStorage.getItem('mobsf-theme');
+  } catch (e) {
+    theme = null;
+  }
+  if (theme !== 'dark' && theme !== 'light') {
+    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  if (theme === 'dark') {
+    document.documentElement.classList.add('dark-mode');
+  }
+})();
+</script>
+<style>
+  html.dark-mode,
+  html.dark-mode body {
+    background-color: #454d55;
+  }
+  #theme-toggle {
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+</style>

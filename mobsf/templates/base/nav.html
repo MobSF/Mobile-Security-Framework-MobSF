@@ -18,6 +18,7 @@
         <li class="nav-item"><a href="{% url 'donate' %}" class="nav-link">DONATE ♥</a></li>
         <li class="nav-item"><a target="_blank" href="https://mobsf.github.io/docs/#/" class="nav-link">DOCS</a></li>
         <li class="nav-item"><a href="{% url 'about' %}" class="nav-link">ABOUT</a></li>
+        {% include "base/theme_toggle_button.html" %}
 
         {% if user.is_authenticated %}
         <li class="nav-item dropdown">
@@ -48,4 +49,5 @@
 
     </div>
   </nav>
+  {% include "base/theme_toggle.html" %}
   <!-- /.navbar -->
