@@ -9,8 +9,11 @@ from urllib.parse import quote, urlsplit
 from shelljob import proc
 
 
-from django.http import (JsonResponse,
-                         StreamingHttpResponse)
+from django.http import (
+    HttpResponse,
+    JsonResponse,
+    StreamingHttpResponse,
+)
 from django.conf import settings
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -19,9 +22,14 @@ from django.views.decorators.http import require_http_methods
 
 from mobsf.DynamicAnalyzer.forms import (
     AndroidDeviceSelectionForm,
+    AndroidDeviceTargetForm,
     AndroidDynamicAnalysisForm,
+    AndroidPullScanForm,
 )
 from mobsf.DynamicAnalyzer.tools.apk_patcher import GadgetPatcher
+from mobsf.DynamicAnalyzer.views.android.device_icon import (
+    device_package_icon,
+)
 from mobsf.DynamicAnalyzer.views.android.environment import (
     ANDROID_API_SUPPORTED,
     Environment,
@@ -40,6 +48,7 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
 from mobsf.MobSF.security import is_path_traversal
 from mobsf.MobSF.utils import (
     clear_analysis_state,
+    docker_translate_localhost,
     get_android_devices,
     get_android_dm_exception_msg,
     get_config_loc,
@@ -65,6 +74,17 @@ from mobsf.MobSF.views.authorization import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _get_form_device(request, form):
+    """Resolve only the connected device validated by the form."""
+    requested = form.cleaned_data['identifier']
+    identifier = get_device(request)
+    if identifier in (
+            requested,
+            docker_translate_localhost(requested)):
+        return identifier
+    return None
 
 
 @login_required
@@ -227,7 +247,13 @@ def android_device_details(request):
 def android_device_apps(request):
     """Load installed device apps without blocking the main page."""
     try:
-        identifier = get_device(request)
+        target_form = AndroidDeviceTargetForm(request.GET)
+        if not target_form.is_valid():
+            return JsonResponse({
+                'status': 'failed',
+                'message': 'Invalid Android device',
+            }, status=400)
+        identifier = _get_form_device(request, target_form)
         if not identifier:
             return JsonResponse({
                 'status': 'failed',
@@ -245,20 +271,13 @@ def android_device_apps(request):
                 'status': 'failed',
                 'message': 'Selected Android device is unavailable',
             }, status=503)
-        logger.info('Inspecting selected Android device capabilities')
-        runtime = env.get_environment()
-        if runtime == 'physical':
-            profile = env.get_device_profile(probe_root=True)
-            root_available = profile.has_root
-        else:
-            root_available = env.supports_root_adbd()
         logger.info('Loading applications installed on the selected device')
         device_packages = env.get_device_packages(refresh=refresh == '1')
         save_device_packages(identifier, device_packages)
         return JsonResponse({
             'status': 'ok',
+            'identifier': identifier,
             'packages': device_packages,
-            'root_available': root_available,
         })
     except Exception:
         logger.exception('Loading Android device apps')
@@ -266,6 +285,40 @@ def android_device_apps(request):
             'status': 'failed',
             'message': 'Failed to load installed applications',
         }, status=500)
+
+
+@login_required
+@permission_required(Permissions.SCAN)
+@require_http_methods(['GET'])
+def android_device_app_icon(request):
+    """Return the launcher icon for one installed package."""
+    form = AndroidPullScanForm(request.GET)
+    if not form.is_valid():
+        return HttpResponse(status=204)
+    package = form.cleaned_data['package']
+    try:
+        identifier = _get_form_device(request, form)
+        if not identifier:
+            return HttpResponse(status=204)
+        env = Environment(identifier)
+        if not env.connect():
+            return HttpResponse(status=204)
+        result = device_package_icon(env, package)
+    except Exception:
+        logger.exception('Loading an Android launcher icon')
+        return HttpResponse(status=204)
+    if not result:
+        return HttpResponse(status=204)
+    data, content_type, label = result
+    if data and content_type:
+        response = HttpResponse(data, content_type=content_type)
+    else:
+        response = HttpResponse(status=204)
+    if label:
+        response['X-App-Label'] = quote(label, safe='')
+    response['X-Content-Type-Options'] = 'nosniff'
+    response['Cache-Control'] = 'private, max-age=86400'
+    return response
 
 
 @login_required
@@ -788,6 +841,65 @@ def logcat(request, api=False):
         logger.exception('Logcat Streaming')
         err = 'Error in Logcat streaming'
         return print_n_send_error_response(request, err, api)
+
+
+@login_required
+@permission_required(Permissions.SCAN)
+@require_http_methods(['POST'])
+def pull_and_scan(request):
+    """Hash, pull, and scan one installed app."""
+    try:
+        form = AndroidPullScanForm(request.POST)
+        if not form.is_valid():
+            return print_n_send_error_response(
+                request,
+                'Invalid package name or Android device')
+        package = form.cleaned_data['package']
+        try:
+            identifier = _get_form_device(request, form)
+        except Exception:
+            return print_n_send_error_response(
+                request,
+                'Cannot connect to Android Runtime')
+        if not identifier:
+            return print_n_send_error_response(
+                request,
+                'No Android device selected')
+        env = Environment(identifier)
+        if not env.connect():
+            return print_n_send_error_response(
+                request,
+                'Selected Android device is unavailable')
+        apk_paths = env.get_apk_paths(package)
+        if not apk_paths:
+            return print_n_send_error_response(
+                request,
+                'Cannot find the installed APK')
+        checksum = env.md5_device_file(Environment.base_apk(apk_paths))
+        if not isinstance(checksum, str) or not is_md5(checksum):
+            return print_n_send_error_response(
+                request,
+                'Cannot hash the installed APK')
+        scan_type = env.get_apk(checksum, package)
+        if not scan_type:
+            return print_n_send_error_response(
+                request,
+                'Failed to download APK file')
+        file_name = f'{package}.apk'
+        if scan_type == 'apks':
+            file_name = f'{file_name}s'
+        add_to_recent_scan({
+            'analyzer': 'static_analyzer',
+            'status': 'success',
+            'hash': checksum,
+            'scan_type': scan_type,
+            'file_name': file_name,
+        })
+        return redirect('static_analyzer', checksum)
+    except Exception:
+        logger.exception('Pull and scan')
+        return print_n_send_error_response(
+            request, 'Pull and scan failed')
 
 
 @login_required

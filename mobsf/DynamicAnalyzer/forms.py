@@ -1,6 +1,11 @@
 """File upload to iOS form."""
 from django import forms
 
+from mobsf.MobSF.utils import (
+    strict_package_check,
+    valid_android_device_identifier,
+)
+
 
 class AndroidDeviceSelectionForm(forms.Form):
     """Restrict device selection to connected ADB identifiers."""
@@ -14,6 +19,31 @@ class AndroidDeviceSelectionForm(forms.Form):
             for device in devices
             if device['state'] == 'device'
         )
+
+
+class AndroidDeviceTargetForm(forms.Form):
+    """Validate a page-bound Android device target."""
+
+    identifier = forms.CharField(max_length=255)
+
+    def clean_identifier(self):
+        """Validate the device bound to the displayed inventory."""
+        identifier = self.cleaned_data['identifier'].strip()
+        if not valid_android_device_identifier(identifier):
+            raise forms.ValidationError('Invalid Android device identifier')
+        return identifier
+
+
+class AndroidPullScanForm(AndroidDeviceTargetForm):
+    """Validate the device and package selected for pull and scan."""
+
+    package = forms.CharField(max_length=255)
+
+    def clean_package(self):
+        package = self.cleaned_data['package'].strip()
+        if not strict_package_check(package):
+            raise forms.ValidationError('Invalid package name')
+        return package
 
 
 class AndroidDynamicAnalysisForm(forms.Form):

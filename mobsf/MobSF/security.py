@@ -632,7 +632,6 @@ def safe_request(method, url, *,
 
 def sanitize_svg(svg_content):
     """Sanitize SVG content to prevent XSS attacks."""
-    logger.info('Sanitizing SVG contents')
     import bleach
     # Allow standard SVG tags and attributes, but remove scripts and event handlers
     safe_tags = [
@@ -655,7 +654,7 @@ def sanitize_svg(svg_content):
         'image': ['x', 'y', 'width', 'height', 'href'],
         'use': ['x', 'y', 'width', 'height', 'href'],
         'filter': ['x', 'y', 'width', 'height', 'href'],
-        'linearGradient': ['x1', 'y1', 'x2', 'y2'],
+        'linearGradient': ['gradientUnits', 'x1', 'y1', 'x2', 'y2'],
         'radialGradient': ['cx', 'cy', 'r', 'fx', 'fy'],
         'stop': ['offset', 'stop-color', 'stop-opacity'],
     }
