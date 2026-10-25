@@ -40,6 +40,9 @@ from mobsf.DynamicAnalyzer.views.android.operations import (
     save_device_packages,
     supersede_android_analyses,
 )
+from mobsf.DynamicAnalyzer.views.android.progress import (
+    progress_response,
+)
 from mobsf.DynamicAnalyzer.tools.webproxy import (
     get_http_tools_url,
     start_httptools_ui,
@@ -400,12 +403,27 @@ def android_package_status(request):
         }, status=500)
 
 
+def _dynamic_analyzer_page(request, checksum):
+    """Run setup and return the rendered analyzer page."""
+    response = dynamic_analyzer(
+        request, checksum, api=False, stream=True)
+    content = getattr(response, 'content', b'') or b''
+    if isinstance(content, bytes):
+        content = content.decode('utf-8', 'replace')
+    return {'html': content}
+
+
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
-def dynamic_analyzer(request, checksum, api=False):
+def dynamic_analyzer(request, checksum, api=False, stream=False):
     """Android Dynamic Analyzer Environment."""
+    if (not api and not stream
+            and request.headers.get('X-MobSF-Progress') == '1'):
+        return progress_response(
+            lambda: _dynamic_analyzer_page(request, checksum))
     try:
+        logger.info('Preparing Android dynamic analysis')
         identifier = None
         activities = None
         deeplinks = None

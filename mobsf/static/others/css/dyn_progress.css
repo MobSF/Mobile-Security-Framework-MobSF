@@ -1,0 +1,54 @@
+.dyn-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.dyn-loading .uil-ring-css {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    margin: 0 0 0.75rem;
+}
+
+.dyn-progress {
+    width: min(40rem, calc(100vw - 2rem));
+    padding: 0.85rem 1rem;
+    color: #fff;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.55);
+    border-radius: 0.5rem;
+}
+
+.dyn-progress[hidden] {
+    display: none !important;
+}
+
+.dyn-progress-current {
+    margin: 0;
+    color: #fff;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.dyn-progress-log {
+    margin: 0 0 0.75rem;
+    padding: 0;
+    list-style: none;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 0.85rem;
+    line-height: 1.45;
+}
+
+.dyn-progress-log:empty {
+    display: none;
+}
+
+.dyn-progress-log li {
+    overflow-wrap: anywhere;
+}
