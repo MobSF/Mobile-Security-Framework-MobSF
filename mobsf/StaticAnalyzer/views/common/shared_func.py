@@ -409,10 +409,11 @@ def os_unzip(checksum, app_path, ext_path):
         # Symlink modes are rewritten above so it cannot create a link.
         subprocess.call(
             [unzip_b, '-o', '-q', extract_from, '-d', ext_path])
-        remove_external_symlinks(ext_path)
-        # Set permissions, packed files
-        # may not have proper permissions
+        # chmod first. A directory mode such as 0500 has no write bit, so
+        # unlinking a symlink inside it fails and the link would survive.
+        # set_permissions skips links, so this does not chmod the target.
         set_permissions(ext_path)
+        remove_external_symlinks(ext_path)
         # Listing is best-effort. A truncated central-directory size makes
         # ZipFile reject the archive, and unzip -l may exit non-zero while
         # still having extracted the members above.
