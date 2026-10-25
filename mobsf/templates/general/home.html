@@ -13,74 +13,59 @@
       <link rel="stylesheet" href="{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
       <link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
       <link rel="stylesheet" href="{% static "landing/css/home.css" %}">
-      <!-- Google Font: Source Sans Pro -->
-      <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
    </head>
    <body class="text-center">
 
-    <div class="d-flex h-100 p-3 mx-auto flex-column">  
-        <nav class="nav nav-masthead justify-content-center">
-            <a class="nav-link active" href="{% url 'recent' %}">SCANS</a>
-            <a class="nav-link" href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>
-            <div class="pad">
-                <img src="{% static "img/mobsf_logo.png" %}" alt="MobSF Logo" height="30" width="90" />
-            </div>  
-            <a class="nav-link" href="{% url 'api_docs' %}">API</a>
-            <a class="nav-link" href="{% url 'about' %}">ABOUT</a>
-            {% if user.is_authenticated %}
-            <a id="dropdownSubMenu1" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle"><i class="fa fa-user-circle" aria-hidden="true"></i> </a>
-            <a class="nav-link"></a>
-            <ul aria-labelledby="dropdownSubMenu1" class="dropdown-menu border-0 shadow" style="left: 0px; right: inherit;">
-                <li><a href="#" class="dropdown-item"> <small>{{ request.user.username }} <span class="badge badge-primary"> {% if user.is_staff %} Admin {% else %}{{ request.user.groups.all.0 }} {% endif %}</span></small></a></li>
-                <li class="dropdown-divider"></li>
-                <li><a href="{% url 'change_password' %}" class="dropdown-item"><i class="fa fa-asterisk" aria-hidden="true"></i> Change Password </a></li>
-                {% if user.is_staff %}<li><a href="{% url 'users' %}" class="dropdown-item"><i class="fa fa-users" aria-hidden="true"></i> User Management </a></li>{% endif %}
-                <li><a href="{% url 'logout' %}" class="dropdown-item"><i class="fa fa-power-off" aria-hidden="true"></i> Logout </a></li>
-            </ul>
-            {% endif %}
-            <a class="nav-link">
-                <form action="/search" method="GET">
-                    <input name="query" type="text" class="form-control form-control-sm" placeholder="Search">
+    <div class="home-shell">
+        <nav class="nav nav-masthead">
+            <img class="home-logo" src="{% static "img/mobsf_logo.png" %}" alt="MobSF Logo" height="30" width="90" />
+            <div class="nav-links">
+                <a class="nav-link active" href="{% url 'recent' %}">Scans</a>
+                <a class="nav-link" href="{% url 'dynamic' %}">Dynamic Analyzer</a>
+                <a class="nav-link" href="{% url 'api_docs' %}">API</a>
+                <a class="nav-link" href="{% url 'about' %}">About</a>
+                {% if user.is_authenticated %}
+                <div class="dropdown">
+                    <a id="dropdownSubMenu1" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle"><i class="fa fa-user-circle" aria-hidden="true"></i></a>
+                    <ul aria-labelledby="dropdownSubMenu1" class="dropdown-menu">
+                        <li><a href="#" class="dropdown-item"> <small>{{ request.user.username }} <span class="badge badge-primary"> {% if user.is_staff %} Admin {% else %}{{ request.user.groups.all.0 }} {% endif %}</span></small></a></li>
+                        <li class="dropdown-divider"></li>
+                        <li><a href="{% url 'change_password' %}" class="dropdown-item"><i class="fa fa-asterisk" aria-hidden="true"></i> Change Password </a></li>
+                        {% if user.is_staff %}<li><a href="{% url 'users' %}" class="dropdown-item"><i class="fa fa-users" aria-hidden="true"></i> User Management </a></li>{% endif %}
+                        <li><a href="{% url 'logout' %}" class="dropdown-item"><i class="fa fa-power-off" aria-hidden="true"></i> Logout </a></li>
+                    </ul>
+                </div>
+                {% endif %}
+                <form class="nav-search" action="/search" method="GET">
+                    <input name="query" type="search" class="form-control" placeholder="Search" aria-label="Search">
                 </form>
-            </a>
+            </div>
         </nav>
 
-        <header class="masthead mb-auto">
-            <div class="inner">
-            </div>
-        </header>
-
-        <main role="main" class="inner cover">
-            <div class="inner cover">
-                <div style="visibility:hidden; opacity:0" id="drop">
+        <main role="main" class="home-main">
+            <div id="drop">
                 <div id="textnode">Drop anywhere!</div>
-                </div>
-                </br>
-                <form id="upload_form" enctype="multipart/form-data" method="post">
-                {% csrf_token %}
-                <div class="fileUpload btn btn-lg btn-secondary" id="but">
-                    <input type="file" name="file" id="uploadFile" placeholder="Choose File" multiple>
-                    <span class="fas fa-cloud-upload-alt"></span>
-                    Upload &amp; Analyze
-                </div>
-                <br />
-                <small><i>Drag &amp; Drop anywhere!</i></small>
-                <p></p>
-                <h5 class="lead" id="status"></h5>
-                <progress id="progressBar" value="0" max="100" style="width:300px;visibility:hidden;" ></progress>
-                </form>
             </div>
+            <form id="upload_form" enctype="multipart/form-data" method="post">
+                {% csrf_token %}
+                <label class="fileUpload drop-zone" id="but">
+                    <input type="file" name="file" id="uploadFile" multiple>
+                    <span class="fas fa-cloud-upload-alt" aria-hidden="true"></span>
+                    <span class="drop-title">Upload &amp; Analyze</span>
+                    <small>Drag &amp; drop anywhere</small>
+                </label>
+                <h5 class="lead" id="status"></h5>
+                <progress id="progressBar" value="0" max="100"></progress>
+                <input type="text" id="package" class="package-field" placeholder="Download &amp; scan package" aria-label="Download and scan package">
+            </form>
         </main>
 
-        <footer class="mastfoot mt-auto">
-            <input type="download" id="package" class="form-control form-control-sm" placeholder="Download & Scan Package"/>
-            <p></p>
-            <div class="inner">
-                <h6> <a href="{% url 'recent' %}">RECENT SCANS</a>  |  <a href="{% url 'dynamic' %}">DYNAMIC ANALYZER</a>  |  <a href="{% url 'api_docs' %}">API</a>   |  <a href="{% url 'donate' %}">DONATE ♥</a> |  <a target="_blank"
-                    href="https://mobsf.github.io/docs/#/">DOCS</a>  | <a href="{% url 'about' %}">ABOUT</a></h6>
-                </br>
-                <p>&copy; {% now "Y" %}  Mobile Security Framework - MobSF {{ version }}</p>
-            </div>
+        <footer class="mastfoot">
+            <p class="home-links">
+                <a href="{% url 'donate' %}">Donate</a>
+                <a target="_blank" href="https://mobsf.github.io/docs/#/">Docs</a>
+            </p>
+            <p>&copy; {% now "Y" %} Mobile Security Framework - MobSF {{ version }}</p>
             <div id="alert" class="alert-bar">Analysis started! Please wait to be redirected or check recent scans after sometime.</div>
         </footer>
     </div>
@@ -379,7 +364,7 @@
            window.addEventListener("dragenter", function (e) {
                if (isFile(e)) {
                    lastTarget = e.target;
-                   document.querySelector("#drop").style.visibility = "";
+                   document.querySelector("#drop").style.visibility = "visible";
                    document.querySelector("#drop").style.opacity = 1;
                    document.querySelector("#textnode").style.fontSize = "48px";
                }

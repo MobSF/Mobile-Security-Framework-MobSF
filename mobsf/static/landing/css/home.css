@@ -1,29 +1,3 @@
-/*
- * Globals
- */
-
-/* Links */
-a,
-a:focus,
-a:hover {
-  color: #fff;
-}
-
-/* Custom default button */
-.btn-secondary,
-.btn-secondary:hover,
-.btn-secondary:focus {
-  color: #333;
-  text-shadow: none; /* Prevent inheritance from `body` */
-  background-color: #fff;
-  border: .05rem solid #fff;
-}
-
-
-/*
- * Base structure
- */
-
 html,
 body {
   height: 100%;
@@ -31,204 +5,283 @@ body {
 }
 
 body {
-  display: -ms-flexbox;
-  display: -webkit-box;
   display: flex;
-  -ms-flex-pack: center;
-  -webkit-box-pack: center;
   justify-content: center;
+  margin: 0;
+  color: #fff;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+a,
+a:focus,
+a:hover {
   color: #fff;
 }
 
-.cover-container {
-  max-width: 42em;
+.home-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100%;
+  padding: 0 1.25rem 1.5rem;
 }
 
-
-/*
- * Header
- */
-.masthead {
-  margin-bottom: 2rem;
+.nav-masthead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  width: 100%;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.masthead-brand {
-  margin-bottom: 0;
+.home-logo {
+  display: block;
+  height: 30px;
+  width: 90px;
+}
+
+.nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 1rem;
+  margin-left: auto;
 }
 
 .nav-masthead .nav-link {
-  padding: .25rem 0;
-  font-weight: 700;
-  color: rgb(255 255 255 / 71%);
+  padding: 0.25rem 0;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.72);
   background-color: transparent;
 }
 
 .nav-masthead .nav-link:hover,
-.nav-masthead .nav-link:focus {
-  color: #fff;
-}
-
-.nav-masthead .nav-link + .nav-link {
-  margin-left: 1rem;
-}
-
+.nav-masthead .nav-link:focus,
 .nav-masthead .active {
   color: #fff;
+  text-decoration: none;
 }
 
-@media (min-width: 48em) {
-  .masthead-brand {
-    float: left;
-  }
-  .nav-masthead {
-    float: right;
-  }
+.nav-search {
+  margin: 0;
 }
 
-
-/*
- * Cover
- */
-.cover {
-  padding: 0 1.5rem;
-}
-.cover .btn-lg {
-  padding: .75rem 1.25rem;
-  font-weight: 700;
+.nav-masthead .form-control {
+  width: 11rem;
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  box-shadow: none;
 }
 
-
-/*
- * Footer
- */
-.mastfoot {
-  color: rgba(255, 255, 255, .5);
+.nav-masthead .form-control::placeholder {
+  color: rgba(255, 255, 255, 0.45);
 }
 
-/* Custom CSS Starts here */
-.fileUpload {
-	position: relative;
-	overflow: hidden;
-	margin: 10px;
- 
+.nav-masthead .form-control:focus,
+.package-field:focus {
+  color: #fff;
+  background: transparent;
+  border-color: transparent;
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  box-shadow: none;
 }
+
+.home-shell .dropdown-menu {
+  left: auto;
+  right: 0;
+  background: #1c1e22;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.home-shell .dropdown-item {
+  color: #fff;
+}
+
+.home-shell .dropdown-item:hover,
+.home-shell .dropdown-item:focus {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.home-shell .dropdown-divider {
+  border-top-color: rgba(255, 255, 255, 0.12);
+}
+
+.home-main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 2rem 0;
+}
+
+#upload_form {
+  width: min(28rem, 100%);
+}
+
+.drop-zone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+  min-height: 11rem;
+  margin: 0;
+  padding: 2rem 1.5rem;
+  color: #fff;
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.28);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.drop-zone .fa-cloud-upload-alt {
+  font-size: 1.5rem;
+}
+
+.drop-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.drop-zone small {
+  color: rgba(255, 255, 255, 0.62);
+}
+
 .fileUpload input {
-	position: absolute;
-	top: 0;
-	right: 0;
-	margin: 0;
-	padding: 0;
-	font-size: 20px;
-	cursor: pointer;
-	opacity: 0;
-	filter: alpha(opacity=0);
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0;
 }
 
-/* Custom */ 
-
-/* Full screen drag and drop */
-
-
-div#drop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 9999999999;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    transition: visibility 175ms, opacity 175ms;
-    display: table;
-    text-shadow: 1px 1px 2px #000;
-    color: #fff;
-    background: rgba(0, 0, 0, 0.45);
-    font: bold 42px Source Sans Pro, Tahoma, sans-serif;
-}
-div#textnode {
-    display: table-cell;
-    text-align: center;
-    vertical-align: middle;
-    transition: font-size 175ms;
+#status {
+  min-height: 1.5rem;
+  margin: 1rem 0 0;
+  font-size: 1rem;
+  font-weight: 500;
 }
 
-/* PROGRESS BAR */
-
-progress {
-  width: 400px;
-
-  margin: 25px auto;
+#progressBar {
   display: block;
-  -webkit-appearance: none;
-
-   border: 0;
-    height: 18px;
-    border-radius: 9px;
+  width: 100%;
+  height: 8px;
+  margin: 0.75rem auto 0;
+  overflow: hidden;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 0;
+  border-radius: 999px;
+  visibility: hidden;
 }
 
 progress::-webkit-progress-bar {
-  background: black;
-  border-radius: 50px;
-  padding: 2px;
-  box-shadow: 0 1px 0px 0 rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
 }
 
-progress::-webkit-progress-value {
-  border-radius: 50px;
-  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.4);
-  background:
-    -webkit-linear-gradient(45deg, transparent, transparent 33%, rgba(0, 0, 0, 0.1) 33%, rgba(0, 0, 0, 0.1) 66%, transparent 66%),
-    -webkit-linear-gradient(top, rgba(255, 255, 255, 0.25), rgba(0, 0, 0, 0.2)),
-    -webkit-linear-gradient(left, #ff9b3d, #ff960d);
-
-  background-size: 25px 14px, 100% 100%, 100% 100%;
-  -webkit-animation: move 5s linear 0 infinite;
+progress::-webkit-progress-value,
+progress::-moz-progress-bar {
+  background: #3b82f6;
+  border: 0;
+  border-radius: 999px;
 }
 
-@keyframes move {
-  0% {background-position: 0px 0px, 0 0, 0 0}
-  100% {background-position: -100px 0px, 0 0, 0 0}
+.package-field {
+  display: block;
+  width: 100%;
+  margin: 1.25rem auto 0;
+  padding: 0.55rem 0.75rem;
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
 }
 
-/* The snackbar - position it at the bottom and in the middle of the screen */
-#snackbar {
-  visibility: hidden; /* Hidden by default. Visible on click */
-  width: 100%; /* Make the snackbar full width */
-  background-color: #333; /* Black background color */
-  color: #fff; /* White text color */
-  text-align: center; /* Centered text */
-  border-radius: 0; /* Remove rounded borders for full width */
-  padding: 16px; /* Padding */
-  z-index: 1; /* Add a z-index if needed */
-  left: 0; /* Align to the left edge of the screen */
-  bottom: 30px; /* 30px from the bottom */
-  position: fixed; /* Ensure it stays at the bottom of the viewport */
+.package-field::placeholder {
+  color: rgba(255, 255, 255, 0.45);
 }
 
-/* Alert bar class */
+.mastfoot {
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.home-links {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 0 0 0.35rem;
+}
+
+.home-links a {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+#drop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  display: table;
+  width: 100%;
+  height: 100%;
+  color: #fff;
+  font-weight: 700;
+  font-size: 42px;
+  background: rgba(0, 0, 0, 0.72);
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 175ms, opacity 175ms;
+}
+
+#textnode {
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+  transition: font-size 175ms;
+}
+
 .alert-bar {
-  position: fixed; /* Sticks to the bottom of the screen */
-  bottom: 0; /* Aligns to the bottom */
-  left: 0; /* Aligns to the left edge */
-  width: 100%; /* Spans the full width of the screen */
-  background-color: #00000021; /* Red background (customize as needed) */
-  color: #fff; /* White text color */
-  text-align: center; /* Centered text */
-  padding: 16px; /* Padding inside the bar */
-  font-size: 16px; /* Font size for the text */
-  z-index: 9999; /* Ensure it appears above other content */
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow */
-  visibility: hidden; /* Hidden by default */
-  opacity: 0; /* Fully transparent */
-  transition: visibility 0s, opacity 0.5s ease-in-out; /* Smooth fade-in/out */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 9999;
+  width: 100%;
+  padding: 16px;
+  color: #fff;
+  font-size: 16px;
+  text-align: center;
+  background-color: #1c1e22;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s, opacity 0.5s ease-in-out;
 }
 
-/* Show the alert bar */
 .alert-bar.show {
-  visibility: visible; /* Make it visible */
-  opacity: 1; /* Fully opaque */
+  visibility: visible;
+  opacity: 1;
 }
 
-/* Optional: Keyframes for additional animation */
+.alert-bar.slide-up {
+  animation: slideUp 0.5s ease-in-out;
+}
+
 @keyframes slideUp {
   from {
     transform: translateY(100%);
@@ -238,14 +291,14 @@ progress::-webkit-progress-value {
   }
 }
 
-.alert-bar.slide-up {
-  animation: slideUp 0.5s ease-in-out;
-}
-/* Alert bar ends */
+@media (max-width: 720px) {
+  .nav-links {
+    width: 100%;
+    margin-left: 0;
+  }
 
-/* Logo padding ^*/
-
-.pad {
-  padding-right: 50px;
-  padding-left: 50px;
+  .nav-search,
+  .nav-masthead .form-control {
+    width: 100%;
+  }
 }
