@@ -103,6 +103,19 @@ textarea:focus {
     font-size: 2.8rem;
     line-height: 64px;
 }
+.device-app-icon-stack {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    overflow: hidden;
+    flex: none;
+}
+.device-app-icon-stack .device-app-icon {
+    position: absolute;
+    inset: 0;
+    object-fit: cover;
+}
 .device-app-name {
     width: 100%;
     min-height: 0;
@@ -601,6 +614,7 @@ function queueDeviceIcon(
         identifier: deviceIdentifier,
         package: packageName,
         meta: '1',
+        layers: '2',
     });
     if (version) {
         params.set('v', version.slice(0, 40));
@@ -654,6 +668,169 @@ function applyResolvedName(job, encoded) {
     }
 }
 
+function cssColor(value) {
+    if (typeof value !== 'string' || !/^#[0-9A-Fa-f]{3,8}$/.test(value)) {
+        return '';
+    }
+    if (![4, 5, 7, 9].includes(value.length)) {
+        return '';
+    }
+    let digits = value.slice(1);
+    let alpha = 255;
+    if (digits.length === 3) {
+        digits = digits.replace(/./g, (ch) => ch + ch);
+    } else if (digits.length === 4) {
+        alpha = parseInt(digits[0] + digits[0], 16);
+        digits = digits.slice(1).replace(/./g, (ch) => ch + ch);
+    } else if (digits.length === 8) {
+        alpha = parseInt(digits.slice(0, 2), 16);
+        digits = digits.slice(2);
+    }
+    const red = parseInt(digits.slice(0, 2), 16);
+    const green = parseInt(digits.slice(2, 4), 16);
+    const blue = parseInt(digits.slice(4, 6), 16);
+    if ([red, green, blue, alpha].some((part) => Number.isNaN(part))) {
+        return '';
+    }
+    return `rgba(${red}, ${green}, ${blue}, ${(alpha / 255).toFixed(3)})`;
+}
+
+function layerSvg(data) {
+    if (typeof data !== 'string' || data.length > 2000000) {
+        return null;
+    }
+    let binary;
+    try {
+        binary = atob(data);
+    } catch (error) {
+        return null;
+    }
+    if (binary.length < 20 || binary.length > 1500000) {
+        return null;
+    }
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+        bytes[index] = binary.charCodeAt(index);
+    }
+    let text;
+    try {
+        text = new TextDecoder('utf-8', {fatal: true}).decode(bytes);
+    } catch (error) {
+        return null;
+    }
+    const trimmed = text.trim().toLowerCase();
+    if (!trimmed.startsWith('<svg')
+            || trimmed.includes('<script')
+            || trimmed.includes('javascript:')
+            || trimmed.includes('<foreignobject')
+            || trimmed.includes('<image')
+            || trimmed.includes('href')
+            || trimmed.includes('onload')) {
+        return null;
+    }
+    return bytes;
+}
+
+function layerImage(mime, data) {
+    if (mime === 'image/svg+xml') {
+        return layerSvg(data);
+    }
+    const signatures = {
+        'image/png': [0x89, 0x50, 0x4e, 0x47],
+        'image/jpeg': [0xff, 0xd8, 0xff],
+        'image/gif': [0x47, 0x49, 0x46],
+        'image/webp': [0x52, 0x49, 0x46, 0x46],
+    };
+    const signature = signatures[mime];
+    if (!signature
+            || typeof data !== 'string'
+            || data.length > 2000000) {
+        return null;
+    }
+    let binary;
+    try {
+        binary = atob(data);
+    } catch (error) {
+        return null;
+    }
+    if (binary.length < 12 || binary.length > 1500000) {
+        return null;
+    }
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+        bytes[index] = binary.charCodeAt(index);
+    }
+    const matches = signature.every((part, index) => bytes[index] === part);
+    if (!matches) {
+        return null;
+    }
+    if (mime === 'image/webp'
+            && String.fromCharCode(...bytes.slice(8, 12)) !== 'WEBP') {
+        return null;
+    }
+    return bytes;
+}
+
+function paintIconLayers(job, text) {
+    let payload;
+    try {
+        payload = JSON.parse(text);
+    } catch (error) {
+        return false;
+    }
+    const layers = payload && Array.isArray(payload.layers)
+        ? payload.layers.slice(0, 2)
+        : [];
+    if (!job.img.isConnected || !layers.length) {
+        return false;
+    }
+    const stack = document.createElement('div');
+    stack.className = 'device-app-icon-stack';
+    let images = 0;
+    layers.forEach((layer) => {
+        if (!layer || typeof layer !== 'object') {
+            return;
+        }
+        if (typeof layer.color === 'string' && !layer.data) {
+            const css = cssColor(layer.color);
+            if (css) {
+                stack.style.backgroundColor = css;
+            }
+            return;
+        }
+        const bytes = layerImage(layer.mime, layer.data);
+        if (!bytes) {
+            return;
+        }
+        const icon = document.createElement('img');
+        icon.className = 'device-app-icon';
+        icon.alt = '';
+        icon.width = 64;
+        icon.height = 64;
+        const url = URL.createObjectURL(new Blob(
+            [bytes],
+            {type: layer.mime},
+        ));
+        icon.addEventListener('load', () => {
+            URL.revokeObjectURL(url);
+        }, {once: true});
+        icon.addEventListener('error', () => {
+            URL.revokeObjectURL(url);
+            icon.remove();
+        }, {once: true});
+        icon.src = url;
+        stack.appendChild(icon);
+        images += 1;
+    });
+    if (!images) {
+        return false;
+    }
+    const painted = stack.querySelectorAll('img');
+    painted[painted.length - 1].alt = job.img.alt || '';
+    job.img.replaceWith(stack);
+    return true;
+}
+
 function pumpDeviceIcons() {
     const generation = iconGeneration;
     while (iconActive < 3 && iconJobs.length) {
@@ -696,6 +873,24 @@ function pumpDeviceIcons() {
                         useAndroidMark();
                     }
                     finish();
+                    return;
+                }
+                if ((blob.type || '').indexOf('application/json') !== -1) {
+                    blob.text().then((text) => {
+                        if (job.generation !== iconGeneration) {
+                            finish();
+                            return;
+                        }
+                        if (!paintIconLayers(job, text)) {
+                            useAndroidMark();
+                        }
+                        finish();
+                    }).catch(() => {
+                        if (job.generation === iconGeneration) {
+                            useAndroidMark();
+                        }
+                        finish();
+                    });
                     return;
                 }
                 const url = URL.createObjectURL(blob);

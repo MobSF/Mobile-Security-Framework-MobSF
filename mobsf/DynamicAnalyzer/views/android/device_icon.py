@@ -1,5 +1,7 @@
 """Read one launcher icon from an installed APK without pulling it."""
+import base64
 import io
+import json
 import logging
 import re
 import struct
@@ -13,6 +15,7 @@ from pathlib import Path
 from django.conf import settings
 
 from mobsf.DynamicAnalyzer.views.android.device_vector import (
+    gradient_fill,
     safe_svg_image,
     vector_image,
 )
@@ -39,7 +42,7 @@ _ICON_FETCHES = threading.BoundedSemaphore(2)
 _ICON_NOTICE_GUARD = threading.Lock()
 _ICON_NOTICE = {}
 _APK_PATH = re.compile(r'/data/app/[A-Za-z0-9_./=~+-]+\.apk')
-_ZIP_NAME = re.compile(r'[A-Za-z0-9_./+-]{1,180}')
+_ZIP_NAME = re.compile(r'[A-Za-z0-9_./+$+-]{1,180}')
 _IMAGE_TYPES = {
     'image/png': '.png',
     'image/webp': '.webp',
@@ -50,7 +53,8 @@ _IMAGE_TYPES = {
 _MAX_IMAGE = 1_500_000
 _MAX_XML = 500_000
 _MAX_MANIFEST = 2_000_000
-_MAX_RESOURCES = 32_000_000
+_MAX_RESOURCES = 64 * 1024 * 1024
+_COLOR = re.compile(r'#[0-9A-Fa-f]{3,8}')
 _MAX_CENTRAL_DIRECTORY = 8 * 1024 * 1024
 
 
@@ -430,6 +434,9 @@ def _raster_for_id(apk, source, resource_id, seen):
         xml_bytes = source.read_entry(name, _MAX_XML)
         if not xml_bytes:
             continue
+        stacked = _adaptive_icon(apk, source, resource_id, xml_bytes, seen)
+        if stacked:
+            return stacked
         for ref in _xml_drawables(xml_bytes):
             child = _resource_id(apk, ref)
             if not child or child == resource_id:
@@ -437,7 +444,10 @@ def _raster_for_id(apk, source, resource_id, seen):
             image = _raster_for_id(apk, source, child, seen)
             if image:
                 return image
-        image = vector_image(xml_bytes)
+        image = vector_image(
+            xml_bytes,
+            _paint_resolver(apk, source, seen),
+        )
         if image:
             return image
     return None
@@ -544,6 +554,118 @@ def _resource_id(apk, value):
         return int(token, 16)
     except ValueError:
         return None
+
+
+def _adaptive_icon(apk, source, resource_id, xml_bytes, seen):
+    """Stack an adaptive icon's background under its foreground."""
+    refs = _adaptive_refs(xml_bytes)
+    if not refs:
+        return None
+    layers = []
+    for ref in refs:
+        child = _resource_id(apk, ref)
+        if not child or child == resource_id or child in seen:
+            continue
+        color = _direct_color(apk, source, child)
+        if color:
+            layers.append(('color', color))
+            continue
+        image = _raster_for_id(apk, source, child, seen)
+        if image:
+            layers.append(image)
+    stacked = _composite_layers(layers)
+    if stacked:
+        return stacked
+    for layer in reversed(layers):
+        if layer and layer[0] != 'color':
+            return layer
+    return None
+
+
+def _adaptive_refs(xml_bytes):
+    try:
+        root = AXMLPrinter(xml_bytes).get_xml_obj()
+    except Exception:
+        return None
+    if (root is None
+            or not isinstance(root.tag, str)
+            or root.tag.split('}')[-1] != 'adaptive-icon'):
+        return None
+    refs = []
+    for elem in root.iter():
+        tag = elem.tag.split('}')[-1] if isinstance(elem.tag, str) else ''
+        if tag not in ('background', 'foreground', 'bitmap'):
+            continue
+        for attr in ('drawable', 'src'):
+            value = elem.get(NS_ANDROID + attr) or elem.get(attr)
+            if isinstance(value, str) and value.startswith('@'):
+                if value not in refs:
+                    refs.append(value)
+                break
+    return refs
+
+
+def _direct_color(apk, source, resource_id):
+    for _config, value in _resolved_configs(apk, source, resource_id):
+        if _direct_color_value(value):
+            return value
+    return None
+
+
+def _paint_resolver(apk, source, seen):
+    """Resolve a vector fill that points at a color or gradient."""
+    followed = set()
+
+    def resolve(value):
+        resource_id = _resource_id(apk, value)
+        if (not resource_id
+                or resource_id in seen
+                or resource_id in followed
+                or len(followed) > 8):
+            return None
+        followed.add(resource_id)
+        color = _direct_color(apk, source, resource_id)
+        if color:
+            return ('color', color)
+        for _config, name in _resolved_configs(apk, source, resource_id):
+            if (not isinstance(name, str)
+                    or not name.endswith('.xml')
+                    or not _safe_zip_name(name)):
+                continue
+            blob = source.read_entry(name, _MAX_XML)
+            gradient = gradient_fill(blob) if blob else None
+            if gradient:
+                return ('gradient', gradient)
+        return None
+
+    return resolve
+
+
+def _composite_layers(layers):
+    """Send adaptive-icon layers for the browser to stack.
+
+    Raster images and sanitized vectors are both painted by the browser.
+    """
+    if len(layers) < 2:
+        return None
+    described = []
+    for layer in layers[:2]:
+        if layer[0] == 'color':
+            color = layer[1]
+            if isinstance(color, str) and _direct_color_value(color):
+                described.append({'color': color})
+            continue
+        image = _accepted_layer(layer[0], layer[1])
+        if not image:
+            continue
+        described.append({
+            'mime': image[1],
+            'data': base64.b64encode(image[0]).decode('ascii'),
+        })
+    body = _layer_document(described)
+    if not body:
+        return None
+    return body, 'application/json'
 
 
 def _xml_drawables(xml_bytes):
@@ -655,6 +777,16 @@ def _inflate(raw, limit):
     return out
 
 
+def _accepted_layer(data, mime):
+    """Return one checked raster or sanitized vector layer."""
+    if mime == 'image/svg+xml':
+        return safe_svg_image(data)
+    image = _image(data)
+    if not image or image[1] != mime:
+        return None
+    return image
+
+
 def _image(data):
     if not data or len(data) > _MAX_IMAGE:
         return None
@@ -688,7 +820,7 @@ def _safe_zip_name(name):
 
 def _cache_digest(identifier, package, version, apk_path):
     return sha256(
-        f'{identifier}\n{package}\n{version}\n{apk_path}'.encode(),
+        f'v4\n{identifier}\n{package}\n{version}\n{apk_path}'.encode(),
     ).hexdigest()
 
 
@@ -699,6 +831,9 @@ def _icon_root():
 def _cached_device_icon(identifier, package, version, apk_path):
     digest = _cache_digest(identifier, package, version, apk_path)
     root = _icon_root()
+    layered = _read_cached_layers(root, f'{digest}.json')
+    if layered:
+        return layered
     for suffix in _IMAGE_TYPES.values():
         image = _read_cached_image(
             root,
@@ -712,8 +847,12 @@ def _cached_device_icon(identifier, package, version, apk_path):
 
 def _store_device_icon(identifier, package, version, apk_path, image):
     data, content_type = image
-    suffix = _IMAGE_TYPES.get(content_type)
-    if not suffix:
+    if content_type == 'application/json':
+        data = _valid_layer_document(data)
+        suffix = '.json'
+    else:
+        suffix = _IMAGE_TYPES.get(content_type)
+    if not data or not suffix:
         return
     digest = _cache_digest(identifier, package, version, apk_path)
     root = _icon_root()
@@ -808,7 +947,7 @@ def _scan_icon(package, version, match_version):
     return None
 
 
-def _read_cached_image(root, relative, allow_svg=False):
+def _read_cached_bytes(root, relative):
     if not isinstance(relative, str) or not relative:
         return None
     if is_path_traversal(relative) or Path(relative).is_absolute():
@@ -827,6 +966,81 @@ def _read_cached_image(root, relative, allow_svg=False):
             data = handle.read(_MAX_IMAGE + 1)
     except OSError:
         return None
+    if len(data) > _MAX_IMAGE:
+        return None
+    return data
+
+
+def _read_cached_image(root, relative, allow_svg=False):
+    data = _read_cached_bytes(root, relative)
+    if data is None:
+        return None
     if allow_svg and data.lstrip().startswith(b'<svg'):
         return safe_svg_image(data)
     return _image(data)
+
+
+def _read_cached_layers(root, relative):
+    data = _read_cached_bytes(root, relative)
+    if data is None:
+        return None
+    body = _valid_layer_document(data)
+    if not body:
+        return None
+    return body, 'application/json'
+
+
+def _direct_color_value(value):
+    return (
+        isinstance(value, str)
+        and bool(_COLOR.fullmatch(value))
+        and len(value) in (4, 5, 7, 9)
+    )
+
+
+def _layer_document(described):
+    """Return canonical layer JSON, or None when the stack is incomplete."""
+    if not isinstance(described, list) or not 1 < len(described) <= 2:
+        return None
+    pictures = 0
+    for layer in described:
+        if not isinstance(layer, dict):
+            return None
+        if set(layer) == {'color'}:
+            if not _direct_color_value(layer['color']):
+                return None
+            continue
+        if set(layer) != {'mime', 'data'}:
+            return None
+        encoded = layer['data']
+        if not isinstance(encoded, str) or len(encoded) > _MAX_IMAGE:
+            return None
+        try:
+            raw = base64.b64decode(encoded, validate=True)
+        except (ValueError, TypeError):
+            return None
+        image = _accepted_layer(raw, layer['mime'])
+        if not image:
+            return None
+        layer['mime'] = image[1]
+        layer['data'] = base64.b64encode(image[0]).decode('ascii')
+        pictures += 1
+    if pictures < 1:
+        return None
+    body = json.dumps(
+        {'layers': described},
+        separators=(',', ':'),
+    ).encode('ascii')
+    if len(body) > _MAX_IMAGE:
+        return None
+    return body
+
+
+def _valid_layer_document(data):
+    try:
+        payload = json.loads(data)
+    except ValueError:
+        return None
+    if not isinstance(payload, dict) or set(payload) != {'layers'}:
+        return None
+    return _layer_document(payload.get('layers'))

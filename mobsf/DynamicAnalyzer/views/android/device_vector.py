@@ -13,6 +13,10 @@ _MAX_IMAGE = 1_500_000
 _MAX_PATHS = 256
 _MAX_PATH_DATA = 200_000
 _SVG_NS = 'http://www.w3.org/2000/svg'
+_SVG_NUMBER = re.compile(
+    r'-?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?')
+_SVG_FILL = re.compile(
+    r'none|#[0-9A-Fa-f]{3,8}|url\(#g[0-9]{1,2}\)')
 
 
 def _number(value, default=None):
@@ -111,6 +115,11 @@ def safe_svg_image(data):
         'svg': {'width', 'height', 'viewBox', 'version'},
         'g': {'transform'},
         'path': {'d', 'fill', 'stroke', 'stroke-width', 'opacity'},
+        'defs': set(),
+        'linearGradient': {
+            'id', 'gradientUnits', 'x1', 'y1', 'x2', 'y2',
+        },
+        'stop': {'offset', 'stop-color', 'stop-opacity'},
     }
     path_bytes = 0
     for element in root.iter():
@@ -126,6 +135,8 @@ def safe_svg_image(data):
         }
         if not attributes.issubset(allowed[tag]):
             return None
+        if not _svg_values(tag, element):
+            return None
         if tag == 'path':
             path_data = element.get('d', '')
             path_bytes += len(path_data)
@@ -136,7 +147,87 @@ def safe_svg_image(data):
     return cleaned, 'image/svg+xml'
 
 
-def vector_image(xml_bytes):
+def _svg_values(tag, element):
+    """Reject SVG attribute values outside the icon allowlist."""
+    if tag == 'path':
+        fill = element.get('fill')
+        stroke = element.get('stroke')
+        if fill and not _SVG_FILL.fullmatch(fill):
+            return False
+        if stroke and not re.fullmatch(r'#[0-9A-Fa-f]{3,8}', stroke):
+            return False
+        for name in ('opacity', 'stroke-width'):
+            value = element.get(name)
+            if value and not _SVG_NUMBER.fullmatch(value):
+                return False
+        return True
+    if tag == 'linearGradient':
+        if (element.get('gradientUnits') != 'userSpaceOnUse'
+                or not re.fullmatch(
+                    r'g[0-9]{1,2}', element.get('id', ''))):
+            return False
+        return all(
+            _SVG_NUMBER.fullmatch(element.get(name, ''))
+            for name in ('x1', 'y1', 'x2', 'y2')
+        )
+    if tag == 'stop':
+        color = element.get('stop-color', '')
+        if not re.fullmatch(r'#[0-9A-Fa-f]{3,8}', color):
+            return False
+        if not _SVG_NUMBER.fullmatch(element.get('offset', '')):
+            return False
+        opacity = element.get('stop-opacity')
+        return not opacity or bool(_SVG_NUMBER.fullmatch(opacity))
+    return True
+
+
+def gradient_fill(xml_bytes):
+    """Return one compiled linear gradient, in viewport coordinates."""
+    if not xml_bytes or len(xml_bytes) > _MAX_IMAGE:
+        return None
+    try:
+        root = AXMLPrinter(xml_bytes).get_xml_obj()
+    except Exception:
+        return None
+    if (root is None
+            or not isinstance(root.tag, str)
+            or root.tag.split('}')[-1] != 'gradient'):
+        return None
+    kind = root.get(NS_ANDROID + 'type') or root.get('type') or '0'
+    if str(kind) not in ('0', 'linear'):
+        return None
+    coords = []
+    for name in ('startX', 'startY', 'endX', 'endY'):
+        number = _number(root.get(NS_ANDROID + name) or root.get(name))
+        if number is None:
+            return None
+        coords.append(number)
+    stops = []
+    for child in root:
+        tag = (
+            child.tag.split('}')[-1]
+            if isinstance(child.tag, str) else ''
+        )
+        if tag != 'item' or len(stops) >= 8:
+            continue
+        color = child.get(NS_ANDROID + 'color') or child.get('color')
+        offset = _number(
+            child.get(NS_ANDROID + 'offset') or child.get('offset'))
+        if _color(color)[0] is None or offset is None or not 0 <= offset <= 1:
+            continue
+        stops.append((color, offset))
+    if len(stops) < 2:
+        return None
+    return {
+        'x1': coords[0],
+        'y1': coords[1],
+        'x2': coords[2],
+        'y2': coords[3],
+        'stops': stops,
+    }
+
+
+def vector_image(xml_bytes, resolve_color=None):
     """Convert a bounded Android vector drawable to sanitized SVG."""
     try:
         root = AXMLPrinter(xml_bytes).get_xml_obj()
@@ -166,6 +257,66 @@ def vector_image(xml_bytes):
     })
     path_count = 0
     path_bytes = 0
+    gradients = {}
+    defs = None
+
+    def linear_fill(spec):
+        nonlocal defs
+        key = (
+            spec['x1'], spec['y1'], spec['x2'], spec['y2'],
+            tuple(spec['stops']),
+        )
+        ident = gradients.get(key)
+        if ident:
+            return ident
+        if len(gradients) >= 8:
+            return None
+        prepared = []
+        for color, offset in spec['stops']:
+            stop_color, stop_opacity = _color(color)
+            if not stop_color:
+                return None
+            prepared.append((stop_color, stop_opacity, offset))
+        ident = f'g{len(gradients)}'
+        if defs is None:
+            defs = XmlElementTree.Element('defs')
+            svg.insert(0, defs)
+        gradient = XmlElementTree.SubElement(defs, 'linearGradient', {
+            'id': ident,
+            'gradientUnits': 'userSpaceOnUse',
+            'x1': f'{spec["x1"]:g}',
+            'y1': f'{spec["y1"]:g}',
+            'x2': f'{spec["x2"]:g}',
+            'y2': f'{spec["y2"]:g}',
+        })
+        for stop_color, stop_opacity, offset in prepared:
+            stop = {
+                'offset': f'{offset:g}',
+                'stop-color': stop_color,
+            }
+            if stop_opacity < 1:
+                stop['stop-opacity'] = f'{stop_opacity:g}'
+            XmlElementTree.SubElement(gradient, 'stop', stop)
+        gradients[key] = ident
+        return ident
+
+    def apply_fill(raw):
+        paint = None
+        if (resolve_color
+                and isinstance(raw, str)
+                and raw.startswith('@')):
+            paint = resolve_color(raw)
+        if paint and paint[0] == 'color':
+            raw = paint[1]
+            paint = None
+        if paint and paint[0] == 'gradient':
+            ident = linear_fill(paint[1])
+            if ident:
+                return f'url(#{ident})', 1.0
+            stops = paint[1].get('stops') or ()
+            if stops:
+                raw = stops[-1][0]
+        return _color(raw)
 
     def add_children(android_parent, svg_parent):
         nonlocal path_count, path_bytes
@@ -196,7 +347,7 @@ def vector_image(xml_bytes):
             if path_bytes > _MAX_PATH_DATA:
                 return
             attributes = {'d': path_data}
-            fill, fill_opacity = _color(
+            fill, fill_opacity = apply_fill(
                 child.get(NS_ANDROID + 'fillColor')
                 or child.get('fillColor'))
             if fill:
