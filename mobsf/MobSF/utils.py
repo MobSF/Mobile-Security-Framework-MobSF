@@ -1124,15 +1124,23 @@ def run_with_timeout(func, limit, *args, **kwargs):
 
 
 def set_permissions(path):
+    # Lazy import: security.py imports this module.
+    from mobsf.MobSF.security import is_pipe_or_link
     base_path = Path(path)
-    # Read/Write for directories without execute
-    perm_dir = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
-    # Read/Write for files
+    if is_pipe_or_link(base_path):
+        return
+    # Owner search bit so the scan can walk the tree. Files stay
+    # non-executable. Group and other are not granted write or execute.
+    perm_dir = (stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR
+                | stat.S_IRGRP | stat.S_IROTH)
     perm_file = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
 
-    # Set permissions for directories and files
+    # Set permissions for directories and files. Skip links so chmod
+    # cannot follow a symlink out of the extract directory.
     for item in base_path.rglob('*'):
         try:
+            if is_pipe_or_link(item):
+                continue
             if item.is_dir():
                 item.chmod(perm_dir)
             elif item.is_file():
