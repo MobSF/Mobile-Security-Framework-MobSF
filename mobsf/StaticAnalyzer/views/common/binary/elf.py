@@ -272,7 +272,10 @@ class ELFChecksec:
     def is_dart(self):
         dart = ('_kDartVmSnapshotInstructions',
                 'Dart_Cleanup')
-        if any(i in self.strings() for i in dart):
+        # Not self.strings(): it depends on is_dart()
+        candidates = (self._lief_strings()
+                      or strings_on_binary(self.elf_path))
+        if any(i in candidates for i in dart):
             return True
         for symbol in dart:
             try:
@@ -281,6 +284,15 @@ class ELFChecksec:
             except Exception:
                 pass
         return False
+
+    def is_dart_snapshot(self):
+        """Dart AOT app snapshot (libapp.so), not the Flutter engine."""
+        try:
+            return any(
+                sym.name == '_kDartIsolateSnapshotData' and sym.value
+                for sym in self.elf.dynamic_symbols)
+        except Exception:
+            return False
 
     def has_canary(self):
         if self.is_dart():
@@ -357,14 +369,22 @@ class ELFChecksec:
                 fortified_funcs.append(function.name)
         return fortified_funcs
 
+    def _lief_strings(self):
+        try:
+            return self.elf.strings or []
+        except Exception:
+            return []
+
     def strings(self):
         normalized = set()
-        try:
-            elf_strings = self.elf.strings
-        except Exception:
-            elf_strings = None
+        elf_strings = self._lief_strings()
         if not elf_strings:
             elf_strings = strings_on_binary(self.elf_path)
+        elif self.is_dart_snapshot():
+            # Dart AOT strings are not NUL-terminated C strings,
+            # lief misses them (secrets, URLs in libapp.so)
+            elf_strings = list(elf_strings) + strings_on_binary(
+                self.elf_path)
         for i in elf_strings:
             if isinstance(i, bytes):
                 continue
