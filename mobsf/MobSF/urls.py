@@ -15,6 +15,12 @@ from mobsf.DynamicAnalyzer.views.ios import (
     report as ios_view_report,
     tests_frida as ios_tests_frida,
 )
+from mobsf.DynamicAnalyzer.views.ios.device import (
+    dynamic_analyzer as ios_device,
+)
+from mobsf.DynamicAnalyzer.views.ios.device import (
+    report as device_report,
+)
 from mobsf.MobSF import utils
 from mobsf.MobSF.security import (
     init_exec_hooks,
@@ -29,6 +35,7 @@ from mobsf.MobSF.views import (
 from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.MobSF.views.api import api_android_dynamic_analysis as api_dz
 from mobsf.MobSF.views.api import api_ios_dynamic_analysis as api_idz
+from mobsf.MobSF.views.api import api_ios_device_analysis as api_iddz
 from mobsf.StaticAnalyzer import tests
 from mobsf.StaticAnalyzer.views.common import (
     appsec,
@@ -123,7 +130,7 @@ urlpatterns = [
     re_path(r'^api/v1/frida/list_scripts$', api_dz.api_list_frida_scripts),
     re_path(r'^api/v1/frida/get_script$', api_dz.api_get_script_content),
     re_path(r'^api/v1/dynamic/view_source$', api_dz.api_dynamic_view_file),
-    # iOS Specific
+    # iOS Corellium
     re_path(r'^api/v1/ios/corellium_supported_models$',
             api_idz.api_corellium_get_supported_models),
     re_path(r'^api/v1/ios/corellium_ios_versions$',
@@ -177,8 +184,35 @@ urlpatterns = [
     # Frida
     re_path(r'^api/v1/frida/ios_instrument$', api_idz.api_ios_instrument),
     re_path(r'^api/v1/dynamic/ios_report_json$', api_idz.api_ios_view_report),
+    # iOS Jailbroken Device
+    re_path(r'^api/v1/ios/device_dynamic_analysis$',
+            api_iddz.api_device_dynamic_analysis),
+    re_path(r'^api/v1/ios/device_get$',
+            api_iddz.api_device_get),
+    re_path(r'^api/v1/ios/device_install_ipa$',
+            api_iddz.api_device_install_ipa),
+    re_path(r'^api/v1/ios/device_dynamic_analyzer$',
+            api_iddz.api_device_dynamic_analyzer),
+    re_path(r'^api/v1/ios/device_file_upload$',
+            api_iddz.api_device_file_upload),
+    re_path(r'^api/v1/ios/device_ssh_execute$',
+            api_iddz.api_device_ssh_execute),
+    re_path(r'^api/v1/ios/device_instrument$',
+            api_iddz.api_device_instrument),
+    re_path(r'^api/v1/ios/device_system_logs$',
+            api_iddz.api_device_system_logs),
+    re_path(r'^api/v1/ios/device_ps$',
+            api_iddz.api_device_ps),
+    re_path(r'^api/v1/ios/device_file_download$',
+            api_iddz.api_device_file_download),
+    re_path(r'^api/v1/ios/device_api_monitor$',
+            api_iddz.api_device_api_monitor),
+    re_path(r'^api/v1/ios/device_download_app_data$',
+            api_iddz.api_device_download_app_data),
+    re_path(r'^api/v1/ios/device_report_json$',
+            api_iddz.api_device_report_json),
 ]
-if settings.API_ONLY == '0':
+if not settings.API_ONLY:
     urlpatterns.extend([
         # General
         re_path(r'^$', home.index, name='home'),
@@ -260,6 +294,21 @@ if settings.API_ONLY == '0':
         re_path(r'^android/dynamic_analysis/$',
                 dz.android_dynamic_analysis,
                 name='dynamic_android'),
+        re_path(r'^android/device_details/$',
+                dz.android_device_details,
+                name='android_device_details'),
+        re_path(r'^android/device_apps/$',
+                dz.android_device_apps,
+                name='android_device_apps'),
+        re_path(r'^android/device_app_icon/$',
+                dz.android_device_app_icon,
+                name='android_device_app_icon'),
+        re_path(r'^android/pull_scan/$',
+                dz.pull_and_scan,
+                name='android_pull_scan'),
+        re_path(r'^android/package_status/$',
+                dz.android_package_status,
+                name='android_package_status'),
         re_path(fr'^android_dynamic/{checksum_regex}$',
                 dz.dynamic_analyzer,
                 name='dynamic_analyzer'),
@@ -399,7 +448,46 @@ if settings.API_ONLY == '0':
         re_path(fr'^ios/view_report/{bundle_id_regex}',
                 ios_view_report.ios_view_report,
                 name='ios_view_report'),
-
+        # iOS Device
+        re_path(r'^ios/dynamic_analysis_device/$',
+                ios_device.dynamic_analysis_device,
+                name='dynamic_ios_device'),
+        re_path(r'^ios/ios_device/$',
+                ios_device.get_ios_device,
+                name='get_ios_device'),
+        re_path(r'^ios/install_ipa_device/$',
+                ios_device.install_ipa_device,
+                name='install_ipa_device'),
+        re_path(r'^ios/dynamic_analyzer_device/$',
+                ios_device.dynamic_analyzer_device,
+                name='dynamic_analyzer_device'),
+        re_path(r'^ios/upload_file_device/$',
+                ios_device.upload_file_device,
+                name='upload_file_device'),
+        re_path(r'^ios/ssh_execute_device/$',
+                ios_device.ssh_execute_device,
+                name='ssh_execute_device'),
+        re_path(r'^ios/instrument_device/$',
+                ios_device.ios_instrument_device,
+                name='ios_instrument_device'),
+        re_path(r'^ios/system_logs_device/$',
+                ios_device.system_logs_device,
+                name='system_logs_device'),
+        re_path(r'^ios/ps_device/$',
+                ios_device.ps_device,
+                name='ps_device'),
+        re_path(r'^ios/download_file_device/$',
+                device_report.download_file_device,
+                name='download_file_device'),
+        re_path(r'^ios/api_monitor/$',
+                device_report.ios_api_monitor,
+                name='ios_api_monitor'),
+        re_path(fr'^ios/download_data_device/{bundle_id_regex}',
+                device_report.download_data_device,
+                name='download_data_device'),
+        re_path(fr'^ios/view_report_device/{bundle_id_regex}',
+                device_report.view_report_device,
+                name='view_report_device'),
         # Test
         re_path(r'^tests/$', tests.start_test),
     ])

@@ -8,6 +8,7 @@ MobSF and Django settings
 import logging
 import os
 
+from mobsf.MobSF.env import apply_config_flags, env_flag
 from mobsf.MobSF.init import (
     first_run,
     get_mobsf_home,
@@ -124,13 +125,12 @@ WINDOWS_EXTS = ('appx',)
 # REST API only mode
 # Set MOBSF_API_ONLY to 1 to enable REST API only mode
 # In this mode, web UI related urls are disabled.
-API_ONLY = os.getenv('MOBSF_API_ONLY', '0')
+API_ONLY = env_flag('MOBSF_API_ONLY', '0')
 
 # -----External URLS--------------------------
-MALWARE_DB_URL = 'https://www.malwaredomainlist.com/mdlcsv.php'
-MALTRAIL_DB_URL = ('https://raw.githubusercontent.com/stamparm/aux/'
-                   'master/maltrail-malware-domains.txt')
-VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/vtapi/v2/file/'
+MALTRAIL_DB_URL = ('https://github.com/stamparm/trails/'
+                   'releases/latest/download/maltrail-malware-domains.txt')
+VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/api/v3/files'
 EXODUS_URL = 'https://reports.exodus-privacy.eu.org'
 APPMONSTA_URL = 'https://api.appmonsta.com/v1/stores/android/details/'
 ITUNES_URL = 'https://itunes.apple.com/lookup'
@@ -174,7 +174,11 @@ DATABASES = {
 }
 # ===============================================
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
-DEBUG = bool(os.getenv('MOBSF_DEBUG', '0') == '1')
+DEBUG = env_flag('MOBSF_DEBUG', '0')
+# Set by manage.py for the development server only. Gunicorn does not.
+RUNSERVER = os.getenv('MOBSF_RUNSERVER') == '1'
+if RUNSERVER:
+    DEBUG = True
 DJANGO_LOG_LEVEL = DEBUG
 TEMPLATE_DEBUG = DEBUG
 ALLOWED_HOSTS = ['127.0.0.1', 'mobsf', '*']
@@ -194,15 +198,12 @@ INSTALLED_APPS = (
 )
 MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_ratelimit.middleware.RatelimitMiddleware',
 )
 ROOT_URLCONF = 'mobsf.MobSF.urls'
 WSGI_APPLICATION = 'mobsf.MobSF.wsgi.application'
@@ -211,39 +212,47 @@ TIME_ZONE = os.getenv('TIME_ZONE', 'UTC')
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
+_TEMPLATE_OPTIONS = {
+    'debug': TEMPLATE_DEBUG,
+    'context_processors': [
+        'django.template.context_processors.debug',
+        'django.template.context_processors.request',
+        'django.contrib.auth.context_processors.auth',
+        'django.contrib.messages.context_processors.messages',
+    ],
+}
+# Django wraps loaders in a cache that lives until process restart.
+# The development server reads HTML from disk on each request.
+_TEMPLATE_APP_DIRS = True
+if RUNSERVER:
+    _TEMPLATE_APP_DIRS = False
+    _TEMPLATE_OPTIONS['loaders'] = [
+        'django.template.loaders.filesystem.Loader',
+        'django.template.loaders.app_directories.Loader',
+    ]
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'APP_DIRS': True,
+        'APP_DIRS': _TEMPLATE_APP_DIRS,
         'DIRS':
             [
                 os.path.join(BASE_DIR, 'templates'),
             ],
-        'OPTIONS':
-            {
-                'debug': TEMPLATE_DEBUG,
-                'context_processors': [
-                    'django.template.context_processors.debug',
-                    'django.template.context_processors.request',
-                    'django.contrib.auth.context_processors.auth',
-                    'django.contrib.messages.context_processors.messages',
-                ],
-            },
+        'OPTIONS': _TEMPLATE_OPTIONS,
     },
 ]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 MEDIA_URL = '/uploads/'
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+if RUNSERVER:
+    # Finders serve this directory on each request. It cannot also
+    # be STATIC_ROOT. Nothing is collected during development.
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+    STATIC_ROOT = os.path.join(MOBSF_HOME, 'staticfiles')
+    STATICFILES_STORAGE = (
+        'django.contrib.staticfiles.storage.StaticFilesStorage')
 # 256MB limit for file uploads
 DATA_UPLOAD_MAX_MEMORY_SIZE = 256 * 1024 * 1024
 # 400MB per file limit for uncompressed files
@@ -348,7 +357,15 @@ LOGGING = {
         },
     },
 }
-ASYNC_ANALYSIS = bool(os.getenv('MOBSF_ASYNC_ANALYSIS', '0') == '1')
+if RUNSERVER:
+    # The reloader logs every watched file at DEBUG.
+    LOGGING['loggers']['django.utils.autoreload'] = {
+        'handlers': ['console', 'logfile'],
+        'level': 'INFO',
+        'propagate': False,
+    }
+
+ASYNC_ANALYSIS = env_flag('MOBSF_ASYNC_ANALYSIS', '0')
 ASYNC_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_ASYNC_ANALYSIS_TIMEOUT', '60'))
 Q_CLUSTER = {
     'name': 'scan_queue',
@@ -368,29 +385,27 @@ MULTIPROCESSING = os.getenv('MOBSF_MULTIPROCESSING')
 JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1000))
 SAST_TIMEOUT = int(os.getenv('MOBSF_SAST_TIMEOUT', 1000))
 BINARY_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_BINARY_ANALYSIS_TIMEOUT', 600))
-DISABLE_AUTHENTICATION = os.getenv('MOBSF_DISABLE_AUTHENTICATION')
+DISABLE_AUTHENTICATION = env_flag('MOBSF_DISABLE_AUTHENTICATION', '0')
 RATELIMIT = os.getenv('MOBSF_RATELIMIT', '7/m')
-USE_X_FORWARDED_HOST = bool(
-    os.getenv('MOBSF_USE_X_FORWARDED_HOST', '1') == '1')
-USE_X_FORWARDED_PORT = bool(
-    os.getenv('MOBSF_USE_X_FORWARDED_PORT', '1') == '1')
+USE_X_FORWARDED_HOST = env_flag('MOBSF_USE_X_FORWARDED_HOST', '1')
+USE_X_FORWARDED_PORT = env_flag('MOBSF_USE_X_FORWARDED_PORT', '1')
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # ===========================
 # ENTERPRISE FEATURE REQUESTS
 # ===========================
-EFR_01 = os.getenv('EFR_01', '0')
+EFR_01 = env_flag('EFR_01', '0')
 # SAML SSO
 # IdP Configuration
 IDP_METADATA_URL = os.getenv('MOBSF_IDP_METADATA_URL')
 IDP_ENTITY_ID = os.getenv('MOBSF_IDP_ENTITY_ID')
 IDP_SSO_URL = os.getenv('MOBSF_IDP_SSO_URL')
 IDP_X509CERT = os.getenv('MOBSF_IDP_X509CERT')
-IDP_IS_ADFS = os.getenv('MOBSF_IDP_IS_ADFS', '0')
+IDP_IS_ADFS = env_flag('MOBSF_IDP_IS_ADFS', '0')
 IDP_MAINTAINER_GROUP = os.getenv('MOBSF_IDP_MAINTAINER_GROUP', 'Maintainer')
 IDP_VIEWER_GROUP = os.getenv('MOBSF_IDP_VIEWER_GROUP', 'Viewer')
 # SP Configuration
 SP_HOST = os.getenv('MOBSF_SP_HOST')
-SP_ALLOW_PASSWORD = os.getenv('MOBSF_SP_ALLOW_PASSWORD', '0')
+SP_ALLOW_PASSWORD = env_flag('MOBSF_SP_ALLOW_PASSWORD', '0')
 # ===================
 # USER CONFIGURATION
 # ===================
@@ -418,7 +433,7 @@ else:
     import os
     SKIP_CLASS_PATH = {
         'com/google/', 'androidx', 'okhttp2/', 'okhttp3/',
-        'com/android/', 'com/squareup', 'okhttp/'
+        'com/android/', 'com/squareup', 'okhttp/',
         'android/content/', 'com/twitter/', 'twitter4j/',
         'android/support/', 'org/apache/', 'oauth/signpost',
         'android/arch', 'org/chromium/', 'com/facebook',
@@ -428,24 +443,25 @@ else:
         'kotlinx/', 'kotlin/',
     }
     # Disable CVSSV2 Score by default
-    CVSS_SCORE_ENABLED = bool(os.getenv('MOBSF_CVSS_SCORE_ENABLED', ''))
+    CVSS_SCORE_ENABLED = os.getenv('MOBSF_CVSS_SCORE_ENABLED', '0') == '1'
     # NIAP Scan
-    NIAP_ENABLED = os.getenv('MOBSF_NIAP_ENABLED', '')
+    NIAP_ENABLED = os.getenv('MOBSF_NIAP_ENABLED', '0') == '1'
     # Permission to Code Mapping
-    PERM_MAPPING_ENABLED = os.getenv('MOBSF_PERM_MAPPING_ENABLED', '1')
+    PERM_MAPPING_ENABLED = os.getenv('MOBSF_PERM_MAPPING_ENABLED', '1') == '1'
     # Dex 2 Smali Conversion
-    DEX2SMALI_ENABLED = os.getenv('MOBSF_DEX2SMALI_ENABLED', '1')
+    DEX2SMALI_ENABLED = os.getenv('MOBSF_DEX2SMALI_ENABLED', '1') == '1'
     # Android Shared Object Binary Analysis
-    SO_ANALYSIS_ENABLED = os.getenv('MOBSF_SO_ANALYSIS_ENABLED', '1')
+    SO_ANALYSIS_ENABLED = os.getenv('MOBSF_SO_ANALYSIS_ENABLED', '1') == '1'
     # iOS Dynamic Library Binary Analysis
-    DYLIB_ANALYSIS_ENABLED = os.getenv('MOBSF_DYLIB_ANALYSIS_ENABLED', '1')
+    DYLIB_ANALYSIS_ENABLED = os.getenv(
+        'MOBSF_DYLIB_ANALYSIS_ENABLED', '1') == '1'
     # =================================================
     # --------------------------
     # MALWARE ANALYZER SETTINGS
     # --------------------------
 
-    DOMAIN_MALWARE_SCAN = os.getenv('MOBSF_DOMAIN_MALWARE_SCAN', '1')
-    APKID_ENABLED = os.getenv('MOBSF_APKID_ENABLED', '1')
+    DOMAIN_MALWARE_SCAN = os.getenv('MOBSF_DOMAIN_MALWARE_SCAN', '1') == '1'
+    APKID_ENABLED = os.getenv('MOBSF_APKID_ENABLED', '1') == '1'
     # ==================================================
     # ======WINDOWS STATIC ANALYSIS SETTINGS ===========
     # Private key
@@ -507,10 +523,10 @@ else:
 
     # ========UPSTREAM PROXY SETTINGS ==============
     # If you are behind a Proxy
-    UPSTREAM_PROXY_ENABLED = bool(os.getenv(
-        'MOBSF_UPSTREAM_PROXY_ENABLED', ''))
+    UPSTREAM_PROXY_ENABLED = os.getenv(
+        'MOBSF_UPSTREAM_PROXY_ENABLED', '0') == '1'
     UPSTREAM_PROXY_SSL_VERIFY = os.getenv(
-        'MOBSF_UPSTREAM_PROXY_SSL_VERIFY', '1')
+        'MOBSF_UPSTREAM_PROXY_SSL_VERIFY', '1') == '1'
     UPSTREAM_PROXY_TYPE = os.getenv('MOBSF_UPSTREAM_PROXY_TYPE', 'http')
     UPSTREAM_PROXY_IP = os.getenv('MOBSF_UPSTREAM_PROXY_IP', '127.0.0.1')
     UPSTREAM_PROXY_PORT = int(os.getenv('MOBSF_UPSTREAM_PROXY_PORT', '3128'))
@@ -521,22 +537,37 @@ else:
     # ========DISABLED BY DEFAULT COMPONENTS=========
     # Get AppMonsta API from https://appmonsta.com/dashboard/get_api_key/
     APPMONSTA_API = os.getenv('MOBSF_APPMONSTA_API', '')
-    # ----------VirusTotal--------------------------
-    VT_ENABLED = bool(os.getenv('MOBSF_VT_ENABLED', ''))
+    # ----------VirusTotal (API v3)-----------------
+    VT_ENABLED = os.getenv('MOBSF_VT_ENABLED', '0') == '1'
     VT_API_KEY = os.getenv('MOBSF_VT_API_KEY', '')
-    VT_UPLOAD = bool(os.getenv('MOBSF_VT_UPLOAD', ''))
-    # Before setting VT_ENABLED to True,
+    VT_UPLOAD = os.getenv('MOBSF_VT_UPLOAD', '0') == '1'
+    # Before setting MOBSF_VT_ENABLED=1,
     # Make sure VT_API_KEY is set to your VirusTotal API key
     # register at: https://www.virustotal.com/#/join-us
     # You can get your API KEY from:
-    # https://www.virustotal.com/en/user/<username>/apikey/
-    # Files will be uploaded to VirusTotal
-    # if VT_UPLOAD is set to True.
+    # https://www.virustotal.com/gui/user/<username>/apikey/
+    # Files will be uploaded to VirusTotal when MOBSF_VT_UPLOAD=1.
+    # Files <=32MB use /files; larger files use /files/upload_url
+    # (up to 650MB).
     # ===============================================
     # =======IOS DYNAMIC ANALYSIS SETTINGS===========
+    # Should be SSH IP:PORT, example: 192.168.1.100:22
+    # Field also supports multiple devices, example: 192.168.1.100:22,192.168.1.101:22
+    IOS_ANALYZER_IDENTIFIERS = os.getenv('MOBSF_IOS_ANALYZER_IDENTIFIERS', '')
+    # SSH credentials for jailbroken iOS device (USB or WiFi path)
+    # Defaults match the standard jailbreak SSH default (root/alpine)
+    IOS_SSH_USER = os.getenv('MOBSF_IOS_SSH_USER', 'root')
+    IOS_SSH_PASSWORD = os.getenv('MOBSF_IOS_SSH_PASSWORD', 'alpine')
+    # ==============================================
+
+    # =======IOS DYNAMIC ANALYSIS CORELLIUM SETTINGS===========
     CORELLIUM_API_DOMAIN = os.getenv('MOBSF_CORELLIUM_API_DOMAIN', '')
     CORELLIUM_API_KEY = os.getenv('MOBSF_CORELLIUM_API_KEY', '')
     CORELLIUM_PROJECT_ID = os.getenv('MOBSF_CORELLIUM_PROJECT_ID', '')
     # CORELLIUM_PROJECT_ID is optional, MobSF will use any available project id
     # ===============================================
     # ^CONFIG-END^: Do not edit this line
+
+# Re-read flags from the environment after an older home config.py loads.
+# A hand-edited True is kept when that variable is unset.
+apply_config_flags(globals())

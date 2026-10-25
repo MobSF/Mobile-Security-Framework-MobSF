@@ -14,9 +14,9 @@ from django.shortcuts import render
 from django.utils.html import escape
 
 from mobsf.MobSF.forms import FormUtil
+from mobsf.MobSF.security import is_safe_path
 from mobsf.MobSF.utils import (
     is_file_exists,
-    is_safe_path,
     print_n_send_error_response,
     read_sqlite,
 )
@@ -83,7 +83,7 @@ def run(request, api=False):
             src = base
         sfile = src / fil
         sfile = sfile.as_posix()
-        if not is_safe_path(src, sfile):
+        if not is_safe_path(src, sfile, fil):
             msg = 'Path Traversal Detected!'
             if api:
                 return {'error': 'Path Traversal Detected!'}

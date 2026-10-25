@@ -10,9 +10,9 @@ from mobsf.DynamicAnalyzer.views.ios.frida_core import (
 )
 from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
-    is_attack_pattern,
     send_response,
 )
+from mobsf.MobSF.security import is_attack_pattern
 from mobsf.DynamicAnalyzer.views.ios.corellium_apis import (
     CorelliumInstanceAPI,
     OK,

@@ -1,16 +1,35 @@
-"""Runtime Executable Tampering Detection."""
-import subprocess
+"""Centralized security helpers.
+
+Path traversal and filesystem checks, input validation, output
+sanitization, SSRF-safe outbound requests, and runtime executable
+tampering detection.
+"""
 import functools
-import logging
-import re
-import socket
 import ipaddress
+import logging
+import ntpath
+import os
+import posixpath
+import re
+import shlex
+import socket
+import stat
+import string
+import subprocess
 import sys
-from shutil import which
+import unicodedata
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from pathlib import Path
 from platform import system
-from urllib.parse import urlparse
-from concurrent.futures import ThreadPoolExecutor
+from shutil import which
+from urllib.parse import unquote, urljoin, urlparse, urlunsplit
+
+import requests
+from requests.adapters import HTTPAdapter
+
+from django.conf import settings
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from mobsf.MobSF.utils import (
     find_aapt,
@@ -20,20 +39,24 @@ from mobsf.MobSF.utils import (
     sha256,
 )
 
-from django.conf import settings
-
-
 logger = logging.getLogger(__name__)
 # Non executable files at host level
 _SKIP = [
     '.pyc', '.js',
     '.json', '.txt', '.md']
 EXECUTABLE_HASH_MAP = None
+IS_WINDOWS = os.name == 'nt'
+_CONTROL_CHARS_RE = re.compile(r'[\x00-\x1f\x7f]')
+
+
+def _hash_key(path):
+    """Return a canonical, case-normalized key for the executable hash map."""
+    return Path(os.path.normcase(os.path.realpath(path))).as_posix()
 
 
 def get_sha256(filepath):
     """Calculate sha256 hash of a file."""
-    return (filepath.as_posix(), sha256(filepath))
+    return (_hash_key(filepath), sha256(filepath))
 
 
 def get_all_files(dirlocs):
@@ -107,6 +130,12 @@ def get_executable_hashes():
         'nuget.exe',
         'where.exe',
         'wkhtmltopdf.exe',
+        'idevice_id',
+        'ideviceinfo',
+        'idevicename',
+        'pkill',
+        'iproxy',
+        'keytool',
     ]
     for sbin in system_bins:
         bin_path = which(sbin)
@@ -159,24 +188,62 @@ def store_exec_hashes_at_first_run():
                          'tampering detection')
 
 
+def _to_str(arg):
+    """Convert a subprocess argument to str."""
+    if isinstance(arg, (str, bytes, os.PathLike)):
+        return os.fsdecode(arg)
+    return str(arg)
+
+
+def _split_command(args, kwargs):
+    """Return the Popen command as a list of str arguments."""
+    cmd = args[0] if args else kwargs.get('args')
+    if cmd is None:
+        return []
+    if isinstance(cmd, os.PathLike):
+        return [os.fspath(cmd)]
+    if isinstance(cmd, (str, bytes)):
+        cmd = os.fsdecode(cmd)
+        try:
+            parts = shlex.split(cmd, posix=not IS_WINDOWS)
+        except ValueError:
+            parts = cmd.split()
+        if IS_WINDOWS:
+            parts = [p.strip('"') for p in parts]
+        return parts
+    return [_to_str(a) for a in cmd]
+
+
+def _resolve_executable(exec1):
+    """Return the filesystem path of the executable, or None."""
+    if '/' in exec1 or '\\' in exec1:
+        return exec1
+    return which(exec1)
+
+
 def subprocess_hook(oldfunc, *args, **kwargs):
-    if isinstance(args[0], str):
-        # arg is a string
-        agmtz = args[0].split()
-        exec1 = agmtz[0]
-    else:
-        # list of args
-        agmtz = args[0]
-        exec1 = agmtz[0]  # executable
+    agmtz = _split_command(args, kwargs)
+    executable = kwargs.get('executable')
+    exec1 = _to_str(executable) if executable else (
+        agmtz[0] if agmtz else None)
+    exec1_path = _resolve_executable(exec1) if exec1 else None
+    if not exec1_path:
+        # Let Popen raise its usual FileNotFoundError.
+        return oldfunc(*args, **kwargs)
+    if (IS_WINDOWS
+            and exec1_path.lower().endswith(('.bat', '.cmd'))
+            and not all(is_safe_windows_batch_arg(a) for a in agmtz[1:])):
+        msg = f'Unsafe argument passed to Windows batch file [{exec1_path}]'
+        logger.error(msg)
+        raise ValueError(msg)
+    if EXECUTABLE_HASH_MAP is None:
+        return oldfunc(*args, **kwargs)
+    exec1 = _hash_key(exec1_path)
     exec2 = None  # secondary executable
     for arg in agmtz:
-        if arg.endswith('.jar'):
-            exec2 = Path(arg).as_posix()
+        if arg.lower().endswith('.jar'):
+            exec2 = _hash_key(arg)
             break
-    if '/' in exec1 or '\\' in exec1:
-        exec1 = Path(exec1).as_posix()
-    else:
-        exec1 = Path(which(exec1)).as_posix()
     executable_in_hash_map = False
     if exec1 in EXECUTABLE_HASH_MAP:
         executable_in_hash_map = True
@@ -220,116 +287,351 @@ def wrap_function(oldfunction, newfunction):
 
 
 def sanitize_redirect(url):
-    """Sanitize Redirect URL."""
+    """Allow only same-site relative redirect paths."""
     root = '/'
-    if url.startswith('//'):
+    if not isinstance(url, str) or not url:
         return root
-    elif url.startswith('/'):
-        return url
-    return root
+    # Browsers drop tab/CR/LF inside URLs and treat backslash as slash,
+    # so '/\t/evil.com' and '/\\evil.com' become '//evil.com'.
+    if _CONTROL_CHARS_RE.search(url):
+        return root
+    if (not url.startswith('/')
+            or url.startswith(('//', '/\\'))
+            or not url_has_allowed_host_and_scheme(url, allowed_hosts=None)):
+        return root
+    return url
 
 
 def sanitize_filename(filename):
     """Sanitize Filename."""
     # Remove any characters
     # that are not alphanumeric, hyphens, underscores, or dots
-    safe_filename = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
+    safe_filename = re.sub(r'[^a-zA-Z0-9._-]', '_', str(filename))
     # Merge multiple underscores into one
     safe_filename = re.sub(r'__+', '_', safe_filename)
-    # Remove leading and trailing underscores
-    safe_filename = safe_filename.strip('_')
-    return safe_filename
+    # No leading/trailing dots or underscores: avoids '.', '..',
+    # hidden files and names Windows silently rewrites.
+    safe_filename = safe_filename.strip('._')
+    return safe_filename or 'file'
 
 
 def sanitize_for_logging(filename: str, max_length: int = 255) -> str:
-    """Sanitize a filename to prevent log injection."""
-    # Remove newline, carriage return, and other risky characters
-    filename = filename.replace('\n', '_').replace('\r', '_').replace('\t', '_')
-
+    """Sanitize a value to prevent log injection."""
     # Allow only safe characters (alphanumeric, underscore, dash, and period)
-    filename = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
+    filename = re.sub(r'[^a-zA-Z0-9._-]', '_', str(filename))
 
     # Truncate filename to the maximum allowed length
     return filename[:max_length]
 
 
+# IPv4 ranges that must never be contacted by SSRF-sensitive fetches.
+_DISALLOWED_IPV4_NETWORKS = tuple(ipaddress.IPv4Network(n) for n in (
+    '127.0.0.0/8',
+    '169.254.0.0/16',
+    '172.16.0.0/12',
+    '192.168.0.0/16',
+    '10.0.0.0/8',
+    '100.64.0.0/10',  # NOSONAR - RFC 6598 shared address space denylist
+))
+DEFAULT_REQUEST_TIMEOUT = 10
+_SENSITIVE_HEADERS = ('authorization', 'cookie', 'proxy-authorization')
+_IPV6_TRANSLATION_NETWORKS = (
+    ipaddress.IPv6Network('64:ff9b::/96'),
+    ipaddress.IPv6Network('64:ff9b:1::/48'),
+)
+_INTERNAL_HOST_SUFFIXES = (
+    '.home.arpa',
+    '.internal',
+    '.lan',
+    '.local',
+    '.localdomain',
+    '.localhost',
+)
+MAX_PUBLIC_DNS_ADDRESSES = 8
+
+
+def is_disallowed_ip(ip_str):
+    """Return True if an IP must not be contacted (SSRF)."""
+    try:
+        ip_obj = ipaddress.ip_address(ip_str)
+    except ValueError:
+        return True
+
+    # Unwrap IPv4-mapped IPv6 (::ffff:127.0.0.1) before classification.
+    if isinstance(ip_obj, ipaddress.IPv6Address) and ip_obj.ipv4_mapped:
+        ip_obj = ip_obj.ipv4_mapped
+    elif isinstance(ip_obj, ipaddress.IPv6Address):
+        # Reject transition addresses that can tunnel an otherwise-blocked
+        # IPv4 destination through an apparently public IPv6 literal.
+        if ip_obj.sixtofour and is_disallowed_ip(str(ip_obj.sixtofour)):
+            return True
+        if ip_obj.teredo and is_disallowed_ip(str(ip_obj.teredo[1])):
+            return True
+        for network in _IPV6_TRANSLATION_NETWORKS:
+            if ip_obj in network:
+                embedded = ipaddress.IPv4Address(ip_obj.packed[-4:])
+                if is_disallowed_ip(str(embedded)):
+                    return True
+
+    if (not ip_obj.is_global
+        or ip_obj.is_private
+        or ip_obj.is_loopback
+        or ip_obj.is_link_local
+        or ip_obj.is_reserved
+        or ip_obj.is_multicast
+            or ip_obj.is_unspecified):
+        return True
+
+    if isinstance(ip_obj, ipaddress.IPv4Address):
+        if any(ip_obj in network for network in _DISALLOWED_IPV4_NETWORKS):
+            return True
+    return False
+
+
+def resolve_public_ips(hostname, port=None):
+    """Resolve hostname and return public addresses, or an empty tuple.
+
+    The entire answer is rejected if any address is non-public. Callers must
+    connect to one of the returned literals instead of resolving the hostname
+    again, otherwise DNS rebinding remains possible.
+    """
+    try:
+        normalized_host = hostname.rstrip('.').lower()
+        try:
+            ipaddress.ip_address(normalized_host)
+        except ValueError:
+            normalized_host = normalized_host.encode(
+                'idna',
+            ).decode('ascii')
+            # Avoid even querying common local-only names. The resulting IP is
+            # checked below as well, but that would still permit DNS probing.
+            if ('.' not in normalized_host
+                    or normalized_host == 'localhost'
+                    or normalized_host.endswith(_INTERNAL_HOST_SUFFIXES)):
+                return ()
+        addresses = []
+        addrinfos = socket.getaddrinfo(
+            hostname,
+            port,
+            type=socket.SOCK_STREAM,
+        )
+        for addrinfo in addrinfos:
+            address = addrinfo[4][0]
+            if is_disallowed_ip(address):
+                return ()
+            if (address not in addresses
+                    and len(addresses) < MAX_PUBLIC_DNS_ADDRESSES):
+                addresses.append(address)
+        return tuple(addresses)
+    except (OSError, TypeError, UnicodeError):
+        return ()
+
+
+def _validated_host(host):
+    """Parse a host-only value accepted by valid_host()."""
+    if not isinstance(host, str) or not host or len(host) > 2083:
+        return None
+    if not host.startswith(('http://', 'https://')):
+        host = f'http://{host}'
+    try:
+        parsed = urlparse(host)
+        port = parsed.port
+    except ValueError:
+        return None
+    if (parsed.scheme not in ('http', 'https')
+        or not parsed.hostname
+        or '@' in parsed.netloc
+        or parsed.path
+        or parsed.query
+        or parsed.params
+        or parsed.fragment
+            or (port is not None and port not in (80, 443))):
+        return None
+    return parsed
+
+
+def resolve_public_ip(host):
+    """Resolve a host-only value and return one public address."""
+    parsed = _validated_host(host)
+    if not parsed:
+        return None
+    addresses = resolve_public_ips(parsed.hostname, parsed.port)
+    return addresses[0] if addresses else None
+
+
 def valid_host(host):
     """Check if host is valid, run SSRF checks."""
-    default_timeout = socket.getdefaulttimeout()
+    return resolve_public_ip(host) is not None
+
+
+class _PinnedTLSAdapter(HTTPAdapter):
+    """Use the original hostname for TLS while the URL contains an IP."""
+
+    def __init__(self, hostname, **kwargs):
+        self.hostname = hostname
+        super().__init__(**kwargs)
+
+    def init_poolmanager(self, connections, maxsize, block=False, **pool_kwargs):
+        pool_kwargs['server_hostname'] = self.hostname
+        pool_kwargs['assert_hostname'] = self.hostname
+        super().init_poolmanager(
+            connections,
+            maxsize,
+            block=block,
+            **pool_kwargs,
+        )
+
+
+def _upstream_proxy_enabled(proxies):
+    """Return True if an actual upstream proxy URL is configured."""
+    return bool(proxies) and any(proxies.values())
+
+
+def _validated_public_url(url, allowed_ports):
+    """Parse an HTTP URL and resolve every hostname answer as public."""
+    if not isinstance(url, str) or not url or len(url) > 2083:
+        raise ValueError('Invalid URL')
     try:
-        if len(host) > 2083:  # Standard URL length limit
-            return False
-
-        prefixs = ('http://', 'https://')
-        if not host.startswith(prefixs):
-            host = f'http://{host}'
-        parsed = urlparse(host)
-        scheme = parsed.scheme
-        domain = parsed.netloc
-        hostname = parsed.hostname
-        path = parsed.path
-        query = parsed.query
-        params = parsed.params
+        parsed = urlparse(url)
         port = parsed.port
+    except ValueError as exp:
+        raise ValueError('Invalid URL') from exp
+    effective_port = port or (443 if parsed.scheme == 'https' else 80)
+    if (parsed.scheme not in ('http', 'https')
+        or not parsed.hostname
+        or '@' in parsed.netloc
+        or parsed.params
+        or parsed.fragment
+            or effective_port not in allowed_ports):
+        raise ValueError('Unsafe URL')
+    addresses = resolve_public_ips(parsed.hostname, effective_port)
+    if not addresses:
+        raise ValueError('URL did not resolve exclusively to public addresses')
+    return parsed, addresses
 
-        # Allow only http and https schemes
-        if scheme not in ('http', 'https'):
-            return False
 
-        # Check for hostname
-        if not hostname:
-            return False
+def _pinned_url(parsed, address):
+    """Replace URL hostname with a literal address, preserving path/query."""
+    literal = f'[{address}]' if ':' in address else address
+    if parsed.port:
+        literal = f'{literal}:{parsed.port}'
+    return urlunsplit((
+        parsed.scheme,
+        literal,
+        parsed.path or '/',
+        parsed.query,
+        '',
+    ))
 
-        # Validate port - only allow 80 and 443
-        if port and port not in (80, 443):
-            return False
 
-        # Check for URL credentials
-        if '@' in domain:
-            return False
+def _open_pinned_request(method, url, allowed_ports, **kwargs):
+    """Open one request to a validated literal IP with Host/SNI preserved."""
+    proxies = kwargs.pop('proxies', None)
+    if _upstream_proxy_enabled(proxies):
+        logger.warning('Blocked SSRF-safe request: upstream proxy performs DNS')
+        raise ValueError(
+            'SSRF-safe requests cannot use an upstream DNS proxy')
+    if kwargs.pop('allow_redirects', False):
+        raise ValueError('Redirects must be validated by safe_stream_request')
+    kwargs.pop('stream', None)
 
-        # Detect parser escapes, only host is allowed
-        if len(path) > 0 or len(query) > 0 or len(params) > 0:
-            return False
+    parsed, addresses = _validated_public_url(url, allowed_ports)
+    headers = dict(kwargs.pop('headers', {}) or {})
+    # Always override a caller-supplied Host header.
+    headers['Host'] = parsed.netloc
+    last_error = None
+    for address in addresses:
+        session = requests.Session()
+        # Ignore HTTP(S)_PROXY environment variables. A proxy would perform
+        # its own DNS lookup and undo connection pinning.
+        session.trust_env = False
+        if parsed.scheme == 'https':
+            session.mount('https://', _PinnedTLSAdapter(parsed.hostname))
+        try:
+            response = session.request(
+                method,
+                _pinned_url(parsed, address),
+                headers=headers,
+                allow_redirects=False,
+                stream=True,
+                **kwargs,
+            )
+            response.url = url
+            return session, response
+        except requests.RequestException as exp:
+            last_error = exp
+            session.close()
+    if last_error:
+        raise last_error
+    raise requests.ConnectionError('No public address available')
 
-        # Resolve dns to get ipv4 or ipv6 address
-        socket.setdefaulttimeout(5)  # 5 second timeout
-        ip_addresses = socket.getaddrinfo(hostname, None)
-        for ip in ip_addresses:
-            ip_obj = ipaddress.ip_address(ip[4][0])
-            if (ip_obj.is_private
-                or ip_obj.is_loopback
-                or ip_obj.is_link_local
-                or ip_obj.is_reserved
-                or ip_obj.is_multicast
-                    or ip_obj.is_unspecified):
-                return False
 
-            # Additional checks for specific IPv4 ranges
-            if isinstance(ip_obj, ipaddress.IPv4Address):
-                problematic_networks = [
-                    '127.0.0.0/8',
-                    '169.254.0.0/16',
-                    '172.16.0.0/12',
-                    '192.168.0.0/16',
-                    '10.0.0.0/8',
-                ]
-                for network in problematic_networks:
-                    if ip_obj in ipaddress.IPv4Network(network):
-                        return False
+@contextmanager
+def safe_stream_request(method, url, *,
+                        allowed_ports=(80, 443), max_redirects=0, **kwargs):
+    """Yield a streaming response with DNS rebinding protections.
 
-        # If all checks pass, return True
-        return True
-    except Exception:
-        return False
-    finally:
-        # Restore default socket timeout
-        socket.setdefaulttimeout(default_timeout)
+    Redirect targets are separately resolved, validated, and pinned. Proxy
+    settings fail closed because the proxy—not MobSF—would resolve the host.
+    """
+    kwargs.setdefault('timeout', DEFAULT_REQUEST_TIMEOUT)
+    current_url = url
+    redirects = 0
+    while True:
+        session, response = _open_pinned_request(
+            method,
+            current_url,
+            allowed_ports,
+            **kwargs,
+        )
+        location = response.headers.get('Location')
+        if (response.status_code in (301, 302, 303, 307, 308)
+                and location and redirects < max_redirects):
+            response.close()
+            session.close()
+            next_url = urljoin(current_url, location)
+            current, nxt = urlparse(current_url), urlparse(next_url)
+            if current.scheme == 'https' and nxt.scheme != 'https':
+                raise ValueError('Redirect from HTTPS to HTTP is not allowed')
+            if (current.scheme, current.netloc) != (nxt.scheme, nxt.netloc):
+                kwargs['headers'] = {
+                    k: v for k, v in (kwargs.get('headers') or {}).items()
+                    if k.lower() not in _SENSITIVE_HEADERS}
+            if response.status_code == 303 and method.upper() != 'HEAD':
+                method = 'GET'
+                kwargs.pop('data', None)
+                kwargs.pop('json', None)
+            current_url = next_url
+            redirects += 1
+            continue
+        try:
+            yield response
+        finally:
+            response.close()
+            session.close()
+        return
+
+
+def safe_request(method, url, *,
+                 allowed_ports=(80, 443), max_redirects=0,
+                 max_response_size=1024 * 1024, **kwargs):
+    """Return a bounded response from an SSRF-safe network request."""
+    with safe_stream_request(
+            method,
+            url,
+            allowed_ports=allowed_ports,
+            max_redirects=max_redirects,
+            **kwargs) as response:
+        content = response.raw.read(max_response_size + 1, decode_content=True)
+        if len(content) > max_response_size:
+            raise ValueError('Remote response exceeds the allowed size')
+        response._content = content
+        response._content_consumed = True
+        return response
 
 
 def sanitize_svg(svg_content):
     """Sanitize SVG content to prevent XSS attacks."""
-    logger.info('Sanitizing SVG contents')
     import bleach
     # Allow standard SVG tags and attributes, but remove scripts and event handlers
     safe_tags = [
@@ -352,7 +654,7 @@ def sanitize_svg(svg_content):
         'image': ['x', 'y', 'width', 'height', 'href'],
         'use': ['x', 'y', 'width', 'height', 'href'],
         'filter': ['x', 'y', 'width', 'height', 'href'],
-        'linearGradient': ['x1', 'y1', 'x2', 'y2'],
+        'linearGradient': ['gradientUnits', 'x1', 'y1', 'x2', 'y2'],
         'radialGradient': ['cx', 'cy', 'r', 'fx', 'fy'],
         'stop': ['offset', 'stop-color', 'stop-opacity'],
     }
@@ -362,3 +664,178 @@ def sanitize_svg(svg_content):
         attributes=safe_attrs,
         strip=True,
     )
+
+
+def is_path_traversal(user_input):
+    """Check for path traversal with POSIX and Windows path semantics."""
+    if not user_input:
+        return False
+
+    try:
+        path = os.fspath(user_input)
+        if isinstance(path, bytes):
+            path = path.decode('utf-8')
+        if not isinstance(path, str):
+            raise TypeError
+    except (TypeError, UnicodeError):
+        logger.error('Path traversal attack detected with invalid path')
+        return True
+
+    paths = []
+    try:
+        # NFKC folds fullwidth forms (U+FF0E, U+FF0F, U+FF3C) to ASCII,
+        # matching what Windows best-fit conversion does in ANSI APIs.
+        for base in (path, unicodedata.normalize('NFKC', path)):
+            decoded = [base]
+            # Single and double URL decoding (%252e -> %2e -> .).
+            for _ in range(2):
+                decoded.append(unquote(decoded[-1]))
+            for candidate in decoded:
+                paths.append(candidate)
+                paths.append(unicodedata.normalize('NFKC', candidate))
+    except Exception:
+        logger.error('Path traversal attack detected with invalid URL encoding')
+        return True
+
+    for candidate in dict.fromkeys(paths):
+        drive, _ = ntpath.splitdrive(candidate)
+        if ('\x00' in candidate
+                or candidate.startswith(('/', '\\'))
+                or posixpath.isabs(candidate)
+                or ntpath.isabs(candidate)
+                or drive):
+            logger.error('Path traversal attack detected with absolute path')
+            return True
+        if '..' in candidate:
+            logger.error('Path traversal attack detected with invalid path')
+            return True
+        if IS_WINDOWS and _is_unsafe_windows_path(candidate):
+            logger.error('Path traversal attack detected with unsafe '
+                         'Windows path')
+            return True
+    return False
+
+
+_WINDOWS_RESERVED_NAMES = frozenset(
+    ['CON', 'PRN', 'AUX', 'NUL', 'CONIN$', 'CONOUT$']
+    + [f'COM{i}' for i in '123456789\u00b9\u00b2\u00b3']
+    + [f'LPT{i}' for i in '123456789\u00b9\u00b2\u00b3'])
+
+
+def _is_windows_reserved_name(name):
+    """Check if a path component is a Windows reserved device name."""
+    stem = name.split('.', 1)[0].rstrip(' ').upper()
+    return stem in _WINDOWS_RESERVED_NAMES
+
+
+def _is_unsafe_windows_path(path):
+    """Detect NTFS streams, device names and names Windows rewrites."""
+    # Drive letters are rejected before this, so any colon is an ADS.
+    if ':' in path:
+        return True
+    for component in re.split(r'[\\/]', path):
+        if not component or component == '.':
+            continue
+        # Windows strips trailing dots and spaces ('a.txt.' -> 'a.txt').
+        if component[-1] in '. ':
+            return True
+        if _is_windows_reserved_name(component):
+            return True
+    return False
+
+
+def is_safe_path(safe_root, check_path, raw_file):
+    """Detect Path Traversal."""
+    if is_path_traversal(raw_file):
+        return False
+    try:
+        safe_root = os.path.normcase(
+            os.path.realpath(os.path.normpath(safe_root)))
+        check_path = os.path.normcase(
+            os.path.realpath(os.path.normpath(check_path)))
+        return os.path.commonpath((safe_root, check_path)) == safe_root
+    except (TypeError, ValueError):
+        return False
+
+
+def is_safe_android_path(check_path, safe_root='/data/app'):
+    """Validate an absolute path reported by an Android device."""
+    if not isinstance(check_path, str) or not isinstance(safe_root, str):
+        return False
+    safe_root = posixpath.normpath(safe_root)
+    if (not posixpath.isabs(check_path)
+            or not check_path.startswith(f'{safe_root}/')):
+        return False
+    relative = check_path[len(safe_root) + 1:]
+    if is_path_traversal(relative):
+        return False
+    normalized = posixpath.normpath(check_path)
+    try:
+        return posixpath.commonpath(
+            (safe_root, normalized)) == safe_root
+    except ValueError:
+        return False
+
+
+def clean_filename(filename, replace=' '):
+    """Sanitize filename for Windows compatibility."""
+    if system() == 'Windows':
+        whitelist = f'-_.() {string.ascii_letters}{string.digits}'
+        for r in replace:
+            filename = filename.replace(r, '_')
+        cleaned_filename = unicodedata.normalize(
+            'NFKD', filename).encode('ASCII', 'ignore').decode()
+        cleaned = ''.join(c for c in cleaned_filename if c in whitelist)
+        # Windows strips trailing dots/spaces and maps device names
+        # such as CON or NUL.txt to devices instead of files.
+        cleaned = cleaned.rstrip('. ')
+        if _is_windows_reserved_name(cleaned):
+            cleaned = f'_{cleaned}'
+        return cleaned or '_'
+    return filename
+
+
+# Shell metacharacters, raw and URL-encoded.
+_CMD_INJECTION_RE = re.compile(
+    r';|&|\||`|\$\(|>|<|\n|\r'
+    r'|%3b|%26|%7c|%60|%24%28|%3e|%3c|%0a|%0d',
+    re.IGNORECASE)
+_ATTACK_PATTERN_RE = re.compile(r';|\$\(|\||&&|`|\n|\r')
+# Characters cmd.exe re-parses when Python launches a .bat/.cmd file,
+# even with list arguments (BatBadBut).
+_UNSAFE_BATCH_CHARS = frozenset('&|%^"<>!\r\n')
+
+
+def cmd_injection_check(data):
+    """OS Cmd Injection check from Commix."""
+    return bool(_CMD_INJECTION_RE.search(str(data)))
+
+
+def is_safe_windows_batch_arg(arg):
+    """Check if an argument is safe to pass to a Windows batch file."""
+    return not any(c in _UNSAFE_BATCH_CHARS for c in _to_str(arg))
+
+
+def is_pipe_or_link(path):
+    """Check for symlinks, junctions, pipes, sockets and device files."""
+    try:
+        mode = os.lstat(path).st_mode
+        if os.path.isjunction(path):
+            return True
+    except FileNotFoundError:
+        return False
+    except (OSError, TypeError, ValueError):
+        return True
+    return (stat.S_ISLNK(mode)
+            or stat.S_ISFIFO(mode)
+            or stat.S_ISSOCK(mode)
+            or stat.S_ISCHR(mode)
+            or stat.S_ISBLK(mode))
+
+
+def is_attack_pattern(user_input):
+    """Check for shell injection attack patterns."""
+    result = bool(_ATTACK_PATTERN_RE.search(str(user_input)))
+    if result:
+        logger.error('Possible RCE attack detected')
+    return result

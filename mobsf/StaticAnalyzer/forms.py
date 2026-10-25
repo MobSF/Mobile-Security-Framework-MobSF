@@ -3,17 +3,19 @@ from pathlib import Path
 
 from django import forms
 
-from mobsf.MobSF.utils import is_md5
+from mobsf.MobSF.security import is_path_traversal
+from mobsf.MobSF.utils import (
+    is_md5,
+)
 
 
 class AttackDetect(forms.Form):
     file = forms.CharField()
 
     def clean_file(self):
-        """Check ../ from path."""
+        """Check for path traversal."""
         file = self.cleaned_data['file']
-        if (('../' in file) or ('%2e%2e' in file)
-                or ('..' in file) or ('%252e' in file)):
+        if is_path_traversal(file):
             raise forms.ValidationError('Attack Detected')
         # Allowed File extensions
         supported_ext = (r'^\.(kt|java|smali|xml|'
@@ -61,6 +63,7 @@ class AndroidChecks(forms.Form):
             ('studio', 'studio'),
             ('java', 'java'),
             ('smali', 'smali'),
+            ('xml', 'xml'),
             ('apk', 'apk'),
             ('jar', 'jar'),
             ('aar', 'aar'),

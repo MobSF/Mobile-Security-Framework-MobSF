@@ -211,7 +211,7 @@ Java.performNow(function () {
         Interceptor.attach(libc.getExportByName("fopen"), {
             onEnter: function (args) {
                 try{
-                var path = Memory.readCString(args[0]);
+                var path = args[0].readCString();
                 path = path.split("/");
                 var executable = path[path.length - 1];
                 var shouldFakeReturn = (RootBinaries.indexOf(executable) > -1)
@@ -229,7 +229,7 @@ Java.performNow(function () {
         Interceptor.attach(libc.getExportByName("system"), {
             onEnter: function (args) {
                 try{
-                var cmd = Memory.readCString(args[0]);
+                var cmd = args[0].readCString();
                 send("[RootDetection Bypass] SYSTEM CMD: " + cmd);
                 if (cmd.indexOf("getprop") != -1 || cmd == "mount" || cmd.indexOf("build.prop") != -1 || cmd == "id") {
                     send("[RootDetection Bypass] native system: " + cmd);

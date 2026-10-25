@@ -22,6 +22,11 @@ from django.conf import settings
 from django.shortcuts import render
 from django.utils.html import escape
 
+from mobsf.MobSF.security import (
+    is_path_traversal,
+    is_pipe_or_link,
+    is_safe_path,
+)
 from mobsf.MobSF.utils import (
     append_scan_status,
     file_size,
@@ -192,6 +197,22 @@ def _get_token():
     return sig_b64
 
 
+def _contained_exe(app_dir, file_name):
+    """Return an extracted exe path that stays inside app_dir."""
+    if not file_name or not str(file_name).endswith('.exe'):
+        return None
+    if is_path_traversal(file_name):
+        logger.error('APPX executable name failed the path check')
+        return None
+    bin_path = os.path.join(app_dir, file_name)
+    if not is_safe_path(app_dir, bin_path, file_name):
+        logger.error('APPX executable path is outside the upload directory')
+        return None
+    if not os.path.isfile(bin_path) or is_pipe_or_link(bin_path):
+        return None
+    return bin_path
+
+
 def _binary_analysis(app_dic):
     """Start binary analsis."""
     msg = 'Starting Binary Analysis'
@@ -202,15 +223,24 @@ def _binary_analysis(app_dic):
     # Init optional sections to prevent None-Pointer-Errors
     bin_an_dic['results'] = []
     bin_an_dic['warnings'] = []
-    # Search for exe
+    bin_an_dic['strings'] = []
+    bin_an_dic['bin'] = ''
+    bin_an_dic['bin_name'] = ''
+    # Search for exe that was actually extracted into the upload directory
+    bin_path = None
     for file_name in app_dic['files']:
-        if file_name.endswith('.exe'):
-            bin_an_dic['bin'] = file_name
-            bin_an_dic['bin_name'] = file_name.replace('.exe', '')
-            break
-    if not bin_an_dic.get('bin_name'):
+        if not str(file_name).endswith('.exe'):
+            continue
+        candidate = _contained_exe(app_dic['app_dir'], file_name)
+        if not candidate:
+            continue
+        bin_an_dic['bin'] = file_name
+        bin_an_dic['bin_name'] = file_name.replace('.exe', '')
+        bin_path = candidate
+        break
+    if not bin_path:
         logger.error('No executable in appx')
-    bin_path = os.path.join(app_dic['app_dir'], bin_an_dic['bin'])
+        return bin_an_dic
 
     # Execute strings command
     bin_an_dic['strings'] = ''
@@ -305,7 +335,11 @@ def binskim(checksum, name, bin_an_dic, run_local=False, app_dir=None):
     logger.info(msg)
     append_scan_status(checksum, msg)
     if run_local:
-        bin_path = os.path.join(app_dir, bin_an_dic['bin'])
+        bin_path = _contained_exe(app_dir, bin_an_dic.get('bin'))
+        if not bin_path:
+            logger.error(
+                'Skipping binskim for an executable outside the upload directory')
+            return bin_an_dic
 
         # Set params for execution of binskim
         if platform.machine().endswith('64'):
@@ -464,7 +498,11 @@ def binscope(checksum, name, bin_an_dic, run_local=False, app_dir=None):
     append_scan_status(checksum, msg)
     if run_local:
         global config
-        bin_path = os.path.join(app_dir, bin_an_dic['bin'])
+        bin_path = _contained_exe(app_dir, bin_an_dic.get('bin'))
+        if not bin_path:
+            logger.error(
+                'Skipping binscope for an executable outside the upload directory')
+            return bin_an_dic
 
         # Set params for execution of binskim
         binscope_path = [config['binscope']['file']]

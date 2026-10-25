@@ -2,7 +2,7 @@
 rem Python Check
 set /a count=0
 where python >nul 2>&1 && (
-  echo [INSTALL] Checking for Python version 3.10+
+  echo [INSTALL] Checking for Python version 3.12+
   :redo
   if %count% lss 3 (
     set /a count+=1
@@ -13,10 +13,10 @@ where python >nul 2>&1 && (
   ) else (
     exit /b
   )
-  echo %var%|findstr /R "[3].[101112]" >nul
+  echo %var%|findstr /R "[3].[1213]" >nul
   if errorlevel 1 (
       if "%var%"=="" goto redo
-      echo [ERROR] MobSF dependencies require Python 3.10-3.12. Your python points to %var%
+      echo [ERROR] MobSF dependencies require Python 3.12-3.13. Your python points to %var%
       exit /b
   ) else (
       echo [INSTALL] Found %var%
@@ -69,15 +69,8 @@ where python >nul 2>&1 && (
   poetry run python manage.py makemigrations
   poetry run python manage.py makemigrations StaticAnalyzer
   poetry run python manage.py migrate
-
-  echo [INSTALL] Collect Static files
-  poetry run python manage.py collectstatic --noinput
-
-  echo [INSTALL] Creating Super User
   poetry run python manage.py createsuperuser --noinput --email ""
   poetry run python manage.py create_roles
-
-  echo [INSTALL] wkhtmltopdf is not installed
   echo Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html
   echo [INSTALL] Installation Complete
   exit /b 0

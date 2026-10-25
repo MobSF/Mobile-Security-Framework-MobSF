@@ -23,14 +23,17 @@ from mobsf.MobSF import settings
 from mobsf.MobSF.security import (
     sanitize_for_logging,
 )
+from mobsf.MobSF.security import (
+    is_path_traversal,
+    is_pipe_or_link,
+    is_safe_path,
+)
 from mobsf.MobSF.utils import (
     EMAIL_REGEX,
     STRINGS_REGEX,
     URL_REGEX,
     append_scan_status,
     is_md5,
-    is_path_traversal,
-    is_safe_path,
     print_n_send_error_response,
     set_permissions,
 )
@@ -41,8 +44,8 @@ from mobsf.MobSF.views.scanning import (
 from mobsf.StaticAnalyzer.views.comparer import (
     generic_compare,
 )
-from mobsf.StaticAnalyzer.views.common.entropy import (
-    get_entropies,
+from mobsf.StaticAnalyzer.views.common.secret_detection import (
+    get_secrets,
 )
 from mobsf.MobSF.views.authentication import (
     login_required,
@@ -97,7 +100,7 @@ def is_reserved_file_conflict(file_path):
     return False
 
 
-def unzip(checksum, app_path, ext_path):
+def unzip(checksum, app_path, ext_path, size_budget=None):
     """Unzip APK.
 
     Unzip a APK archive while handling encrypted files, reserved file conflicts,
@@ -108,6 +111,10 @@ def unzip(checksum, app_path, ext_path):
         checksum (str): The checksum of the file.
         app_path (str): Path to the ZIP archive.
         ext_path (str): Path to extract the files.
+        size_budget (dict): Optional shared counter, ``{'used': int}``.
+            When set, this call continues that uncompressed-byte total and
+            stops at ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE. The OS unzip fallback
+            is not used, so a failed open cannot bypass the cap.
 
     Returns:
         list: A list of files extracted or an empty list if an error occurs.
@@ -117,11 +124,20 @@ def unzip(checksum, app_path, ext_path):
     append_scan_status(checksum, msg)
     files = []
     original_ext_path = ext_path
+    budgeted = size_budget is not None
+    # A shared budget must not fall through to OS unzip: that path has no
+    # byte cap. Leave the flag unset on the default path so its fallback
+    # behavior stays the same.
+    if budgeted:
+        stop_fallback_extraction = True
     try:
         with zipfile.ZipFile(app_path, 'r') as zipptr:
             files = zipptr.namelist()
-            total_size = 0
-            stop_fallback_extraction = False
+            if budgeted:
+                total_size = size_budget.get('used', 0)
+            else:
+                total_size = 0
+                stop_fallback_extraction = False
             for fileinfo in zipptr.infolist():
                 ext_path = original_ext_path
 
@@ -143,7 +159,10 @@ def unzip(checksum, app_path, ext_path):
                     ext_path = str(Path(ext_path) / '_conflict_')
 
                 # Handle Zip Slip
-                if is_path_traversal(file_path):
+                destination = Path(ext_path) / file_path
+                if (is_path_traversal(file_path)
+                        or not is_safe_path(
+                            ext_path, destination, file_path)):
                     msg = ('Zip slip detected. skipped extracting'
                            f' {sanitize_for_logging(file_path)}')
                     logger.error(msg)
@@ -153,11 +172,14 @@ def unzip(checksum, app_path, ext_path):
                 # Check uncompressed size
                 if not fileinfo.is_dir():
                     total_size += fileinfo.file_size
+                    if budgeted:
+                        size_budget['used'] = total_size
                     if fileinfo.file_size > settings.ZIP_MAX_UNCOMPRESSED_FILE_SIZE:
                         size_mb = fileinfo.file_size / (1024 * 1024)
                         msg = (f'File too large ({size_mb:.2f} MB). Skipping '
                                f'{sanitize_for_logging(file_path)}')
                         logger.warning(msg)
+                        continue
                     if total_size > settings.ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE:
                         stop_fallback_extraction = True
                         total_size_mb = total_size / (1024 * 1024)
@@ -216,6 +238,7 @@ def os_unzip(checksum, app_path, ext_path):
             logger.warning(msg)
             append_scan_status(checksum, msg)
             return []
+        # OS Unzip utility does handle path traversal and absolute paths
         subprocess.call(
             [unzip_b, '-o', '-q', app_path, '-d', ext_path])
         # Set permissions, packed files
@@ -270,14 +293,26 @@ def lipo_thin(checksum, src, dst):
 
 
 def ar_os(src, dst):
-    out = ''
     """Extract AR using OS utility."""
+    out = b''
     cur = os.getcwd()
     try:
         os.chdir(dst)
+        files = subprocess.check_output(
+            [shutil.which('ar'), 't', src],
+            stderr=subprocess.STDOUT)
+        for raw_file in files.decode('utf-8').split('\n'):
+            out = Path(dst) / raw_file
+            if (is_path_traversal(raw_file)
+                    or not is_safe_path(dst, out, raw_file)):
+                msg = f'AR slip detected in AR file {src} at {raw_file}'
+                logger.error(msg)
+                raise ValueError(msg)
         out = subprocess.check_output(
             [shutil.which('ar'), 'x', src],
             stderr=subprocess.STDOUT)
+    except ValueError:
+        out = b''
     except Exception as exp:
         out = exp.output
     finally:
@@ -302,6 +337,11 @@ def ar_extract(checksum, src, dst):
                 append_scan_status(checksum, msg)
                 continue
             out = Path(dst) / filtered
+            if not is_safe_path(dst, out, filtered):
+                msg = f'AR slip detected. skipped extracting {filtered}'
+                logger.warning(msg)
+                append_scan_status(checksum, msg)
+                continue
             out.write_bytes(val.read())
     except Exception:
         # Possibly dealing with Fat binary, needs Mac host
@@ -347,7 +387,7 @@ def url_n_email_extract(dat, relative_path):
     url_n_file = []
     email_n_file = []
     # URL Extraction
-    urllist = URL_REGEX.findall(dat.lower())
+    urllist = URL_REGEX.findall(dat)
     for url in urllist:
         urls.add(url)
     if urls:
@@ -480,7 +520,7 @@ def strings_and_entropies(checksum, src, exts):
                     continue
                 data['strings'].add(string)
         if data['strings']:
-            data['secrets'] = get_entropies(data['strings'])
+            data['secrets'] = get_secrets(data['strings'])
     except Exception as exp:
         msg = 'Failed to extract String values and entropies from Code'
         logger.exception(msg)
@@ -510,14 +550,18 @@ def scan_library(request, checksum):
         lib_dir = Path(settings.UPLD_DIR) / checksum
 
         sfile = lib_dir / relative_path
-        if not is_safe_path(lib_dir.as_posix(), sfile.as_posix()):
+        if (is_path_traversal(relative_path)
+                or not is_safe_path(
+                    lib_dir.as_posix(), sfile.as_posix(), relative_path)):
             msg = 'Path Traversal Detected!'
             return print_n_send_error_response(request, msg)
         ext = sfile.suffix
         if not ext and 'Frameworks' in relative_path:
             # Force Dylib on Frameworks
             ext = '.dylib'
-        if not sfile.exists():
+        if (not sfile.exists()
+                or not sfile.is_file()
+                or is_pipe_or_link(sfile)):
             msg = 'Library File not found'
             return print_n_send_error_response(request, msg)
         with open(sfile, 'rb') as f:

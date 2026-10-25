@@ -2,6 +2,7 @@
 """Instance Operation APIs."""
 import logging
 import re
+import shlex
 import shutil
 import time
 from base64 import b64encode
@@ -28,7 +29,6 @@ from mobsf.MobSF.utils import (
 )
 from mobsf.DynamicAnalyzer.forms import UploadFileForm
 from mobsf.DynamicAnalyzer.tools.webproxy import (
-    get_http_tools_url,
     stop_httptools,
 )
 from mobsf.DynamicAnalyzer.views.common.shared import (
@@ -737,7 +737,8 @@ def download_app_data(ci, checksum):
         tarfile = f'/tmp/{checksum}-app-container.tar'
         localtar = app_dir / f'{checksum}-app-container.tar'
         ssh_execute_cmd(
-            target, f'tar -C {app_container} -cvf {tarfile} .')
+            target,
+            f'tar -C {shlex.quote(app_container)} -cvf {shlex.quote(tarfile)} .')
         with target.open_sftp() as sftp:
             sftp.get(tarfile, localtar)
         target.close()
@@ -773,7 +774,7 @@ def download_data(request, bundle_id, api=False):
         logger.info('Downloading app container data')
         download_app_data(ci, checksum)
         # Stop HTTPS Proxy
-        stop_httptools(get_http_tools_url(request))
+        stop_httptools()
         # Move HTTP raw logs to download directory
         flows = Path.home() / '.httptools' / 'flows'
         webf = flows / f'{bundle_id}.flow.txt'
@@ -788,13 +789,11 @@ def download_data(request, bundle_id, api=False):
             dwd = Path(settings.DWD_DIR)
             pcap_file = dwd / f'{checksum}-network.pcap'
             pcap_file.write_bytes(pcap)
-            data = {
-                'status': OK,
-                'message': 'Downloaded application data',
-            }
         else:
             data['message'] = 'Failed to download pcap'
-            return send_response(data, api)
+            logger.error('Failed to download pcap')
+        data['status'] = OK
+        data['message'] = 'Downloaded application data'
     except Exception as exp:
         logger.exception('Downloading application data')
         data['message'] = str(exp)

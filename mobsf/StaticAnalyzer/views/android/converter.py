@@ -163,21 +163,23 @@ def run_apktool(app_path, app_dir, tools_dir):
                 and Path(settings.APKTOOL_BINARY).exists()):
             apktool_path = Path(settings.APKTOOL_BINARY)
         else:
-            apktool_path = tools_dir / 'apktool_2.10.0.jar'
+            apktool_path = tools_dir / 'apktool_3.0.3.jar'
 
         # Prepare output directory and manifest file paths
         output_dir = app_dir / 'apktool_out'
         # Run apktool to extract AndroidManifest.xml
         args = [find_java_binary(),
-                '-jar',
                 '-Djdk.util.zip.disableZip64ExtraFieldValidation=true',
+                '-jar',
                 str(apktool_path),
+                'd',
                 '--match-original',
                 '--frame-path',
                 gettempdir(),
-                '-f', '-s', 'd',
+                '--force',
+                '--no-src',
                 str(app_path),
-                '-o',
+                '--output',
                 str(output_dir)]
         logger.info('Converting AXML to XML with apktool')
         with open(os.devnull, 'w') as fnull:

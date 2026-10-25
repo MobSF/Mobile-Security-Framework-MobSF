@@ -15,8 +15,9 @@ from django.contrib.auth.models import (
     User,
 )
 from django.contrib.auth import login
-from django.urls import reverse
 from django.shortcuts import redirect
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from mobsf.MobSF.views.authorization import (
@@ -64,6 +65,9 @@ def init_saml_auth(req):
             },
             'x509cert': settings.IDP_X509CERT,
         },
+        'security': {
+            'requestedAuthnContext': False,
+        },
     }
     try:
         idp_data = None
@@ -97,7 +101,7 @@ def prepare_django_request(request):
         'script_name': request.get_full_path_info(),
         'get_data': request.GET.copy(),
         'post_data': request.POST.copy(),
-        'lowercase_urlencoding': bool(settings.IDP_IS_ADFS == '1'),
+        'lowercase_urlencoding': settings.IDP_IS_ADFS,
         'query_string': request.META['QUERY_STRING'],
         'sp_url': sp_url,
     }
@@ -137,7 +141,7 @@ def get_user_role(roles):
 def saml_login(request):
     """Handle SSO Login."""
     try:
-        if settings.DISABLE_AUTHENTICATION == '1':
+        if settings.DISABLE_AUTHENTICATION:
             return redirect('/')
         req = prepare_django_request(request)
         auth = init_saml_auth(req)
@@ -151,11 +155,14 @@ def saml_login(request):
             False)
 
 
+# IdP browser POSTs cannot carry Django's CSRF token; SAML
+# signature validation is the security boundary for ACS.
+@csrf_exempt
 @require_http_methods(['POST'])
 def saml_acs(request):
     """Handle SSO Assertion Consumer Service."""
     try:
-        if settings.DISABLE_AUTHENTICATION == '1':
+        if settings.DISABLE_AUTHENTICATION:
             return redirect('/')
         req = prepare_django_request(request)
         auth = init_saml_auth(req)
@@ -176,6 +183,13 @@ def saml_acs(request):
         role = get_user_role(attributes['role'])
         if User.objects.filter(username=email).exists():
             user = User.objects.get(username=email)
+            # Reject before group mutation or login(), matching
+            # AuthenticationForm / ModelBackend inactive handling.
+            if not user.is_active:
+                return print_n_send_error_response(
+                    request,
+                    'This account is inactive.',
+                    False)
             user.groups.clear()
             user.groups.add(Group.objects.get(name=role))
             login(request, user)

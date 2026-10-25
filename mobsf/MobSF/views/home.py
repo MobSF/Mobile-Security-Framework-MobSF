@@ -29,13 +29,13 @@ from mobsf.MobSF.utils import (
     is_dir_exists,
     is_file_exists,
     is_md5,
-    is_safe_path,
     key,
     print_n_send_error_response,
     python_dict,
+    scan_state_dir,
 )
 from mobsf.MobSF.init import api_key
-from mobsf.MobSF.security import sanitize_filename, sanitize_svg
+from mobsf.MobSF.security import is_safe_path, sanitize_filename, sanitize_svg
 from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
 from mobsf.MobSF.views.apk_downloader import apk_download
@@ -196,7 +196,7 @@ def api_docs(request):
     """Api Docs Route."""
     key = '*******'
     try:
-        if (settings.DISABLE_AUTHENTICATION == '1'
+        if (settings.DISABLE_AUTHENTICATION
                 or request.user.is_staff
                 or request.user.groups.filter(name=MAINTAINER_GROUP).exists()):
             key = api_key(settings.MOBSF_HOME)
@@ -279,9 +279,9 @@ def recent_scans(request, page_size=10, page_number=1):
 
     android = StaticAnalyzerAndroid.objects.filter(
         MD5__in=md5_list).only(
-            'PACKAGE_NAME', 'VERSION_NAME', 'FILE_NAME', 'MD5')
+            'PACKAGE_NAME', 'VERSION_NAME', 'FILE_NAME', 'MD5', 'ICON_PATH')
     ios = StaticAnalyzerIOS.objects.filter(
-        MD5__in=md5_list).only('FILE_NAME', 'MD5')
+        MD5__in=md5_list).only('FILE_NAME', 'MD5', 'ICON_PATH')
 
     updir = Path(settings.UPLD_DIR)
     icon_mapping = {}
@@ -422,7 +422,10 @@ def file_download(dwd_file, filename, content_type):
         with open(dwd_file, 'r', encoding='utf-8') as file:
             svg_content = file.read()
             cleaned_svg = sanitize_svg(svg_content)
-            return create_response(cleaned_svg, is_binary=False)
+            response = create_response(cleaned_svg, is_binary=False)
+            response['Content-Security-Policy'] = (
+                "default-src 'none'; style-src 'unsafe-inline'")
+            return response
 
     # Handle all other binary file types
     with open(dwd_file, 'rb') as file:
@@ -475,7 +478,7 @@ def download(request):
     dwd_file = Path(root) / filename
 
     # Security Checks
-    if '../' in filename or not is_safe_path(root, dwd_file):
+    if not is_safe_path(root, dwd_file, filename):
         msg = 'Path Traversal Attack Detected'
         return print_n_send_error_response(request, msg)
 
@@ -570,6 +573,10 @@ def delete_scan(request, api=False):
         app_upload_dir = os.path.join(settings.UPLD_DIR, md5_hash)
         if is_dir_exists(app_upload_dir):
             shutil.rmtree(app_upload_dir)
+        # Delete host-side scan state
+        state_dir = scan_state_dir(md5_hash)
+        if state_dir.is_dir() and not state_dir.is_symlink():
+            shutil.rmtree(state_dir)
         # Delete Download Dir Contents
         dw_dir = settings.DWD_DIR
         for item in os.listdir(dw_dir):

@@ -11,6 +11,7 @@ import collections
 import io
 import re
 from collections import defaultdict
+from struct import error as struct_error
 from struct import pack, unpack
 from typing import BinaryIO, Union
 from xml.sax.saxutils import escape
@@ -1810,12 +1811,16 @@ class ARSCParser:
                         logger.debug("Config: {}".format(a_res_type.config))
 
                         entries = []
+                        # ResTable_type.flags. Sparse entries are
+                        # (index, offset/4) pairs, not a dense offset array.
+                        FLAG_SPARSE = 0x01
                         FLAG_OFFSET16 = 0x02
                         NO_ENTRY_16 = 0xFFFF
                         NO_ENTRY_32 = 0xFFFFFFFF
                         expected_entries_start = (
                             start_of_chunk + a_res_type.entriesStart
                         )
+                        type_id = current_package.mResId & 0xFFFF0000
 
                         # Helper function to convert 16-bit offset to 32-bit
                         def offset_from16(off16):
@@ -1825,23 +1830,33 @@ class ARSCParser:
                                 else off16 * 4
                             )
 
-                        for i in range(0, a_res_type.entryCount):
-                            current_package.mResId = (
-                                current_package.mResId & 0xFFFF0000 | i
-                            )
-                            # Check if FLAG_OFFSET16 is set
-                            if a_res_type.flags & FLAG_OFFSET16:
-                                # Read as 16-bit offset
-                                offset_16 = unpack('<H', self.buff.read(2))[0]
-                                offset = offset_from16(offset_16)
-                                if offset == NO_ENTRY_16:
-                                    continue
-                            else:
-                                # Read as 32-bit offset
-                                offset = unpack('<I', self.buff.read(4))[0]
-                                if offset == NO_ENTRY_32:
-                                    continue
-                            entries.append((offset, current_package.mResId))
+                        if a_res_type.flags & FLAG_SPARSE:
+                            # Missing resources are omitted. 0xFFFF is a
+                            # real offset (262140), not the dense NO_ENTRY.
+                            for _ in range(a_res_type.entryCount):
+                                idx, off16 = unpack(
+                                    '<HH', self.buff.read(4))
+                                entries.append(
+                                    (off16 * 4, type_id | idx))
+                        else:
+                            for i in range(0, a_res_type.entryCount):
+                                current_package.mResId = type_id | i
+                                # Check if FLAG_OFFSET16 is set
+                                if a_res_type.flags & FLAG_OFFSET16:
+                                    # Read as 16-bit offset
+                                    offset_16 = unpack(
+                                        '<H', self.buff.read(2))[0]
+                                    offset = offset_from16(offset_16)
+                                    if offset == NO_ENTRY_16:
+                                        continue
+                                else:
+                                    # Read as 32-bit offset
+                                    offset = unpack(
+                                        '<I', self.buff.read(4))[0]
+                                    if offset == NO_ENTRY_32:
+                                        continue
+                                entries.append(
+                                    (offset, current_package.mResId))
 
                         self.packages[package_name].append(entries)
 
@@ -1852,15 +1867,26 @@ class ARSCParser:
                                 "Something is off here! We are not where the entries should start."
                             )
                         base_offset = expected_entries_start
-                        for entry_offset, res_id in entries:
+                        for index, (entry_offset, res_id) in enumerate(entries):
                             if entry_offset != -1:
-                                ate = ARSCResTableEntry(
-                                    self.buff,
-                                    base_offset + entry_offset,
-                                    expected_end_of_chunk,
-                                    res_id,
-                                    pc,
-                                )
+                                try:
+                                    ate = ARSCResTableEntry(
+                                        self.buff,
+                                        base_offset + entry_offset,
+                                        expected_end_of_chunk,
+                                        res_id,
+                                        pc,
+                                    )
+                                except struct_error:
+                                    # Keep this slot absent so later entries
+                                    # stay aligned with the parsed objects.
+                                    entries[index] = (-1, res_id)
+                                    logger.debug(
+                                        'Skipping undecodable resource '
+                                        'entry 0x%08x',
+                                        res_id,
+                                    )
+                                    continue
                                 self.packages[package_name].append(ate)
                                 if ate.is_weak():
                                     # FIXME we are not sure how to implement the FLAG_WEAK!
@@ -3528,12 +3554,14 @@ class ARSCResTableEntry:
         # This is a ResStringPool_ref
         self.index = unpack('<I', buff.read(4))[0]
 
-        if self.is_complex():
-            self.item = ARSCComplex(buff, expected_end_of_chunk, parent)
-        elif self.is_compact():
+        if self.is_compact():
+            # Compact entries store the value in this header. They are
+            # not followed by a value or a complex map.
             self.key = self.size
             self.data = self.index
             self.datatype = (self.flags >> 8) & 0xFF
+        elif self.is_complex():
+            self.item = ARSCComplex(buff, expected_end_of_chunk, parent)
         else:
             # If FLAG_COMPLEX is not set, a Res_value structure will follow
             self.key = ARSCResStringPoolRef(buff, self.parent)
@@ -3603,8 +3631,9 @@ class ARSCComplex:
         # ResTable_ref is a uint32_t.
         for i in range(0, self.count):
             if buff.tell() + 4 > expected_end_of_chunk:
-                print(
-                    f"We are out of bound with this complex entry. Count: {self.count}"
+                logger.debug(
+                    'Stopped reading a complex resource entry at count %s',
+                    self.count,
                 )
                 break
             self.items.append(

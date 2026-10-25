@@ -24,7 +24,7 @@ Java.perform(function ()
         var libName = f.getName()
         console.log("Native lib name: " + libName)
  
-        var exports = Module.enumerateExportsSync(libName)
+        var exports = Process.getModuleByName(libName).enumerateExports()
         console.log("Exported methods:")
 
         if (exports === undefined || exports.length == 0) 

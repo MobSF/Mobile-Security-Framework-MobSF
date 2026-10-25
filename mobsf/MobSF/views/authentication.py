@@ -33,7 +33,7 @@ def login_required(func):
         arguments = sig.bind(request, *args, **kwargs)
         api = arguments.arguments.get('api')
         # Handle functions that are used by API and Web
-        if settings.DISABLE_AUTHENTICATION == '1' or api:
+        if settings.DISABLE_AUTHENTICATION or api:
             # Disable authentication for all functions
             return func(request, *args, **kwargs)
         # Force authentication for all
@@ -48,7 +48,7 @@ def login_required(func):
            block=True)
 def login_view(request):
     """Login Controller."""
-    if settings.DISABLE_AUTHENTICATION == '1':
+    if settings.DISABLE_AUTHENTICATION:
         return redirect('/')
     sso = (settings.IDP_METADATA_URL
            or (settings.IDP_SSO_URL
@@ -56,7 +56,7 @@ def login_view(request):
                and settings.IDP_X509CERT))
     if not sso:
         allow_pwd = True
-    elif bool(settings.SP_ALLOW_PASSWORD == '1'):
+    elif settings.SP_ALLOW_PASSWORD:
         allow_pwd = True
     else:
         allow_pwd = False
@@ -93,7 +93,7 @@ def logout_view(request):
 
 @login_required
 def change_password(request):
-    if settings.DISABLE_AUTHENTICATION == '1':
+    if settings.DISABLE_AUTHENTICATION:
         return redirect('/')
     if request.method == 'POST':
         form = PasswordChangeForm(request.user, request.POST)

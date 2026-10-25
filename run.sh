@@ -31,7 +31,10 @@ else
     PORT='8000'
 fi
 
-python3 -m poetry run python manage.py collectstatic --noinput
+cleanup_android() {
+    python3 -m poetry run python manage.py cleanup_android || true
+}
+trap cleanup_android EXIT
 
-python3 -m poetry run gunicorn -b ${IP}:${PORT} mobsf.MobSF.wsgi:application --workers=1 --threads=10 --timeout=3600 \
+python3 -m poetry run gunicorn --config scripts/gunicorn_config.py -b ${IP}:${PORT} mobsf.MobSF.wsgi:application --workers=1 --threads=10 --timeout=3600 \
     --log-level=critical --log-file=- --access-logfile=- --error-logfile=- --capture-output

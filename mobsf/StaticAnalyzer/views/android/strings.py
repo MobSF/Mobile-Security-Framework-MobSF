@@ -8,8 +8,9 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
     strings_and_entropies,
     url_n_email_extract,
 )
-from mobsf.StaticAnalyzer.views.common.entropy import (
-    get_entropies,
+from mobsf.StaticAnalyzer.views.common.secret_detection import (
+    detect_known_secrets,
+    get_secrets,
 )
 from mobsf.MobSF.utils import (
     GOOGLE_API_KEY_REGEX,
@@ -37,7 +38,7 @@ def strings_from_so(checksum, elf_strings):
                 so_urls, so_urls_nf, so_emails_nf = url_n_email_extract(
                     so_str, so)
                 sos.append({so: {
-                    'secrets': list(get_entropies(so_str)),
+                    'secrets': list(get_secrets(str_list)),
                     'strings': list(set(str_list)),
                     'urls_list': so_urls,
                     'urls_nf': so_urls_nf,
@@ -93,9 +94,12 @@ def strings_from_apk(checksum, app_dic):
                     # Check for possible secrets
                     if is_secret_key(key) and ' ' not in value:
                         results['secrets'].append(formatted_str)
+                    results['secrets'].extend(
+                        detect_known_secrets(value))
         elif app_dic.get('apk_strings'):
-            # No secret key check for APK strings
             results['strings'] = app_dic['apk_strings']
+            results['secrets'].extend(
+                detect_known_secrets(results['strings']))
         else:
             msg = 'Failed to extract String data from APK'
             logger.warning(msg)

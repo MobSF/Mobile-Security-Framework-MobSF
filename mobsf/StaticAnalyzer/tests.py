@@ -24,7 +24,6 @@ def static_analysis_test():
         uploaded = []
         logger.info('Running Upload Test')
         http_client = Client()
-
         apk_dir = os.path.join(settings.BASE_DIR, 'StaticAnalyzer/test_files/')
         for filename in os.listdir(apk_dir):
             if not filename.endswith(EXTS):
@@ -353,6 +352,9 @@ def api_test():
         # View Source tests
         files = [{'file': 'jakhar/aseem/diva/MainActivity.java',
                   'type': 'apk',
+                  'hash': '82ab8b2193b3cfb1c737e3a786be363a'},
+                 {'file': 'AndroidManifest.xml',
+                  'type': 'xml',
                   'hash': '82ab8b2193b3cfb1c737e3a786be363a'},
                  {'file': 'opensecurity/webviewignoressl/MainActivity.java',
                   'type': 'studio',

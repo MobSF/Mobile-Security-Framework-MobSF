@@ -5,7 +5,9 @@ queries:
 
 query-filters:
   - exclude:
-      id: py/path-injection  # To much false positives
+      id: py/path-injection  # Too many false positives
+  - exclude:
+      id: py/log-injection  # Logging inputs are sanitized at trust boundaries
 
 paths-ignore:
   - "**/.git/**"

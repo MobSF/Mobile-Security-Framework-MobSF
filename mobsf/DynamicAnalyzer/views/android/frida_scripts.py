@@ -41,7 +41,7 @@ def get_methods(klazz):
 def class_pattern(pattern):
     """Search in loaded classes based on pattern."""
     pattern = pattern.replace(
-        '/', '\\/').replace(';', '')
+        '/', '\\/').replace(';', '').replace('\n', '').replace('\r', '')
     content = get_content('search_class_pattern.js')
     return content.replace('{{PATTERN}}', pattern)
 

@@ -3,8 +3,8 @@
 import io
 import logging
 
-from mobsf.StaticAnalyzer.views.common.entropy import (
-    get_entropies,
+from mobsf.StaticAnalyzer.views.common.secret_detection import (
+    get_secrets,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     url_n_email_extract,
@@ -73,7 +73,7 @@ def get_strings_metadata(app_dict, bin_dict, all_files, dy_list):
     urls_list = []
     urls_n_files = []
     emails_n_files = []
-    secrets = []
+    secrets = list(get_secrets(bin_dict['strings']))
 
     # IPA URL and Email Extract
     str_meta = extract_urls_n_email(
@@ -97,7 +97,7 @@ def get_strings_metadata(app_dict, bin_dict, all_files, dy_list):
                 urls_list.extend(urls)
                 urls_n_files.extend(urls_nf)
                 emails_n_files.extend(emails_nf)
-                secrets.extend(get_entropies(dy_str))
+                secrets.extend(get_secrets(s))
 
         bin_dict['strings'].extend(dy_strings)
         bin_dict['strings'] = list(

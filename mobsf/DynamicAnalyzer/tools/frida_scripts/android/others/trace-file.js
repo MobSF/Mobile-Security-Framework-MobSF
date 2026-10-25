@@ -313,7 +313,7 @@ Java.perform(function () {
                     const path = TraceSysFD["fd-" + fd] || "[unknown path]";
                     let data = null;
                     try {
-                        data = Memory.readByteArray(bfr, sz);
+                        data = bfr.readByteArray(sz);
                     } catch (_) {
                         data = null;
                     }
@@ -344,7 +344,7 @@ Java.perform(function () {
                     const path = TraceSysFD["fd-" + fd] || "[unknown path]";
                     let data = null;
                     try {
-                        data = Memory.readByteArray(bfr, sz);
+                        data = bfr.readByteArray(sz);
                     } catch (_) {
                         data = null;
                     }

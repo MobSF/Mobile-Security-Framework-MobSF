@@ -14,11 +14,15 @@ from django.http import HttpResponse
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
     MalwareDomainCheck,
 )
+from mobsf.MobSF.exceptions import PathTraversalError
+from mobsf.MobSF.security import (
+    clean_filename,
+    is_pipe_or_link,
+    is_safe_path,
+)
 from mobsf.MobSF.utils import (
     EMAIL_REGEX,
     URL_REGEX,
-    clean_filename,
-    is_pipe_or_link,
 )
 
 logger = logging.getLogger(__name__)
@@ -27,17 +31,18 @@ logger = logging.getLogger(__name__)
 def extract_urls_domains_emails(checksum, data):
     """Extract URLs, Domains and Emails."""
     # URL Extraction
-    urls = re.findall(URL_REGEX, data.lower())
+    urls = re.findall(URL_REGEX, data)
     if urls:
         urls = list(set(urls))
     else:
         urls = []
     # Domain Extraction and Malware Check
     logger.info('Performing Malware check on extracted domains')
+    # For domain extraction, use lowercased URLs
     domains = MalwareDomainCheck().scan(
         checksum,
         urls)
-    # Email Etraction Regex
+    # Email Extraction Regex
     emails = set()
     for email in EMAIL_REGEX.findall(data.lower()):
         if email.startswith('//'):
@@ -55,15 +60,15 @@ def safe_paths(tar_meta):
         yield fh
 
 
-def onerror(func, path, exc_info):
-    _, exc, _ = exc_info
-    if exc.errno == errno.EACCES:  # Permission error
+def onexc(func, path, exc_info):
+    _, exc_value, _ = exc_info
+    if exc_value.errno == errno.EACCES:  # Permission error
         try:
             os.chmod(path, 0o755)
             func(path)
         except Exception:
             pass
-    elif exc.errno == errno.ENOTEMPTY:  # Directory not empty
+    elif exc_value.errno == errno.ENOTEMPTY:  # Directory not empty
         try:
             func(path)
         except Exception:
@@ -81,28 +86,38 @@ def untar_files(tar_loc, untar_dir):
             return False
         if untar_dir.exists():
             # fix for permission errors
-            shutil.rmtree(untar_dir, onerror=onerror)
+            shutil.rmtree(untar_dir, onexc=onexc)
         else:
             os.makedirs(untar_dir)
         with tarfile.open(tar_loc.as_posix(), errorlevel=1) as tar:
-
-            def is_within_directory(directory, target):
-                abs_directory = os.path.abspath(directory)
-                abs_target = os.path.abspath(target)
-                prefix = os.path.commonprefix([abs_directory, abs_target])
-                return prefix == abs_directory
-
-            def safe_extract(tar, path='.',
-                             members=None,
-                             *,
-                             numeric_owner=False):
-                for member in tar.getmembers():
-                    member_path = os.path.join(path, member.name)
-                    if not is_within_directory(path, member_path):
-                        raise Exception('Attempted Path Traversal in Tar File')
-                tar.extractall(path, members, numeric_owner=numeric_owner)
-
-            safe_extract(tar, untar_dir, members=safe_paths(tar))
+            if hasattr(tarfile, 'data_filter'):
+                # Python 3.12+ (PEP 706) / backported to 3.11.4, 3.10.12, 3.9.17.
+                # Rejects symlinks outside destination, hardlinks, device files,
+                # and absolute/traversal paths per-member before extraction.
+                tar.extractall(
+                    untar_dir,
+                    members=safe_paths(tar),
+                    filter='data')
+            else:
+                # Fallback for Python < 3.9.17 without the PEP 706 backport.
+                # Manually reject symlinks and hardlinks, then use realpath
+                # (not abspath) to verify the resolved path stays inside the
+                # destination before extracting each member.
+                safe_root = os.path.realpath(untar_dir)
+                safe_members = []
+                for member in safe_paths(tar):
+                    if member.issym() or member.islnk():
+                        logger.warning(
+                            'Skipping link member in tar: %s', member.name)
+                        continue
+                    member_path = os.path.realpath(
+                        os.path.join(safe_root, member.name))
+                    if not is_safe_path(
+                            safe_root, member_path, member.name):
+                        raise PathTraversalError(
+                            'Attempted Path Traversal in Tar File')
+                    safe_members.append(member)
+                tar.extractall(untar_dir, members=iter(safe_members))
     except (FileExistsError, tarfile.ReadError):
         logger.warning('Failed to extract tar file')
     except Exception:
@@ -171,12 +186,3 @@ def invalid_params(api=False):
     if api:
         return data
     return send_response(data)
-
-
-def is_attack_pattern(user_input):
-    """Check for attacks."""
-    atk_pattern = re.compile(r';|\$\(|\|\||&&')
-    stat = re.findall(atk_pattern, user_input)
-    if stat:
-        logger.error('Possible RCE attack detected')
-    return stat

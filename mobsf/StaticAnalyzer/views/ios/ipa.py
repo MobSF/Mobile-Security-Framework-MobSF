@@ -9,6 +9,10 @@ import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from django.conf import settings
 from django.shortcuts import render
 
+from mobsf.MobSF.security import (
+    is_pipe_or_link,
+    is_safe_path,
+)
 from mobsf.MobSF.utils import (
     append_scan_status,
     file_size,
@@ -93,15 +97,35 @@ def extract_and_check_ipa(checksum, app_dic):
         checksum,
         app_dic['app_path'],
         app_dic['app_dir'])
-    # Identify Payload directory
-    dirs = app_dic['app_dirp'].glob('**/*')
-    for _dir in dirs:
-        if 'payload' in _dir.as_posix().lower():
-            app_dic['bin_dir'] = app_dic['app_dirp'] / _dir
+    # Identify the Payload directory and its immediate application bundle.
+    scan_root = app_dic['app_dirp']
+    payload_dir = None
+    for candidate in scan_root.glob('**/*'):
+        if candidate.name.lower() != 'payload':
+            continue
+        relative = candidate.relative_to(scan_root)
+        if (is_safe_path(scan_root, candidate, relative)
+                and candidate.is_dir()
+                and not is_pipe_or_link(candidate)):
+            payload_dir = candidate
             break
-    else:
+    if not payload_dir:
         return False
-    app_dic['bin_dir'] = app_dic['bin_dir'].as_posix() + '/'
+
+    app_root = None
+    for candidate in payload_dir.iterdir():
+        if not candidate.name.endswith('.app'):
+            continue
+        if (is_safe_path(payload_dir, candidate, candidate.name)
+                and candidate.is_dir()
+                and not is_pipe_or_link(candidate)):
+            app_root = candidate
+            break
+    if not app_root:
+        return False
+
+    app_dic['bin_dir'] = payload_dir.as_posix() + '/'
+    app_dic['app_root'] = app_root.as_posix()
     return True
 
 
@@ -119,7 +143,8 @@ def common_analysis(scan_type, app_dic, checksum):
     app_dic['infoplist'] = plist_analysis(
         checksum,
         location,
-        scan_type)
+        scan_type,
+        app_dic.get('app_root'))
     app_dic['appstore'] = app_search(
         checksum,
         app_dic['infoplist'].get('id'))
@@ -193,7 +218,8 @@ def ipa_analysis_task(checksum, app_dic, rescan, queue=False):
             app_dic['bin_dir'],
             app_dic['tools_dir'],
             app_dic['app_dir'],
-            app_dic['infoplist'].get('bin'))
+            app_dic['infoplist'].get('bin'),
+            app_dic['app_root'])
         # Analyze dylibs and frameworks
         lb = library_analysis(
             checksum,

@@ -15,6 +15,9 @@ from urllib.request import (
     getproxies,
 )
 
+from mobsf.MobSF.env import env_flag
+from mobsf.MobSF.exceptions import PathTraversalError
+
 logging.basicConfig(
     level=logging.INFO,
     format='[%(levelname)s] %(asctime)-15s - %(message)s',
@@ -24,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 def standalone_upstream_proxy():
     """Set upstream Proxy for urllib - standalone."""
-    upstream_proxy_enabled = bool(os.getenv('MOBSF_UPSTREAM_PROXY_ENABLED', ''))
+    upstream_proxy_enabled = env_flag('MOBSF_UPSTREAM_PROXY_ENABLED', '0')
 
     if upstream_proxy_enabled:
         upstream_proxy_username = os.getenv('MOBSF_UPSTREAM_PROXY_USERNAME', '')
@@ -56,8 +59,7 @@ def standalone_upstream_proxy():
     else:
         proxies = {}
 
-    upstream_proxy_ssl_verify = os.getenv('MOBSF_UPSTREAM_PROXY_SSL_VERIFY', '1')
-    verify = upstream_proxy_ssl_verify in ('1', '"1"')
+    verify = env_flag('MOBSF_UPSTREAM_PROXY_SSL_VERIFY', '1')
     return proxies, verify
 
 
@@ -73,7 +75,7 @@ def download_file(url, file_path):
         logger.info('Using system proxies (SSL verify: %s)', verify)
     else:
         # Check if MobSF upstream proxy is explicitly configured
-        upstream_proxy_enabled = bool(os.getenv('MOBSF_UPSTREAM_PROXY_ENABLED', ''))
+        upstream_proxy_enabled = env_flag('MOBSF_UPSTREAM_PROXY_ENABLED', '0')
 
         if upstream_proxy_enabled:
             proxies, verify = standalone_upstream_proxy()
@@ -152,7 +154,16 @@ def install_jadx(mobsf_home, version='1.5.0'):
             logger.info('Extracting JADX to %s', extract_dir)
             extract_dir.mkdir(parents=True, exist_ok=True)
             with zipfile.ZipFile(tmp_zip_file.name, 'r') as zip_ref:
+                abs_extract_dir = os.path.realpath(extract_dir)
                 for member in zip_ref.namelist():
+                    member_path = os.path.realpath(
+                        os.path.join(abs_extract_dir, member))
+                    common_path = os.path.commonpath((
+                        os.path.normcase(abs_extract_dir),
+                        os.path.normcase(member_path),
+                    ))
+                    if common_path != os.path.normcase(abs_extract_dir):
+                        raise PathTraversalError('Attempted Path Traversal in Zip File')
                     zip_ref.extract(member, extract_dir)
 
         # Set execute permission

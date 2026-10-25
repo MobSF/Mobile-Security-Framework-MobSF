@@ -4,15 +4,18 @@
 import logging
 from urllib.parse import urlparse
 
-import requests
 from concurrent.futures import ThreadPoolExecutor
+from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
     append_scan_status,
     is_number,
     upstream_proxy,
 )
-from mobsf.MobSF.security import valid_host
+from mobsf.MobSF.security import (
+    safe_request,
+    valid_host,
+)
 from mobsf.StaticAnalyzer.views.android import (
     network_security,
 )
@@ -68,6 +71,13 @@ ANDROID_API_LEVEL_MAP = {
 }
 
 
+def escape_manifest_attribute(value):
+    """Escape manifest attributes."""
+    if not value:
+        return value
+    return escape(value)
+
+
 def assetlinks_check(act_name, well_knowns):
     """Well known assetlink check."""
     findings = []
@@ -99,17 +109,22 @@ def _check_url(host, w_url):
             urls.add(f'https://{w_url[7:]}')
 
         for url in urls:
-            # Additional checks to ensure that
-            # the final path is WELL_KNOWN_PATH
+            # Validate the fully-assembled URL — path, port, query, and params.
             purl = urlparse(url)
             if (purl.path != WELL_KNOWN_PATH
                 or len(purl.query) > 0
                     or len(purl.params) > 0):
                 logger.warning('Invalid Assetlinks URL: %s', url)
                 continue
-            r = requests.get(url,
+            if purl.port and purl.port not in (80, 443):
+                logger.warning(
+                    'Non-standard port in assetlinks URL rejected: %s', url)
+                continue
+            # Resolve and connect through the same SSRF-safe request primitive,
+            # preventing a second DNS lookup from rebinding to an internal IP.
+            r = safe_request('GET',
+                             url,
                              timeout=5,
-                             allow_redirects=False,
                              proxies=proxies,
                              verify=verify)
 
@@ -133,8 +148,10 @@ def _check_url(host, w_url):
                 'status': False}
 
 
-def get_browsable_activities(node, ns):
+def get_browsable_activities(node, ns, verdicts=None):
     """Get Browsable Activities."""
+    if verdicts is None:
+        verdicts = {}
     try:
         browse_dic = {}
         schemes = []
@@ -177,11 +194,19 @@ def get_browsable_activities(node, ns):
                         and host
                             and host != '*'):
                         host = host.replace('*.', '').replace('#', '')
-                        if not valid_host(host):
+                        if host not in verdicts:
+                            verdicts[host] = valid_host(host)
+                        if not verdicts[host]:
                             logger.warning('Invalid Host: %s', host)
                             continue
                         shost = f'{scheme}://{host}'
                         if port and is_number(port):
+                            if int(port) not in (80, 443):
+                                logger.warning(
+                                    'Non-standard port rejected in assetlinks '
+                                    'check (port %s bypasses valid_host): %s',
+                                    port, host)
+                                continue
                             c_url = f'{shost}:{port}{WELL_KNOWN_PATH}'
                         else:
                             c_url = f'{shost}{WELL_KNOWN_PATH}'
@@ -225,6 +250,7 @@ def manifest_analysis(app_dic, man_data_dic):
         ret_list = []
         exported = []
         browsable_activities = {}
+        verdicts = {}
         permission_dict = {}
         do_netsec = False
         debuggable = False
@@ -314,8 +340,9 @@ def manifest_analysis(app_dic, man_data_dic):
                 # Checks for Activities
                 if itemname in ['Activity', 'Activity-Alias']:
                     item = node.getAttribute(f'{ns}:name')
+                    item = escape_manifest_attribute(item)
                     # Browsable Activities
-                    browse_dic = get_browsable_activities(node, ns)
+                    browse_dic = get_browsable_activities(node, ns, verdicts)
                     if browse_dic['browsable']:
                         browsable_activities[node.getAttribute(
                             f'{ns}:name')] = browse_dic
@@ -377,6 +404,7 @@ def manifest_analysis(app_dic, man_data_dic):
                     if node.getAttribute(f'{ns}:exported') == 'true':
                         perm = ''
                         item = node.getAttribute(f'{ns}:name')
+                        item = escape_manifest_attribute(item)
                         if node.getAttribute(f'{ns}:permission'):
                             # permission exists
                             perm = ('<strong>Permission: </strong>'
@@ -490,6 +518,7 @@ def manifest_analysis(app_dic, man_data_dic):
                                 is_inf = True
                         if is_inf:
                             item = node.getAttribute(f'{ns}:name')
+                            item = escape_manifest_attribute(item)
                             if node.getAttribute(f'{ns}:permission'):
                                 # permission exists
                                 perm = ('<strong>Permission: </strong>'
@@ -605,6 +634,7 @@ def manifest_analysis(app_dic, man_data_dic):
                                 if itemname == 'Content Provider' and int(man_data_dic['target_sdk']) < ANDROID_4_2_LEVEL:
                                     perm = ''
                                     item = node.getAttribute(f'{ns}:name')
+                                    item = escape_manifest_attribute(item)
                                     if node.getAttribute(f'{ns}:permission'):
                                         # permission exists
                                         perm = ('<strong>Permission: </strong>'
@@ -686,6 +716,7 @@ def manifest_analysis(app_dic, man_data_dic):
                                         perm = ''
                                         item = node.getAttribute(
                                             f'{ns}:name')
+                                        item = escape_manifest_attribute(item)
                                         if node.getAttribute(f'{ns}:permission'):
                                             # permission exists
                                             perm = ('<strong>Permission: </strong>'
@@ -773,10 +804,12 @@ def manifest_analysis(app_dic, man_data_dic):
         for data in data_tag:
             if data.getAttribute(f'{ns}:scheme') == 'android_secret_code':
                 xmlhost = data.getAttribute(f'{ns}:host')
+                xmlhost = escape_manifest_attribute(xmlhost)
                 ret_list.append(('dialer_code_found', (xmlhost,), ()))
 
             elif data.getAttribute(f'{ns}:port'):
                 dataport = data.getAttribute(f'{ns}:port')
+                dataport = escape_manifest_attribute(dataport)
                 ret_list.append(('sms_receiver_port_found', (dataport,), ()))
         # INTENTS
         processed_priorities = {}

@@ -11,8 +11,8 @@ py_major=${python_version%%.*}
 py_minor=${python_version#*.}
 py_minor=${py_minor%%.*}
 
-if [[ "$py_major" -ne 3 || "$py_minor" -lt 10 || "$py_minor" -gt 12 ]]; then
-    echo "[ERROR] MobSF dependencies require Python 3.10 - 3.12. You have Python ${python_version}."
+if [[ "$py_major" -ne 3 || "$py_minor" -lt 12 || "$py_minor" -gt 13 ]]; then
+    echo "[ERROR] MobSF dependencies require Python 3.12 - 3.13. You have Python ${python_version}."
     exit 1
 fi
 echo "[INSTALL] Found Python ${python_version}"
@@ -53,15 +53,9 @@ export DJANGO_SUPERUSER_PASSWORD=mobsf
 python3 -m poetry run python manage.py makemigrations
 python3 -m poetry run python manage.py makemigrations StaticAnalyzer
 python3 -m poetry run python manage.py migrate
-
-echo '[INSTALL] Collect Static files'
-python3 -m poetry run python manage.py collectstatic --noinput
-
-echo '[INSTALL] Creating Superuser'
 python3 -m poetry run python manage.py createsuperuser --noinput --email ""
 python3 -m poetry run python manage.py create_roles
 
-echo '[INSTALL] Checking wkhtmltopdf'
 # Check for wkhtmltopdf
 if ! command -v wkhtmltopdf &>/dev/null; then
     echo 'Download and Install wkhtmltopdf for PDF Report Generation - https://wkhtmltopdf.org/downloads.html'

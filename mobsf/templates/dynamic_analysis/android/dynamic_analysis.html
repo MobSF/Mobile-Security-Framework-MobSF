@@ -52,6 +52,118 @@ textarea:focus {
     cursor: default;
 }
 {% endif %}
+
+.runtime-missing {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-left: 4px solid #ff4d4f;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 0.25rem;
+}
+.runtime-missing h5 {
+    color: #ff8a80;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+.runtime-missing p:last-child {
+    margin-bottom: 0;
+}
+
+.device-app-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 152px);
+    justify-content: start;
+    gap: 0.5rem;
+}
+.device-app-note {
+    grid-column: 1 / -1;
+}
+.device-app-card {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: none;
+}
+.device-app-card .card-body {
+    padding: 0.45rem 0.4rem 0.4rem;
+}
+.device-app-icon-wrap {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 0.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    background: rgba(0, 0, 0, 0.04);
+}
+.device-app-icon {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    border-radius: 14px;
+    font-size: 2.8rem;
+    line-height: 64px;
+}
+.device-app-icon-stack {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    overflow: hidden;
+    flex: none;
+}
+.device-app-icon-stack .device-app-icon {
+    position: absolute;
+    inset: 0;
+    object-fit: cover;
+}
+.device-app-name {
+    width: 100%;
+    min-height: 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.2;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.device-app-version {
+    width: 100%;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+.device-app-package {
+    width: 100%;
+    min-height: 0;
+    font-size: 0.62rem;
+    line-height: 1.2;
+    word-break: break-all;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.device-app-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+}
+.device-app-actions .btn {
+    width: 100%;
+    margin: 0;
+    padding: 0.15rem 0.35rem;
+    font-size: 0.68rem;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+.device-app-pull {
+    display: flex;
+    width: 100%;
+}
 </style>
 {% endblock %}
 {% block content %}
@@ -62,50 +174,45 @@ textarea:focus {
 
 
    <div class="row">
-          {% if not identifier %}
-          <div class="col-md-12">
-            <div class="card bg-gradient-danger">
-              <div class="card-header">
-                <h3 class="card-title">Android Runtime not found!</h3>
-                <!-- /.card-tools -->
-              </div>
-              <!-- /.card-header -->
-              <div class="card-body">
-                 <p> MobSF cannot find android instance identifier. Make sure that an android instance is running and refresh this page.</p><p> If this error persists, Please set <i>ANALYZER_IDENTIFIER</i> in <strong>{{ settings_loc }}</strong> or via environment variable <strong>MOBSF_ANALYZER_IDENTIFIER</strong>.
-                      </p>
-              </div>
-              <!-- /.card-body -->
-            </div>
-            <!-- /.card -->
-          </div>
-          <!-- /.col -->
-          {% endif %}
           <div class="col-md-12">
             <div class="card bg-gradient-primary">
               <!-- /.card-header -->
               <div class="card-body">
-                  <div class="row">
+                  <h4>MobSF Dynamic Analyzer</h4>
+                  {% if not identifier and not online_devices %}
+                  <div class="runtime-missing" role="alert">
+                    <h5><i class="fa fa-exclamation-triangle"></i> Android Runtime not found!</h5>
+                    <p>MobSF cannot find android instance identifier. Make sure that an android instance is running and refresh this page.</p>
+                    <p>If this error persists, Please set <i>ANALYZER_IDENTIFIER</i> in <strong>{{ settings_loc }}</strong> or via environment variable <strong>MOBSF_ANALYZER_IDENTIFIER</strong>.</p>
+                  </div>
+                  {% endif %}
+                  {% if online_devices %}
+                  <h6 class="mt-3 mb-2"><strong>Choose a device for Dynamic Analysis:</strong></h6>
+                  <form method="post" action="{% url "dynamic_android" %}" id="android-device-form">
+                    {% csrf_token %}
+                    <select id="device_identifier" name="identifier" class="form-control" aria-label="Android device">
+                      {% if not identifier %}
+                      <option value="" selected>Select an Android device</option>
+                      {% endif %}
+                      {% for device in devices %}
+                        {% if device.state == "device" %}
+                        <option value="{{ device.identifier }}" data-device-details="pending" {% if device.identifier == identifier %}selected{% endif %}>
+                          {{ device.details.model|default:device.identifier }} — {{ device.identifier }}
+                        </option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                  </form>
+                  {% if device_form.errors %}
+                  <p class="mt-2 mb-0"><strong>Select an online Android device.</strong></p>
+                  {% endif %}
+                  {% endif %}
+                  <div class="row mt-3">
                      <div class="col-md-9">
-                        <h4>MobSF Dynamic Analyzer Supports</h4>
-                        <h5>
-                          <strong>• Genymotion Android VM</strong> version 4.1 - 11.0 (arm64, x86, and x86_64 upto API 30)<br/>
-                          <strong>• Android Emulator AVD</strong> (non production) version 5.0 - 11.0 (arm, arm64, x86, and x86_64 upto API 30)<br/>
-                          <strong>• Corellium Android VM</strong> (userdebug builds) version 7.1.2 - 11.0 (arm64 upto API 30)
-                        </h5>
-                        <p>
+                        <p class="mb-0">
                           {% if android_version %}
                             Android version >= <strong>9.0</strong> recommended<br/>
                             Detected Android Version: <strong>{{android_version}}</strong>, SDK: API level <strong>{{ android_sdk }}</strong> <br/>
-                            {% if android_sdk|floatformat > android_supported|floatformat %}
-                              <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
-                              <script>
-                                Swal.fire(
-                                        'Android Version/SDK not supported',
-                                        'You are running Android Version <strong>{{ android_version }}</strong> and SDK <strong>{{ android_sdk }}</strong> which is not supported by MobSF. Please use a supported Android version/API level.',
-                                        'error'
-                                        )
-                              </script>
-                            {% endif %}
                           {% endif %}
 
                           {% if android_version < 5 %}
@@ -114,18 +221,17 @@ textarea:focus {
                             <br/>For Android version <strong>4.1 - 4.3</strong>, set Android VM proxy as <strong>{% if proxy_ip %} {{ proxy_ip }}{% else %} <i>&lt;Host IP&gt;</i>{% endif %}:{{proxy_port}}</strong>
                             {% endif %}
                           {% endif %}
-                         
+                          {% if identifier %}
+                          Android instance: <strong>{{ identifier }}</strong>{% if runtime %} ({{ runtime }}){% endif %}
+                          {% endif %}
                         </p>
-                      </div>   
-                     <div class="col-md-3">
-                     <br/>
-                     <br/>
-                     <br/>
-                     <p>
-                        <button class="btn btn-info disable" role="button"  data-toggle="modal" data-target="#mmobsfy">MobSFy Android Runtime</button> <p>Android instance: <strong>{{ identifier }}</strong></p></div>
-                      </p>
-                    </div>
+                      </div>
+                     <div class="col-md-3 text-md-right">
+                        {% if runtime != "physical" %}
+                        <button class="btn btn-info disable" role="button" data-toggle="modal" data-target="#mmobsfy">MobSFy Android Runtime</button>
+                        {% endif %}
                      </div>
+                  </div>
               </div>
               <!-- /.card-body -->
             </div>
@@ -140,42 +246,17 @@ textarea:focus {
               </div>
               <div class="card-body">
                  <div class="table-responsive">
-                  <h4> Apps in Device</h4>
-                  <table class="table table-bordered table-hover table-striped">
-                    <thead>
-                    <tr>
-                        <th>APP</th>
-                        <th>LOCATION IN DEVICE</th>
-                        <th>ACTION</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% if device_packages %}
-                    {% for hash, det in device_packages.items %}
-                        <tr>
-                            <td align="center">
-                              <img id="app_icon" src="/download/{{ hash }}-icon.png" onerror="this.onerror=null;this.src='{% static 'img/no_icon.png' %}'"/>
-                              <br/><strong>{{ det.0 }}</strong>
-                            </td>
-                            <td>
-                                {{ det.1}}
-                           </td>
-                            <td align="center"> 
-                              <p>
-                                <a class="btn btn-primary disable" onclick="dynamic_loader()" href="{% url "dynamic_analyzer" checksum=hash %}?re_install=0&install=0"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
-                              </p>
-                              <p>
-                                <a class="btn btn-warning disable" onclick="dynamic_loader()" href="{% url "static_scan" checksum=hash %}"><i class="fa fa-download"></i> Pull &amp; Static Analysis</a>
-                              </p>
-                              <p>
-                                 <a class="btn btn-info" href="{% url "dynamic_report" checksum=hash %}"><i class="fa fa-mobile"></i> View Report </a>
-                              </p>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    {% endif %}
-                    </tbody>
-                </table>
+                  <h4>
+                    Apps in Device
+                    <button id="refresh_device_apps" type="button" class="btn btn-sm btn-outline-primary ml-2" {% if not identifier %}disabled{% endif %}>
+                      Refresh
+                    </button>
+                  </h4>
+                  <div id="device_apps" class="device-app-gallery">
+                    <div class="device-app-note text-muted">
+                      {% if identifier %}Loading installed applications…{% else %}Select an Android device first.{% endif %}
+                    </div>
+                  </div>
               </br>
                   <h4> Apps Available</h4>
                 <table class="table table-bordered table-hover table-striped">
@@ -202,12 +283,29 @@ textarea:focus {
                                 {{ e.PACKAGE_NAME }}
                            </td>
                             <td align="center"> 
-                              <p>
-                                <a class="btn btn-success disable" onclick="dynamic_loader()" href="{% url "dynamic_analyzer" checksum=e.MD5 %}"><i class="fab fa-android"></i> Start Dynamic Analysis</a>
-                              </p>
-                              <p>
-                                <a class="btn btn-primary btn-sm disable" onclick="dynamic_loader()" href="{% url "dynamic_analyzer" checksum=e.MD5 %}?re_install=0"><i class="fab fa-android"></i> Start Dynamic Analysis (No reinstall)</a>
-                              </p>
+                              <div class="mb-3">
+                                <form method="post" action="{% url "dynamic_analyzer" checksum=e.MD5 %}" class="dynamic-start-form" data-hash="{{ e.MD5 }}">
+                                  {% csrf_token %}
+                                  {% if android_version >= 5 %}
+                                  <select name="device_mode" class="form-control form-control-sm mb-2" aria-label="Android analysis mode">
+                                    <option value="auto">Auto detect</option>
+                                    <option value="rooted">Rooted device</option>
+                                    <option value="gadget">Frida Gadget (re-sign APK)</option>
+                                  </select>
+                                  {% endif %}
+                                  <button type="submit" class="btn btn-success disable"><i class="fab fa-android"></i> Start Dynamic Analysis</button>
+                                </form>
+                              </div>
+                              <div class="mb-3">
+                                <form method="post" action="{% url "dynamic_analyzer" checksum=e.MD5 %}" class="dynamic-start-form" data-hash="{{ e.MD5 }}">
+                                  {% csrf_token %}
+                                  <input type="hidden" name="re_install" value="0">
+                                  {% if runtime == "physical" %}
+                                  <input type="hidden" name="device_mode" value="rooted">
+                                  {% endif %}
+                                  <button type="submit" class="btn btn-primary btn-sm disable"><i class="fab fa-android"></i> Start Dynamic Analysis (No reinstall)</button>
+                                </form>
+                              </div>
                               <p>
                                  <a class="btn btn-info {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "dynamic_report" checksum=e.MD5 %}"><i class="fa fa-mobile"></i> View Report </a>
                               </p>
@@ -282,11 +380,680 @@ textarea:focus {
 <script src="{% static "datatables/js/vfs_fonts.js" %}"></script>
 <script src="{% static "datatables/js/datatables.combined.min.js" %}"></script>
 <script src="{% static "others/js/datatables_init.js" %}"></script>
+<script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script>
 function dynamic_loader(){
     var loadingOverlay = document.querySelector('.loading');
     loadingOverlay.classList.remove('hidden');
 }
+
+function submitWithLoader(form) {
+    const submitButton = form.querySelector('[type="submit"]');
+    if (submitButton) {
+        submitButton.disabled = true;
+    }
+    dynamic_loader();
+    window.setTimeout(() => form.submit(), 50);
+}
+
+const checksumPlaceholder = '00000000000000000000000000000000';
+const pullUrl = "{% url 'android_pull_scan' %}";
+const iconUrl = "{% url 'android_device_app_icon' %}";
+const reportPathTemplate = "{% url 'dynamic_report' checksum='00000000000000000000000000000000' %}";
+const deviceDetailsUrl = "{% url 'android_device_details' %}";
+const csrfToken = '{{ csrf_token }}';
+const selectedIdentifier = '{{ identifier|escapejs }}';
+
+async function loadDeviceDetails() {
+    const options = Array.from(
+        document.querySelectorAll(
+            '#device_identifier option[data-device-details="pending"]',
+        ),
+    );
+    await Promise.all(options.map(async (option) => {
+        try {
+            const params = new URLSearchParams({
+                identifier: option.value,
+            });
+            const response = await fetch(
+                `${deviceDetailsUrl}?${params.toString()}`,
+                {
+                    credentials: 'same-origin',
+                    headers: {'X-Requested-With': 'XMLHttpRequest'},
+                },
+            );
+            const details = await response.json();
+            if (!response.ok || details.status !== 'ok') {
+                return;
+            }
+            const labels = [
+                `Android ${details.android_version}`,
+                `API ${details.android_sdk}`,
+                details.android_abi || 'Unknown ABI',
+                details.root_status,
+                details.runtime,
+            ];
+            if (details.device_name) {
+                labels.unshift(details.device_name);
+            }
+            option.textContent = labels.join(' · ')
+                + ` — ${details.identifier}`;
+            option.dataset.deviceDetails = 'loaded';
+        } catch (error) {
+            console.warn('Unable to load Android device details');
+        }
+    }));
+}
+
+loadDeviceDetails();
+
+const deviceSelect = document.getElementById('device_identifier');
+if (deviceSelect) {
+    deviceSelect.addEventListener('change', () => {
+        if (!deviceSelect.value) {
+            return;
+        }
+        dynamic_loader();
+        deviceSelect.form.submit();
+    });
+}
+
+document.querySelectorAll('.dynamic-start-form').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const modeField = form.querySelector('[name="device_mode"]');
+        const mode = modeField ? modeField.value : 'auto';
+        const payload = new FormData();
+        payload.append('csrfmiddlewaretoken', csrfToken);
+        payload.append('hash', form.dataset.hash);
+        payload.append('device_mode', mode);
+        try {
+            const response = await fetch(
+                "{% url 'android_package_status' %}",
+                {
+                    method: 'POST',
+                    body: payload,
+                    credentials: 'same-origin',
+                },
+            );
+            const status = await response.json();
+            if (!response.ok || status.status !== 'ok') {
+                throw new Error(
+                    status.message || 'Unable to check the installed app',
+                );
+            }
+            if (status.confirmation_required
+                    || status.gadget_replacement_required) {
+                const warnings = [];
+                if (status.confirmation_required) {
+                    if (status.selected_mode !== 'gadget') {
+                        warnings.push(
+                            'Auto mode may fall back to Frida Gadget if '
+                            + 'rooted preparation fails.'
+                        );
+                    }
+                    warnings.push(
+                        'Frida Gadget changes the APK signature. '
+                        + 'Continuing will uninstall the existing app and '
+                        + 'delete its local app data.'
+                    );
+                }
+                if (status.gadget_replacement_required) {
+                    warnings.push(
+                        'The APK already contains an unknown or third-party '
+                        + 'Frida Gadget injection. MobSF will replace its '
+                        + 'Gadget binaries and configuration.'
+                    );
+                }
+                const decision = await Swal.fire({
+                    title: 'Confirm Gadget repacking',
+                    text: warnings.join(' '),
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: status.confirmation_required
+                        ? 'Uninstall and re-sign'
+                        : 'Replace Gadget',
+                    cancelButtonText: 'Cancel',
+                });
+                if (!(decision.isConfirmed || decision.value)) {
+                    return;
+                }
+                if (status.confirmation_required) {
+                    addHiddenInput(form, 'uninstall_existing', '1');
+                }
+                if (status.gadget_replacement_required) {
+                    addHiddenInput(form, 'replace_existing_gadget', '1');
+                }
+            }
+            submitWithLoader(form);
+        } catch (error) {
+            Swal.fire('Unable to start analysis', error.message, 'error');
+        }
+    });
+});
+
+function addHiddenInput(form, name, value) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+}
+
+function setText(element, value) {
+    element.textContent = typeof value === 'string' ? value : '';
+}
+
+function md5Path(template, checksum) {
+    if (typeof checksum !== 'string'
+            || !/^[a-f0-9]{32}$/i.test(checksum)) {
+        return '';
+    }
+    return template.replace(checksumPlaceholder, checksum.toLowerCase());
+}
+
+function isPackageName(value) {
+    return typeof value === 'string'
+        && /^[A-Za-z][\w.-]{1,255}$/.test(value)
+        && !value.includes('..');
+}
+
+function actionForm(path, label, values, className, iconClass) {
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = path;
+    form.className = 'd-inline';
+    addHiddenInput(form, 'csrfmiddlewaretoken', csrfToken);
+    Object.entries(values).forEach(([name, value]) => {
+        addHiddenInput(form, name, value);
+    });
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.className = className || 'btn btn-primary btn-sm';
+    if (iconClass) {
+        const icon = document.createElement('i');
+        icon.className = iconClass;
+        icon.setAttribute('aria-hidden', 'true');
+        button.appendChild(icon);
+        button.appendChild(document.createTextNode(` ${label}`));
+    } else {
+        button.textContent = label;
+    }
+    button.addEventListener('click', dynamic_loader);
+    form.appendChild(button);
+    return form;
+}
+
+function showDeviceMessage(text) {
+    const gallery = document.getElementById('device_apps');
+    gallery.replaceChildren();
+    const note = document.createElement('div');
+    note.className = 'device-app-note text-muted';
+    setText(note, text);
+    gallery.appendChild(note);
+}
+
+function packageFields(details) {
+    const fields = Array.isArray(details) ? details : [];
+    const text = (value) => (typeof value === 'string' ? value : '');
+    return {
+        packageName: text(fields[0]),
+        appName: text(fields[2]),
+        version: text(fields[3]),
+        reportChecksum: text(fields[4]),
+    };
+}
+
+let iconGeneration = 0;
+let iconActive = 0;
+const iconJobs = [];
+
+function queueDeviceIcon(
+        img, title, packageName, version, deviceIdentifier) {
+    const params = new URLSearchParams({
+        identifier: deviceIdentifier,
+        package: packageName,
+        meta: '1',
+        layers: '2',
+    });
+    if (version) {
+        params.set('v', version.slice(0, 40));
+    }
+    iconJobs.push({
+        generation: iconGeneration,
+        img,
+        title,
+        packageName,
+        src: `${iconUrl}?${params.toString()}`,
+    });
+    pumpDeviceIcons();
+}
+
+function applyResolvedName(job, encoded) {
+    if (job.generation !== iconGeneration || !job.title.isConnected) {
+        return;
+    }
+    let label = '';
+    try {
+        label = decodeURIComponent(encoded).replace(/\s+/g, ' ').trim();
+    } catch (error) {
+        return;
+    }
+    if (!label
+            || label.startsWith('@')
+            || label.length > 80
+            || label === job.packageName
+            || job.title.textContent !== job.packageName) {
+        return;
+    }
+    setText(job.title, label);
+    job.title.title = label;
+    job.img.alt = label;
+    const body = job.title.parentElement;
+    if (!body || body.querySelector('.device-app-package')) {
+        return;
+    }
+    const packageName = document.createElement('div');
+    packageName.className = 'device-app-package text-muted';
+    packageName.title = job.packageName;
+    setText(packageName, job.packageName);
+    const version = body.querySelector('.device-app-version');
+    const actions = body.querySelector('.device-app-actions');
+    if (version) {
+        version.insertAdjacentElement('afterend', packageName);
+    } else if (actions) {
+        body.insertBefore(packageName, actions);
+    } else {
+        body.appendChild(packageName);
+    }
+}
+
+function cssColor(value) {
+    if (typeof value !== 'string' || !/^#[0-9A-Fa-f]{3,8}$/.test(value)) {
+        return '';
+    }
+    if (![4, 5, 7, 9].includes(value.length)) {
+        return '';
+    }
+    let digits = value.slice(1);
+    let alpha = 255;
+    if (digits.length === 3) {
+        digits = digits.replace(/./g, (ch) => ch + ch);
+    } else if (digits.length === 4) {
+        alpha = parseInt(digits[0] + digits[0], 16);
+        digits = digits.slice(1).replace(/./g, (ch) => ch + ch);
+    } else if (digits.length === 8) {
+        alpha = parseInt(digits.slice(0, 2), 16);
+        digits = digits.slice(2);
+    }
+    const red = parseInt(digits.slice(0, 2), 16);
+    const green = parseInt(digits.slice(2, 4), 16);
+    const blue = parseInt(digits.slice(4, 6), 16);
+    if ([red, green, blue, alpha].some((part) => Number.isNaN(part))) {
+        return '';
+    }
+    return `rgba(${red}, ${green}, ${blue}, ${(alpha / 255).toFixed(3)})`;
+}
+
+function layerSvg(data) {
+    if (typeof data !== 'string' || data.length > 2000000) {
+        return null;
+    }
+    let binary;
+    try {
+        binary = atob(data);
+    } catch (error) {
+        return null;
+    }
+    if (binary.length < 20 || binary.length > 1500000) {
+        return null;
+    }
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+        bytes[index] = binary.charCodeAt(index);
+    }
+    let text;
+    try {
+        text = new TextDecoder('utf-8', {fatal: true}).decode(bytes);
+    } catch (error) {
+        return null;
+    }
+    const trimmed = text.trim().toLowerCase();
+    if (!trimmed.startsWith('<svg')
+            || trimmed.includes('<script')
+            || trimmed.includes('javascript:')
+            || trimmed.includes('<foreignobject')
+            || trimmed.includes('<image')
+            || trimmed.includes('href')
+            || trimmed.includes('onload')) {
+        return null;
+    }
+    return bytes;
+}
+
+function layerImage(mime, data) {
+    if (mime === 'image/svg+xml') {
+        return layerSvg(data);
+    }
+    const signatures = {
+        'image/png': [0x89, 0x50, 0x4e, 0x47],
+        'image/jpeg': [0xff, 0xd8, 0xff],
+        'image/gif': [0x47, 0x49, 0x46],
+        'image/webp': [0x52, 0x49, 0x46, 0x46],
+    };
+    const signature = signatures[mime];
+    if (!signature
+            || typeof data !== 'string'
+            || data.length > 2000000) {
+        return null;
+    }
+    let binary;
+    try {
+        binary = atob(data);
+    } catch (error) {
+        return null;
+    }
+    if (binary.length < 12 || binary.length > 1500000) {
+        return null;
+    }
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+        bytes[index] = binary.charCodeAt(index);
+    }
+    const matches = signature.every((part, index) => bytes[index] === part);
+    if (!matches) {
+        return null;
+    }
+    if (mime === 'image/webp'
+            && String.fromCharCode(...bytes.slice(8, 12)) !== 'WEBP') {
+        return null;
+    }
+    return bytes;
+}
+
+function paintIconLayers(job, text) {
+    let payload;
+    try {
+        payload = JSON.parse(text);
+    } catch (error) {
+        return false;
+    }
+    const layers = payload && Array.isArray(payload.layers)
+        ? payload.layers.slice(0, 2)
+        : [];
+    if (!job.img.isConnected || !layers.length) {
+        return false;
+    }
+    const stack = document.createElement('div');
+    stack.className = 'device-app-icon-stack';
+    let images = 0;
+    layers.forEach((layer) => {
+        if (!layer || typeof layer !== 'object') {
+            return;
+        }
+        if (typeof layer.color === 'string' && !layer.data) {
+            const css = cssColor(layer.color);
+            if (css) {
+                stack.style.backgroundColor = css;
+            }
+            return;
+        }
+        const bytes = layerImage(layer.mime, layer.data);
+        if (!bytes) {
+            return;
+        }
+        const icon = document.createElement('img');
+        icon.className = 'device-app-icon';
+        icon.alt = '';
+        icon.width = 64;
+        icon.height = 64;
+        const url = URL.createObjectURL(new Blob(
+            [bytes],
+            {type: layer.mime},
+        ));
+        icon.addEventListener('load', () => {
+            URL.revokeObjectURL(url);
+        }, {once: true});
+        icon.addEventListener('error', () => {
+            URL.revokeObjectURL(url);
+            icon.remove();
+        }, {once: true});
+        icon.src = url;
+        stack.appendChild(icon);
+        images += 1;
+    });
+    if (!images) {
+        return false;
+    }
+    const painted = stack.querySelectorAll('img');
+    painted[painted.length - 1].alt = job.img.alt || '';
+    job.img.replaceWith(stack);
+    return true;
+}
+
+function pumpDeviceIcons() {
+    const generation = iconGeneration;
+    while (iconActive < 3 && iconJobs.length) {
+        const job = iconJobs.shift();
+        if (job.generation !== generation) {
+            continue;
+        }
+        iconActive += 1;
+        const finish = () => {
+            iconActive = Math.max(0, iconActive - 1);
+            pumpDeviceIcons();
+        };
+        const useAndroidMark = () => {
+            const mark = document.createElement('i');
+            mark.className = 'fab fa-android text-success device-app-icon';
+            mark.setAttribute('aria-hidden', 'true');
+            if (job.img.isConnected) {
+                job.img.replaceWith(mark);
+            }
+        };
+        fetch(job.src, {credentials: 'same-origin'})
+            .then((response) => {
+                if (job.generation !== iconGeneration) {
+                    return null;
+                }
+                const encoded = response.headers.get('X-App-Label');
+                if (encoded) {
+                    applyResolvedName(job, encoded);
+                }
+                if (!response.ok || response.status === 204) {
+                    return null;
+                }
+                return response.blob();
+            })
+            .then((blob) => {
+                if (job.generation !== iconGeneration
+                        || !blob
+                        || !blob.size) {
+                    if (job.generation === iconGeneration) {
+                        useAndroidMark();
+                    }
+                    finish();
+                    return;
+                }
+                if ((blob.type || '').indexOf('application/json') !== -1) {
+                    blob.text().then((text) => {
+                        if (job.generation !== iconGeneration) {
+                            finish();
+                            return;
+                        }
+                        if (!paintIconLayers(job, text)) {
+                            useAndroidMark();
+                        }
+                        finish();
+                    }).catch(() => {
+                        if (job.generation === iconGeneration) {
+                            useAndroidMark();
+                        }
+                        finish();
+                    });
+                    return;
+                }
+                const url = URL.createObjectURL(blob);
+                job.img.addEventListener('load', () => {
+                    URL.revokeObjectURL(url);
+                    finish();
+                    if (!job.img.naturalWidth) {
+                        useAndroidMark();
+                    }
+                }, {once: true});
+                job.img.addEventListener('error', () => {
+                    URL.revokeObjectURL(url);
+                    finish();
+                    useAndroidMark();
+                }, {once: true});
+                job.img.src = url;
+            })
+            .catch(() => {
+                if (job.generation === iconGeneration) {
+                    useAndroidMark();
+                }
+                finish();
+            });
+    }
+}
+
+function showDeviceApps(packages, deviceIdentifier) {
+    iconGeneration += 1;
+    iconJobs.length = 0;
+    const gallery = document.getElementById('device_apps');
+    gallery.replaceChildren();
+    const entries = Object.entries(packages);
+    if (entries.length === 0) {
+        showDeviceMessage('No third-party applications found.');
+        return;
+    }
+    entries.sort((left, right) => {
+        const a = packageFields(left[1]);
+        const b = packageFields(right[1]);
+        const aKey = (a.appName || a.packageName).toLocaleLowerCase();
+        const bKey = (b.appName || b.packageName).toLocaleLowerCase();
+        return aKey.localeCompare(bKey);
+    });
+    entries.forEach(([, details]) => {
+        const fields = packageFields(details);
+        const card = document.createElement('div');
+        card.className = 'card device-app-card h-100';
+        const body = document.createElement('div');
+        body.className = 'card-body d-flex flex-column align-items-center text-center';
+        const iconWrap = document.createElement('div');
+        iconWrap.className = 'device-app-icon-wrap';
+        const title = document.createElement('div');
+        title.className = 'device-app-name';
+        const heading = fields.appName || fields.packageName;
+        setText(title, heading);
+        title.title = heading;
+        if (isPackageName(fields.packageName)) {
+            const icon = document.createElement('img');
+            icon.className = 'device-app-icon';
+            icon.alt = heading;
+            icon.width = 64;
+            icon.height = 64;
+            queueDeviceIcon(
+                icon,
+                title,
+                fields.packageName,
+                fields.version,
+                deviceIdentifier,
+            );
+            iconWrap.appendChild(icon);
+        } else {
+            const mark = document.createElement('i');
+            mark.className = 'fab fa-android text-success device-app-icon';
+            mark.setAttribute('aria-hidden', 'true');
+            iconWrap.appendChild(mark);
+        }
+        body.appendChild(iconWrap);
+        body.appendChild(title);
+        if (fields.version) {
+            const version = document.createElement('div');
+            version.className = 'device-app-version';
+            setText(version, fields.version);
+            body.appendChild(version);
+        }
+        if (fields.packageName && fields.packageName !== title.textContent) {
+            const packageName = document.createElement('div');
+            packageName.className = 'device-app-package text-muted';
+            packageName.title = fields.packageName;
+            setText(packageName, fields.packageName);
+            body.appendChild(packageName);
+        }
+        const reportPath = md5Path(
+            reportPathTemplate,
+            fields.reportChecksum,
+        );
+        const actions = document.createElement('div');
+        actions.className = 'device-app-actions mt-auto pt-2';
+        if (isPackageName(fields.packageName)) {
+            const pull = actionForm(
+                pullUrl,
+                'Pull & Scan',
+                {
+                    identifier: deviceIdentifier,
+                    package: fields.packageName,
+                },
+                'btn btn-warning btn-sm',
+                'fa fa-download',
+            );
+            pull.classList.add('device-app-pull');
+            actions.appendChild(pull);
+        }
+        if (reportPath) {
+            const report = document.createElement('a');
+            report.className = 'btn btn-info btn-sm';
+            report.href = reportPath;
+            report.title = 'View report';
+            const reportIcon = document.createElement('i');
+            reportIcon.className = 'fas fa-file-alt';
+            reportIcon.setAttribute('aria-hidden', 'true');
+            report.appendChild(reportIcon);
+            report.appendChild(document.createTextNode(' Report'));
+            actions.appendChild(report);
+        }
+        body.appendChild(actions);
+        card.appendChild(body);
+        gallery.appendChild(card);
+    });
+}
+
+async function loadDeviceApps(refresh = false) {
+    showDeviceMessage(refresh
+        ? 'Refreshing installed applications…'
+        : 'Loading installed applications…');
+    try {
+        const params = new URLSearchParams({
+            identifier: selectedIdentifier,
+            refresh: refresh ? '1' : '0',
+        });
+        const response = await fetch(
+            "{% url 'android_device_apps' %}?" + params.toString(),
+            {credentials: 'same-origin'},
+        );
+        const result = await response.json();
+        if (!response.ok || result.status !== 'ok') {
+            throw new Error(result.message || 'Unable to load applications');
+        }
+        showDeviceApps(result.packages, result.identifier);
+    } catch (error) {
+        showDeviceMessage(
+            typeof error.message === 'string' && error.message
+                ? error.message
+                : 'Unable to load applications',
+        );
+    }
+}
+
+document.getElementById('refresh_device_apps').addEventListener(
+    'click',
+    () => loadDeviceApps(true),
+);
+{% if identifier %}
+loadDeviceApps();
+{% endif %}
 
 //MobSFy AJAX
  $("#mobsfy").one( "click", function() {

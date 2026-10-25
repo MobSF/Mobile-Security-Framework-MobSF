@@ -258,15 +258,19 @@
                 <div class="col-12">
                   <p><strong><i class="fas fa-info-circle"></i> INFORMATION</strong></p>
                    <div align="center">
-                      <p>
+                      <div class="mb-3">
                       {% if apimon %}
                       <a target="_blank" class="btn btn-primary" role="button" href="{% url 'live_api' %}?hash={{ hash }}&amp;package={{ package }}"><i class="fa fa-mobile"></i> API Monitor View</a>
                       {% endif %}
                       {% if frida_logs %}
                           <a target="_blank" class="btn btn-primary" role="button" href="{% url 'frida_logs' %}?hash={{ hash }}&amp;package={{ package }}"><i class="fas fa-spider"></i> Frida Logs View</a>
                       {% endif %}
-                          <a class="btn btn-success" target="_blank" role="button" href="{% url 'httptools' %}?project={{package}}"><i class="fab fa-hire-a-helper"></i> Start HTTPTools</a>
-                      </p>
+                          <form method="post" action="{% url 'httptools' %}" target="_blank" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="project" value="{{ package }}">
+                            <button type="submit" class="btn btn-success"><i class="fab fa-hire-a-helper"></i> Start HTTPTools</button>
+                          </form>
+                      </div>
                       <p><h6><strong>Raw Logs</strong></h6></p>
                       <p>
                       {% if droidmon %}

@@ -56,7 +56,7 @@ def classes_with_method(method):
 def class_pattern(pattern):
     """Search in loaded classes based on pattern."""
     pattern = pattern.replace(
-        '/', '\\/').replace(';', '')
+        '/', '\\/').replace(';', '').replace('\n', '').replace('\r', '')
     content = get_content('search-class-pattern.js')
     return content.replace('{{PATTERN}}', pattern)
 

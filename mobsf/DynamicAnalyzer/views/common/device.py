@@ -11,10 +11,9 @@ from django.utils.html import escape
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
+from mobsf.MobSF.security import is_safe_path
 from mobsf.MobSF.utils import (
     is_md5,
-    is_path_traversal,
-    is_safe_path,
     print_n_send_error_response,
     read_sqlite,
 )
@@ -52,12 +51,27 @@ def view_file(request, api=False):
         src = Path(settings.UPLD_DIR) / md5_hash / 'DYNAMIC_DeviceData'
         sfile = src / fil
         src = src.as_posix()
-        if not is_safe_path(src, sfile.as_posix()) or is_path_traversal(fil):
+        if not is_safe_path(src, sfile.as_posix(), fil):
             err = 'Path Traversal Attack Detected'
             return print_n_send_error_response(request, err, api)
-        dat = sfile.read_text('ISO-8859-1')
-        if fil.endswith('.plist') and dat.startswith('bplist0'):
-            dat = dumps(dat, fmt=FMT_XML).decode('utf-8', 'ignore')
+        # Check if it's a binary plist first
+        if fil.endswith('.plist'):
+            # Read as bytes to check for binary plist
+            raw_data = sfile.read_bytes()
+            if raw_data.startswith(b'bplist0'):
+                # It's a binary plist, load it properly
+                from plistlib import loads
+                try:
+                    plist_data = loads(raw_data)
+                    dat = dumps(plist_data, fmt=FMT_XML).decode('utf-8', 'ignore')
+                except Exception as e:
+                    logger.warning('Failed to parse binary plist: %s', e)
+                    dat = raw_data.decode('utf-8', 'ignore')
+            else:
+                # It's a text plist, read as text
+                dat = raw_data.decode('utf-8', 'ignore')
+        else:
+            dat = sfile.read_text('ISO-8859-1')
         if fil.endswith(('.xml', '.plist')) and typ in ['xml', 'plist']:
             rtyp = 'xml'
         elif typ == 'db':

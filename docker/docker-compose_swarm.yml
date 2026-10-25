@@ -1,10 +1,10 @@
 services:
 
   postgres:
-    image: "postgres:${POSTGRES_VERSION:-17.0-bookworm}"
+    image: "postgres:${POSTGRES_VERSION:-latest}"
     restart: always
     volumes:
-      - $HOME/MobSF/postgresql_data:/var/lib/postgresql/data
+      - $HOME/MobSF/postgresql_data:/var/lib/postgresql
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD_FILE=/run/secrets/mobsfDB_password
@@ -29,6 +29,9 @@ services:
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - MOBSF_API_KEY_FILE=/run/secrets/mobsf_api_key
+      # Opt in only for a firewall-restricted host ADB server.
+      # Device discovery and Frida forwards then use host.docker.internal:
+      # - ADB_SERVER_SOCKET=tcp:host.docker.internal:5037
     healthcheck:
       test: curl -f http://localhost:8000/login/ || exit 1
     depends_on:

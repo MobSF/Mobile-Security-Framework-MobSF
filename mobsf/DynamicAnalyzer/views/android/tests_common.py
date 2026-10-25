@@ -3,6 +3,7 @@
 import logging
 import os
 import re
+from pathlib import Path
 
 from django.conf import settings
 from django.views.decorators.http import require_http_methods
@@ -17,6 +18,10 @@ from mobsf.DynamicAnalyzer.views.android.operations import (
 from mobsf.DynamicAnalyzer.views.android.environment import (
     Environment,
 )
+from mobsf.DynamicAnalyzer.views.android.frida_core import (
+    Frida,
+    GADGET_SESSION_REQUIRED,
+)
 from mobsf.DynamicAnalyzer.views.android.tests_xposed import (
     download_xposed_log,
 )
@@ -24,13 +29,22 @@ from mobsf.DynamicAnalyzer.views.android.tests_tls import (
     run_tls_tests,
 )
 from mobsf.DynamicAnalyzer.tools.webproxy import (
-    get_http_tools_url,
     stop_httptools,
 )
-from mobsf.MobSF.utils import (
+from mobsf.MobSF.security import (
     cmd_injection_check,
+    is_safe_path,
+)
+from mobsf.MobSF.utils import (
+    clear_analysis_state,
+    get_device,
+    get_gadget_analysis,
+    is_gadget_analysis,
     is_md5,
     python_list,
+    read_analysis_state,
+    strict_package_check,
+    valid_android_device_identifier,
 )
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.MobSF.views.authentication import (
@@ -44,6 +58,20 @@ from mobsf.MobSF.views.authorization import (
 logger = logging.getLogger(__name__)
 
 
+def get_analysis_identifier(request, md5_hash):
+    """Resolve the device bound to an active analysis."""
+    if not is_md5(md5_hash):
+        return None
+    identifier = read_analysis_state(md5_hash).get('identifier')
+    if not valid_android_device_identifier(identifier):
+        marker_identifier = get_gadget_analysis(md5_hash)
+        if valid_android_device_identifier(marker_identifier):
+            identifier = marker_identifier
+    if valid_android_device_identifier(identifier):
+        return identifier
+    return get_device(request)
+
+
 # AJAX
 
 
@@ -53,7 +81,7 @@ logger = logging.getLogger(__name__)
 def start_activity(request, api=False):
     """Launch a specific activity."""
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         activity = request.POST['activity']
         md5_hash = request.POST['hash']
 
@@ -61,6 +89,11 @@ def start_activity(request, api=False):
         valid_act = re.match(r'^[\w]+(\.[\w]+)*$', activity)
         if not valid_act or not valid_md5:
             return invalid_params(api)
+        if Frida.gadget_needs_session(md5_hash):
+            return send_response({
+                'status': 'failed',
+                'message': GADGET_SESSION_REQUIRED,
+            }, api)
 
         app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         screen_dir = os.path.join(app_dir, 'screenshots-apk/')
@@ -71,6 +104,9 @@ def start_activity(request, api=False):
         static_android_db = StaticAnalyzerAndroid.objects.get(
             MD5=md5_hash)
         package = static_android_db.PACKAGE_NAME
+        if (not isinstance(package, str)
+                or not strict_package_check(package)):
+            return invalid_params(api)
         env.launch_n_capture(package, activity, outfile)
         data = {'status': 'ok'}
     except Exception as exp:
@@ -87,13 +123,18 @@ def start_activity(request, api=False):
 def start_deeplink(request, api=False):
     """Launch a specific deeplink."""
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         url = request.POST['url']
         md5_hash = request.POST['hash']
 
         valid_md5 = is_md5(md5_hash)
         if cmd_injection_check(url) or not valid_md5:
             return invalid_params(api)
+        if Frida.gadget_needs_session(md5_hash):
+            return send_response({
+                'status': 'failed',
+                'message': GADGET_SESSION_REQUIRED,
+            }, api)
         env.adb_command(
             ['am', 'start', '-a',
              'android.intent.action.VIEW',
@@ -114,11 +155,16 @@ def activity_tester(request, api=False):
     """Exported & non exported activity Tester."""
     data = {}
     try:
-        env = Environment()
+        env = Environment(get_device(request))
         test = request.POST['test']
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)
+        if Frida.gadget_needs_session(md5_hash):
+            return send_response({
+                'status': 'failed',
+                'message': GADGET_SESSION_REQUIRED,
+            }, api)
         app_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         screen_dir = os.path.join(app_dir, 'screenshots-apk/')
         if not os.path.exists(screen_dir):
@@ -126,6 +172,9 @@ def activity_tester(request, api=False):
         static_android_db = StaticAnalyzerAndroid.objects.get(
             MD5=md5_hash)
         package = static_android_db.PACKAGE_NAME
+        if (not isinstance(package, str)
+                or not strict_package_check(package)):
+            return invalid_params(api)
         iden = ''
         if test == 'exported':
             iden = 'Exported '
@@ -173,32 +222,53 @@ def activity_tester(request, api=False):
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
-def download_data(request, api=False):
+def download_data(request, api=False, identifier=None):
     """Download Application Data from Device."""
     logger.info('Downloading app data')
     data = {}
     try:
-        env = Environment()
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)
-        package = get_package_name(md5_hash)
-        if not package:
+        if identifier is None:
+            identifier = get_analysis_identifier(request, md5_hash)
+        if not valid_android_device_identifier(identifier):
+            return invalid_params(api)
+        env = Environment(identifier)
+        package = get_package_name(md5_hash, env.identifier)
+        if (not isinstance(package, str)
+                or not strict_package_check(package)):
             data = {'status': 'failed',
-                    'message': 'App details not found in database'}
+                    'message': 'Invalid app details'}
             return send_response(data, api)
-        apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
-        stop_httptools(get_http_tools_url(request))
-        files_loc = '/data/local/'
+        apk_dir = Path(settings.UPLD_DIR) / md5_hash
+        stop_httptools()
         logger.info('Archiving files created by app')
-        env.adb_command(['tar', '-cvf', files_loc + package + '.tar',
-                         '/data/data/' + package + '/'], True)
-        logger.info('Downloading Archive')
-        env.adb_command(['pull', files_loc + package + '.tar',
-                         apk_dir + package + '.tar'])
-        logger.info('Stopping ADB server')
-        env.adb_command(['kill-server'])
-        data = {'status': 'ok'}
+        archive_name = f'{package}.tar'
+        output_file = apk_dir / archive_name
+        if not is_safe_path(apk_dir, output_file, archive_name):
+            return invalid_params(api)
+        output_file.unlink(missing_ok=True)
+        archive_status = env.archive_app_data(
+            package, output_file.as_posix())
+        if archive_status != 'ok':
+            output_file.unlink(missing_ok=True)
+        if archive_status == 'ok':
+            data = {'status': 'ok', 'data_collected': True}
+        elif archive_status == 'unsupported':
+            data = {
+                'status': 'ok',
+                'data_collected': False,
+                'message': (
+                    'Application data is not accessible with the '
+                    'selected device capabilities'
+                ),
+            }
+        else:
+            data = {
+                'status': 'failed',
+                'message': 'Failed to archive application data',
+            }
     except Exception as exp:
         logger.exception('Downloading application data')
         data = {'status': 'failed', 'message': str(exp)}
@@ -210,40 +280,52 @@ def download_data(request, api=False):
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['POST'])
-def collect_logs(request, api=False):
+def collect_logs(request, api=False, identifier=None):
     """Collecting Data and Cleanup."""
     logger.info('Collecting Data and Cleaning Up')
     data = {}
     try:
-        env = Environment()
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)
-        package = get_package_name(md5_hash)
+        apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
+        bound_identifier = read_analysis_state(md5_hash).get('identifier')
+        if valid_android_device_identifier(bound_identifier):
+            identifier = bound_identifier
+        if not valid_android_device_identifier(identifier):
+            identifier = get_analysis_identifier(request, md5_hash)
+        if not valid_android_device_identifier(identifier):
+            return invalid_params(api)
+        env = Environment(identifier)
+        package = get_package_name(md5_hash, env.identifier)
         if not package:
             data = {'status': 'failed',
                     'message': 'App details not found in database'}
             return send_response(data, api)
-        apk_dir = os.path.join(settings.UPLD_DIR, md5_hash + '/')
         lout = os.path.join(apk_dir, 'logcat.txt')
         dout = os.path.join(apk_dir, 'dump.txt')
-        logger.info('Downloading logcat logs')
-        logcat = env.adb_command(['logcat',
-                                  '-d',
-                                  package + ':V',
-                                  '*:*'])
-        with open(lout, 'wb') as flip:
-            flip.write(logcat)
-        logger.info('Downloading dumpsys logs')
-        dumpsys = env.adb_command(['dumpsys'], True)
-        with open(dout, 'wb') as flip:
-            flip.write(dumpsys)
-        if env.get_android_version() < 5:
-            download_xposed_log(apk_dir)
-        env.adb_command(['am', 'force-stop', package], True)
-        logger.info('Stopping app')
-        # Unset Global Proxy
-        env.unset_global_proxy()
+        try:
+            logger.info('Downloading logcat logs')
+            logcat = env.adb_command(['logcat',
+                                      '-d',
+                                      package + ':V',
+                                      '*:*'])
+            with open(lout, 'wb') as flip:
+                flip.write(logcat or b'')
+            logger.info('Downloading dumpsys logs')
+            dumpsys = env.adb_command(['dumpsys'], True)
+            with open(dout, 'wb') as flip:
+                flip.write(dumpsys or b'')
+            if env.get_android_version() < 5:
+                download_xposed_log(apk_dir, env.identifier)
+        finally:
+            env.adb_command(['am', 'force-stop', package], True)
+            logger.info('Stopping app')
+            env.clear_proxy()
+            Frida.close_active(md5_hash, env.identifier, package)
+            env.stop_physical_frida_server()
+            env.remove_frida_forward()
+            clear_analysis_state(md5_hash)
         data = {'status': 'ok'}
     except Exception as exp:
         logger.exception('Data Collection & Clean Up failed')
@@ -260,19 +342,31 @@ def tls_tests(request, api=False):
     """Perform TLS tests."""
     logger.info('Running TLS/SSL Security tests')
     data = {}
+    env = None
     package = None
+    resume_proxy = False
     try:
         test_duration = 25
         test_package = 'tls_tests'
-        env = Environment()
+        env = Environment(get_device(request))
         md5_hash = request.POST['hash']
         if not is_md5(md5_hash):
             return invalid_params(api)
-        package = get_package_name(md5_hash)
+        if (is_gadget_analysis(md5_hash)
+                or env.get_environment() == 'physical'):
+            return send_response({
+                'status': 'failed',
+                'message': (
+                    'TLS testing is unavailable when MobSF cannot '
+                    'transition the device Root CA'
+                ),
+            }, api)
+        package = get_package_name(md5_hash, env.identifier)
         if not package:
             data = {'status': 'failed',
                     'message': 'App details not found in database'}
             return send_response(data, api)
+        resume_proxy = True
         res = run_tls_tests(
             request,
             md5_hash,
@@ -286,6 +380,7 @@ def tls_tests(request, api=False):
         logger.exception('Checking Application Security in Transit')
         data = {'status': 'failed', 'message': str(exp)}
     finally:
-        logger.info('Test Completed. Resuming HTTPS Proxy')
-        env.configure_proxy(package, request)
+        if resume_proxy and env and package:
+            logger.info('Test Completed. Resuming HTTPS Proxy')
+            env.configure_proxy(package, request)
     return send_response(data, api)

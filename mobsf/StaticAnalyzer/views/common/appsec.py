@@ -145,7 +145,7 @@ def common_fields(findings, data):
         t = len(data['trackers']['trackers'])
         findings['trackers'] = t
         if t > 4:
-            sev = 'hotspot' if settings.EFR_01 == '1' else 'high'
+            sev = 'hotspot' if settings.EFR_01 else 'high'
             findings[sev].append({
                 'title': 'Application contains Privacy Trackers',
                 'description': (
@@ -155,7 +155,7 @@ def common_fields(findings, data):
                 'section': 'trackers',
             })
         elif t > 0:
-            sev = 'hotspot' if settings.EFR_01 == '1' else 'warning'
+            sev = 'hotspot' if settings.EFR_01 else 'warning'
             findings[sev].append({
                 'title': 'Application contains Privacy Trackers',
                 'description': (
@@ -177,7 +177,7 @@ def common_fields(findings, data):
     secrets = data['secrets']
     if len(secrets) > 1:
         sec = '\n'.join(secrets)
-        sev = 'hotspot' if settings.EFR_01 == '1' else 'warning'
+        sev = 'hotspot' if settings.EFR_01 else 'warning'
         findings[sev].append({
             'title': 'This app may contain hardcoded secrets',
             'description': (
@@ -216,6 +216,8 @@ def get_android_dashboard(context, from_ctx=False):
         data = context
     else:
         data = adb(context)
+        if not data:
+            return findings
     # Certificate Analysis
     if (data.get('certificate_analysis')
             and 'certificate_findings' in data['certificate_analysis']):
@@ -281,6 +283,8 @@ def get_ios_dashboard(context, from_ctx=False):
         data = context
     else:
         data = idb(context)
+        if not data:
+            return findings
     # Transport Security
     if (data.get('ats_analysis')
             and 'ats_findings' in data['ats_analysis']):
@@ -369,13 +373,13 @@ def appsec_dashboard(request, checksum, api=False):
                 'Invalid Hash',
                 api)
         android_static_db = StaticAnalyzerAndroid.objects.filter(
-            MD5=checksum)
+            MD5=checksum).first()
         ios_static_db = StaticAnalyzerIOS.objects.filter(
-            MD5=checksum)
-        if android_static_db.exists():
-            context = get_android_dashboard(android_static_db)
-        elif ios_static_db.exists():
-            context = get_ios_dashboard(ios_static_db)
+            MD5=checksum).first()
+        if android_static_db:
+            context = get_android_dashboard([android_static_db])
+        elif ios_static_db:
+            context = get_ios_dashboard([ios_static_db])
         else:
             if api:
                 return {'not_found': 'Report not found or supported'}
@@ -384,7 +388,7 @@ def appsec_dashboard(request, checksum, api=False):
                 return print_n_send_error_response(request, msg, api)
         context['version'] = settings.MOBSF_VER
         context['title'] = 'AppSec Scorecard'
-        context['efr01'] = True if settings.EFR_01 == '1' else False
+        context['efr01'] = bool(settings.EFR_01)
         if api:
             return context
         else:

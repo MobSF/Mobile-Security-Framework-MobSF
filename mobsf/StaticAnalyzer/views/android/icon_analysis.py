@@ -14,11 +14,14 @@ from lxml import etree
 
 from django.conf import settings
 
+from mobsf.MobSF.security import (
+    is_path_traversal,
+    is_safe_path,
+)
 from mobsf.MobSF.utils import (
     append_scan_status,
     find_java_binary,
     is_file_exists,
-    is_path_traversal,
 )
 from mobsf.StaticAnalyzer.tools.androguard4 import (
     axml,
@@ -60,6 +63,17 @@ def _search_folder(src, file_pattern):
     return matches
 
 
+def _is_safe_icon_path(root, icon_file):
+    """Verify a resolved icon path remains inside its application root."""
+    try:
+        resolved_root = Path(root).resolve()
+        resolved_icon = Path(icon_file).resolve()
+        relative_icon = resolved_icon.relative_to(resolved_root)
+    except (OSError, ValueError):
+        return False
+    return is_safe_path(resolved_root, resolved_icon, relative_icon)
+
+
 def guess_icon_path(res_dir):
     icon_folders = [
         'mipmap-hdpi',
@@ -95,7 +109,9 @@ def get_icon_from_src(app_dic, icon_from_mfst):
         app_dic['md5'],
         res_path,
         icon_from_mfst)
-    if icon_file and Path(icon_file).exists():
+    if (icon_file
+            and Path(icon_file).exists()
+            and _is_safe_icon_path(res_path, icon_file)):
         dwd = Path(settings.DWD_DIR)
         out = dwd / (app_dic['md5'] + '-icon' + Path(icon_file).suffix)
         copy2(icon_file, out)
@@ -115,21 +131,33 @@ def find_icon_path_zip(checksum, res_dir, icon_paths_from_manifest):
         logger.info(msg)
         append_scan_status(checksum, msg)
         for icon_path in icon_paths_from_manifest:
+            if is_path_traversal(icon_path):
+                logger.warning('Path traversal detected in icon path: %s', icon_path)
+                continue
             if icon_path.startswith('@'):
                 path_array = icon_path.strip('@').split(os.sep)
                 rel_path = os.sep.join(path_array[1:])
                 for size_str in KNOWN_MIPMAP_SIZES:
                     tmp_path = os.path.join(
                         res_dir, path_array[0] + size_str, rel_path + '.png')
+                    if not is_safe_path(res_dir, tmp_path, icon_path):
+                        continue
                     if os.path.exists(tmp_path):
                         return tmp_path
             elif icon_path.startswith(('res/', '/res/')):
-                stripped_relative_path = icon_path.strip(
-                    '/res')  # Works for neither /res and res
-                full_path = os.path.join(res_dir, stripped_relative_path)
+                # Use removeprefix-style stripping to remove only the res/ prefix,
+                # not a character set (str.strip('/res') strips chars {/,r,e,s}).
+                rel = icon_path.lstrip('/')
+                if rel.startswith('res/'):
+                    rel = rel[len('res/'):]
+                full_path = os.path.join(res_dir, rel)
+                if not is_safe_path(res_dir, full_path, icon_path):
+                    continue
                 if os.path.exists(full_path):
                     return full_path
                 full_path += '.png'
+                if not is_safe_path(res_dir, full_path, icon_path):
+                    continue
                 if os.path.exists(full_path):
                     return full_path
 
@@ -173,6 +201,11 @@ def get_icon_apk_res(app_dic):
         if icon_name and any(
                 icon_name.startswith(x) for x in RESERVED_FILE_NAMES):
             icon_name = str(Path('_conflict_') / icon_name)
+        if (icon_name
+                and not is_safe_path(
+                    app_dir, app_dir / icon_name, icon_name)):
+            logger.warning('Icon path escapes application directory')
+            icon_name = None
 
         # androguard/aapt2 cannot find icon file, fallback to res or apktool.
         if not res_path.exists() and apktool_res_path.exists() and not icon_name:
@@ -249,9 +282,11 @@ def get_icon_apk(app_dic):
             # Copy PNG/SVG to Downloads
             icon = app_dic['md5'] + '-icon' + src.suffix.lower()
             out = Path(settings.DWD_DIR) / icon
-            if src and src.exists() and src.is_file():
+            if (src.exists()
+                    and src.is_file()
+                    and _is_safe_icon_path(app_dic['app_dir'], src)):
                 copy2(src.as_posix(), out.as_posix())
-            app_dic['icon_path'] = out.name
+                app_dic['icon_path'] = out.name
     except Exception:
         logger.exception('Failed to get icon from APK')
 
@@ -283,6 +318,8 @@ def get_icon_svg_from_xml(app_dir, icon_xml_file):
     """
     try:
         icon_xml = app_dir / 'apktool_out' / icon_xml_file
+        if not is_safe_path(app_dir, icon_xml, icon_xml_file):
+            return None
         parsed = parseString(icon_xml.read_text('utf8', 'ignore'))
         foreground = parsed.getElementsByTagName('foreground')
         background = parsed.getElementsByTagName('background')
@@ -330,6 +367,8 @@ def convert_axml_to_xml(app_dir, icon_file):
     try:
         logger.info('Converting icon axml to xml')
         icon_bin_xml = app_dir / icon_file
+        if not is_safe_path(app_dir, icon_bin_xml, icon_file):
+            return None
         out_xml = app_dir / icon_file
         aobj = axml.AXMLPrinter(
             icon_bin_xml.read_bytes()).get_xml_obj()
@@ -355,6 +394,8 @@ def convert_vector_to_svg(app_dir, tools_dir, icon_name, apktool_res):
         # When xml is android vector
         values = app_dir / 'res' / 'values'
         direct = app_dir / icon_name
+        if not is_safe_path(app_dir, direct, icon_name):
+            return
         cwd = direct.parent.as_posix()
 
         # When xml is referencing to vector use apktool_res

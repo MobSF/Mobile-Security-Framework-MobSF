@@ -173,8 +173,15 @@ def api_stop_analysis(request):
     if 'hash' not in request.POST:
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    tests_common.collect_logs(request, True)
-    resp = tests_common.download_data(request, True)
+    checksum = request.POST['hash']
+    identifier = tests_common.get_analysis_identifier(
+        request, checksum)
+    logs = tests_common.collect_logs(
+        request, True, identifier=identifier)
+    if logs['status'] != 'ok':
+        return make_api_response(logs, 500)
+    resp = tests_common.download_data(
+        request, True, identifier=identifier)
     if resp['status'] == 'ok':
         return make_api_response(resp, 200)
     return make_api_response(resp, 500)

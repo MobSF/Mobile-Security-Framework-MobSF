@@ -23,7 +23,14 @@ def objdump_is_debug_symbol_stripped(macho_file):
     out = subprocess.check_output(
         [shutil.which('objdump'), '--syms', macho_file],
         stderr=subprocess.STDOUT)
-    return b' d  ' not in out
+    out = out.decode('utf-8', 'ignore')
+    # radr://5614542 symbol is added back for
+    # debug symbols stripped binaries
+    stripped_sym = 'radr://5614542'
+    for line in out.splitlines():
+        if ' d  ' in line and stripped_sym not in line:
+            return False
+    return True
 
 
 class MachOChecksec:
@@ -242,15 +249,16 @@ class MachOChecksec:
         stk_guard = '___stack_chk_guard'
         imp_func_gen = self.macho.imported_functions
         has_stk_check = any(
-            str(func).strip() == stk_check for func in imp_func_gen)
+            str(func.name).strip() == stk_check for func in imp_func_gen)
         has_stk_guard = any(
-            str(func).strip() == stk_guard for func in imp_func_gen)
+            str(func.name).strip() == stk_guard for func in imp_func_gen)
 
         return has_stk_check and has_stk_guard
 
     def has_arc(self):
+        arc_funcs = ('_objc_release', '_swift_release')
         for func in self.macho.imported_functions:
-            if str(func).strip() in ('_objc_release', '_swift_release'):
+            if str(func.name).strip() in arc_funcs:
                 return True
         return False
 
@@ -285,7 +293,8 @@ class MachOChecksec:
                     # stripped and unstripped binaries
                     # also ignore radr://5614542
                     continue
-                if (i.type.value & 0xe0) > 0 or i.type.value in (0x0e, 0x1e):
+                symbol_type = getattr(i.type, 'value', i.type)
+                if (symbol_type & 0xe0) > 0 or symbol_type in (0x0e, 0x1e):
                     # N_STAB set or 14, 30
 
                     # N_STAB	0xe0  /* if any of these bits set,
