@@ -20,5 +20,8 @@ warnings.filterwarnings('ignore', category=UserWarning, module='cffi')
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mobsf.MobSF.settings')
 
 static = os.path.join(settings.BASE_DIR, 'static')
-application = WhiteNoise(get_wsgi_application(),
-                         root=static, prefix='static/')
+application = WhiteNoise(
+    get_wsgi_application(),
+    root=static,
+    prefix='static/',
+    autorefresh=os.getenv('MOBSF_RUNSERVER') == '1')

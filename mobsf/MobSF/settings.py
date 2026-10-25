@@ -175,6 +175,10 @@ DATABASES = {
 # ===============================================
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 DEBUG = env_flag('MOBSF_DEBUG', '0')
+# Set by manage.py for the development server only. Gunicorn does not.
+RUNSERVER = os.getenv('MOBSF_RUNSERVER') == '1'
+if RUNSERVER:
+    DEBUG = True
 DJANGO_LOG_LEVEL = DEBUG
 TEMPLATE_DEBUG = DEBUG
 ALLOWED_HOSTS = ['127.0.0.1', 'mobsf', '*']
@@ -208,24 +212,33 @@ TIME_ZONE = os.getenv('TIME_ZONE', 'UTC')
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
+_TEMPLATE_OPTIONS = {
+    'debug': TEMPLATE_DEBUG,
+    'context_processors': [
+        'django.template.context_processors.debug',
+        'django.template.context_processors.request',
+        'django.contrib.auth.context_processors.auth',
+        'django.contrib.messages.context_processors.messages',
+    ],
+}
+# Django wraps loaders in a cache that lives until process restart.
+# The development server reads HTML from disk on each request.
+_TEMPLATE_APP_DIRS = True
+if RUNSERVER:
+    _TEMPLATE_APP_DIRS = False
+    _TEMPLATE_OPTIONS['loaders'] = [
+        'django.template.loaders.filesystem.Loader',
+        'django.template.loaders.app_directories.Loader',
+    ]
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'APP_DIRS': True,
+        'APP_DIRS': _TEMPLATE_APP_DIRS,
         'DIRS':
             [
                 os.path.join(BASE_DIR, 'templates'),
             ],
-        'OPTIONS':
-            {
-                'debug': TEMPLATE_DEBUG,
-                'context_processors': [
-                    'django.template.context_processors.debug',
-                    'django.template.context_processors.request',
-                    'django.contrib.auth.context_processors.auth',
-                    'django.contrib.messages.context_processors.messages',
-                ],
-            },
+        'OPTIONS': _TEMPLATE_OPTIONS,
     },
 ]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
@@ -233,6 +246,13 @@ MEDIA_URL = '/uploads/'
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+if RUNSERVER:
+    # Finders serve this directory on each request. It cannot also
+    # be STATIC_ROOT. Nothing is collected during development.
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+    STATIC_ROOT = os.path.join(MOBSF_HOME, 'staticfiles')
+    STATICFILES_STORAGE = (
+        'django.contrib.staticfiles.storage.StaticFilesStorage')
 # 256MB limit for file uploads
 DATA_UPLOAD_MAX_MEMORY_SIZE = 256 * 1024 * 1024
 # 400MB per file limit for uncompressed files
@@ -337,6 +357,14 @@ LOGGING = {
         },
     },
 }
+if RUNSERVER:
+    # The reloader logs every watched file at DEBUG.
+    LOGGING['loggers']['django.utils.autoreload'] = {
+        'handlers': ['console', 'logfile'],
+        'level': 'INFO',
+        'propagate': False,
+    }
+
 ASYNC_ANALYSIS = env_flag('MOBSF_ASYNC_ANALYSIS', '0')
 ASYNC_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_ASYNC_ANALYSIS_TIMEOUT', '60'))
 Q_CLUSTER = {
