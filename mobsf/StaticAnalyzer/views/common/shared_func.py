@@ -230,27 +230,42 @@ _ZIP64_LOC_SIG = b'PK\x06\x07'
 _REGULAR_FILE_MODE = 0o100644
 
 
-def _eocd_offset(data):
+def _read_at(handle, offset, size):
+    handle.seek(offset)
+    data = handle.read(size)
+    if len(data) != size:
+        raise ValueError('short read')
+    return data
+
+
+def _eocd_offset(handle, size):
     """Return the end-of-central-directory offset."""
-    window_start = max(0, len(data) - (65535 + 22))
-    rel = data.rfind(_EOCD_SIG, window_start)
-    if rel < 0 or len(data) - rel < 22:
+    window = min(size, 65535 + 22)
+    data = _read_at(handle, size - window, window)
+    rel = data.rfind(_EOCD_SIG)
+    if rel < 0 or window - rel < 22:
         raise ValueError('EOCD not found')
-    return rel
+    return size - window + rel
 
 
-def _central_directory_offset(data, eocd):
+def _central_directory_offset(handle, eocd, size):
     """Return the central-directory offset, including ZIP64."""
-    cd_offset = struct.unpack_from('<I', data, eocd + 16)[0]
+    cd_offset = struct.unpack('<I', _read_at(handle, eocd + 16, 4))[0]
     if cd_offset != 0xFFFFFFFF:
         return cd_offset
     loc = eocd - 20
-    if loc < 0 or data[loc:loc + 4] != _ZIP64_LOC_SIG:
+    if loc < 0:
         raise ValueError('ZIP64 locator missing')
-    z64 = struct.unpack_from('<Q', data, loc + 8)[0]
-    if z64 + 56 > len(data) or data[z64:z64 + 4] != _ZIP64_EOCD_SIG:
+    locator = _read_at(handle, loc, 20)
+    if locator[:4] != _ZIP64_LOC_SIG:
+        raise ValueError('ZIP64 locator missing')
+    z64 = struct.unpack_from('<Q', locator, 8)[0]
+    if z64 + 56 > size:
         raise ValueError('ZIP64 EOCD missing')
-    return struct.unpack_from('<Q', data, z64 + 48)[0]
+    eocd64 = _read_at(handle, z64, 56)
+    if eocd64[:4] != _ZIP64_EOCD_SIG:
+        raise ValueError('ZIP64 EOCD missing')
+    return struct.unpack_from('<Q', eocd64, 48)[0]
 
 
 def _unix_mode_is_special(mode):
@@ -258,26 +273,33 @@ def _unix_mode_is_special(mode):
             or stat.S_ISCHR(mode) or stat.S_ISBLK(mode))
 
 
-def _rewrite_special_central_directory(data):
+def _rewrite_special_central_directory(handle):
     """Rewrite symlink and device modes to a regular file."""
-    eocd = _eocd_offset(data)
-    pos = _central_directory_offset(data, eocd)
-    if pos < 0 or pos > len(data):
+    handle.seek(0, os.SEEK_END)
+    size = handle.tell()
+    eocd = _eocd_offset(handle, size)
+    pos = _central_directory_offset(handle, eocd, size)
+    if pos < 0 or pos > size:
         raise ValueError('central directory offset out of range')
-    while pos + 46 <= len(data) and data[pos:pos + 4] == _CD_SIG:
+    while pos + 46 <= size:
+        header = _read_at(handle, pos, 46)
+        if header[:4] != _CD_SIG:
+            break
         name_len, extra_len, comment_len = struct.unpack_from(
-            '<HHH', data, pos + 28)
+            '<HHH', header, 28)
         next_pos = pos + 46 + name_len + extra_len + comment_len
-        if next_pos < pos or next_pos > len(data):
+        if next_pos < pos or next_pos > size:
             raise ValueError('central directory entry exceeds archive')
-        external_attr = struct.unpack_from('<I', data, pos + 38)[0]
+        external_attr = struct.unpack_from('<I', header, 38)[0]
         mode = (external_attr >> 16) & 0xFFFF
         if _unix_mode_is_special(mode):
             patched_attr = (
                 (_REGULAR_FILE_MODE << 16) | (external_attr & 0xFFFF))
-            struct.pack_into('<I', data, pos + 38, patched_attr)
+            handle.seek(pos + 38)
+            handle.write(struct.pack('<I', patched_attr))
         pos = next_pos
-    if data[pos:pos + 4] not in (_EOCD_SIG, _ZIP64_EOCD_SIG):
+    marker = _read_at(handle, pos, 4) if pos + 4 <= size else b''
+    if marker not in (_EOCD_SIG, _ZIP64_EOCD_SIG):
         raise ValueError('central directory walk did not finish')
 
 
@@ -295,17 +317,18 @@ def neutralize_zip_special_modes(src, dest_parent):
     """Copy src and rewrite symlink and device modes to a regular file.
 
     Info-ZIP reads the Unix mode from the central-directory external
-    attributes. The uploaded sample is left untouched.
+    attributes. The copy is streamed, and only those 4-byte fields are
+    patched. The uploaded sample is left untouched.
     """
-    data = bytearray(Path(src).read_bytes())
-    _rewrite_special_central_directory(data)
     fd, name = tempfile.mkstemp(
         prefix='mobsf-unzip-',
         suffix='.zip',
         dir=_patched_zip_dir(dest_parent))
+    os.close(fd)
     try:
-        with os.fdopen(fd, 'wb') as handle:
-            handle.write(data)
+        shutil.copyfile(src, name)
+        with open(name, 'r+b') as handle:
+            _rewrite_special_central_directory(handle)
     except Exception:
         os.unlink(name)
         raise
