@@ -1,62 +1,44 @@
-{% extends "base/base_layout.html" %}
- {% block sidebar_option %}
-      sidebar-collapse
-{% endblock %}
-{% block content %}
-<div class="content-wrapper">
-  <div class="content-header">
-  </div>
-   <div class="container-fluid">
-        <div class="row">
-            <div class="col-lg-12">
-            <div class="card">
-              <div class="card-body">
-                <h1>Donate to MobSF Project</h1>
-                <p class="lead">
-                    You're Awesome! Thank you for your support ♥
-                </p>
-                <div class="row">
-
-                    <div class="col-lg-6">
-                      
-                        <div class="card">
-                            <div class="card-header ui-sortable-handle" >
-                              <h3 class="card-title">
-                            Github Sponsors
-                              </h3>
-                            </div><!-- /.card-header -->
-                            <div class="card-body">
-                                <p style="text-align: center;">
-                                    Donate to MobSF project through Github Sponsors. Github will match the first $5000 in donations.
-                                </br>
-                                </br>
-                                <iframe src="https://github.com/sponsors/ajinabraham/button" title="Sponsor ajinabraham" height="35" width="116" style="border: 0;"></iframe>
-                                </p>
-                            </div><!-- /.card-body -->
-                          </div>
-                    </div>
-                    <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header ui-sortable-handle" >
-                          <h3 class="card-title">
-                          Paypal Donations
-                          </h3>
-                        </div><!-- /.card-header -->
-                        <div class="card-body">
-                            <p style="text-align: center;">
-                         You can also donate to MobSF project through PayPal.
-                         </br>
-                         </br>
-                           <a href="https://www.paypal.com/paypalme/ajinabraham" rel="noopener noreferrer"><input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" /></a>
-                        </p>
-                        </div><!-- /.card-body -->
-                    </div>
-                    </div>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Support the Mobile Security Framework (MobSF) project.">
+      <meta name="author" content="Ajin Abraham">
+      <link rel="icon" href="{% static "img/favicon.ico" %}">
+      <title>Donate - Mobile Security Framework</title>
+      <link rel="stylesheet" href="{% static "adminlte/dashboard/css/adminlte.min.css" %}">
+      <link rel="stylesheet" href="{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
+      <link rel="stylesheet" href="{% static "landing/css/home.css" %}">
+   </head>
+   <body class="text-center">
+    <div class="home-shell">
+        {% include "general/includes/landing_nav.html" %}
+        <main role="main" class="home-main">
+            <div class="donate-wrap">
+                <h1>Donate</h1>
+                <p class="donate-lead">You're awesome. Thank you for supporting MobSF.</p>
+                <div class="donate-grid">
+                    <section class="donate-card">
+                        <span class="fab fa-github" aria-hidden="true"></span>
+                        <h2>GitHub Sponsors</h2>
+                        <p>Sponsor the project on GitHub.</p>
+                        <a class="donate-action" href="https://github.com/sponsors/ajinabraham" target="_blank" rel="noopener noreferrer">Sponsor</a>
+                    </section>
+                    <section class="donate-card">
+                        <span class="fab fa-paypal" aria-hidden="true"></span>
+                        <h2>PayPal</h2>
+                        <p>Send a donation with PayPal.</p>
+                        <a class="donate-action" href="https://www.paypal.com/paypalme/ajinabraham" target="_blank" rel="noopener noreferrer">Donate</a>
+                    </section>
                 </div>
-          </div>
-        </div>
-       </div>
-     </div>
+            </div>
+        </main>
+        {% include "general/includes/landing_footer.html" %}
     </div>
-</div>
-{% endblock %}
+    <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
+    <script src="{% static "adminlte/plugins/bootstrap/bootstrap.bundle.min.js" %}"></script>
+   </body>
+</html>
