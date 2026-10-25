@@ -10,7 +10,10 @@ import os
 import platform
 import re
 import shutil
+import stat
+import struct
 import subprocess
+import tempfile
 import zipfile
 from pathlib import Path
 
@@ -126,10 +129,9 @@ def unzip(checksum, app_path, ext_path, size_budget=None):
     original_ext_path = ext_path
     budgeted = size_budget is not None
     # A shared budget must not fall through to OS unzip: that path has no
-    # byte cap. Leave the flag unset on the default path so its fallback
-    # behavior stays the same.
-    if budgeted:
-        stop_fallback_extraction = True
+    # byte cap. Initialize the flag so a failed ZipFile() open still falls
+    # through on the default path instead of raising UnboundLocalError.
+    stop_fallback_extraction = budgeted
     try:
         with zipfile.ZipFile(app_path, 'r') as zipptr:
             files = zipptr.namelist()
@@ -221,11 +223,142 @@ def unzip(checksum, app_path, ext_path, size_budget=None):
     return files
 
 
+_EOCD_SIG = b'PK\x05\x06'
+_CD_SIG = b'PK\x01\x02'
+_ZIP64_EOCD_SIG = b'PK\x06\x06'
+_ZIP64_LOC_SIG = b'PK\x06\x07'
+_REGULAR_FILE_MODE = 0o100644
+
+
+def _eocd_offset(data):
+    """Return the end-of-central-directory offset."""
+    window_start = max(0, len(data) - (65535 + 22))
+    rel = data.rfind(_EOCD_SIG, window_start)
+    if rel < 0 or len(data) - rel < 22:
+        raise ValueError('EOCD not found')
+    return rel
+
+
+def _central_directory_offset(data, eocd):
+    """Return the central-directory offset, including ZIP64."""
+    cd_offset = struct.unpack_from('<I', data, eocd + 16)[0]
+    if cd_offset != 0xFFFFFFFF:
+        return cd_offset
+    loc = eocd - 20
+    if loc < 0 or data[loc:loc + 4] != _ZIP64_LOC_SIG:
+        raise ValueError('ZIP64 locator missing')
+    z64 = struct.unpack_from('<Q', data, loc + 8)[0]
+    if z64 + 56 > len(data) or data[z64:z64 + 4] != _ZIP64_EOCD_SIG:
+        raise ValueError('ZIP64 EOCD missing')
+    return struct.unpack_from('<Q', data, z64 + 48)[0]
+
+
+def _unix_mode_is_special(mode):
+    return (stat.S_ISLNK(mode) or stat.S_ISFIFO(mode) or stat.S_ISSOCK(mode)
+            or stat.S_ISCHR(mode) or stat.S_ISBLK(mode))
+
+
+def _rewrite_special_central_directory(data):
+    """Rewrite symlink and device modes to a regular file."""
+    eocd = _eocd_offset(data)
+    pos = _central_directory_offset(data, eocd)
+    if pos < 0 or pos > len(data):
+        raise ValueError('central directory offset out of range')
+    while pos + 46 <= len(data) and data[pos:pos + 4] == _CD_SIG:
+        name_len, extra_len, comment_len = struct.unpack_from(
+            '<HHH', data, pos + 28)
+        next_pos = pos + 46 + name_len + extra_len + comment_len
+        if next_pos < pos or next_pos > len(data):
+            raise ValueError('central directory entry exceeds archive')
+        external_attr = struct.unpack_from('<I', data, pos + 38)[0]
+        mode = (external_attr >> 16) & 0xFFFF
+        if _unix_mode_is_special(mode):
+            patched_attr = (
+                (_REGULAR_FILE_MODE << 16) | (external_attr & 0xFFFF))
+            struct.pack_into('<I', data, pos + 38, patched_attr)
+        pos = next_pos
+    if data[pos:pos + 4] not in (_EOCD_SIG, _ZIP64_EOCD_SIG):
+        raise ValueError('central directory walk did not finish')
+
+
+def _patched_zip_dir(dest_parent):
+    parent = Path(dest_parent).parent
+    try:
+        if parent.is_symlink() or not parent.is_dir():
+            return None
+    except OSError:
+        return None
+    return parent.as_posix()
+
+
+def neutralize_zip_special_modes(src, dest_parent):
+    """Copy src and rewrite symlink and device modes to a regular file.
+
+    Info-ZIP reads the Unix mode from the central-directory external
+    attributes. The uploaded sample is left untouched.
+    """
+    data = bytearray(Path(src).read_bytes())
+    _rewrite_special_central_directory(data)
+    fd, name = tempfile.mkstemp(
+        prefix='mobsf-unzip-',
+        suffix='.zip',
+        dir=_patched_zip_dir(dest_parent))
+    try:
+        with os.fdopen(fd, 'wb') as handle:
+            handle.write(data)
+    except Exception:
+        os.unlink(name)
+        raise
+    return name
+
+
+def symlink_points_outside(link, root_real):
+    """True when the link target resolves outside root_real."""
+    raw = os.readlink(link)
+    if os.path.isabs(raw):
+        joined = raw
+    else:
+        joined = os.path.join(os.path.dirname(link), raw)
+    try:
+        resolved = os.path.realpath(joined)
+        return os.path.commonpath((root_real, resolved)) != root_real
+    except (OSError, ValueError):
+        return True
+
+
+def remove_external_symlinks(root):
+    """Drop links that resolve outside root, plus fifos and device nodes.
+
+    A symlink whose target stays inside root is kept. os.unlink removes the
+    link itself and does not delete an external target.
+    """
+    if os.path.islink(root) or not os.path.isdir(root):
+        return
+    root_real = os.path.realpath(root)
+    for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
+        for name in dirnames + filenames:
+            path = os.path.join(dirpath, name)
+            try:
+                if not is_pipe_or_link(path):
+                    continue
+                mode = os.lstat(path).st_mode
+                if (stat.S_ISLNK(mode)
+                        and not symlink_points_outside(path, root_real)):
+                    continue
+                logger.warning(
+                    'Removing external link %s', sanitize_for_logging(name))
+                os.unlink(path)
+            except OSError:
+                logger.warning(
+                    'Failed to remove %s', sanitize_for_logging(name))
+
+
 def os_unzip(checksum, app_path, ext_path):
     """Unzip using OS utility."""
     msg = 'Attempting to unzip with OS unzip utility'
     logger.info(msg)
     append_scan_status(checksum, msg)
+    patched = None
     try:
         if platform.system() == 'Windows':
             msg = 'Unzipping Error. Not yet implemented in Windows'
@@ -238,21 +371,47 @@ def os_unzip(checksum, app_path, ext_path):
             logger.warning(msg)
             append_scan_status(checksum, msg)
             return []
-        # OS Unzip utility does handle path traversal and absolute paths
+        if os.path.islink(ext_path):
+            msg = 'Extraction directory is a symlink'
+            logger.error(msg)
+            append_scan_status(checksum, msg)
+            return []
+        extract_from = app_path
+        try:
+            patched = neutralize_zip_special_modes(app_path, ext_path)
+            extract_from = patched
+        except Exception:
+            logger.warning('Could not strip symlink modes before OS unzip')
+        # OS unzip strips absolute paths and '..' from member names.
+        # Symlink modes are rewritten above so it cannot create a link.
         subprocess.call(
-            [unzip_b, '-o', '-q', app_path, '-d', ext_path])
+            [unzip_b, '-o', '-q', extract_from, '-d', ext_path])
+        remove_external_symlinks(ext_path)
         # Set permissions, packed files
         # may not have proper permissions
         set_permissions(ext_path)
-        # List files in the unzipped directory
-        dat = subprocess.check_output([unzip_b, '-qq', '-l', app_path])
-        dat = dat.decode('utf-8').split('\n')
-        files_det = ['Length   Date   Time   Name']
-        return files_det + dat
+        # Listing is best-effort. A truncated central-directory size makes
+        # ZipFile reject the archive, and unzip -l may exit non-zero while
+        # still having extracted the members above.
+        try:
+            dat = subprocess.check_output(
+                [unzip_b, '-qq', '-l', app_path],
+                stderr=subprocess.DEVNULL)
+            listing = dat.decode('utf-8', errors='replace').split('\n')
+            return ['Length   Date   Time   Name'] + listing
+        except (OSError, subprocess.CalledProcessError):
+            logger.warning('Could not list archive entries after OS unzip')
+            return []
     except Exception as exp:
         msg = 'Unzipping Error with OS unzip utility'
         logger.exception(msg)
         append_scan_status(checksum, msg, repr(exp))
+    finally:
+        if patched:
+            try:
+                os.unlink(patched)
+            except OSError:
+                logger.warning('Failed to remove temporary unzip copy')
     return []
 
 
