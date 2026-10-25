@@ -1,28 +1,36 @@
-{% extends "base/base_layout.html" %}
-{% block sidebar_option %}
-    sidebar-collapse
-{% endblock %}
-{% block content %}
-<style>
-  pre {
-    white-space: pre-wrap; /* css-3 */
-    white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
-    white-space: -pre-wrap; /* Opera 4-6 */
-    white-space: -o-pre-wrap; /* Opera 7 */
-    word-wrap: break-word; /* Internet Explorer 5.5+ */
-  }
-</style>
-<div class="content-wrapper">
-  <div class="content-header"></div>
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-lg-12">
-        <div class="card">
-          <div class="card-body">
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="MobSF REST API documentation.">
+      <meta name="author" content="Ajin Abraham">
+      <link rel="icon" href="{% static "img/favicon.ico" %}">
+      <title>API Docs - Mobile Security Framework</title>
+      <link rel="stylesheet" href="{% static "adminlte/dashboard/css/adminlte.min.css" %}">
+      <link rel="stylesheet" href="{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
+      <link rel="stylesheet" href="{% static "landing/css/home.css" %}">
+   </head>
+   <body class="text-center">
+    <div class="home-shell">
+        {% include "general/includes/landing_nav.html" %}
+        <main role="main" class="home-main api-main">
+            <div class="api-docs">
+            <div class="api-docs-head">
+            <button type="button" class="api-nav-toggle" aria-controls="api-nav" aria-expanded="false">APIs</button>
             <h1><strong>API Docs</strong></h1>
-            <p class="lead">
-              API Key: <strong><code>{{ api_key}}</code></strong>
-            </p>
+            <div class="api-key">
+              <span class="api-key-label">API Key</span>
+              <code id="api-key">{{ api_key }}</code>
+              <button type="button" class="api-key-copy" aria-label="Copy API key">
+                <i class="fas fa-copy" aria-hidden="true"></i>
+              </button>
+            </div>
+            </div>
+            <div class="api-docs-layout">
+            <nav class="api-nav" id="api-nav" aria-label="API endpoints">
 
             <!--API Docs -->
             <h1>Static Analysis</h1>
@@ -116,8 +124,9 @@
               <li><code>api/v1/ios/device_download_app_data</code> - <a href="#device-download-app-data-api">Download App Data from Device</a></li>
               <li><code>api/v1/ios/device_report_json</code> - <a href="#device-report-json-api">iOS Device Dynamic Analysis Report</a></li>
             </ol>
-          <hr>
-            <h2><a id="upload-file-api"></a><strong>Upload File API</strong></h2>
+            </nav>
+            <div class="api-docs-detail" id="api-detail">
+            <h2><a id="upload-file-api"></a><strong>Upload File</strong></h2>
             <p>API to upload a file. Supported file types are apk, zip, ipa and appx.</p>
             <ul>
               <li>
@@ -183,21 +192,19 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -F 'file=@/Users/ajin/Desktop/diva-beta.apk' http://localhost:8000/api/v1/upload -H &quot;Authorization: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -F 'file=@/Users/ajin/Desktop/diva-beta.apk' http://localhost:8000/api/v1/upload -H &quot;Authorization: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -F 'file=@/Users/ajin/Desktop/diva-beta.apk' http://localhost:8000/api/v1/upload -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -F 'file=@/Users/ajin/Desktop/diva-beta.apk' http://localhost:8000/api/v1/upload -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
             <hr />
-            <h2><a id="scan-file-api"></a><strong>Scan File API</strong></h2>
+            <h2><a id="scan-file-api"></a><strong>Scan File</strong></h2>
             <p>API to scan a file that is already uploaded. Supports scanning apk, xapk, apks, jar, aar, zip, ipa, so, dylib, a, and appx extensions.</p>
             <ul>
               <li>
@@ -277,21 +284,19 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/scan --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/scan --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/scan --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/scan --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
             <hr />
-            <h2><a id="scan-logs-api"></a><strong>Scan Logs API</strong></h2>
+            <h2><a id="scan-logs-api"></a><strong>Scan Logs</strong></h2>
             <p>API that provides live and latest scan logs.</p>
             <ul>
               <li>
@@ -363,21 +368,19 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/scan_logs --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/scan_logs --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/scan_logs --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/scan_logs --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
             <hr />
-            <h2><a id="search-api"></a><strong>Search API</strong></h2>
+            <h2><a id="search-api"></a><strong>Search</strong></h2>
             <p>API for querying scan results. You can search using an MD5 checksum, app name, package name, or file name. The API returns the closest match based on your search term.</p>
             <ul>
               <li>
@@ -443,22 +446,20 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/search --data &quot;query=com.foo.bar&quot; -H &quot;Authorization: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/search --data &quot;query=com.foo.bar&quot; -H &quot;Authorization: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/search --data &quot;query=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/search --data &quot;query=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
             <hr />
 
-            <h2><a id="delete-scan-api"></a><strong>Delete Scan API</strong></h2>
+            <h2><a id="delete-scan-api"></a><strong>Delete Scan</strong></h2>
             <p>API to delete scan results.</p>
             <ul>
               <li>
@@ -524,22 +525,20 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/delete_scan --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/delete_scan --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/delete_scan --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/delete_scan --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="scorecard-api"></a><strong>App Scorecrd API</strong></h2>
+            <h2><a id="scorecard-api"></a><strong>App Scorecrd</strong></h2>
             <p>Get MobSF Application Security Scorecard</p>
             <ul>
               <li>
@@ -605,15 +604,13 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/scorecard --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/scorecard --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/scorecard --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/scorecard --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
               </li>
@@ -621,7 +618,7 @@
 
 
             <hr />
-            <h2><a id="generate-pdf-report-api"></a><strong>Generate PDF Report API</strong></h2>
+            <h2><a id="generate-pdf-report-api"></a><strong>Generate PDF Report</strong></h2>
             <p>API to generate PDF Report.</p>
             <ul>
               <li>
@@ -687,22 +684,20 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/download_pdf --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/download_pdf --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/download_pdf --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/download_pdf --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="generate-json-report-api"></a><strong>Generate JSON Report API</strong></h2>
+            <h2><a id="generate-json-report-api"></a><strong>Generate JSON Report</strong></h2>
             <p>API to generate JSON Report.</p>
             <ul>
               <li>
@@ -768,22 +763,20 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/report_json --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/report_json --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;Authorization: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/report_json --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/report_json --data &quot;hash=82ab8b2193b3cfb1c737e3a786be363a&quot; -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="view-source-api"></a><strong>View Source Files API</strong></h2>
+            <h2><a id="view-source-api"></a><strong>View Source Files</strong></h2>
             <p>API to view source files.</p>
             <ul>
               <li>
@@ -859,38 +852,32 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=18e244926da1e49c5b8ffc1c30de8abc&amp;type=apk&amp;file=b/a/a/a/a/a.java" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=18e244926da1e49c5b8ffc1c30de8abc&amp;type=apk&amp;file=b/a/a/a/a/a.java" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=6c23c2970551be15f32bbab0b5db0c71&amp;type=ipa&amp;file=classdump.txt" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=6c23c2970551be15f32bbab0b5db0c71&amp;type=ipa&amp;file=classdump.txt" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=18e244926da1e49c5b8ffc1c30de8abc&amp;type=xml&amp;file=AndroidManifest.xml" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=18e244926da1e49c5b8ffc1c30de8abc&amp;type=xml&amp;file=AndroidManifest.xml" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=18e244926da1e49c5b8ffc1c30de8abc&amp;type=apk&amp;file=b/a/a/a/a/a.java" -H "X-Mobsf-Api-Key: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=18e244926da1e49c5b8ffc1c30de8abc&amp;type=apk&amp;file=b/a/a/a/a/a.java" -H "X-Mobsf-Api-Key: {{ api_key}}"</code></pre>
                   </li>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=6c23c2970551be15f32bbab0b5db0c71&amp;type=ipa&amp;file=classdump.txt" -H "X-Mobsf-Api-Key: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=6c23c2970551be15f32bbab0b5db0c71&amp;type=ipa&amp;file=classdump.txt" -H "X-Mobsf-Api-Key: {{ api_key}}"</code></pre>
                   </li>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=18e244926da1e49c5b8ffc1c30de8abc&amp;type=xml&amp;file=AndroidManifest.xml" -H "X-Mobsf-Api-Key: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/view_source --data "hash=18e244926da1e49c5b8ffc1c30de8abc&amp;type=xml&amp;file=AndroidManifest.xml" -H "X-Mobsf-Api-Key: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="recent-scans-api"></a><strong>Display Recent Scans API</strong></h2>
+            <h2><a id="recent-scans-api"></a><strong>Display Recent Scans</strong></h2>
             <p>API to Display Recent Scans.</p>
             <ul>
               <li>
@@ -964,30 +951,26 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl --url "http://localhost:8000/api/v1/scans" -H "Authorization:  {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl --url "http://localhost:8000/api/v1/scans" -H "Authorization:  {{ api_key}}"</code></pre>
                   </li>
                   <li>
-                    <pre><code>curl --url "http://localhost:8000/api/v1/scans?page=1&amp;page_size=10" -H "Authorization:  {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl --url "http://localhost:8000/api/v1/scans?page=1&amp;page_size=10" -H "Authorization:  {{ api_key}}"</code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl --url "http://localhost:8000/api/v1/scans" -H "X-Mobsf-Api-Key: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl --url "http://localhost:8000/api/v1/scans" -H "X-Mobsf-Api-Key: {{ api_key}}"</code></pre>
                   </li>
                   <li>
-                    <pre><code>curl --url "http://localhost:8000/api/v1/scans?page=1&amp;page_size=10" -H "X-Mobsf-Api-Key: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl --url "http://localhost:8000/api/v1/scans?page=1&amp;page_size=10" -H "X-Mobsf-Api-Key: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="tasks-api"></a><strong>Scan Tasks API</strong></h2>
+            <h2><a id="tasks-api"></a><strong>Scan Tasks</strong></h2>
             <p>Displays the scan tasks queue, accessible only when the asynchronous scan queue is enabled.</p>
             <ul>
               <li>
@@ -1034,22 +1017,20 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/tasks -H &quot;Authorization: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/tasks -H &quot;Authorization: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/tasks -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/tasks -H &quot;X-Mobsf-Api-Key: {{ api_key}}&quot;</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
             <hr />
 
-            <h2><a id="compare-api"></a><strong>Compare Apps API</strong></h2>
+            <h2><a id="compare-api"></a><strong>Compare Apps</strong></h2>
             <p>API to Compare scan results.</p>
             <ul>
               <li>
@@ -1120,15 +1101,13 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/compare --data "hash1=82ab8b2193b3cfb1c737e3a786be363a&hash2=f56c96f2b1f0a7c46eb6fef3a035f3dd" -H "Authorization:  {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/compare --data "hash1=82ab8b2193b3cfb1c737e3a786be363a&hash2=f56c96f2b1f0a7c46eb6fef3a035f3dd" -H "Authorization:  {{ api_key}}"</code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/compare --data "hash1=82ab8b2193b3cfb1c737e3a786be363a&hash2=f56c96f2b1f0a7c46eb6fef3a035f3dd" -H "X-Mobsf-Api-Key: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/compare --data "hash1=82ab8b2193b3cfb1c737e3a786be363a&hash2=f56c96f2b1f0a7c46eb6fef3a035f3dd" -H "X-Mobsf-Api-Key: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -1211,15 +1190,13 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/suppress_by_rule --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;type=manifest&amp;rule=app_allowbackup" -H "Authorization:  {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/suppress_by_rule --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;type=manifest&amp;rule=app_allowbackup" -H "Authorization:  {{ api_key}}"</code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/suppress_by_rule --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;type=code&amp;rule=android_logging" -H "X-Mobsf-Api-Key: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/suppress_by_rule --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;type=code&amp;rule=android_logging" -H "X-Mobsf-Api-Key: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -1302,15 +1279,13 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/suppress_by_files --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;type=code&amp;rule=app_allowbackup" -H "Authorization:  {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/suppress_by_files --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;type=code&amp;rule=app_allowbackup" -H "Authorization:  {{ api_key}}"</code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/suppress_by_files --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;type=code&amp;rule=android_logging" -H "X-Mobsf-Api-Key: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/suppress_by_files --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;type=code&amp;rule=android_logging" -H "X-Mobsf-Api-Key: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -1383,15 +1358,13 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/list_suppressions --data "hash=82ab8b2193b3cfb1c737e3a786be363a" -H "Authorization:  {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/list_suppressions --data "hash=82ab8b2193b3cfb1c737e3a786be363a" -H "Authorization:  {{ api_key}}"</code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/list_suppressions --data "hash=82ab8b2193b3cfb1c737e3a786be363a" -H "X-Mobsf-Api-Key: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/list_suppressions --data "hash=82ab8b2193b3cfb1c737e3a786be363a" -H "X-Mobsf-Api-Key: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -1479,22 +1452,20 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/delete_suppression --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;kind=file&amp;type=code&amp;rule=android_sql_raw_query" -H "Authorization:  {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/delete_suppression --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;kind=file&amp;type=code&amp;rule=android_sql_raw_query" -H "Authorization:  {{ api_key}}"</code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/delete_suppression --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;kind=rule&amp;type=manifest&amp;rule=receiver_exported_intent_filter_exists" -H "X-Mobsf-Api-Key: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/delete_suppression --data "hash=82ab8b2193b3cfb1c737e3a786be363a&amp;kind=rule&amp;type=manifest&amp;rule=receiver_exported_intent_filter_exists" -H "X-Mobsf-Api-Key: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
            <hr />
-            <h2><a id="get-apps-api"></a><strong>Get Apps API</strong></h2>
+            <h2><a id="get-apps-api"></a><strong>Get Apps</strong></h2>
             <p>Get Apps available for Dynamic Analysis. You must perform static analysis before attempting dynamic analysis.</p>
             <p>When more than one Android device is online, pass its ADB identifier as the optional <code>identifier</code> query parameter. The response includes the detected <code>devices</code> list.</p>
             <ul>
@@ -1564,15 +1535,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl --url "http://localhost:8000/api/v1/dynamic/get_apps?identifier=192.168.56.139:5555" -H "Authorization:  {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl --url "http://localhost:8000/api/v1/dynamic/get_apps?identifier=192.168.56.139:5555" -H "Authorization:  {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="start-analysis-api"></a><strong>Start Dynamic Analysis API</strong></h2>
+            <h2><a id="start-analysis-api"></a><strong>Start Dynamic Analysis</strong></h2>
             <p>Start MobSF Dynamic Analyzer. Ensure that dynamic analysis environment (Android VM/Emulator/Device) is configured and running before calling this API.</p>
             <p><code>auto</code> uses rooted runtime preparation when available and otherwise falls back to Frida Gadget on Android 5 or later, including jailed emulators and VMs. Gadget mode changes the APK signature and requires confirmation before replacing an existing installation. Single APKs embed the MobSF Root CA; split APK sets preserve binary resources, re-sign every required split, and install atomically with <code>adb install-multiple</code>, relying on Frida TLS hooks instead of an embedded CA. Rooted physical-device mode does not require a writable <code>/system</code> partition; legacy VM preparation does.</p>
             <ul>
@@ -1677,15 +1647,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/start_analysis --data "hash=3a552566097a8de588b8184b059b0158&amp;device_mode=auto&amp;identifier=192.168.56.139:5555" -H "Authorization:  {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/start_analysis --data "hash=3a552566097a8de588b8184b059b0158&amp;device_mode=auto&amp;identifier=192.168.56.139:5555" -H "Authorization:  {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="logcat-api"></a><strong>View Logcat API</strong></h2>
+            <h2><a id="logcat-api"></a><strong>View Logcat</strong></h2>
             <p>API view Logcat logs.</p>
             <ul>
               <li>
@@ -1751,15 +1720,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/logcat --data "package=org.wikipedia" -H "Authorization:  {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/logcat --data "package=org.wikipedia" -H "Authorization:  {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
              <hr />
-            <h2><a id="mobsfy-api"></a><strong>MobSFy API</strong></h2>
+            <h2><a id="mobsfy-api"></a><strong>MobSFy</strong></h2>
             <p>API to MobSFY android runtime environment.</p>
             <ul>
               <li>
@@ -1828,15 +1796,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/mobsfy --data "identifier=192.168.56.139:5555" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/mobsfy --data "identifier=192.168.56.139:5555" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
 <hr />
-            <h2><a id="adb-command-api"></a><strong>Execute ADB Commands API</strong></h2>
+            <h2><a id="adb-command-api"></a><strong>Execute ADB Commands</strong></h2>
             <p>Execute ADB commands inside VM/Emulator/Device.</p>
             <ul>
               <li>
@@ -1905,15 +1872,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/adb_command --data "cmd=shell ls" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/adb_command --data "cmd=shell ls" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
        <hr />
-            <h2><a id="root-ca-api"></a><strong>Install or Remove Root CA API</strong></h2>
+            <h2><a id="root-ca-api"></a><strong>Install or Remove Root CA</strong></h2>
             <p>API to install or remove MobSF Root CA to or from the Android VM/Emulator/Device.</p>
             <ul>
               <li>
@@ -1982,14 +1948,13 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/root_ca --data "action=install" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/root_ca --data "action=install" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
             <hr />
-            <h2><a id="global-proxy-api"></a><strong>Set or Unset MobSF Global HTTP(S) Proxy API</strong></h2>
+            <h2><a id="global-proxy-api"></a><strong>Set or Unset MobSF Global HTTP(S) Proxy</strong></h2>
             <p>API to apply or remove global HTTP(S) proxy configuration to Android VM/Emulator/Device.</p>
             <ul>
               <li>
@@ -2058,15 +2023,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/global_proxy --data "action=set" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/global_proxy --data "action=set" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
  <hr />
-            <h2><a id="activity-api"></a><strong>Activity or Exported Activity Tester API</strong></h2>
+            <h2><a id="activity-api"></a><strong>Activity or Exported Activity Tester</strong></h2>
             <p>API to run Activity or Exported Activity Tester.</p>
             <ul>
               <li>
@@ -2139,8 +2103,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/activity --data "hash=6825bb9fde2fc671322df005976755a1&amp;test=exported" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/activity --data "hash=6825bb9fde2fc671322df005976755a1&amp;test=exported" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -2148,7 +2111,7 @@
 
 
             <hr />
-            <h2><a id="start-activity-api"></a><strong>Start Activity or Exported Activity API</strong></h2>
+            <h2><a id="start-activity-api"></a><strong>Start Activity or Exported Activity</strong></h2>
             <p>API to manually launch an Activity or Exported Activity.</p>
             <ul>
               <li>
@@ -2221,15 +2184,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/start_activity --data "hash=6825bb9fde2fc671322df005976755a1&amp;activity=com.package.android.MainActivity" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/start_activity --data "hash=6825bb9fde2fc671322df005976755a1&amp;activity=com.package.android.MainActivity" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="tls-tester-api"></a><strong>TLS/SSL Security Tester API</strong></h2>
+            <h2><a id="tls-tester-api"></a><strong>TLS/SSL Security Tester</strong></h2>
             <p>API to run TLS/SSL Security Tester.</p>
             <ul>
               <li>
@@ -2295,15 +2257,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/tls_tests --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/android/tls_tests --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
        <hr />
-            <h2><a id="frida-instrument-api"></a><strong>Frida Instrument App API</strong></h2>
+            <h2><a id="frida-instrument-api"></a><strong>Frida Instrument App</strong></h2>
             <p>API to start Frida Instrumentation.</p>
             <ul>
               <li>
@@ -2416,22 +2377,20 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/instrument --data "hash=6825bb9fde2fc671322df005976755a1&amp;default_hooks=api_monitor,ssl_pinning_bypass,root_bypass,debugger_check_bypass&amp;auxiliary_hooks=&amp;frida_code=" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/instrument --data "hash=6825bb9fde2fc671322df005976755a1&amp;default_hooks=api_monitor,ssl_pinning_bypass,root_bypass,debugger_check_bypass&amp;auxiliary_hooks=&amp;frida_code=" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
                 <p>OR</p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/instrument --data "hash=6825bb9fde2fc671322df005976755a1&amp;default_hooks=api_monitor,ssl_pinning_bypass,root_bypass,debugger_check_bypass&amp;auxiliary_hooks=enum_class,string_catch,string_compare,enum_methods,search_class,trace_class&amp;class_name=java.io.File&amp;class_search=ssl&amp;class_trace=javax.net.ssl.TrustManager&amp;frida_code=Java.perform(function()+%7B%0A++%2F%2F+Use+send()+for+logging%0A%7D)%3B" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/instrument --data "hash=6825bb9fde2fc671322df005976755a1&amp;default_hooks=api_monitor,ssl_pinning_bypass,root_bypass,debugger_check_bypass&amp;auxiliary_hooks=enum_class,string_catch,string_compare,enum_methods,search_class,trace_class&amp;class_name=java.io.File&amp;class_search=ssl&amp;class_trace=javax.net.ssl.TrustManager&amp;frida_code=Java.perform(function()+%7B%0A++%2F%2F+Use+send()+for+logging%0A%7D)%3B" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
        <hr />
-            <h2><a id="frida-api-monitor-api"></a><strong>Frida API Monitor API</strong></h2>
+            <h2><a id="frida-api-monitor-api"></a><strong>Frida API Monitor</strong></h2>
             <p>API to view Frida API monitor output.</p>
             <ul>
               <li>
@@ -2497,15 +2456,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/api_monitor --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/api_monitor --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="frida-get-dependencies-api"></a><strong>Frida Get Runtime Dependencies API</strong></h2>
+            <h2><a id="frida-get-dependencies-api"></a><strong>Frida Get Runtime Dependencies</strong></h2>
             <p>API to collect runtime dependencies.</p>
             <ul>
               <li>
@@ -2571,15 +2529,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/get_dependencies --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/get_dependencies --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="frida-logs-api"></a><strong>Frida View Logs API</strong></h2>
+            <h2><a id="frida-logs-api"></a><strong>Frida View Logs</strong></h2>
             <p>API to view Frida log output.</p>
             <ul>
               <li>
@@ -2645,15 +2602,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/logs --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/logs --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="frida-list-scripts-api"></a><strong>Frida List Scripts API</strong></h2>
+            <h2><a id="frida-list-scripts-api"></a><strong>Frida List Scripts</strong></h2>
             <p>API to list available frida scripts.</p>
             <ul>
               <li>
@@ -2734,8 +2690,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/list_scripts --data "device=android" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/list_scripts --data "device=android" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -2743,7 +2698,7 @@
 
 
           <hr />
-            <h2><a id="frida-get-script-api"></a><strong>Frida Get Script API</strong></h2>
+            <h2><a id="frida-get-script-api"></a><strong>Frida Get Script</strong></h2>
             <p>API to generate frida script based on selection.</p>
             <ul>
               <li>
@@ -2814,15 +2769,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/get_script --data "device=android&amp;scripts[]=hook_java_reflection&amp;scripts[]=jni_hook_by_address&amp;scripts[]=default&amp;scripts[]=get_android_id" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/get_script --data "device=android&amp;scripts[]=hook_java_reflection&amp;scripts[]=jni_hook_by_address&amp;scripts[]=default&amp;scripts[]=get_android_id" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="stop-analysis-api"></a><strong>Stop Dynamic Analysis API</strong></h2>
+            <h2><a id="stop-analysis-api"></a><strong>Stop Dynamic Analysis</strong></h2>
             <p>Stop MobSF Dynamic Analyzer. This API must be called to stop dynamic analysis and prior to report generation.</p>
             <ul>
               <li>
@@ -2890,15 +2844,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/stop_analysis --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/stop_analysis --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="dynamic-report-json-api"></a><strong>Dynamic Analysis JSON Report API</strong></h2>
+            <h2><a id="dynamic-report-json-api"></a><strong>Dynamic Analysis JSON Report</strong></h2>
             <p>Generate JSON Report of Dynamic Analysis. Stop Dynamic Analysis (/api/v1/dynamic/stop_analysis) API must be called before calling this API.</p>
             <ul>
               <li>
@@ -2964,8 +2917,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/report_json --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/report_json --data "hash=6825bb9fde2fc671322df005976755a1" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -2973,7 +2925,7 @@
 
 
             <hr />
-            <h2><a id="dynamic-view-source-api"></a><strong>Dynamic Analysis View Source API</strong></h2>
+            <h2><a id="dynamic-view-source-api"></a><strong>Dynamic Analysis View Source</strong></h2>
             <p>API to view source of files dumped from device after dynamic analysis. Stop Dynamic Analysis (/api/v1/dynamic/stop_analysis) API must be called before calling this API.</p>
             <ul>
               <li>
@@ -3049,8 +3001,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/view_source --data "file=data/data/org.wikipedia/shared_prefs/org.wikipedia_preferences.xml&amp;hash=6825bb9fde2fc671322df005976755a1&amp;type=xml" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/view_source --data "file=data/data/org.wikipedia/shared_prefs/org.wikipedia_preferences.xml&amp;hash=6825bb9fde2fc671322df005976755a1&amp;type=xml" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -3058,7 +3009,7 @@
 
 
             <hr />
-            <h2><a id="supported-models-api"></a><strong>Supported Corellium iOS Models API</strong></h2>
+            <h2><a id="supported-models-api"></a><strong>Supported Corellium iOS Models</strong></h2>
             <p>List out supported iOS Corellium VMs.</p>
             <ul>
               <li>
@@ -3105,8 +3056,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_supported_models -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_supported_models -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -3114,7 +3064,7 @@
             
           
             <hr />
-            <h2><a id="supported-ios-versions-api"></a><strong>Supported Corellium iOS Versions API</strong></h2>
+            <h2><a id="supported-ios-versions-api"></a><strong>Supported Corellium iOS Versions</strong></h2>
             <p>List out supported iOS versions for a device.</p>
             <ul>
               <li>
@@ -3180,8 +3130,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_ios_versions --data "model=iPhone15,3" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_ios_versions --data "model=iPhone15,3" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -3190,7 +3139,7 @@
 
 
             <hr />
-            <h2><a id="create-ios-instance-api"></a><strong>Corellium Create iOS Instance API</strong></h2>
+            <h2><a id="create-ios-instance-api"></a><strong>Corellium Create iOS Instance</strong></h2>
             <p>Create a jailbroken iOS instance in Corellium with desired flavor and iOS version.</p>
             <ul>
               <li>
@@ -3271,8 +3220,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_create_ios_instance --data "project_id=728bb423-68bc-4300-a484-6e32a43be9cf&name=iosvm&flavor=iphone15p&version=16.0" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_create_ios_instance --data "project_id=728bb423-68bc-4300-a484-6e32a43be9cf&name=iosvm&flavor=iphone15p&version=16.0" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -3281,7 +3229,7 @@
 
 
             <hr />
-            <h2><a id="ios-dynamic-analysis-api"></a><strong>iOS Dynamic Analysis API</strong></h2>
+            <h2><a id="ios-dynamic-analysis-api"></a><strong>iOS Dynamic Analysis</strong></h2>
             <p>List iOS Instance & Apps Available for Dynamic Analysis.</p>
             <ul>
               <li>
@@ -3331,15 +3279,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/dynamic_analysis -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/dynamic_analysis -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="start-ios-instance-api"></a><strong>Corellium Start iOS Instance API</strong></h2>
+            <h2><a id="start-ios-instance-api"></a><strong>Corellium Start iOS Instance</strong></h2>
             <p>Start iOS VM in previously created in Corellium by instance identifier.</p>
             <ul>
               <li>
@@ -3405,15 +3352,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_start_instance --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_start_instance --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="stop-ios-instance-api"></a><strong>Corellium Stop iOS Instance API</strong></h2>
+            <h2><a id="stop-ios-instance-api"></a><strong>Corellium Stop iOS Instance</strong></h2>
             <p>Stop iOS VM in Corellium by instance identifier.</p>
             <ul>
               <li>
@@ -3479,15 +3425,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_stop_instance --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_stop_instance --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="unpause-ios-instance-api"></a><strong>Corellium Unpause iOS Instance API</strong></h2>
+            <h2><a id="unpause-ios-instance-api"></a><strong>Corellium Unpause iOS Instance</strong></h2>
             <p>Unpause iOS VM in Corellium by instance identifier.</p>
             <ul>
               <li>
@@ -3553,15 +3498,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_unpause_instance --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_unpause_instance --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="reboot-ios-instance-api"></a><strong>Corellium Reboot iOS Instance API</strong></h2>
+            <h2><a id="reboot-ios-instance-api"></a><strong>Corellium Reboot iOS Instance</strong></h2>
             <p>Reboot iOS VM in Corellium by instance identifier.</p>
             <ul>
               <li>
@@ -3627,8 +3571,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_reboot_instance --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_reboot_instance --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -3636,7 +3579,7 @@
             
 
             <hr />
-            <h2><a id="destroy-ios-instance-api"></a><strong>Corellium Destroy iOS Instance API</strong></h2>
+            <h2><a id="destroy-ios-instance-api"></a><strong>Corellium Destroy iOS Instance</strong></h2>
             <p>Destroy iOS VM in Corellium by instance identifier.</p>
             <ul>
               <li>
@@ -3702,15 +3645,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_destroy_instance --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_destroy_instance --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="corellium-list-apps-api"></a><strong>Corellium List Apps in Instance API</strong></h2>
+            <h2><a id="corellium-list-apps-api"></a><strong>Corellium List Apps in Instance</strong></h2>
             <p>List all apps present in the Corellium iOS VM.</p>
             <ul>
               <li>
@@ -3776,8 +3718,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_list_apps --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/corellium_list_apps --data "instance_id=ce9cf65d-5ce5-4fad-823f-5d784c802d21" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -3785,7 +3726,7 @@
             
 
             <hr />
-            <h2><a id="ios-setup-environment-api"></a><strong>Setup iOS Dynamic Analysis Environment API</strong></h2>
+            <h2><a id="ios-setup-environment-api"></a><strong>Setup iOS Dynamic Analysis Environment</strong></h2>
             <p>Setup iOS Dynamic Analysis Environment for an IPA. This API call is required for apps not installed in the Corellium iOS VM.</p>
             <ul>
               <li>
@@ -3853,8 +3794,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/setup_environment --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&hash=35469622303ba10a2195557a3ad1810a" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/setup_environment --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&hash=35469622303ba10a2195557a3ad1810a" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -3862,7 +3802,7 @@
 
 
             <hr />
-            <h2><a id="ios-dynamic-analyzer-api"></a><strong>iOS Dynamic Analyzer API</strong></h2>
+            <h2><a id="ios-dynamic-analyzer-api"></a><strong>iOS Dynamic Analyzer</strong></h2>
             <p>Start iOS Dynamic Analyzer with an app. Setup environment (api/v1/ios/setup_environment) API should be called before running dynamic analyzer for IPAs not installed in the Corellium VM.</p>
             <ul>
               <li>
@@ -3930,15 +3870,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/dynamic_analyzer --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/dynamic_analyzer --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="ios-run-app-api"></a><strong>Run App API</strong></h2>
+            <h2><a id="ios-run-app-api"></a><strong>Run App</strong></h2>
             <p>Run the app in the Corellium VM.</p>
             <ul>
               <li>
@@ -4006,15 +3945,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/run_app --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/run_app --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="ios-stop-app-api"></a><strong>Stop App API</strong></h2>
+            <h2><a id="ios-stop-app-api"></a><strong>Stop App</strong></h2>
             <p>Kill the app in the Corellium VM.</p>
             <ul>
               <li>
@@ -4082,15 +4020,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/stop_app --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/stop_app --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="ios-remove-app-api"></a><strong>Remove App API</strong></h2>
+            <h2><a id="ios-remove-app-api"></a><strong>Remove App</strong></h2>
             <p>Remove an app from the Corellium VM.</p>
             <ul>
               <li>
@@ -4158,15 +4095,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/remove_app --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/remove_app --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="ios-takescreenshot-api"></a><strong>Take Screenshot API</strong></h2>
+            <h2><a id="ios-takescreenshot-api"></a><strong>Take Screenshot</strong></h2>
             <p>Take a screenshot.</p>
             <ul>
               <li>
@@ -4229,8 +4165,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/take_screenshot --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/take_screenshot --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -4238,7 +4173,7 @@
 
 
             <hr />
-            <h2><a id="ios-get-app-container-path-api"></a><strong>Get App Container Path API</strong></h2>
+            <h2><a id="ios-get-app-container-path-api"></a><strong>Get App Container Path</strong></h2>
             <p>Get App container path. App must be instrumented before calling this API.</p>
             <ul>
               <li>
@@ -4301,15 +4236,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/get_app_container_path --data "bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/get_app_container_path --data "bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="ios-network-capture-api"></a><strong>Network Capture API</strong></h2>
+            <h2><a id="ios-network-capture-api"></a><strong>Network Capture</strong></h2>
             <p>Enable/Disable Network Capture.</p>
             <ul>
               <li>
@@ -4377,15 +4311,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/network_capture --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&state=on" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/network_capture --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&state=on" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="ios-live-pcap-download-api"></a><strong>Live PCAP Download API</strong></h2>
+            <h2><a id="ios-live-pcap-download-api"></a><strong>Live PCAP Download</strong></h2>
             <p>Download live packet capture.</p>
             <ul>
               <li>
@@ -4448,15 +4381,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/live_pcap_download --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/live_pcap_download --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="ios-ssh-execute-api"></a><strong>SSH Execute API</strong></h2>
+            <h2><a id="ios-ssh-execute-api"></a><strong>SSH Execute</strong></h2>
             <p>Execute OS Commands inside the VM over SSH.</p>
             <ul>
               <li>
@@ -4524,15 +4456,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/ssh_execute --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&cmd=ls" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/ssh_execute --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&cmd=ls" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="download-app-data-api"></a><strong>Download App Data API</strong></h2>
+            <h2><a id="download-app-data-api"></a><strong>Download App Data</strong></h2>
             <p>Download app data from the VM.</p>
             <ul>
               <li>
@@ -4600,15 +4531,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/download_app_data --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/download_app_data --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="instance-input-api"></a><strong>Instance Input API</strong></h2>
+            <h2><a id="instance-input-api"></a><strong>Instance Input</strong></h2>
             <p>Provide text, swipe and touch events to the VM</p>
             <ul>
               <li>
@@ -4696,15 +4626,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/instance_input --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&x=264&y=824&event=finger&max_x=750&max_y=1334" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/instance_input --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&x=264&y=824&event=finger&max_x=750&max_y=1334" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="system-logs-api"></a><strong>System Logs API</strong></h2>
+            <h2><a id="system-logs-api"></a><strong>System Logs</strong></h2>
             <p>Get VM system logs.</p>
             <ul>
               <li>
@@ -4767,15 +4696,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/system_logs --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/system_logs --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="file-upload-api"></a><strong>File Upload API</strong></h2>
+            <h2><a id="file-upload-api"></a><strong>File Upload</strong></h2>
             <p>Upload a file to the the VM.</p>
             <ul>
               <li>
@@ -4843,15 +4771,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -F "file=@/Users/foo/foo.sh" -F "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe" --url http://localhost:8000/api/v1/ios/file_upload -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -F "file=@/Users/foo/foo.sh" -F "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe" --url http://localhost:8000/api/v1/ios/file_upload -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="file-download-api"></a><strong>File Download API</strong></h2>
+            <h2><a id="file-download-api"></a><strong>File Download</strong></h2>
             <p>Download a file from the VM.</p>
             <ul>
               <li>
@@ -4919,15 +4846,14 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/file_download --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&file=/var/mobile/Containers/Data/Application/6DC4F886-537F-4F6D-87EE-ED976F4F4682/Library/Application Support/com.braze.core.persistence/data/61cbc3f/remote-configuration.json" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/file_download --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&file=/var/mobile/Containers/Data/Application/6DC4F886-537F-4F6D-87EE-ED976F4F4682/Library/Application Support/com.braze.core.persistence/data/61cbc3f/remote-configuration.json" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <hr />
-            <h2><a id="ios-instrument-api"></a><strong>Frida Instrument API</strong></h2>
+            <h2><a id="ios-instrument-api"></a><strong>Frida Instrument</strong></h2>
             <p>Instrument iOS App.</p>
             <ul>
               <li>
@@ -5056,8 +4982,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/ios_instrument --data "frida_action=spawn&pid=&new_bundle_id=&hash=f49355aa96053a36248905f78d5419a8&bundle_id=com.1debit.beta.ChimeApp&instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&default_hooks=jailbreak_bypass&dump_hooks=network,crypto,cookies,file-access,json,sqlite,data-dir,keychain,nslog,text-inputs,nsurlcredentialstorage,nsuserdefaults,pasteboard&auxiliary_hooks=&class_name=&class_search=&method_search=asdad&class_trace=&frida_code=" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/frida/ios_instrument --data "frida_action=spawn&pid=&new_bundle_id=&hash=f49355aa96053a36248905f78d5419a8&bundle_id=com.1debit.beta.ChimeApp&instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&default_hooks=jailbreak_bypass&dump_hooks=network,crypto,cookies,file-access,json,sqlite,data-dir,keychain,nslog,text-inputs,nsurlcredentialstorage,nsuserdefaults,pasteboard&auxiliary_hooks=&class_name=&class_search=&method_search=asdad&class_trace=&frida_code=" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -5065,7 +4990,7 @@
 
 
             <hr />
-            <h2><a id="ios-report-json-api"></a><strong>iOS Dynamic Analysis Report API</strong></h2>
+            <h2><a id="ios-report-json-api"></a><strong>iOS Dynamic Analysis Report</strong></h2>
             <p>Get iOS Dynamic Analysis Report.</p>
             <ul>
               <li>
@@ -5133,8 +5058,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/ios_report_json --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/dynamic/ios_report_json --data "instance_id=bd057756-87a8-45a6-945d-35c7ce48eafe&bundle_id=com.highaltitudehacks.DVIAswiftv2" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -5142,7 +5066,7 @@
 
 
             <hr />
-            <h2><a id="device-dynamic-analysis-api"></a><strong>iOS Device Dynamic Analysis API</strong></h2>
+            <h2><a id="device-dynamic-analysis-api"></a><strong>iOS Device Dynamic Analysis</strong></h2>
             <p>iOS Jailbroken Device Dynamic Analysis Entrypoint.</p>
             <ul>
               <li>
@@ -5208,8 +5132,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_dynamic_analysis --data "device_id=00008110-000A4CE00C81C01E" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_dynamic_analysis --data "device_id=00008110-000A4CE00C81C01E" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -5217,7 +5140,7 @@
 
 
             <hr />
-            <h2><a id="device-get-api"></a><strong>Get iOS Device Details API</strong></h2>
+            <h2><a id="device-get-api"></a><strong>Get iOS Device Details</strong></h2>
             <p>Get iOS Device Details and List Apps.</p>
             <ul>
               <li>
@@ -5283,8 +5206,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_get --data "device_id=00008110-000A4CE00C81C01E" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_get --data "device_id=00008110-000A4CE00C81C01E" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -5292,7 +5214,7 @@
 
 
             <hr />
-            <h2><a id="device-install-ipa-api"></a><strong>Install IPA on Device API</strong></h2>
+            <h2><a id="device-install-ipa-api"></a><strong>Install IPA on Device</strong></h2>
             <p>Install an IPA file on the jailbroken iOS device.</p>
             <ul>
               <li>
@@ -5363,8 +5285,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_install_ipa --data "device_id=00008110-000A4CE00C81C01E&checksum=f49355aa96053a36248905f78d5419a8" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_install_ipa --data "device_id=00008110-000A4CE00C81C01E&checksum=f49355aa96053a36248905f78d5419a8" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -5372,7 +5293,7 @@
 
 
             <hr />
-            <h2><a id="device-dynamic-analyzer-api"></a><strong>iOS Device Dynamic Analyzer API</strong></h2>
+            <h2><a id="device-dynamic-analyzer-api"></a><strong>iOS Device Dynamic Analyzer</strong></h2>
             <p>Start iOS Device Dynamic Analyzer.</p>
             <ul>
               <li>
@@ -5443,8 +5364,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_dynamic_analyzer --data "device_id=00008110-000A4CE00C81C01E&bundle_id=com.example.app" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_dynamic_analyzer --data "device_id=00008110-000A4CE00C81C01E&bundle_id=com.example.app" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -5452,7 +5372,7 @@
 
 
             <hr />
-            <h2><a id="device-file-upload-api"></a><strong>Upload File to Device API</strong></h2>
+            <h2><a id="device-file-upload-api"></a><strong>Upload File to Device</strong></h2>
             <p>Upload a file to the jailbroken iOS device.</p>
             <ul>
               <li>
@@ -5523,8 +5443,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_file_upload -F "device_id=00008110-000A4CE00C81C01E" -F "file=@/path/to/file" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_file_upload -F "device_id=00008110-000A4CE00C81C01E" -F "file=@/path/to/file" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -5532,7 +5451,7 @@
 
 
             <hr />
-            <h2><a id="device-ssh-execute-api"></a><strong>SSH Execute on Device API</strong></h2>
+            <h2><a id="device-ssh-execute-api"></a><strong>SSH Execute on Device</strong></h2>
             <p>Execute commands on the jailbroken iOS device over SSH.</p>
             <ul>
               <li>
@@ -5603,8 +5522,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_ssh_execute --data "device_id=00008110-000A4CE00C81C01E&cmd=ls /tmp" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_ssh_execute --data "device_id=00008110-000A4CE00C81C01E&cmd=ls /tmp" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -5612,7 +5530,7 @@
 
 
             <hr />
-            <h2><a id="device-instrument-api"></a><strong>Frida Instrument on Device API</strong></h2>
+            <h2><a id="device-instrument-api"></a><strong>Frida Instrument on Device</strong></h2>
             <p>Frida Instrument an app on the jailbroken iOS device.</p>
             <ul>
               <li>
@@ -5713,8 +5631,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_instrument --data "device_id=00008110-000A4CE00C81C01E&bundle_id=com.example.app&default_hooks=jailbreak_bypass&dump_hooks=network,crypto&auxiliary_hooks=&frida_code=" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_instrument --data "device_id=00008110-000A4CE00C81C01E&bundle_id=com.example.app&default_hooks=jailbreak_bypass&dump_hooks=network,crypto&auxiliary_hooks=&frida_code=" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -5722,7 +5639,7 @@
 
 
             <hr />
-            <h2><a id="device-system-logs-api"></a><strong>Device System Logs API</strong></h2>
+            <h2><a id="device-system-logs-api"></a><strong>Device System Logs</strong></h2>
             <p>Get system logs from the jailbroken iOS device.</p>
             <ul>
               <li>
@@ -5788,8 +5705,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_system_logs --data "device_id=00008110-000A4CE00C81C01E" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_system_logs --data "device_id=00008110-000A4CE00C81C01E" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -5797,7 +5713,7 @@
 
 
             <hr />
-            <h2><a id="device-ps-api"></a><strong>Device Running Processes API</strong></h2>
+            <h2><a id="device-ps-api"></a><strong>Device Running Processes</strong></h2>
             <p>Get list of running processes on the jailbroken iOS device.</p>
             <ul>
               <li>
@@ -5863,8 +5779,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_ps --data "device_id=00008110-000A4CE00C81C01E" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_ps --data "device_id=00008110-000A4CE00C81C01E" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -5872,7 +5787,7 @@
 
 
             <hr />
-            <h2><a id="device-file-download-api"></a><strong>Download File from Device API</strong></h2>
+            <h2><a id="device-file-download-api"></a><strong>Download File from Device</strong></h2>
             <p>Download a file from the jailbroken iOS device.</p>
             <ul>
               <li>
@@ -5943,8 +5858,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_file_download --data "device_id=00008110-000A4CE00C81C01E&file=/tmp/example.txt" -H "Authorization: {{ api_key}}" --output example.txt
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_file_download --data "device_id=00008110-000A4CE00C81C01E&file=/tmp/example.txt" -H "Authorization: {{ api_key}}" --output example.txt</code></pre>
                   </li>
                 </ul>
               </li>
@@ -5952,7 +5866,7 @@
 
 
             <hr />
-            <h2><a id="device-api-monitor-api"></a><strong>iOS Device API Monitor API</strong></h2>
+            <h2><a id="device-api-monitor-api"></a><strong>iOS Device API Monitor</strong></h2>
             <p>Get iOS Device API Monitor data.</p>
             <ul>
               <li>
@@ -6018,8 +5932,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_api_monitor --data "checksum=f49355aa96053a36248905f78d5419a8" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_api_monitor --data "checksum=f49355aa96053a36248905f78d5419a8" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -6027,7 +5940,7 @@
 
 
             <hr />
-            <h2><a id="device-download-app-data-api"></a><strong>Download App Data from Device API</strong></h2>
+            <h2><a id="device-download-app-data-api"></a><strong>Download App Data from Device</strong></h2>
             <p>Download Application Data from the jailbroken iOS device.</p>
             <ul>
               <li>
@@ -6098,8 +6011,7 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_download_app_data --data "device_id=00008110-000A4CE00C81C01E&bundle_id=com.example.app" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_download_app_data --data "device_id=00008110-000A4CE00C81C01E&bundle_id=com.example.app" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
@@ -6107,7 +6019,7 @@
 
 
             <hr />
-            <h2><a id="device-report-json-api"></a><strong>iOS Device Dynamic Analysis Report API</strong></h2>
+            <h2><a id="device-report-json-api"></a><strong>iOS Device Dynamic Analysis Report</strong></h2>
             <p>Get iOS Device Dynamic Analysis Report.</p>
             <ul>
               <li>
@@ -6175,18 +6087,136 @@
                 <p><strong>Sample Call:</strong></p>
                 <ul>
                   <li>
-                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_report_json --data "device_id=00008110-000A4CE00C81C01E&bundle_id=com.example.app" -H "Authorization: {{ api_key}}"
-                  </code></pre>
+                    <pre><code>curl -X POST --url http://localhost:8000/api/v1/ios/device_report_json --data "device_id=00008110-000A4CE00C81C01E&bundle_id=com.example.app" -H "Authorization: {{ api_key}}"</code></pre>
                   </li>
                 </ul>
               </li>
             </ul>
 
             <!-- end API Docs-->
-          </div>
-        </div>
-      </div>
+            </div>
+            </div>
+            </div>
+        </main>
+        {% include "general/includes/landing_footer.html" %}
     </div>
-  </div>
-</div>
-{% endblock %}
+    <script src="{% static "adminlte/plugins/jquery.min.js" %}"></script>
+    <script src="{% static "adminlte/plugins/bootstrap/bootstrap.bundle.min.js" %}"></script>
+    <script>
+      (function () {
+        var detail = document.getElementById('api-detail');
+        var nav = document.getElementById('api-nav');
+        var toggle = document.querySelector('.api-nav-toggle');
+        if (!detail || !nav) {
+          return;
+        }
+        var sections = [];
+        var current = null;
+        Array.prototype.slice.call(detail.children).forEach(function (node) {
+          if (node.tagName === 'H2') {
+            var anchor = node.querySelector('a[id]');
+            current = document.createElement('section');
+            current.className = 'api-endpoint';
+            current.hidden = true;
+            current.dataset.endpoint = anchor ? anchor.id : '';
+            detail.insertBefore(current, node);
+            sections.push(current);
+          }
+          if (current && node.tagName !== 'HR') {
+            current.appendChild(node);
+          }
+        });
+        Array.prototype.slice.call(detail.querySelectorAll(':scope > hr')).forEach(function (hr) {
+          hr.remove();
+        });
+
+        function show(id) {
+          var match = sections.some(function (section) {
+            return section.dataset.endpoint === id;
+          });
+          if (!match) {
+            id = sections.length ? sections[0].dataset.endpoint : '';
+          }
+          sections.forEach(function (section) {
+            section.hidden = section.dataset.endpoint !== id;
+          });
+          nav.querySelectorAll('a[href^="#"]').forEach(function (link) {
+            var on = link.getAttribute('href') === '#' + id;
+            link.classList.toggle('is-active', on);
+            if (on) {
+              link.setAttribute('aria-current', 'page');
+              if (link.scrollIntoView) {
+                link.scrollIntoView({block: 'nearest'});
+              }
+            } else {
+              link.removeAttribute('aria-current');
+            }
+          });
+          if (id && location.hash !== '#' + id) {
+            history.replaceState(null, '', '#' + id);
+          }
+          detail.scrollTop = 0;
+          window.scrollTo(0, 0);
+        }
+
+        nav.addEventListener('click', function (event) {
+          var link = event.target.closest('a[href^="#"]');
+          if (!link) {
+            var item = event.target.closest('li');
+            link = item ? item.querySelector('a[href^="#"]') : null;
+          }
+          if (!link) {
+            return;
+          }
+          event.preventDefault();
+          show(link.getAttribute('href').slice(1));
+          nav.classList.remove('is-open');
+          if (toggle) {
+            toggle.setAttribute('aria-expanded', 'false');
+          }
+        });
+
+        if (toggle) {
+          toggle.addEventListener('click', function () {
+            var open = nav.classList.toggle('is-open');
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+          });
+        }
+
+        window.addEventListener('hashchange', function () {
+          show(location.hash.slice(1));
+        });
+
+        show(location.hash ? location.hash.slice(1) : '');
+
+        var copyButton = document.querySelector('.api-key-copy');
+        var apiKey = document.getElementById('api-key');
+        if (copyButton && apiKey) {
+          copyButton.addEventListener('click', function () {
+            var value = apiKey.textContent;
+            var icon = copyButton.querySelector('i');
+            var markCopied = function () {
+              copyButton.classList.add('is-copied');
+              copyButton.setAttribute('aria-label', 'Copied');
+              if (icon) {
+                icon.classList.remove('fa-copy');
+                icon.classList.add('fa-check');
+              }
+              window.setTimeout(function () {
+                copyButton.classList.remove('is-copied');
+                copyButton.setAttribute('aria-label', 'Copy API key');
+                if (icon) {
+                  icon.classList.remove('fa-check');
+                  icon.classList.add('fa-copy');
+                }
+              }, 1500);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(value).then(markCopied).catch(function () {});
+            }
+          });
+        }
+      }());
+    </script>
+   </body>
+</html>

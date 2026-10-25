@@ -1,0 +1,23 @@
+<footer class="mastfoot">
+    <p class="home-links">
+        <a href="{% url 'donate' %}">Donate</a>
+        <span class="home-link-sep" aria-hidden="true">|</span>
+        <a href="{% url 'about' %}">About</a>
+        {% if show_learn %}
+        <span class="home-link-sep" aria-hidden="true">|</span>
+        <a href="https://opsecx.com/courses/automated-mobile-application-security-assessment-with-mobsf" target="_blank" rel="noopener noreferrer">Learn</a>
+        {% endif %}
+    </p>
+    <div class="home-split" aria-hidden="true">
+        <span class="home-split-line"></span>
+        <svg class="home-split-ribbon" viewBox="0 0 18 8" width="18" height="8" focusable="false">
+            <path fill="#c4a15a" d="M.4 1.6h5.4L7.6 4 5.8 6.4H.4L1.8 4z"/>
+            <path fill="#e6cb86" d="M17.6 1.6h-5.4L10.4 4l1.8 2.4h5.4L16.2 4z"/>
+        </svg>
+        <span class="home-split-line home-split-line-right"></span>
+    </div>
+    <p class="made-with">Made with <i class="fas fa-heart" role="img" aria-label="love"></i> in India</p>
+    <p class="maintained">Maintained by humans and agents around the globe</p>
+    <p class="home-version">Mobile Security Framework - MobSF {{ version }}</p>
+    <div id="alert" class="alert-bar">Analysis started! Please wait to be redirected or check recent scans after sometime.</div>
+</footer>
