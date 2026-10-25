@@ -17,30 +17,7 @@
    <body class="text-center">
 
     <div class="home-shell">
-        <nav class="nav nav-masthead">
-            <img class="home-logo" src="{% static "img/mobsf_logo.png" %}" alt="MobSF Logo" height="30" width="90" />
-            <div class="nav-links">
-                <a class="nav-link active" href="{% url 'recent' %}">Scans</a>
-                <a class="nav-link" href="{% url 'dynamic' %}">Dynamic Analyzer</a>
-                <a class="nav-link" href="{% url 'api_docs' %}">API</a>
-                <a class="nav-link" href="{% url 'about' %}">About</a>
-                {% if user.is_authenticated %}
-                <div class="dropdown">
-                    <a id="dropdownSubMenu1" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle"><i class="fa fa-user-circle" aria-hidden="true"></i></a>
-                    <ul aria-labelledby="dropdownSubMenu1" class="dropdown-menu">
-                        <li><a href="#" class="dropdown-item"> <small>{{ request.user.username }} <span class="badge badge-primary"> {% if user.is_staff %} Admin {% else %}{{ request.user.groups.all.0 }} {% endif %}</span></small></a></li>
-                        <li class="dropdown-divider"></li>
-                        <li><a href="{% url 'change_password' %}" class="dropdown-item"><i class="fa fa-asterisk" aria-hidden="true"></i> Change Password </a></li>
-                        {% if user.is_staff %}<li><a href="{% url 'users' %}" class="dropdown-item"><i class="fa fa-users" aria-hidden="true"></i> User Management </a></li>{% endif %}
-                        <li><a href="{% url 'logout' %}" class="dropdown-item"><i class="fa fa-power-off" aria-hidden="true"></i> Logout </a></li>
-                    </ul>
-                </div>
-                {% endif %}
-                <form class="nav-search" action="/search" method="GET">
-                    <input name="query" type="search" class="form-control" placeholder="Search" aria-label="Search">
-                </form>
-            </div>
-        </nav>
+        {% include "general/includes/landing_nav.html" %}
 
         <main role="main" class="home-main">
             <div id="drop">
@@ -56,18 +33,10 @@
                 </label>
                 <h5 class="lead" id="status"></h5>
                 <progress id="progressBar" value="0" max="100"></progress>
-                <input type="text" id="package" class="package-field" placeholder="Download &amp; scan package" aria-label="Download and scan package">
             </form>
         </main>
 
-        <footer class="mastfoot">
-            <p class="home-links">
-                <a href="{% url 'donate' %}">Donate</a>
-                <a target="_blank" href="https://mobsf.github.io/docs/#/">Docs</a>
-            </p>
-            <p>&copy; {% now "Y" %} Mobile Security Framework - MobSF {{ version }}</p>
-            <div id="alert" class="alert-bar">Analysis started! Please wait to be redirected or check recent scans after sometime.</div>
-        </footer>
+        {% include "general/includes/landing_footer.html" with show_learn=1 %}
     </div>
 
     <!--Loading Ring-->
@@ -81,61 +50,23 @@
     <script src="{% static "adminlte/plugins/bootstrap/bootstrap.bundle.min.js" %}"></script>
       <script>
             let warning = "This is a demo MobSF instance. Anything uploaded here will be publicly available. Do you want to continue?";
-            // Result View
-            function load_result(url){
+            var statusTimer = null;
+            var analysisStarted = false;
+            function show_started_alert(){
                 hide_loader();
-                // Display alert notification
                 var x = document.getElementById("alert");
                 x.className = "alert-bar show slide-up";
                 setTimeout(function () {
                     x.className = x.className.replace("show", "");
                 }, 10000);
-
+            }
+            // Result View
+            function load_result(url){
+                show_started_alert();
                 // Redirect after showing alertbar
                 setTimeout(function () {
                     window.location.href = url;
                 }, 1000); // Adjust delay as needed
-            }
-
-            //Download and scan APK
-            $('#package').keypress(function(event){
-                var keycode = (event.keyCode ? event.keyCode : event.which);
-                if(keycode == '13'){
-                    _("status").innerText = 'Trying to download ...';
-                    show_loader();
-                    $.ajax({
-                        url : '{% url "download_scan" %}', 
-                        type : "POST",
-                        dataType: "json", 
-                        data : {
-                            package: $('#package').val(),
-                            csrfmiddlewaretoken: '{{ csrf_token }}',
-                        },
-                        success : function(json){
-                            if (json.status === 'ok'){
-                                setInterval(function() {
-                                    get_status(json.hash);
-                                }, 500);
-
-                                url = json.analyzer + '/' + json.hash + '/';
-                                load_result(url);
-                            } else {
-                                hide_loader();
-                                _("status").innerText = json.description;
-                            }
-                        },
-                        error : function(xhr, ajaxOptions, thrownError) {
-                            hide_loader();
-                            if (thrownError === 'Forbidden'){
-                                _("status").innerText = "You do not have permission to download and scan!";
-                            }
-                        }
-                    });
-                }
-            });
-            function show_loader(){
-                var loadingOverlay = document.querySelector('.loading');
-                loadingOverlay.classList.remove('hidden');
             }
 
             function hide_loader(){
@@ -147,17 +78,33 @@
                 return document.getElementById(el);
             }
 
-            // Response Handler     
+            // Response Handler
             function responseHandler(json, isbutton) {
                 if (json.status === 'error') {
                     _("status").innerText = json.description;
-                } else {
-                    setInterval(function() {
-                        get_status(json.hash);
-                    }, 500);
-                    var url = json.analyzer + '/' + json.hash + '/';
-                    load_result(url);
+                    return;
                 }
+                // Stay on this page while the report request runs the scan.
+                // Navigating now freezes the last upload line for the whole analysis.
+                var url = json.analyzer + '/' + json.hash + '/';
+                analysisStarted = true;
+                _("status").innerText = "Analyzing ...";
+                show_started_alert();
+                if (statusTimer) {
+                    clearInterval(statusTimer);
+                }
+                statusTimer = setInterval(function() {
+                    get_status(json.hash);
+                }, 500);
+                fetch(url, {credentials: 'same-origin', cache: 'no-store'})
+                    .catch(function() {})
+                    .then(function() {
+                        if (statusTimer) {
+                            clearInterval(statusTimer);
+                            statusTimer = null;
+                        }
+                        window.location.href = url;
+                    });
             }
 
 
@@ -171,12 +118,10 @@
                 xhr.onload = function() {
                     if (xhr.status >= 200 && xhr.status < 300) {
                         var response = JSON.parse(xhr.responseText);
-                        if (response.status === 'ok') {
+                        if (response.status === 'ok' && Array.isArray(response.logs) && response.logs.length) {
                             const last_log = response.logs[response.logs.length - 1];
-                            _("status").innerText = last_log.status + ' .';
-                            var number = Math.ceil((Math.floor(Math.random() * 5)));
-                            for (i=0;i<number;i++){
-                                _("status").innerText += '.';
+                            if (last_log && last_log.status && last_log.status !== 'init') {
+                                _("status").innerText = last_log.status;
                             }
                         }
                     } else {
@@ -199,6 +144,9 @@
                 var percent = (event.loaded / event.total) * 100;
                 var rounded = Math.round(percent);
                 _("progressBar").value = rounded;
+                if (analysisStarted) {
+                    return;
+                }
                 if (uploadTotal > 1) {
                     _("status").innerText = "Uploading " + uploadDone + " of " + uploadTotal + " — " + rounded + "%";
                 } else {

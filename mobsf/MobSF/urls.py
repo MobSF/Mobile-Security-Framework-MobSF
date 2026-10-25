@@ -221,7 +221,6 @@ if not settings.API_ONLY:
         re_path(fr'^download_binary/{checksum_regex}/$',
                 home.download_binary,
                 name='download_binary'),
-        re_path(r'^download_scan/', home.download_apk, name='download_scan'),
         re_path(r'^generate_downloads/$',
                 home.generate_download,
                 name='generate_downloads'),

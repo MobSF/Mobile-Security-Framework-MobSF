@@ -38,7 +38,6 @@ from mobsf.MobSF.init import api_key
 from mobsf.MobSF.security import is_safe_path, sanitize_filename, sanitize_svg
 from mobsf.MobSF.views.helpers import FileType
 from mobsf.MobSF.views.scanning import Scanning
-from mobsf.MobSF.views.apk_downloader import apk_download
 from mobsf.StaticAnalyzer.models import (
     EnqueuedTask,
     RecentScansDB,
@@ -316,27 +315,6 @@ def recent_scans(request, page_size=10, page_number=1):
     }
     template = 'general/recent.html'
     return render(request, template, context)
-
-
-@login_required
-@permission_required(Permissions.SCAN)
-def download_apk(request):
-    """Download and APK by package name."""
-    package = request.POST['package']
-    # Package validated in apk_download()
-    context = {
-        'status': 'failed',
-        'description': 'Unable to download APK',
-    }
-    res = apk_download(package)
-    if res:
-        context = res
-        context['status'] = 'ok'
-        context['package'] = package
-    resp = HttpResponse(
-        json.dumps(context),
-        content_type='application/json; charset=utf-8')
-    return resp
 
 
 @login_required
