@@ -1831,11 +1831,11 @@ class ARSCParser:
                             )
 
                         if a_res_type.flags & FLAG_SPARSE:
+                            # Missing resources are omitted. 0xFFFF is a
+                            # real offset (262140), not the dense NO_ENTRY.
                             for _ in range(a_res_type.entryCount):
                                 idx, off16 = unpack(
                                     '<HH', self.buff.read(4))
-                                if off16 == NO_ENTRY_16:
-                                    continue
                                 entries.append(
                                     (off16 * 4, type_id | idx))
                         else:
@@ -1867,7 +1867,7 @@ class ARSCParser:
                                 "Something is off here! We are not where the entries should start."
                             )
                         base_offset = expected_entries_start
-                        for entry_offset, res_id in entries:
+                        for index, (entry_offset, res_id) in enumerate(entries):
                             if entry_offset != -1:
                                 try:
                                     ate = ARSCResTableEntry(
@@ -1878,6 +1878,9 @@ class ARSCParser:
                                         pc,
                                     )
                                 except struct_error:
+                                    # Keep this slot absent so later entries
+                                    # stay aligned with the parsed objects.
+                                    entries[index] = (-1, res_id)
                                     logger.debug(
                                         'Skipping undecodable resource '
                                         'entry 0x%08x',
