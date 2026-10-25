@@ -112,6 +112,11 @@ class FridaServerUpdater:
         frida_bin = self.download_dir / fserver
         if frida_bin.is_file():
             return True
+        logger.info(
+            'Checking Frida server v%s for %s',
+            self.version,
+            arch,
+        )
         if not is_internet_available():
             return False
         try:

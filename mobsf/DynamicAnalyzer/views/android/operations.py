@@ -25,6 +25,9 @@ from mobsf.DynamicAnalyzer.views.android.frida_core import (
     Frida,
     GADGET_SESSION_REQUIRED,
 )
+from mobsf.DynamicAnalyzer.views.android.progress import (
+    progress_response,
+)
 from mobsf.MobSF.security import cmd_injection_check
 from mobsf.MobSF.utils import (
     clear_analysis_state,
@@ -152,6 +155,13 @@ def get_package_name(checksum, identifier=None):
 @require_http_methods(['POST'])
 def mobsfy(request, api=False):
     """Configure Instance for Dynamic Analysis."""
+    if not api and request.headers.get('X-MobSF-Progress') == '1':
+        return progress_response(lambda: _mobsfy_result(request))
+    return send_response(_mobsfy_result(request), api)
+
+
+def _mobsfy_result(request):
+    """Prepare one Android runtime and return the status payload."""
     logger.info('MobSFying Android instance')
     data = {}
     msg = 'Connection failed'
@@ -163,22 +173,21 @@ def mobsfy(request, api=False):
                 'status': 'failed',
                 'message': 'Command Injection Detected',
             }
-            return send_response(data, api)
+            return data
         identifier = docker_translate_localhost(identifier)
         create_env = Environment(identifier)
         if not create_env.connect_n_mount():
             data = {'status': 'failed', 'message': msg}
-            return send_response(data, api)
+            return data
         version = create_env.mobsfy_init()
         if not version:
             data = {'status': 'failed', 'message': msg}
-            return send_response(data, api)
-        else:
-            data = {'status': 'ok', 'android_version': version}
+            return data
+        data = {'status': 'ok', 'android_version': version}
     except Exception as exp:
         logger.exception('MobSFying Android instance failed')
         data = {'status': 'failed', 'message': str(exp)}
-    return send_response(data, api)
+    return data
 
 # AJAX
 

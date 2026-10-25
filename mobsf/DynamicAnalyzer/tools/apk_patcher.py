@@ -1257,6 +1257,7 @@ class GadgetPatcher:
 
     def _sign_apk(self, source_apk, output_apk, label):
         """Sign and verify one APK with the MobSF signing key."""
+        logger.info('Signing %s with the MobSF signing key', label)
         keystore, password = self._signing_credentials()
         env = os.environ.copy()
         env['MOBSF_KEYSTORE_PASSWORD'] = password
@@ -1278,6 +1279,7 @@ class GadgetPatcher:
             source_apk.as_posix(),
         ]
         self._run(sign, f'{label} signing', env)
+        logger.info('Checking the signature of %s', label)
         verify = [
             find_java_binary(),
             '-jar',
@@ -1293,7 +1295,7 @@ class GadgetPatcher:
         self._sign_apk(
             self.unsigned_apk,
             self.output_apk,
-            'APK',
+            'the Frida Gadget APK',
         )
 
     def _split_digests(self):
@@ -1325,12 +1327,13 @@ class GadgetPatcher:
         self.split_output_dir.mkdir(parents=True)
         signed = self._signed_split_paths()
         try:
+            total = len(signed)
             for index, (split_apk, output_apk) in enumerate(
                     zip(self.split_apks, signed)):
                 self._sign_apk(
                     split_apk,
                     output_apk,
-                    f'Split APK {index + 1}',
+                    f'split APK {index + 1} of {total}',
                 )
         except Exception:
             shutil.rmtree(self.split_output_dir, ignore_errors=True)
@@ -1392,8 +1395,6 @@ class GadgetPatcher:
             self._write_patch_metadata(package)
             logger.info('Rebuilding the Frida Gadget APK')
             self._build()
-            logger.info(
-                'Signing the Frida Gadget APK with the MobSF signing key')
             self._sign()
             logger.info('Verifying the signed Frida Gadget APK')
             self._verify_artifact()
