@@ -6,9 +6,6 @@
   } catch (e) {
     theme = null;
   }
-  if (theme !== 'dark' && theme !== 'light') {
-    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
   if (theme === 'dark') {
     document.documentElement.classList.add('dark-mode');
   }
@@ -23,5 +20,100 @@
     background: transparent;
     border: 0;
     cursor: pointer;
+  }
+
+  /* Bootstrap leaves pre/code at #212529, which disappears on dark cards. */
+  .dark-mode pre,
+  .dark-mode pre code {
+    color: #dee2e6;
+  }
+
+  .dark-mode #code-editor {
+    background: #2c3136;
+    border-color: #4b545c;
+  }
+
+  .dark-mode .CodeMirror {
+    background: #282a36;
+    color: #f8f8f2;
+    border-color: #4b545c;
+  }
+
+  .dark-mode .CodeMirror-gutters {
+    background: #21222c;
+    border-right-color: #4b545c;
+  }
+
+  .dark-mode .CodeMirror-cursor {
+    border-left-color: #f8f8f2;
+  }
+
+  .dark-mode .CodeMirror-selected,
+  .dark-mode .CodeMirror-focused .CodeMirror-selected {
+    background: #44475a;
+  }
+
+  .dark-mode .CodeMirror-linenumber {
+    color: #6272a4;
+  }
+
+  .dark-mode .cm-s-default .cm-keyword { color: #ff79c6; }
+  .dark-mode .cm-s-default .cm-atom,
+  .dark-mode .cm-s-default .cm-number { color: #bd93f9; }
+  .dark-mode .cm-s-default .cm-def { color: #50fa7b; }
+  .dark-mode .cm-s-default .cm-variable-2,
+  .dark-mode .cm-s-default .cm-variable-3,
+  .dark-mode .cm-s-default .cm-type,
+  .dark-mode .cm-s-default .cm-builtin,
+  .dark-mode .cm-s-default .cm-link { color: #8be9fd; }
+  .dark-mode .cm-s-default .cm-comment { color: #6272a4; }
+  .dark-mode .cm-s-default .cm-string { color: #f1fa8c; }
+  .dark-mode .cm-s-default .cm-string-2 { color: #ffb86c; }
+  .dark-mode .cm-s-default .cm-meta,
+  .dark-mode .cm-s-default .cm-qualifier,
+  .dark-mode .cm-s-default .cm-bracket { color: #f8f8f2; }
+  .dark-mode .cm-s-default .cm-tag { color: #ff79c6; }
+  .dark-mode .cm-s-default .cm-attribute { color: #50fa7b; }
+  .dark-mode .cm-s-default .cm-error,
+  .dark-mode .cm-invalidchar { color: #ff5555; }
+
+  .dark-mode #fileframe,
+  .dark-mode #filetree {
+    background-color: #2c3136;
+    color: #dee2e6;
+  }
+
+  .dark-mode #contentframe,
+  .dark-mode #content {
+    background-color: #343a40;
+    background-image: none;
+    color: #dee2e6;
+  }
+
+  .dark-mode #content h2,
+  .dark-mode .search-container,
+  .dark-mode #filetree .jstree-anchor,
+  .dark-mode #filetree .jstree-anchor:hover,
+  .dark-mode #filetree .jstree-anchor:link {
+    color: #dee2e6;
+  }
+
+  .dark-mode #filetree .jstree-anchor:hover,
+  .dark-mode #filetree .jstree-clicked > .jstree-anchor,
+  .dark-mode #filetree .jstree-anchor.jstree-clicked {
+    background: #3f474e;
+    background-image: none;
+    color: #fff;
+    border-radius: 2px;
+  }
+
+  .dark-mode div.clear {
+    background-color: #4b545c;
+  }
+
+  /* Keep the sidebar menu reachable when sections are expanded. */
+  .sidebar.os-host-overflow-y > .os-scrollbar-vertical {
+    opacity: 1;
+    visibility: visible;
   }
 </style>

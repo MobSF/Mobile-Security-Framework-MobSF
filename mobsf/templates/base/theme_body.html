@@ -2,4 +2,18 @@
 if (document.documentElement.classList.contains('dark-mode')) {
   document.body.classList.add('dark-mode');
 }
+
+window.mobsfEnlighterTheme = function () {
+  return document.body.classList.contains('dark-mode') ? 'dracula' : 'enlighter';
+};
+
+window.mobsfApplyEnlighterTheme = function () {
+  var dark = document.body.classList.contains('dark-mode');
+  var next = dark ? 'enlighter-t-dracula' : 'enlighter-t-enlighter';
+  var prev = dark ? 'enlighter-t-enlighter' : 'enlighter-t-dracula';
+  document.querySelectorAll('.' + prev).forEach(function (el) {
+    el.classList.remove(prev);
+    el.classList.add(next);
+  });
+};
 </script>

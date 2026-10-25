@@ -29,6 +29,9 @@
     try {
       localStorage.setItem('mobsf-theme', dark ? 'dark' : 'light');
     } catch (e) {}
+    if (window.mobsfApplyEnlighterTheme) {
+      window.mobsfApplyEnlighterTheme();
+    }
     paint();
   });
   paint();
