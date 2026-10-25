@@ -99,11 +99,23 @@ function writePage(html) {
     document.close();
 }
 
-function stopProgress() {
+function hideProgress() {
     const loadingOverlay = document.querySelector('.loading');
     if (loadingOverlay) {
         loadingOverlay.classList.add('hidden');
     }
+}
+
+function reportProgressFailure(message) {
+    const text = typeof message === 'string' && message
+        ? message
+        : 'Dynamic analysis failed';
+    hideProgress();
+    window.Swal.fire('Unable to start analysis', text, 'error');
+}
+
+function stopProgress() {
+    hideProgress();
     if (!window.jQuery || !progressLines.length) {
         return;
     }
@@ -114,7 +126,7 @@ function stopProgress() {
     const existing = stat.val() || '';
     const last = progressLines[progressLines.length - 1];
     if (existing.indexOf(last) === -1) {
-        stat.append(`\n${progressLines.join('\n')}\n`);
+        stat.val(`${existing}\n${progressLines.join('\n')}\n`);
         stat.scrollTop(stat[0].scrollHeight);
     }
 }
@@ -139,22 +151,26 @@ async function submitWithLoader(form) {
             writePage(result.html);
             return;
         }
-        const page = result.donePayload && result.donePayload.html;
-        if (typeof page === 'string' && page) {
-            writePage(page);
+        const done = result.donePayload || {};
+        if (done.redirect) {
+            window.location.assign(done.redirect);
+            return;
+        }
+        if (typeof done.html === 'string' && done.html) {
+            writePage(done.html);
             return;
         }
         throw new Error(
             result.errorMessage || 'Dynamic analysis failed',
         );
     } catch (error) {
-        showProgress(
+        if (submitButton) {
+            submitButton.disabled = false;
+        }
+        reportProgressFailure(
             error && error.message
                 ? error.message
                 : 'Dynamic analysis failed',
         );
-        if (submitButton) {
-            submitButton.disabled = false;
-        }
     }
 }

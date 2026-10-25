@@ -1053,6 +1053,11 @@ loadDeviceApps();
             credentials: 'same-origin',
             headers: {'X-MobSF-Progress': '1'},
         }).then(function(response) {
+            if (!response.ok) {
+                throw new Error(
+                    'MobSFy failed (' + response.status + ')',
+                );
+            }
             return readProgressStream(response);
         }).then(function(result) {
             const json = result.donePayload || {};

@@ -407,6 +407,10 @@ def _dynamic_analyzer_page(request, checksum):
     """Run setup and return the rendered analyzer page."""
     response = dynamic_analyzer(
         request, checksum, api=False, stream=True)
+    status = getattr(response, 'status_code', None)
+    target = getattr(response, 'url', None)
+    if target and status in {301, 302, 303, 307, 308}:
+        return {'redirect': target}
     content = getattr(response, 'content', b'') or b''
     if isinstance(content, bytes):
         content = content.decode('utf-8', 'replace')
