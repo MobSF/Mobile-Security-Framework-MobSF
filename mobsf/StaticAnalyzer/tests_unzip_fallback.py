@@ -4,6 +4,7 @@ import shutil
 import stat
 import struct
 import tempfile
+import unittest
 import zipfile
 from pathlib import Path
 from unittest import mock
@@ -17,6 +18,13 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
     remove_external_symlinks,
     unzip,
 )
+
+
+def _require_symlink(path, target):
+    try:
+        os.symlink(target, path)
+    except (OSError, NotImplementedError):
+        raise unittest.SkipTest('Symlinks not supported')
 
 
 def _mode_of(data, name):
@@ -97,21 +105,26 @@ class UnzipFallbackTests(SimpleTestCase):
         inside = self.ext / 'Dummy.java'
         inside.write_text('class Dummy {}')
         internal = self.ext / 'Internal.java'
-        internal.symlink_to('Dummy.java')
+        _require_symlink(internal, 'Dummy.java')
         external = self.ext / 'External.java'
-        external.symlink_to(self.secret)
-        os.mkfifo(self.ext / 'pipe')
+        _require_symlink(external, self.secret)
+        if not hasattr(os, 'mkfifo'):
+            pipe = None
+        else:
+            pipe = self.ext / 'pipe'
+            os.mkfifo(pipe)
         remove_external_symlinks(self.ext.as_posix())
         self.assertTrue(internal.is_symlink())
         self.assertFalse(external.exists())
-        self.assertFalse((self.ext / 'pipe').exists())
+        if pipe is not None:
+            self.assertFalse(pipe.exists())
         self.assertEqual(self.secret.read_text(), 'SENTINEL\n')
         self.assertTrue(inside.is_file())
 
     def test_set_permissions_does_not_follow_symlink(self):
         self.secret.chmod(0o600)
         link = self.ext / 'link'
-        link.symlink_to(self.secret)
+        _require_symlink(link, self.secret)
         set_permissions(self.ext.as_posix())
         self.assertEqual(stat.S_IMODE(self.secret.stat().st_mode), 0o600)
         self.assertTrue(link.is_symlink())
