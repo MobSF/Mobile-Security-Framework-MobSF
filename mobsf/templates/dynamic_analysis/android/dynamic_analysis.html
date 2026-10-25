@@ -8,6 +8,7 @@
  <!-- DataTables -->
 <link href="{% static "datatables/css/datatables.combined.min.css" %}" rel="stylesheet">
 <link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
+<link rel="stylesheet" href="{% static "others/css/dyn_progress.css" %}">
 <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
 <style>
    #app_icon{
@@ -367,12 +368,7 @@ textarea:focus {
       <!-- /.modal-dialog -->
     </div>
 
-<!--Loader-->
-<div class="hidden loading">
-<div class='uil-ring-css' style='transform:scale(0.79);'>
-  <div></div>
-</div>
-</div>
+{% include "dynamic_analysis/android/includes/progress_overlay.html" %}
 {% endblock %}
 {% block extra_scripts %}
 <!-- DataTables -->
@@ -381,21 +377,8 @@ textarea:focus {
 <script src="{% static "datatables/js/datatables.combined.min.js" %}"></script>
 <script src="{% static "others/js/datatables_init.js" %}"></script>
 <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
+<script src="{% static "others/js/dyn_progress.js" %}"></script>
 <script>
-function dynamic_loader(){
-    var loadingOverlay = document.querySelector('.loading');
-    loadingOverlay.classList.remove('hidden');
-}
-
-function submitWithLoader(form) {
-    const submitButton = form.querySelector('[type="submit"]');
-    if (submitButton) {
-        submitButton.disabled = true;
-    }
-    dynamic_loader();
-    window.setTimeout(() => form.submit(), 50);
-}
-
 const checksumPlaceholder = '00000000000000000000000000000000';
 const pullUrl = "{% url 'android_pull_scan' %}";
 const iconUrl = "{% url 'android_device_app_icon' %}";
@@ -1058,34 +1041,45 @@ loadDeviceApps();
 //MobSFy AJAX
  $("#mobsfy").one( "click", function() {
         $('#stat').append("\nMobSFying Android Runtime\n");
-        $.ajax({
-                url : "{% url 'mobsfy' %}", 
-                type : "POST",
-                dataType: "json", 
-                data : {
-                    csrfmiddlewaretoken: '{{ csrf_token }}',
-                    identifier: $('#identifier').val() ,
-                    },
-                    success : function(json) {
-                        if (json.status==="ok"){
-                              $('#stat').append("\nSucessfully created MobSF Dynamic Analysis environment.");
-                            if (json.android_version  < 5){
-                              $('#stat').append("\n* Download & Install Xposed Framework.\n* Restart the device.");
-                              $('#stat').append("\n* Enable all the Xposed modules.\n* Restart the device once more.");
-                            } else{
-                               $('#stat').append("\nMobSF agents and Frida server installed.");
-                            }
-                           
-                        }
-                        else if(json.status === "failed"){
-                            $('#stat').append(json.message);
-                        }
-                         $('#stat').scrollTop($('#stat')[0].scrollHeight);
-                    },
-                    error : function(xhr, errmsg, err) {
-                        $('#stat').append("\nERROR!!! \n\n"+ err);
-                        $('#stat').scrollTop($('#stat')[0].scrollHeight);
-                    }   
+        progressLines = [];
+        dynamic_loader();
+        showProgress('Setting up the Android dynamic analyzer…');
+        const payload = new FormData();
+        payload.append('csrfmiddlewaretoken', csrfToken);
+        payload.append('identifier', $('#identifier').val());
+        fetch("{% url 'mobsfy' %}", {
+            method: 'POST',
+            body: payload,
+            credentials: 'same-origin',
+            headers: {'X-MobSF-Progress': '1'},
+        }).then(function(response) {
+            if (!response.ok) {
+                throw new Error(
+                    'MobSFy failed (' + response.status + ')',
+                );
+            }
+            return readProgressStream(response);
+        }).then(function(result) {
+            const json = result.donePayload || {};
+            if (json.status === 'ok') {
+                $('#stat').append("\nSucessfully created MobSF Dynamic Analysis environment.");
+                if (json.android_version < 5) {
+                    $('#stat').append("\n* Download & Install Xposed Framework.\n* Restart the device.");
+                    $('#stat').append("\n* Enable all the Xposed modules.\n* Restart the device once more.");
+                } else {
+                    $('#stat').append("\nMobSF agents and Frida server installed.");
+                }
+            } else if (json.status === 'failed') {
+                $('#stat').append(json.message || result.errorMessage);
+            } else if (result.errorMessage) {
+                $('#stat').append('\n' + result.errorMessage);
+            }
+            $('#stat').scrollTop($('#stat')[0].scrollHeight);
+            stopProgress();
+        }).catch(function(error) {
+            $('#stat').append('\nERROR!!! \n\n' + error);
+            $('#stat').scrollTop($('#stat')[0].scrollHeight);
+            stopProgress();
         });
     return false;  
 }); 
