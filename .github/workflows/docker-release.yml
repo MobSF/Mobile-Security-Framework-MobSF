@@ -10,6 +10,7 @@ permissions:
 jobs:
     buildx:
         runs-on: ubuntu-latest
+        environment: docker-publish
         steps:
         -
             name: Checkout
