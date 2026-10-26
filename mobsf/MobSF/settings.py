@@ -437,7 +437,7 @@ else:
         'org/spongycastle', 'org/bouncycastle',
         'com/amazon/identity/', 'io/fabric/sdk',
         'com/instabug', 'com/crashlytics/android',
-        'kotlinx/', 'kotlin/',
+        'kotlinx/', 'kotlin/', 'org/jetbrains/',
     }
     # Disable CVSSV2 Score by default
     CVSS_SCORE_ENABLED = os.getenv('MOBSF_CVSS_SCORE_ENABLED', '0') == '1'
