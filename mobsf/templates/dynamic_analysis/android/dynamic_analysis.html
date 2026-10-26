@@ -493,7 +493,7 @@ document.querySelectorAll('.dynamic-start-form').forEach((form) => {
                 const decision = await Swal.fire({
                     title: 'Confirm Gadget repacking',
                     text: warnings.join(' '),
-                    icon: 'warning',
+                    type: 'warning',
                     showCancelButton: true,
                     confirmButtonText: status.confirmation_required
                         ? 'Uninstall and re-sign'
@@ -512,7 +512,11 @@ document.querySelectorAll('.dynamic-start-form').forEach((form) => {
             }
             submitWithLoader(form);
         } catch (error) {
-            Swal.fire('Unable to start analysis', error.message, 'error');
+            Swal.fire({
+                title: 'Unable to start analysis',
+                text: error.message,
+                type: 'error',
+            });
         }
     });
 });
@@ -938,7 +942,7 @@ async function confirmUninstall(form, packageName) {
             title: 'Uninstall application?',
             text: `Uninstall ${packageName} from the selected device? `
                 + 'This removes the app and its local data.',
-            icon: 'warning',
+            type: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Uninstall',
             cancelButtonText: 'Cancel',
@@ -969,20 +973,20 @@ async function confirmUninstall(form, packageName) {
         await Swal.fire({
             title: 'Uninstalled',
             text: `${packageName} was removed from the device.`,
-            icon: 'success',
+            type: 'success',
         });
         await loadDeviceApps(true);
     } catch (error) {
         if (button) {
             button.disabled = false;
         }
-        Swal.fire(
-            'Uninstall failed',
-            typeof error.message === 'string' && error.message
+        Swal.fire({
+            title: 'Uninstall failed',
+            text: typeof error.message === 'string' && error.message
                 ? error.message
                 : 'Unable to uninstall the application',
-            'error',
-        );
+            type: 'error',
+        });
     } finally {
         delete form.dataset.pending;
     }
