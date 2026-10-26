@@ -57,6 +57,9 @@ PATCH_SCHEMA = 1
 # values, so a dex cannot grow past these table sizes.
 _DEX_METHOD_LIMIT = 65536
 _DEX_FIELD_LIMIT = 65536
+# Loader symbols are under 64 UTF-16 code units. A longer dex literal is
+# not one of them. MUTF-8 is at most 3 bytes per code unit, plus NUL.
+_DEX_SYMBOL_STRING_CAP = 128
 _LOAD_LIBRARY = (
     'Ljava/lang/System;', 'loadLibrary', '(Ljava/lang/String;)V')
 _STRING_EQUALS = (
@@ -1593,7 +1596,11 @@ class GadgetPatcher:
 
     @staticmethod
     def _parse_dex_symbols(data):
-        """Index method and field references in one dex file."""
+        """Index method and field references in one dex file.
+
+        Decode only short strings those tables reference. A longer
+        literal is not a loader symbol and is not retained.
+        """
         if (len(data) < 112 or data[:4] != b'dex\n'
                 or data[4:7] not in (b'035', b'037', b'038', b'039', b'040')):
             raise ValueError('Unsupported dex header')
@@ -1639,18 +1646,30 @@ class GadgetPatcher:
                 or method_ids_size > _DEX_METHOD_LIMIT):
             raise ValueError('Dex member table is too large')
 
-        strings = []
-        for index in range(string_ids_size):
-            _size, cursor = uleb(u32(string_ids_off + (index * 4)))
-            end = data.find(b'\x00', cursor)
-            if end < 0:
-                raise ValueError('Truncated dex string')
-            strings.append(data[cursor:end].decode('utf-8', 'replace'))
+        # One shared object, never a copy of a long literal.
+        skipped = object()
+        cache = {}
 
         def string_at(index):
-            if index >= len(strings):
+            if index >= string_ids_size:
                 raise ValueError('Invalid dex string index')
-            return strings[index]
+            if index in cache:
+                return cache[index]
+            size, cursor = uleb(u32(string_ids_off + (index * 4)))
+            # Compare the ULEB size before any multiply or slice. A
+            # multi-megabyte literal must not become a read window.
+            if size > _DEX_SYMBOL_STRING_CAP:
+                cache[index] = skipped
+                return skipped
+            if cursor >= len(data):
+                raise ValueError('Truncated dex string')
+            window = size * 3 + 1
+            end = data.find(b'\x00', cursor, cursor + window)
+            if end < 0:
+                raise ValueError('Truncated dex string')
+            value = data[cursor:end].decode('utf-8', 'replace')
+            cache[index] = value
+            return value
 
         def type_at(index):
             if index >= type_ids_size:
@@ -1663,31 +1682,46 @@ class GadgetPatcher:
             base = proto_ids_off + (index * 12)
             params_off = u32(base + 8)
             params = ''
+            saw_long = False
             if params_off:
                 count = u32(params_off)
                 end = params_off + 4 + (count * 2)
                 if count > 255 or end > len(data):
                     raise ValueError('Dex prototype is too large')
                 for param in range(count):
-                    params += type_at(u16(params_off + 4 + (param * 2)))
-            return f'({params}){type_at(u32(base + 4))}'
+                    part = type_at(u16(params_off + 4 + (param * 2)))
+                    if part is skipped:
+                        saw_long = True
+                        continue
+                    params += part
+            return_type = type_at(u32(base + 4))
+            if saw_long or return_type is skipped:
+                return skipped
+            return f'({params}){return_type}'
+
+        def keep(parts):
+            return not any(part is skipped for part in parts)
 
         methods = set()
         for index in range(method_ids_size):
             base = method_ids_off + (index * 8)
-            methods.add((
+            ref = (
                 type_at(u16(base)),
                 string_at(u32(base + 4)),
                 proto_at(u16(base + 2)),
-            ))
+            )
+            if keep(ref):
+                methods.add(ref)
         fields = set()
         for index in range(field_ids_size):
             base = field_ids_off + (index * 8)
-            fields.add((
+            ref = (
                 type_at(u16(base)),
                 string_at(u32(base + 4)),
                 type_at(u16(base + 2)),
-            ))
+            )
+            if keep(ref):
+                fields.add(ref)
         return methods, fields, {
             'methods': method_ids_size,
             'fields': field_ids_size,
