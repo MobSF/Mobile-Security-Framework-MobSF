@@ -16,6 +16,7 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
+from mobsf.MobSF.security import is_pipe_or_link
 from mobsf.MobSF.utils import (
     append_scan_status,
     file_size,
@@ -459,10 +460,32 @@ def is_android_source(app_path):
 
 
 def move_to_parent(inside_path, app_path):
-    """Move contents of inside to app dir."""
+    """Move contents of inside to app dir.
+
+    Files already present in app dir are kept: a Flutter project has a
+    .gitignore both at its root and in android/.
+    """
     for item in inside_path.iterdir():
-        shutil.move(str(item), str(app_path))
+        target = app_path / item.name
+        if (is_pipe_or_link(item) or target.exists()
+                or target.is_symlink()):
+            continue
+        shutil.move(str(item), str(target))
     shutil.rmtree(inside_path)
+
+
+def flutter_android_dir(app_path):
+    """Return the android/ dir of a Flutter project at or below app_path."""
+    candidates = [app_path] + [
+        d for d in app_path.iterdir()
+        if d.is_dir() and not is_pipe_or_link(d)]
+    for candidate in candidates:
+        android = candidate / 'android'
+        if ((candidate / 'pubspec.yaml').is_file()
+                and not is_pipe_or_link(android)
+                and is_android_source(android)[0]):
+            return android
+    return None
 
 
 def valid_source_code(checksum, app_dir):
@@ -485,6 +508,13 @@ def valid_source_code(checksum, app_dir):
                 if ide:
                     move_to_parent(subdir, app_path)
                     return ide, is_and
+
+        # Flutter project, Android app in <project>/android
+        android = flutter_android_dir(app_path)
+        if android:
+            ide, is_and = is_android_source(android)
+            move_to_parent(android, app_path)
+            return ide, is_and
 
         # iOS Source
         xcode = [f for f in app_path.iterdir() if f.suffix == '.xcodeproj']
