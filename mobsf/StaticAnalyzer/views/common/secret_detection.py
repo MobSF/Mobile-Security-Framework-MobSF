@@ -171,6 +171,9 @@ KNOWN_SECRET_PATTERNS = (
             r'(?![A-Za-z0-9_-])'),
     ),
 )
+# Dart snapshot header string: version hash followed by the VM features
+DART_SNAPSHOT_HEADER = re.compile(
+    r'^([0-9a-f]{32})\S*\s.*\b(?:no-)?code_comments\b')
 KNOWN_SECRET_PREFIXES = tuple(
     f'{name}: ' for name, _pattern in KNOWN_SECRET_PATTERNS)
 
@@ -209,6 +212,33 @@ def get_secrets(data):
             scrubbed = pattern.sub('', scrubbed)
         secrets.update(get_entropies((scrubbed,)))
     return secrets
+
+
+def is_flutter_engine(path):
+    """Prebuilt Flutter engine shipped unchanged in every Flutter app."""
+    path = path.replace('\\', '/')
+    return (path == 'libflutter.so' or path.endswith('/libflutter.so')
+            or path.endswith('Flutter.framework/Flutter'))
+
+
+def get_binary_secrets(path, strings):
+    """Detect secrets in the strings of a native library or framework.
+
+    The Flutter engine is identical across apps and cannot hold an app's
+    secrets: only known-format secrets are reported for it, as its
+    high-entropy strings (tables, revisions) are false positives. The
+    Dart snapshot version hash is not a secret either.
+    """
+    strings = _strings(strings)
+    if is_flutter_engine(path):
+        return detect_known_secrets(strings)
+    snapshot_hashes = set()
+    for value in strings:
+        if isinstance(value, str):
+            match = DART_SNAPSHOT_HEADER.match(value)
+            if match:
+                snapshot_hashes.add(match.group(1))
+    return get_secrets(strings) - snapshot_hashes
 
 
 def sort_secrets(secrets):

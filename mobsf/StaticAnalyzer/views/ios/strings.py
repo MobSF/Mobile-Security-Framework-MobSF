@@ -4,6 +4,7 @@ import io
 import logging
 
 from mobsf.StaticAnalyzer.views.common.secret_detection import (
+    get_binary_secrets,
     get_secrets,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
@@ -97,7 +98,7 @@ def get_strings_metadata(app_dict, bin_dict, all_files, dy_list):
                 urls_list.extend(urls)
                 urls_n_files.extend(urls_nf)
                 emails_n_files.extend(emails_nf)
-                secrets.extend(get_secrets(s))
+                secrets.extend(get_binary_secrets(dy_file, s))
 
         bin_dict['strings'].extend(dy_strings)
         bin_dict['strings'] = list(
