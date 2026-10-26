@@ -119,25 +119,31 @@ def firebase_db_check(checksum, code_an_dic):
     findings = []
     try:
         urls = sorted(set(code_an_dic['urls_list']))
-        hosts = set()
+        origins = []
         for url in urls:
             if '.firebaseio.com' not in url:
                 continue
-            # Only the host is requested, and the app controls how many
-            # distinct URLs it contains.
+            # Only <host>/.json is requested, so probe one canonical origin
+            # per host: the app controls how many distinct URLs it has, and
+            # a URL's scheme or path must not decide whether a host is
+            # checked.
             try:
-                host = urlparse(url).netloc.lower() or url
+                host = urlparse(url).hostname
             except ValueError:
                 continue
-            if host in hosts:
+            if not host or not host.endswith('.firebaseio.com'):
                 continue
-            if len(hosts) >= MAX_FIREBASE_DB_HOSTS:
+            origin = f'https://{host}'
+            if origin in origins:
+                continue
+            if len(origins) >= MAX_FIREBASE_DB_HOSTS:
                 logger.warning(
                     'Firebase DB check limited to %d hosts',
                     MAX_FIREBASE_DB_HOSTS)
                 break
-            hosts.add(host)
-            returl, is_open = open_firebase(checksum, url)
+            origins.append(origin)
+        for origin in origins:
+            returl, is_open = open_firebase(checksum, origin)
             if is_open:
                 rule = FIREBASE_FINDINGS['firebase_db_open']
                 findings.append({

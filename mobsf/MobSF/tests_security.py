@@ -1,7 +1,10 @@
 """Unit tests for mobsf.MobSF.security."""
 import os
+import socket
 import sys
 import tempfile
+import threading
+import time
 from pathlib import Path
 from unittest import mock
 
@@ -225,15 +228,66 @@ class SafeRequestLimitTests(SimpleTestCase):
                 safe_request('GET', 'https://a.example/',
                              max_response_size=10)
 
-    def test_total_time_limit(self):
-        # Each chunk arrives within the socket timeout, but the
-        # body as a whole runs past max_total_time.
-        clock = iter([0, 4, 8, 12])
-        with self._opener([b'a', b'b', b'c']), mock.patch.object(
-                security.time, 'monotonic', side_effect=lambda: next(clock)):
+
+class SlowDripTests(SimpleTestCase):
+    """A peer sending one byte at a time must not outlast max_total_time."""
+
+    PREFIXES = {
+        'content_length': (b'HTTP/1.1 200 OK\r\n'
+                           b'Content-Length: 1000000\r\n\r\n', b'x'),
+        'until_close': (b'HTTP/1.0 200 OK\r\n\r\n', b'x'),
+        'headers': (b'HTTP/1.1 200 OK\r\n', b'X-Slow: x\r\n'),
+    }
+
+    def setUp(self):
+        self.stop = threading.Event()
+        self.closed = threading.Event()
+        self.listener = socket.socket()
+        self.listener.bind(('127.0.0.1', 0))
+        self.listener.listen()
+        self.listener.settimeout(5)
+        self.port = self.listener.getsockname()[1]
+        self.addCleanup(self.stop.set)
+        self.addCleanup(self.listener.close)
+
+    def _serve(self, prefix, drip):
+        conn, _ = self.listener.accept()
+        with conn:
+            conn.recv(65536)
+            conn.sendall(prefix)
+            while not self.stop.wait(0.1):
+                for byte in drip:
+                    try:
+                        conn.sendall(bytes([byte]))
+                    except OSError:
+                        self.closed.set()
+                        return
+
+    def _request(self, kind):
+        threading.Thread(
+            target=self._serve, args=self.PREFIXES[kind],
+            daemon=True).start()
+        start = time.monotonic()
+        with mock.patch.object(
+                security, 'resolve_public_ips',
+                return_value=('127.0.0.1',)):
             with self.assertRaises(TimeoutError):
-                safe_request('GET', 'https://a.example/',
-                             max_total_time=10)
+                safe_request(
+                    'GET', f'http://slow.example:{self.port}/',
+                    allowed_ports=(self.port,), timeout=5,
+                    max_total_time=0.5)
+        self.assertLess(time.monotonic() - start, 3)
+        # The connection is torn down rather than left to the peer.
+        self.assertTrue(self.closed.wait(3))
+
+    def test_content_length_body(self):
+        self._request('content_length')
+
+    def test_body_until_close(self):
+        self._request('until_close')
+
+    def test_headers(self):
+        self._request('headers')
 
 
 class SubprocessHookTests(SimpleTestCase):
