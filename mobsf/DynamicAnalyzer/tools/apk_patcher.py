@@ -9,6 +9,7 @@ import secrets
 import shutil
 import signal
 import ssl
+import struct
 import subprocess
 import threading
 import weakref
@@ -51,6 +52,26 @@ SUPPORTED_ABIS = {
 }
 PATCH_METADATA = 'assets/mobsf/gadget.json'
 PATCH_SCHEMA = 1
+# invoke-* and iget instructions encode member indexes as unsigned 16-bit
+# values, so a dex cannot grow past these table sizes.
+_DEX_METHOD_LIMIT = 65536
+_DEX_FIELD_LIMIT = 65536
+_LOAD_LIBRARY = (
+    'Ljava/lang/System;', 'loadLibrary', '(Ljava/lang/String;)V')
+_STRING_EQUALS = (
+    'Ljava/lang/String;', 'equals', '(Ljava/lang/Object;)Z')
+_GET_PROCESS_NAME = (
+    'Landroid/app/Application;', 'getProcessName', '()Ljava/lang/String;')
+_CURRENT_PROCESS_NAME = (
+    'Landroid/app/ActivityThread;',
+    'currentProcessName',
+    '()Ljava/lang/String;',
+)
+_SDK_INT_FIELD = ('Landroid/os/Build$VERSION;', 'SDK_INT', 'I')
+_SUPER_INIT = re.compile(
+    r'(?m)^[ \t]+invoke-direct(?:/range)? \{p0[^\n]*\}, '
+    r'[^\n]*;-><init>\([^\n]*\)V[ \t]*$',
+)
 
 
 @functools.lru_cache(maxsize=256)
@@ -498,36 +519,75 @@ class GadgetPatcher:
             raise ValueError('Unsupported Android application process name')
         return process
 
-    def _gadget_load_smali(self, process):
-        """Return a primary-process-only Gadget load sequence."""
+    def _gadget_load_smali(self, process, mode='full', base=0):
+        """Return a primary-process-only Gadget load sequence.
+
+        ``base`` is the first of two fresh locals. Branch opcodes only
+        address v0-v15, so callers must keep both registers in that range.
+        """
+        if base < 0 or base > 14:
+            raise ValueError('Gadget loader registers exceed if-* range')
+        left = f'v{base}'
+        right = f'v{base + 1}'
         label = f'mobsf_{sha256(self.apk_file)[:12]}'
+        done = f'    :{label}_done'
+        library = (
+            f'    const-string {right}, "{process}"',
+            f'    invoke-virtual {{{right}, {left}}}, '
+            'Ljava/lang/String;->equals(Ljava/lang/Object;)Z',
+            f'    move-result {left}',
+            f'    if-eqz {left}, :{label}_done',
+            f'    const-string {right}, "frida-gadget"',
+            f'    invoke-static {{{right}}}, '
+            'Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V',
+            '',
+            done,
+        )
+        if mode == 'process_name':
+            return (
+                '    invoke-static {}, '
+                'Landroid/app/Application;->getProcessName()'
+                'Ljava/lang/String;',
+                f'    move-result-object {left}',
+                *library,
+            )
+        if mode == 'activity_thread':
+            return (
+                '    invoke-static {}, '
+                'Landroid/app/ActivityThread;->currentProcessName()'
+                'Ljava/lang/String;',
+                f'    move-result-object {left}',
+                *library,
+            )
+        if mode == 'process_name_gated':
+            return (
+                f'    sget {left}, Landroid/os/Build$VERSION;->SDK_INT:I',
+                f'    const/16 {right}, 0x1c',
+                f'    if-lt {left}, {right}, :{label}_done',
+                '    invoke-static {}, '
+                'Landroid/app/Application;->getProcessName()'
+                'Ljava/lang/String;',
+                f'    move-result-object {left}',
+                *library,
+            )
         return (
-            '    sget v0, Landroid/os/Build$VERSION;->SDK_INT:I',
-            '    const/16 v1, 0x1c',
-            f'    if-lt v0, v1, :{label}_legacy',
+            f'    sget {left}, Landroid/os/Build$VERSION;->SDK_INT:I',
+            f'    const/16 {right}, 0x1c',
+            f'    if-lt {left}, {right}, :{label}_legacy',
             '    invoke-static {}, '
             'Landroid/app/Application;->getProcessName()'
             'Ljava/lang/String;',
-            '    move-result-object v0',
+            f'    move-result-object {left}',
             f'    goto :{label}_check',
             '',
             f'    :{label}_legacy',
             '    invoke-static {}, '
             'Landroid/app/ActivityThread;->currentProcessName()'
             'Ljava/lang/String;',
-            '    move-result-object v0',
+            f'    move-result-object {left}',
             '',
             f'    :{label}_check',
-            f'    const-string v1, "{process}"',
-            '    invoke-virtual {v1, v0}, '
-            'Ljava/lang/String;->equals(Ljava/lang/Object;)Z',
-            '    move-result v0',
-            f'    if-eqz v0, :{label}_done',
-            '    const-string v1, "frida-gadget"',
-            '    invoke-static {v1}, '
-            'Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V',
-            '',
-            f'    :{label}_done',
+            *library,
         )
 
     def _inject_loader(self):
@@ -614,7 +674,10 @@ class GadgetPatcher:
             parent_type = f'L{original.replace(".", "/")};'
             application.set(f'{ANDROID_ATTR}name', loader)
             self.loader_class = loader
-            smali = self.work_dir / 'smali' / Path(*loader.split('.'))
+            smali = (
+                self._generated_loader_directory()
+                / Path(*loader.split('.'))
+            )
             smali = smali.with_suffix('.smali')
             smali.parent.mkdir(parents=True, exist_ok=True)
             smali.write_text(
@@ -690,6 +753,7 @@ class GadgetPatcher:
                     or loader_strategy not in (
                         'existing_application',
                         'existing_gadget',
+                        'generated_application',
             )):
                 raise ValueError('Invalid MobSF Gadget loader metadata')
             loader_smali = self._find_application_smali(loader_class)
@@ -751,8 +815,18 @@ class GadgetPatcher:
                 loader_class = candidate
                 break
         if not strategy or not loader_class:
-            raise ValueError(
-                'Split APK has no injectable Application or launcher class')
+            digest = sha256(self.apk_file)[:12]
+            generated = self._inject_generated_split_application(
+                parsed_apk,
+                application,
+                application_process,
+                digest,
+            )
+            if not generated:
+                raise ValueError(
+                    'Split APK has no injectable Application or '
+                    'launcher class')
+            loader_class, strategy = generated
         self.original_application = application
         self.loader_class = loader_class
         self.loader_strategy = strategy
@@ -763,6 +837,218 @@ class GadgetPatcher:
             'Split APK resources are preserved without embedding the '
             'MobSF Root CA; use Frida TLS hooks for interception')
         return package
+
+    def _inject_generated_split_application(
+            self, parsed_apk, application, process, digest):
+        """Point a full split manifest at a loader in a new dex."""
+        raw_name = parsed_apk.get_attribute_value('application', 'name')
+        if not isinstance(raw_name, str) or not raw_name:
+            return None
+        class_pattern = r'(?:[A-Za-z_$][\w$]*\.)*[A-Za-z_$][\w$]*'
+        loader = self._fit_loader_name(raw_name, digest)
+        if not loader or not re.fullmatch(class_pattern, loader):
+            return None
+        if not self._rename_binary_manifest_class(raw_name, loader):
+            return None
+        parent_type = f'L{application.replace(".", "/")};'
+        loader_type = f'L{loader.replace(".", "/")};'
+        smali = self._generated_loader_directory() / Path(*loader.split('.'))
+        smali = smali.with_suffix('.smali')
+        if smali.is_symlink():
+            raise ValueError('Unsafe generated Gadget loader path')
+        smali.parent.mkdir(parents=True, exist_ok=True)
+        smali.write_text(
+            '\n'.join((
+                f'.class public {loader_type}',
+                f'.super {parent_type}',
+                '',
+                '.method static constructor <clinit>()V',
+                '    .locals 2',
+                *self._gadget_load_smali(process),
+                '    return-void',
+                '.end method',
+                '',
+                '.method public constructor <init>()V',
+                '    .locals 0',
+                f'    invoke-direct {{p0}}, {parent_type}-><init>()V',
+                '    return-void',
+                '.end method',
+                '',
+            )),
+            encoding='utf-8',
+        )
+        logger.info(
+            'Generated a split Application loader in a new dex')
+        return loader, 'generated_application'
+
+    @staticmethod
+    def _fit_loader_name(old_name, digest):
+        """Return a loader name that fits in the manifest string slot."""
+        preferred = f'com.mobsf.g{digest}.MobSFApplication'
+        if len(preferred) <= len(old_name):
+            return preferred
+        prefix = 'm.G'
+        if len(old_name) < len(prefix):
+            return None
+        return prefix + digest[:len(old_name) - len(prefix)]
+
+    def _rename_binary_manifest_class(self, old_name, new_name):
+        """Replace one binary-manifest class string without moving the pool."""
+        manifest = self.work_dir / 'AndroidManifest.xml'
+        if (not manifest.is_file()
+                or manifest.is_symlink()
+                or is_pipe_or_link(manifest)):
+            return False
+        if len(new_name) > len(old_name):
+            return False
+        data = bytearray(manifest.read_bytes())
+        if not self._replace_axml_string(data, old_name, new_name):
+            return False
+        manifest.write_bytes(data)
+        return True
+
+    @staticmethod
+    def _replace_axml_string(data, old_name, new_name):
+        """Rewrite one AXML string pool entry in place."""
+        if (len(data) < 36
+                or int.from_bytes(data[0:2], 'little') != 0x0003
+                or int.from_bytes(data[8:10], 'little') != 0x0001):
+            return False
+        pool = 8
+        header_size = int.from_bytes(data[pool + 2:pool + 4], 'little')
+        chunk_size = int.from_bytes(data[pool + 4:pool + 8], 'little')
+        string_count = int.from_bytes(data[pool + 8:pool + 12], 'little')
+        flags = int.from_bytes(data[pool + 16:pool + 20], 'little')
+        strings_start = int.from_bytes(data[pool + 20:pool + 24], 'little')
+        if (header_size < 28 or chunk_size < header_size
+                or pool + chunk_size > len(data)
+                or string_count > 100000 or strings_start > chunk_size):
+            return False
+        offsets = pool + header_size
+        blob = pool + strings_start
+        if offsets + (string_count * 4) > blob:
+            return False
+        utf8 = bool(flags & (1 << 8))
+        replaced = False
+        for index in range(string_count):
+            slot = offsets + (index * 4)
+            start = blob + int.from_bytes(data[slot:slot + 4], 'little')
+            try:
+                current, payload, payload_len, prefixes = (
+                    GadgetPatcher._read_axml_string(data, start, utf8))
+            except ValueError:
+                return False
+            if current != old_name:
+                continue
+            if not GadgetPatcher._write_axml_string(
+                    data, start, payload, payload_len, prefixes,
+                    new_name, utf8):
+                return False
+            replaced = True
+        return replaced
+
+    @staticmethod
+    def _read_length(data, offset, width):
+        """Return a string-pool length and the prefix width that stored it."""
+        if offset < 0 or offset + width > len(data):
+            raise ValueError('Truncated manifest string')
+        high = 0x80 << (8 * (width - 1))
+        if width == 1:
+            first = data[offset]
+            if first & high:
+                if offset + 2 > len(data):
+                    raise ValueError('Truncated manifest string')
+                return ((first & ~high) << 8) | data[offset + 1], 2
+            return first, 1
+        first = int.from_bytes(data[offset:offset + 2], 'little')
+        if first & high:
+            if offset + 4 > len(data):
+                raise ValueError('Truncated manifest string')
+            second = int.from_bytes(data[offset + 2:offset + 4], 'little')
+            return ((first & ~high) << 16) | second, 4
+        return first, 2
+
+    @staticmethod
+    def _write_length(data, offset, prefix, value, width):
+        """Write a length using the prefix width already present."""
+        width_mask = (1 << (8 * width)) - 1
+        high = 0x80 << (8 * (width - 1))
+        if prefix == width:
+            if value & high:
+                return False
+            data[offset:offset + width] = value.to_bytes(width, 'little')
+            return True
+        if prefix != width * 2:
+            return False
+        cleared = width_mask ^ high
+        shift = 8 * width
+        first = ((value >> shift) & cleared) | high
+        second = value & width_mask
+        data[offset:offset + width] = first.to_bytes(width, 'little')
+        data[offset + width:offset + prefix] = second.to_bytes(width, 'little')
+        return True
+
+    @staticmethod
+    def _read_axml_string(data, start, utf8):
+        """Return the text, payload offset, payload size, and prefixes."""
+        if utf8:
+            _utf16_len, first_prefix = GadgetPatcher._read_length(
+                data, start, 1)
+            byte_len, second_prefix = GadgetPatcher._read_length(
+                data, start + first_prefix, 1)
+            payload = start + first_prefix + second_prefix
+            if payload + byte_len + 1 > len(data):
+                raise ValueError('Truncated manifest string')
+            if data[payload + byte_len] != 0:
+                raise ValueError('Manifest string is not terminated')
+            text = bytes(
+                data[payload:payload + byte_len]).decode('utf-8', 'replace')
+            return text, payload, byte_len, (first_prefix, second_prefix)
+        char_len, prefix = GadgetPatcher._read_length(data, start, 2)
+        payload = start + prefix
+        size = char_len * 2
+        if payload + size + 2 > len(data):
+            raise ValueError('Truncated manifest string')
+        if bytes(data[payload + size:payload + size + 2]) != b'\x00\x00':
+            raise ValueError('Manifest string is not terminated')
+        text = bytes(data[payload:payload + size]).decode(
+            'utf-16le', 'replace')
+        return text, payload, size, (prefix,)
+
+    @staticmethod
+    def _write_axml_string(
+            data, start, payload, payload_len, prefixes, new_name, utf8):
+        """Store a shorter class name in an existing string-pool slot."""
+        if utf8:
+            encoded = new_name.encode('utf-8')
+            if len(encoded) > payload_len or len(prefixes) != 2:
+                return False
+            if not GadgetPatcher._write_length(
+                    data, start, prefixes[0], len(new_name), 1):
+                return False
+            if not GadgetPatcher._write_length(
+                    data, start + prefixes[0], prefixes[1], len(encoded), 1):
+                return False
+            data[payload:payload + len(encoded)] = encoded
+            data[payload + len(encoded)] = 0
+            gap = payload + payload_len + 1
+            begin = payload + len(encoded) + 1
+            if begin < gap:
+                data[begin:gap] = b'\x00' * (gap - begin)
+            return True
+        encoded = new_name.encode('utf-16le')
+        if len(encoded) > payload_len or len(prefixes) != 1:
+            return False
+        if not GadgetPatcher._write_length(
+                data, start, prefixes[0], len(new_name), 2):
+            return False
+        data[payload:payload + len(encoded)] = encoded
+        data[payload + len(encoded):payload + len(encoded) + 2] = b'\x00\x00'
+        gap = payload + payload_len + 2
+        begin = payload + len(encoded) + 2
+        if begin < gap:
+            data[begin:gap] = b'\x00' * (gap - begin)
+        return True
 
     @staticmethod
     def _local_xml_tag(element):
@@ -945,46 +1231,443 @@ class GadgetPatcher:
             if self.replace_existing_gadget:
                 return 'existing_gadget'
             raise ValueError('Application contains an unknown Gadget loader')
+        mode, host = self._loader_plan(application_smali, source)
+        if mode is None:
+            return None
+        if host == 'init':
+            updated = self._inject_constructors(source, process, mode)
+            if updated is None:
+                return None
+            source = updated
+        else:
+            source = self._inject_clinit(
+                source, self._gadget_load_smali(process, mode))
+        application_smali.write_text(source, encoding='utf-8')
+        return 'existing_application'
+
+    def _inject_clinit(self, source, lines):
+        """Insert the loader into <clinit>, creating it when absent."""
         method = re.search(
             r'(?ms)^\.method[^\n]* static constructor <clinit>\(\)V\n'
             r'(?P<body>.*?)^\.end method',
             source,
         )
         if not method:
-            source += (
-                '\n.method static constructor <clinit>()V\n'
+            return (
+                f'{source}\n.method static constructor <clinit>()V\n'
                 '    .locals 2\n'
-                + '\n'.join(self._gadget_load_smali(process))
+                + '\n'.join(lines)
                 + '\n'
                 '    return-void\n'
                 '.end method\n'
             )
-        else:
-            body = method.group('body')
-            registers = re.search(
-                r'(?m)^(?P<indent>\s*)\.(?P<kind>locals|registers) '
-                r'(?P<count>\d+)\s*$',
-                body,
+        body = method.group('body')
+        registers = re.search(
+            r'(?m)^(?P<indent>\s*)\.(?P<kind>locals|registers) '
+            r'(?P<count>\d+)\s*$',
+            body,
+        )
+        if not registers:
+            raise ValueError(
+                'Unsupported Application static initializer')
+        register_count = int(registers.group('count'))
+        directive = (
+            f'{registers.group("indent")}.{registers.group("kind")} '
+            f'{max(2, register_count)}'
+        )
+        load_call = '\n' + '\n'.join(lines)
+        body = (
+            body[:registers.start()]
+            + directive
+            + load_call
+            + body[registers.end():]
+        )
+        return (
+            source[:method.start('body')]
+            + body
+            + source[method.end('body'):]
+        )
+
+    def _inject_constructors(self, source, process, mode):
+        """Insert the loader after super.<init> in every constructor."""
+        pattern = re.compile(
+            r'(?ms)^\.method(?P<header>[^\n]* constructor <init>'
+            r'\((?P<args>[^\n]*)\)V)\n'
+            r'(?P<body>.*?)^\.end method',
+        )
+        matches = list(pattern.finditer(source))
+        if not matches:
+            return None
+        rewritten = []
+        for match in matches:
+            descriptor = f'({match.group("args")})V'
+            try:
+                parameter_words = self._parameter_words(
+                    descriptor, is_static=False)
+            except ValueError:
+                return None
+            allocated = self._allocate_locals(
+                match.group('body'),
+                2,
+                parameter_words,
             )
-            if not registers:
-                raise ValueError(
-                    'Unsupported Application static initializer')
-            register_count = int(registers.group('count'))
-            directive = (
-                f'{registers.group("indent")}.{registers.group("kind")} '
-                f'{max(2, register_count)}'
-            )
-            load_call = '\n' + '\n'.join(
-                self._gadget_load_smali(process))
+            if allocated is None:
+                return None
+            body, base = allocated
+            super_init = _SUPER_INIT.search(body)
+            if super_init is None:
+                return None
+            lines = self._gadget_load_smali(process, mode, base)
+            load_call = '\n' + '\n'.join(lines)
             body = (
-                body[:registers.start()]
-                + directive
+                body[:super_init.end()]
                 + load_call
-                + body[registers.end():]
+                + body[super_init.end():]
             )
-            source = source[:method.start('body')] + body + source[method.end('body'):]
-        application_smali.write_text(source, encoding='utf-8')
-        return 'existing_application'
+            rewritten.append((match, body))
+        updated = source
+        for match, body in reversed(rewritten):
+            updated = (
+                updated[:match.start('body')]
+                + body
+                + updated[match.end('body'):]
+            )
+        return updated
+
+    @staticmethod
+    def _allocate_locals(body, needed, parameter_words):
+        """Append unused locals and return the body plus their first index.
+
+        The new registers are not live at the insertion point, so the
+        loader can use them without disturbing the constructor. ``if-*``
+        opcodes cannot address above v15; callers fall back when the
+        method already uses that many locals.
+        """
+        registers = re.search(
+            r'(?m)^(?P<indent>[ \t]*)\.(?P<kind>locals|registers) '
+            r'(?P<count>\d+)[ \t]*$',
+            body,
+        )
+        if not registers:
+            return None
+        count = int(registers.group('count'))
+        if registers.group('kind') == 'locals':
+            old_locals = count
+        else:
+            old_locals = count - parameter_words
+            if old_locals < 0:
+                return None
+            for found in re.finditer(r'\bv(\d+)\b', body):
+                if int(found.group(1)) >= old_locals:
+                    return None
+        if old_locals < 0 or old_locals + needed - 1 > 15:
+            return None
+        directive = (
+            f'{registers.group("indent")}.{registers.group("kind")} '
+            f'{count + needed}'
+        )
+        body = (
+            body[:registers.start()]
+            + directive
+            + body[registers.end():]
+        )
+        return body, old_locals
+
+    @staticmethod
+    def _parameter_words(descriptor, is_static):
+        """Return incoming register words for a method descriptor."""
+        start = descriptor.find('(')
+        end = descriptor.find(')')
+        if start < 0 or end < start:
+            raise ValueError('Unsupported method descriptor')
+        words = 0 if is_static else 1
+        index = start + 1
+        while index < end:
+            char = descriptor[index]
+            if char in 'BCDFIJSZ':
+                words += 2 if char in 'JD' else 1
+                index += 1
+                continue
+            if char == 'L':
+                words += 1
+                index = descriptor.find(';', index)
+                if index < 0:
+                    raise ValueError('Unsupported method descriptor')
+                index += 1
+                continue
+            if char == '[':
+                words += 1
+                index += 1
+                while index < end and descriptor[index] == '[':
+                    index += 1
+                if index >= end:
+                    raise ValueError('Unsupported method descriptor')
+                if descriptor[index] == 'L':
+                    index = descriptor.find(';', index)
+                    if index < 0:
+                        raise ValueError('Unsupported method descriptor')
+                index += 1
+                continue
+            raise ValueError('Unsupported method descriptor')
+        return words
+
+    def _loader_plan(self, smali_file, source):
+        """Choose a loader that fits in the target dex member tables."""
+        has_clinit = bool(re.search(
+            r'(?m)^\.method[^\n]* static constructor <clinit>\(\)V$',
+            source,
+        ))
+        try:
+            symbols = self._dex_symbols(
+                self._dex_name_for_smali(smali_file))
+        except ValueError:
+            logger.warning(
+                'Unable to read dex member limits; '
+                'using the standard Gadget loader')
+            return 'full', 'clinit'
+        if symbols is None:
+            return 'full', 'clinit'
+        methods, fields, counts = symbols
+        mode, host = self._choose_loader_mode(
+            self._min_sdk_version(),
+            methods,
+            fields,
+            counts,
+            has_clinit,
+        )
+        if mode is not None and mode != 'full':
+            logger.info(
+                'Using a dex-limit Frida Gadget loader (%s via %s)',
+                mode,
+                host,
+            )
+        return mode, host
+
+    @staticmethod
+    def _choose_loader_mode(
+            min_sdk, methods, fields, counts, has_clinit):
+        """Pick a load sequence that does not overflow 16-bit indexes."""
+        def missing(pool, required):
+            return sum(1 for item in required if item not in pool)
+
+        def fits(method_refs, field_refs, new_definition):
+            return (
+                counts['methods'] + method_refs + new_definition
+                <= _DEX_METHOD_LIMIT
+                and counts['fields'] + field_refs <= _DEX_FIELD_LIMIT
+            )
+
+        if fits(
+                missing(methods, (
+                    _GET_PROCESS_NAME,
+                    _CURRENT_PROCESS_NAME,
+                    _STRING_EQUALS,
+                    _LOAD_LIBRARY,
+                )),
+                missing(fields, (_SDK_INT_FIELD,)),
+                0 if has_clinit else 1,
+        ):
+            return 'full', 'clinit'
+        host = 'clinit' if has_clinit else 'init'
+        if _LOAD_LIBRARY not in methods or _STRING_EQUALS not in methods:
+            return None, None
+        has_process = _GET_PROCESS_NAME in methods
+        has_thread = _CURRENT_PROCESS_NAME in methods
+        if has_process and min_sdk >= 28:
+            return 'process_name', host
+        if has_thread:
+            return 'activity_thread', host
+        if has_process and _SDK_INT_FIELD in fields:
+            return 'process_name_gated', host
+        if has_process:
+            return 'process_name', host
+        return None, None
+
+    def _min_sdk_version(self):
+        """Return the base APK min SDK, or 1 when the manifest omits it."""
+        cached = getattr(self, '_min_sdk', None)
+        if cached is not None:
+            return cached
+        try:
+            parsed = androguard_apk.APK(self.apk_file.as_posix())
+            value = int(parsed.get_min_sdk_version())
+        except (TypeError, ValueError, OSError):
+            value = 1
+        except Exception:
+            logger.warning('Unable to read the APK minimum SDK')
+            value = 1
+        if value < 1:
+            value = 1
+        self._min_sdk = value
+        return value
+
+    def _generated_loader_directory(self):
+        """Place a generated loader in a dex that can accept new methods."""
+        try:
+            symbols = self._dex_symbols('classes.dex')
+        except ValueError:
+            symbols = None
+        if symbols is None:
+            return self.work_dir / 'smali'
+        _methods, _fields, counts = symbols
+        if (counts['methods'] <= _DEX_METHOD_LIMIT - 8
+                and counts['fields'] <= _DEX_FIELD_LIMIT - 2):
+            return self.work_dir / 'smali'
+        highest = 1
+        try:
+            with zipfile.ZipFile(self.apk_file) as apk:
+                for name in apk.namelist():
+                    match = re.fullmatch(r'classes(\d*)\.dex', name)
+                    if not match:
+                        continue
+                    number = int(match.group(1) or '1')
+                    highest = max(highest, number)
+        except (OSError, zipfile.BadZipFile):
+            return self.work_dir / 'smali'
+        return self.work_dir / f'smali_classes{highest + 1}'
+
+    def _dex_name_for_smali(self, smali_file):
+        """Map a decoded smali file back to its original dex entry."""
+        try:
+            top = smali_file.relative_to(self.work_dir).parts[0]
+        except ValueError as exc:
+            raise ValueError('Unsupported smali directory') from exc
+        if top == 'smali':
+            return 'classes.dex'
+        match = re.fullmatch(r'smali_classes(\d+)', top)
+        if match and int(match.group(1)) > 1:
+            return f'classes{match.group(1)}.dex'
+        raise ValueError('Unsupported smali directory')
+
+    def _dex_symbols(self, dex_name):
+        """Return method refs, field refs, and table sizes for one dex."""
+        cache = getattr(self, '_dex_symbol_cache', None)
+        if cache is None:
+            cache = {}
+            self._dex_symbol_cache = cache
+        if dex_name not in cache:
+            data = self._original_dex(dex_name)
+            cache[dex_name] = (
+                None if not data else self._parse_dex_symbols(data))
+        return cache[dex_name]
+
+    def _original_dex(self, dex_name):
+        """Read one original dex member, or None when the APK has none."""
+        cache = getattr(self, '_dex_bytes_cache', None)
+        if cache is None:
+            cache = {}
+            self._dex_bytes_cache = cache
+        if dex_name not in cache:
+            try:
+                with zipfile.ZipFile(self.apk_file) as apk:
+                    cache[dex_name] = apk.read(dex_name)
+            except KeyError:
+                cache[dex_name] = None
+            except (OSError, zipfile.BadZipFile) as exc:
+                raise ValueError('Unable to read dex') from exc
+        return cache[dex_name]
+
+    @staticmethod
+    def _parse_dex_symbols(data):
+        """Index method and field references in one dex file."""
+        if (len(data) < 112 or data[:4] != b'dex\n'
+                or data[4:7] not in (b'035', b'037', b'038', b'039', b'040')):
+            raise ValueError('Unsupported dex header')
+
+        def u32(offset):
+            if offset < 0 or offset + 4 > len(data):
+                raise ValueError('Truncated dex')
+            return struct.unpack_from('<I', data, offset)[0]
+
+        def u16(offset):
+            if offset < 0 or offset + 2 > len(data):
+                raise ValueError('Truncated dex')
+            return struct.unpack_from('<H', data, offset)[0]
+
+        def uleb(offset):
+            value = 0
+            shift = 0
+            for _unused in range(5):
+                if offset >= len(data):
+                    raise ValueError('Truncated dex')
+                byte = data[offset]
+                offset += 1
+                value |= (byte & 0x7F) << shift
+                if byte < 0x80:
+                    return value, offset
+                shift += 7
+            raise ValueError('Truncated dex')
+
+        string_ids_size = u32(56)
+        string_ids_off = u32(60)
+        type_ids_size = u32(64)
+        type_ids_off = u32(68)
+        proto_ids_size = u32(72)
+        proto_ids_off = u32(76)
+        field_ids_size = u32(80)
+        field_ids_off = u32(84)
+        method_ids_size = u32(88)
+        method_ids_off = u32(92)
+        if (string_ids_size > 1_000_000
+                or type_ids_size > _DEX_METHOD_LIMIT
+                or proto_ids_size > _DEX_METHOD_LIMIT
+                or field_ids_size > _DEX_FIELD_LIMIT
+                or method_ids_size > _DEX_METHOD_LIMIT):
+            raise ValueError('Dex member table is too large')
+
+        strings = []
+        for index in range(string_ids_size):
+            _size, cursor = uleb(u32(string_ids_off + (index * 4)))
+            end = data.find(b'\x00', cursor)
+            if end < 0:
+                raise ValueError('Truncated dex string')
+            strings.append(data[cursor:end].decode('utf-8', 'replace'))
+
+        def string_at(index):
+            if index >= len(strings):
+                raise ValueError('Invalid dex string index')
+            return strings[index]
+
+        def type_at(index):
+            if index >= type_ids_size:
+                raise ValueError('Invalid dex type index')
+            return string_at(u32(type_ids_off + (index * 4)))
+
+        def proto_at(index):
+            if index >= proto_ids_size:
+                raise ValueError('Invalid dex proto index')
+            base = proto_ids_off + (index * 12)
+            params_off = u32(base + 8)
+            params = ''
+            if params_off:
+                count = u32(params_off)
+                end = params_off + 4 + (count * 2)
+                if count > 255 or end > len(data):
+                    raise ValueError('Dex prototype is too large')
+                for param in range(count):
+                    params += type_at(u16(params_off + 4 + (param * 2)))
+            return f'({params}){type_at(u32(base + 4))}'
+
+        methods = set()
+        for index in range(method_ids_size):
+            base = method_ids_off + (index * 8)
+            methods.add((
+                type_at(u16(base)),
+                string_at(u32(base + 4)),
+                proto_at(u16(base + 2)),
+            ))
+        fields = set()
+        for index in range(field_ids_size):
+            base = field_ids_off + (index * 8)
+            fields.add((
+                type_at(u16(base)),
+                string_at(u32(base + 4)),
+                type_at(u16(base + 2)),
+            ))
+        return methods, fields, {
+            'methods': method_ids_size,
+            'fields': field_ids_size,
+        }
 
     def _install_gadget(self):
         """Copy the matched Gadget and its fixed local-only config."""
