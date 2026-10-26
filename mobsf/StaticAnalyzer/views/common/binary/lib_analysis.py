@@ -54,6 +54,9 @@ def library_analysis(checksum, src, arch):
             if '__MACOSX' in libfile.as_posix():
                 continue
             rel_path = libfile.relative_to(base_dir).as_posix()
+            if rel_path.startswith('apktool_out/'):
+                # apktool's decoded copy of the APK, already analysed
+                continue
             msg = f'Analyzing {rel_path}'
             logger.info(msg)
             append_scan_status(checksum, msg)
