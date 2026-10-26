@@ -191,6 +191,11 @@ PUBLIC_CONSTANTS = (
     'VGhpcyBpcyB0aGUgcHJlZml4IGZvciBCaWdJbnRlZ2Vy',
     'VGhpcyBpcyB0aGUgcHJlZml4IGZvciBEb3VibGUu',
 )
+# Swift symbol names: runtime class names (_TtC25module...) and mangled
+# symbols ($s29module...). Private declarations carry a 32 hex
+# discriminator (P33_<hash>) that looks like a high-entropy secret.
+SWIFT_SYMBOL = re.compile(
+    r'(?<![A-Za-z0-9_])(?:_Tt[A-Z]{1,4}\d|\$s[s\d])[A-Za-z0-9_$]*')
 
 
 def _strings(data):
@@ -225,6 +230,8 @@ def get_secrets(data):
             for match in pattern.finditer(value):
                 secrets.add(f'{name}: {match.group()}')
             scrubbed = pattern.sub('', scrubbed)
+        # Identifiers, not secrets: skip them for the entropy check only
+        scrubbed = SWIFT_SYMBOL.sub(' ', scrubbed)
         secrets.update(
             s for s in get_entropies((scrubbed,))
             if not any(c in s for c in PUBLIC_CONSTANTS))
