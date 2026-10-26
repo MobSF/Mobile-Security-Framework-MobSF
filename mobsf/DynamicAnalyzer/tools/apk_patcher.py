@@ -29,6 +29,7 @@ from mobsf.DynamicAnalyzer.views.common.frida.server_update import (
     FridaServerUpdater,
 )
 from mobsf.MobSF.security import (
+    is_path_traversal,
     is_pipe_or_link,
     is_safe_path,
 )
@@ -672,6 +673,7 @@ class GadgetPatcher:
             loader = f'com.mobsf.g{digest}.MobSFApplication'
             loader_type = f'L{loader.replace(".", "/")};'
             parent_type = f'L{original.replace(".", "/")};'
+            self._clear_final_class_flag(original)
             application.set(f'{ANDROID_ATTR}name', loader)
             self.loader_class = loader
             smali = (
@@ -850,6 +852,7 @@ class GadgetPatcher:
             return None
         if not self._rename_binary_manifest_class(raw_name, loader):
             return None
+        self._clear_final_class_flag(application)
         parent_type = f'L{application.replace(".", "/")};'
         loader_type = f'L{loader.replace(".", "/")};'
         smali = self._generated_loader_directory() / Path(*loader.split('.'))
@@ -1211,6 +1214,27 @@ class GadgetPatcher:
             xml_declaration=True,
         )
         return removed_pins, trusted_configs
+
+    def _clear_final_class_flag(self, class_name):
+        """Allow a generated loader to extend a final Application class."""
+        smali = self._find_application_smali(class_name)
+        if smali is None:
+            return False
+        text = smali.read_text('utf-8', 'ignore')
+        updated, count = re.subn(
+            r'(?m)^(?P<prefix>\.class\b[^\n]*?)\s+final\b',
+            r'\g<prefix>',
+            text,
+            count=1,
+        )
+        if not count or updated == text:
+            return False
+        smali.write_text(updated, encoding='utf-8')
+        logger.info(
+            'Cleared final on %s so the Gadget loader can subclass it',
+            class_name,
+        )
+        return True
 
     def _find_application_smali(self, class_name):
         """Find one decoded application class."""
@@ -1755,6 +1779,108 @@ class GadgetPatcher:
             self.unsigned_apk.as_posix(),
         ]
         self._run(args, 'APK rebuilding')
+        self._restore_collapsed_entries()
+
+    def _restore_collapsed_entries(self):
+        """Put case-collapsed raw resources back into a split rebuild.
+
+        apktool extracts ``res/`` onto the host filesystem. On a
+        case-insensitive volume, ``res/RV.xml`` and ``res/rv.xml``
+        become one file, while the preserved resources.arsc still names
+        both. Single-APK rebuilds generate a new resource table from the
+        surviving files, so this only applies when resources stay raw.
+        """
+        if not self.no_resource_rebuild or not self.unsigned_apk.is_file():
+            return
+        with zipfile.ZipFile(self.apk_file) as original:
+            groups = {}
+            for info in original.infolist():
+                if not self._restorable_raw_entry(info.filename):
+                    continue
+                groups.setdefault(info.filename.casefold(), []).append(info)
+            restore = [
+                info
+                for infos in groups.values()
+                if len(infos) > 1
+                for info in infos
+            ]
+            if not restore:
+                return
+            with zipfile.ZipFile(self.unsigned_apk) as rebuilt:
+                present = {item.filename for item in rebuilt.infolist()}
+                if all(info.filename in present for info in restore):
+                    return
+                folded = {info.filename.casefold() for info in restore}
+                kept = [
+                    item for item in rebuilt.infolist()
+                    if item.filename.casefold() not in folded
+                ]
+                for item in kept:
+                    self._reject_unsafe_zip_entry(item.filename)
+                restored = self.unsigned_apk.with_name(
+                    f'{self.unsigned_apk.name}.restored')
+                if restored.is_symlink() or (
+                        restored.exists() and not restored.is_file()):
+                    raise RuntimeError('Refusing to replace a restored APK')
+                restored.unlink(missing_ok=True)
+                try:
+                    with zipfile.ZipFile(
+                            restored, 'w', allowZip64=True) as output:
+                        for item in kept:
+                            output.writestr(
+                                self._zipinfo_for_copy(item),
+                                rebuilt.read(item),
+                            )
+                        for info in restore:
+                            self._reject_unsafe_zip_entry(info.filename)
+                            output.writestr(
+                                self._zipinfo_for_copy(info),
+                                original.read(info),
+                            )
+                    rebuilt.close()
+                    os.replace(restored, self.unsigned_apk)
+                finally:
+                    if restored.is_file() and not restored.is_symlink():
+                        restored.unlink()
+        logger.info(
+            'Restored %d case-collapsed APK entries', len(restore))
+
+    @staticmethod
+    def _restorable_raw_entry(name):
+        """Return whether one original entry must survive a raw rebuild."""
+        if name.startswith('META-INF/') or name == 'resources.arsc':
+            return False
+        if name == 'AndroidManifest.xml' or name == 'stamp-cert-sha256':
+            return False
+        if re.fullmatch(r'classes\d*\.dex', name):
+            return False
+        return name.startswith(('res/', 'assets/'))
+
+    @staticmethod
+    def _reject_unsafe_zip_entry(name):
+        if (
+                not name
+                or name.endswith('/')
+                or '\\' in name
+                or name.startswith('/')
+                or is_path_traversal(name)):
+            raise ValueError('Unsafe APK entry name')
+
+    @staticmethod
+    def _zipinfo_for_copy(info):
+        """Copy zip metadata without reusing local-header offsets."""
+        copied = zipfile.ZipInfo(
+            filename=info.filename,
+            date_time=info.date_time,
+        )
+        compress_type = info.compress_type
+        if compress_type not in (
+                zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED):
+            compress_type = zipfile.ZIP_DEFLATED
+        copied.compress_type = compress_type
+        copied.flag_bits = info.flag_bits & 0x800
+        copied.external_attr = info.external_attr
+        return copied
 
     @staticmethod
     def _keytool_path():
