@@ -17,6 +17,7 @@ from mobsf.MobSF.security import (
     is_pipe_or_link,
     is_safe_path,
     is_safe_windows_batch_arg,
+    safe_request,
     safe_stream_request,
     sanitize_filename,
     sanitize_for_logging,
@@ -116,7 +117,8 @@ class DisallowedIPTests(SimpleTestCase):
                    '100.64.0.1', '192.168.1.1', '0.0.0.0', '::1',
                    '::ffff:127.0.0.1', '2002:7f00:1::',
                    '2001:0:4136:e378:8000:63bf:80ff:fffe',
-                   '64:ff9b::7f00:1', 'fc00::1', 'not-an-ip'):
+                   '64:ff9b::7f00:1', 'fc00::1', 'not-an-ip',
+                   '168.63.129.16', '::ffff:168.63.129.16'):
             with self.subTest(ip=ip):
                 self.assertTrue(is_disallowed_ip(ip))
 
@@ -200,6 +202,38 @@ class SafeStreamRequestTests(SimpleTestCase):
         second = opener.call_args_list[1]
         self.assertEqual(second.args[0], 'GET')
         self.assertNotIn('data', second.kwargs)
+
+
+class SafeRequestLimitTests(SimpleTestCase):
+
+    @staticmethod
+    def _opener(chunks):
+        response = mock.Mock(status_code=200, headers={})
+        response.raw.stream.return_value = iter(chunks)
+        return mock.patch.object(
+            security, '_open_pinned_request',
+            return_value=(mock.Mock(), response))
+
+    def test_body_returned(self):
+        with self._opener([b'ab', b'cd']):
+            response = safe_request('GET', 'https://a.example/')
+        self.assertEqual(response._content, b'abcd')
+
+    def test_size_limit(self):
+        with self._opener([b'a' * 6, b'a' * 6]):
+            with self.assertRaises(ValueError):
+                safe_request('GET', 'https://a.example/',
+                             max_response_size=10)
+
+    def test_total_time_limit(self):
+        # Each chunk arrives within the socket timeout, but the
+        # body as a whole runs past max_total_time.
+        clock = iter([0, 4, 8, 12])
+        with self._opener([b'a', b'b', b'c']), mock.patch.object(
+                security.time, 'monotonic', side_effect=lambda: next(clock)):
+            with self.assertRaises(TimeoutError):
+                safe_request('GET', 'https://a.example/',
+                             max_total_time=10)
 
 
 class SubprocessHookTests(SimpleTestCase):

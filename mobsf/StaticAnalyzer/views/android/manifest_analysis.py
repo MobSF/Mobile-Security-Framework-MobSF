@@ -2,9 +2,10 @@
 # flake8: noqa
 """Module for android manifest analysis."""
 import logging
+import time
 from urllib.parse import urlparse
 
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait
 from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
@@ -32,6 +33,8 @@ ANDROID_9_0_LEVEL = 28
 ANDROID_10_0_LEVEL = 29
 ANDROID_MANIFEST_FILE = 'AndroidManifest.xml'
 WELL_KNOWN_PATH = '/.well-known/assetlinks.json'
+ASSETLINKS_MAX_URLS = 20
+ASSETLINKS_TOTAL_TIMEOUT = 30
 
 ANDROID_API_LEVEL_MAP = {
     '1': '1.0',
@@ -78,21 +81,60 @@ def escape_manifest_attribute(value):
     return escape(value)
 
 
-def assetlinks_check(act_name, well_knowns):
-    """Well known assetlink check."""
-    findings = []
+def new_assetlinks_budget():
+    """Return the shared state that bounds assetlinks checks per manifest."""
+    return {
+        'deadline': time.monotonic() + ASSETLINKS_TOTAL_TIMEOUT,
+        'results': {},
+    }
 
-    with ThreadPoolExecutor() as executor:
-        futures = []
-        for w_url, host in well_knowns.items():
-            logger.info(
-                'App Link Assetlinks Check - [%s] %s', act_name, host)
-            futures.append(
-                executor.submit(_check_url, host, w_url))
-        for future in futures:
-            findings.append(future.result())
 
-    return findings
+def assetlinks_check(act_name, well_knowns, budget=None):
+    """Well known assetlink check.
+
+    Hosts come from the scanned manifest, so the number of URLs and the
+    total time are capped across all activities sharing the budget.
+    """
+    if budget is None:
+        budget = new_assetlinks_budget()
+    results = budget['results']
+    pending = []
+    for w_url, host in well_knowns.items():
+        if w_url in results:
+            continue
+        if len(results) + len(pending) >= ASSETLINKS_MAX_URLS:
+            logger.warning(
+                'App Link Assetlinks Check - limit of %d hosts reached, '
+                'skipping %s', ASSETLINKS_MAX_URLS, host)
+            continue
+        pending.append((w_url, host))
+
+    if pending:
+        executor = ThreadPoolExecutor()
+        try:
+            futures = []
+            for w_url, host in pending:
+                logger.info(
+                    'App Link Assetlinks Check - [%s] %s', act_name, host)
+                futures.append(
+                    (executor.submit(_check_url, host, w_url), w_url, host))
+            wait([f for f, _, _ in futures],
+                 timeout=max(0, budget['deadline'] - time.monotonic()))
+            for future, w_url, host in futures:
+                if future.done():
+                    results[w_url] = future.result()
+                else:
+                    logger.warning(
+                        'App Link Assetlinks Check timed out: %s', w_url)
+                    results[w_url] = {'url': w_url,
+                                      'host': host,
+                                      'status_code': None,
+                                      'status': False}
+        finally:
+            # Don't block on requests still running past the deadline.
+            executor.shutdown(wait=False, cancel_futures=True)
+
+    return [results[w_url] for w_url in well_knowns if w_url in results]
 
 
 def _check_url(host, w_url):
@@ -251,6 +293,7 @@ def manifest_analysis(app_dic, man_data_dic):
         exported = []
         browsable_activities = {}
         verdicts = {}
+        assetlinks_budget = new_assetlinks_budget()
         permission_dict = {}
         do_netsec = False
         debuggable = False
@@ -346,7 +389,8 @@ def manifest_analysis(app_dic, man_data_dic):
                     if browse_dic['browsable']:
                         browsable_activities[node.getAttribute(
                             f'{ns}:name')] = browse_dic
-                    for finding in assetlinks_check(item, browse_dic['well_known']):
+                    for finding in assetlinks_check(
+                            item, browse_dic['well_known'], assetlinks_budget):
                         if not finding['status']:
                             ret_list.append(('well_known_assetlinks',
                                             (item, finding['host']),

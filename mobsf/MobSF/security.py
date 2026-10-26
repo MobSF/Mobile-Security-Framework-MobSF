@@ -17,6 +17,7 @@ import stat
 import string
 import subprocess
 import sys
+import time
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
@@ -333,7 +334,12 @@ _DISALLOWED_IPV4_NETWORKS = tuple(ipaddress.IPv4Network(n) for n in (
     '10.0.0.0/8',
     '100.64.0.0/10',  # NOSONAR - RFC 6598 shared address space denylist
 ))
+# Python classifies these as global, but they are cloud-internal endpoints.
+_DISALLOWED_IP_ADDRESSES = frozenset(ipaddress.ip_address(a) for a in (
+    '168.63.129.16',  # NOSONAR - Azure WireServer / platform DNS denylist
+))
 DEFAULT_REQUEST_TIMEOUT = 10
+DEFAULT_TOTAL_TIMEOUT = 30
 _SENSITIVE_HEADERS = ('authorization', 'cookie', 'proxy-authorization')
 _IPV6_TRANSLATION_NETWORKS = (
     ipaddress.IPv6Network('64:ff9b::/96'),
@@ -382,6 +388,8 @@ def is_disallowed_ip(ip_str):
             or ip_obj.is_unspecified):
         return True
 
+    if ip_obj in _DISALLOWED_IP_ADDRESSES:
+        return True
     if isinstance(ip_obj, ipaddress.IPv4Address):
         if any(ip_obj in network for network in _DISALLOWED_IPV4_NETWORKS):
             return True
@@ -614,18 +622,29 @@ def safe_stream_request(method, url, *,
 
 def safe_request(method, url, *,
                  allowed_ports=(80, 443), max_redirects=0,
-                 max_response_size=1024 * 1024, **kwargs):
-    """Return a bounded response from an SSRF-safe network request."""
+                 max_response_size=1024 * 1024,
+                 max_total_time=DEFAULT_TOTAL_TIMEOUT, **kwargs):
+    """Return a bounded response from an SSRF-safe network request.
+
+    The timeout kwarg applies per socket operation, so a server sending a
+    byte at a time could keep the body open indefinitely. max_total_time
+    caps the wall-clock time spent reading the body.
+    """
+    deadline = time.monotonic() + max_total_time
     with safe_stream_request(
             method,
             url,
             allowed_ports=allowed_ports,
             max_redirects=max_redirects,
             **kwargs) as response:
-        content = response.raw.read(max_response_size + 1, decode_content=True)
-        if len(content) > max_response_size:
-            raise ValueError('Remote response exceeds the allowed size')
-        response._content = content
+        content = bytearray()
+        for chunk in response.raw.stream(65536, decode_content=True):
+            content += chunk
+            if len(content) > max_response_size:
+                raise ValueError('Remote response exceeds the allowed size')
+            if time.monotonic() > deadline:
+                raise TimeoutError('Remote response exceeded the time limit')
+        response._content = bytes(content)
         response._content_consumed = True
         return response
 
