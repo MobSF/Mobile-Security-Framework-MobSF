@@ -2,9 +2,10 @@
 # flake8: noqa
 """Module for android manifest analysis."""
 import logging
+import time
 from urllib.parse import urlparse
 
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait
 from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
@@ -32,6 +33,8 @@ ANDROID_9_0_LEVEL = 28
 ANDROID_10_0_LEVEL = 29
 ANDROID_MANIFEST_FILE = 'AndroidManifest.xml'
 WELL_KNOWN_PATH = '/.well-known/assetlinks.json'
+ASSETLINKS_MAX_URLS = 20
+ASSETLINKS_TOTAL_TIMEOUT = 30
 
 ANDROID_API_LEVEL_MAP = {
     '1': '1.0',
@@ -78,26 +81,89 @@ def escape_manifest_attribute(value):
     return escape(value)
 
 
-def assetlinks_check(act_name, well_knowns):
-    """Well known assetlink check."""
-    findings = []
-
-    with ThreadPoolExecutor() as executor:
-        futures = []
-        for w_url, host in well_knowns.items():
-            logger.info(
-                'App Link Assetlinks Check - [%s] %s', act_name, host)
-            futures.append(
-                executor.submit(_check_url, host, w_url))
-        for future in futures:
-            findings.append(future.result())
-
-    return findings
+def new_assetlinks_budget():
+    """Return the shared state that bounds assetlinks checks per manifest."""
+    return {
+        'deadline': time.monotonic() + ASSETLINKS_TOTAL_TIMEOUT,
+        'results': {},
+    }
 
 
-def _check_url(host, w_url):
-    """Check for the presence of Assetlinks URL."""
+def assetlinks_check(act_name, well_knowns, budget=None):
+    """Well known assetlink check.
+
+    Hosts come from the scanned manifest, so the number of URLs and the
+    total time are capped across all activities sharing the budget.
+    """
+    if budget is None:
+        budget = new_assetlinks_budget()
+    results = budget['results']
+    pending = []
+    for w_url, host in well_knowns.items():
+        if w_url in results:
+            continue
+        if len(results) + len(pending) >= ASSETLINKS_MAX_URLS:
+            logger.warning(
+                'App Link Assetlinks Check - limit of %d hosts reached, '
+                'skipping %s', ASSETLINKS_MAX_URLS, host)
+            continue
+        pending.append((w_url, host))
+
+    if pending and time.monotonic() >= budget['deadline']:
+        for w_url, host in pending:
+            logger.warning('App Link Assetlinks Check - time limit reached, '
+                           'skipping %s', host)
+            results[w_url] = _failed_check(host, w_url)
+        pending = []
+    if pending:
+        executor = ThreadPoolExecutor()
+        try:
+            futures = []
+            for w_url, host in pending:
+                logger.info(
+                    'App Link Assetlinks Check - [%s] %s', act_name, host)
+                futures.append((
+                    executor.submit(
+                        _check_url, host, w_url, budget['deadline']),
+                    w_url,
+                    host))
+            wait([f for f, _, _ in futures],
+                 timeout=max(0, budget['deadline'] - time.monotonic()))
+            for future, w_url, host in futures:
+                if future.done():
+                    results[w_url] = future.result()
+                else:
+                    logger.warning(
+                        'App Link Assetlinks Check timed out: %s', w_url)
+                    results[w_url] = _failed_check(host, w_url)
+        finally:
+            # safe_request cuts requests off at the deadline, but a slow DNS
+            # lookup in valid_host() can't be interrupted; don't wait on it.
+            executor.shutdown(wait=False, cancel_futures=True)
+
+    return [results[w_url] for w_url in well_knowns
+            if results.get(w_url) is not None]
+
+
+def _failed_check(host, w_url):
+    """Result for an assetlinks URL that could not be checked."""
+    return {'url': w_url,
+            'host': host,
+            'status_code': None,
+            'status': False}
+
+
+def _check_url(host, w_url, deadline=None):
+    """Check for the presence of Assetlinks URL.
+
+    Returns None if the host is not publicly routable.
+    """
+    if deadline is None:
+        deadline = time.monotonic() + ASSETLINKS_TOTAL_TIMEOUT
     try:
+        if not valid_host(host):
+            logger.warning('Invalid Host: %s', host)
+            return None
         iden = 'sha256_cert_fingerprints'
         proxies, verify = upstream_proxy('https')
         status = False
@@ -120,11 +186,15 @@ def _check_url(host, w_url):
                 logger.warning(
                     'Non-standard port in assetlinks URL rejected: %s', url)
                 continue
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError('Assetlinks check time limit reached')
             # Resolve and connect through the same SSRF-safe request primitive,
             # preventing a second DNS lookup from rebinding to an internal IP.
             r = safe_request('GET',
                              url,
                              timeout=5,
+                             max_total_time=remaining,
                              proxies=proxies,
                              verify=verify)
 
@@ -142,16 +212,11 @@ def _check_url(host, w_url):
 
     except Exception:
         logger.error(f'Well Known Assetlinks Check for URL: {w_url}')
-        return {'url': w_url,
-                'host': host,
-                'status_code': None,
-                'status': False}
+        return _failed_check(host, w_url)
 
 
-def get_browsable_activities(node, ns, verdicts=None):
+def get_browsable_activities(node, ns):
     """Get Browsable Activities."""
-    if verdicts is None:
-        verdicts = {}
     try:
         browse_dic = {}
         schemes = []
@@ -194,11 +259,8 @@ def get_browsable_activities(node, ns, verdicts=None):
                         and host
                             and host != '*'):
                         host = host.replace('*.', '').replace('#', '')
-                        if host not in verdicts:
-                            verdicts[host] = valid_host(host)
-                        if not verdicts[host]:
-                            logger.warning('Invalid Host: %s', host)
-                            continue
+                        # valid_host() resolves DNS, so it runs in the
+                        # assetlinks workers, within the manifest budget.
                         shost = f'{scheme}://{host}'
                         if port and is_number(port):
                             if int(port) not in (80, 443):
@@ -250,7 +312,7 @@ def manifest_analysis(app_dic, man_data_dic):
         ret_list = []
         exported = []
         browsable_activities = {}
-        verdicts = {}
+        assetlinks_budget = new_assetlinks_budget()
         permission_dict = {}
         do_netsec = False
         debuggable = False
@@ -342,11 +404,12 @@ def manifest_analysis(app_dic, man_data_dic):
                     item = node.getAttribute(f'{ns}:name')
                     item = escape_manifest_attribute(item)
                     # Browsable Activities
-                    browse_dic = get_browsable_activities(node, ns, verdicts)
+                    browse_dic = get_browsable_activities(node, ns)
                     if browse_dic['browsable']:
                         browsable_activities[node.getAttribute(
                             f'{ns}:name')] = browse_dic
-                    for finding in assetlinks_check(item, browse_dic['well_known']):
+                    for finding in assetlinks_check(
+                            item, browse_dic['well_known'], assetlinks_budget):
                         if not finding['status']:
                             ret_list.append(('well_known_assetlinks',
                                             (item, finding['host']),
