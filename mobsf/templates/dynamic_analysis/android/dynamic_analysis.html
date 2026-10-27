@@ -161,7 +161,8 @@ textarea:focus {
     line-height: 1.2;
     white-space: nowrap;
 }
-.device-app-pull {
+.device-app-pull,
+.device-app-uninstall {
     display: flex;
     width: 100%;
 }
@@ -381,6 +382,7 @@ textarea:focus {
 <script>
 const checksumPlaceholder = '00000000000000000000000000000000';
 const pullUrl = "{% url 'android_pull_scan' %}";
+const uninstallUrl = "{% url 'android_uninstall_app' %}";
 const iconUrl = "{% url 'android_device_app_icon' %}";
 const reportPathTemplate = "{% url 'dynamic_report' checksum='00000000000000000000000000000000' %}";
 const deviceDetailsUrl = "{% url 'android_device_details' %}";
@@ -491,7 +493,7 @@ document.querySelectorAll('.dynamic-start-form').forEach((form) => {
                 const decision = await Swal.fire({
                     title: 'Confirm Gadget repacking',
                     text: warnings.join(' '),
-                    icon: 'warning',
+                    type: 'warning',
                     showCancelButton: true,
                     confirmButtonText: status.confirmation_required
                         ? 'Uninstall and re-sign'
@@ -510,7 +512,11 @@ document.querySelectorAll('.dynamic-start-form').forEach((form) => {
             }
             submitWithLoader(form);
         } catch (error) {
-            Swal.fire('Unable to start analysis', error.message, 'error');
+            Swal.fire({
+                title: 'Unable to start analysis',
+                text: error.message,
+                type: 'error',
+            });
         }
     });
 });
@@ -900,6 +906,92 @@ function pumpDeviceIcons() {
     }
 }
 
+function uninstallButton(packageName, deviceIdentifier) {
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = uninstallUrl;
+    form.className = 'device-app-uninstall';
+    addHiddenInput(form, 'csrfmiddlewaretoken', csrfToken);
+    addHiddenInput(form, 'identifier', deviceIdentifier);
+    addHiddenInput(form, 'package', packageName);
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.className = 'btn btn-danger btn-sm';
+    button.title = `Uninstall ${packageName}`;
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-trash';
+    icon.setAttribute('aria-hidden', 'true');
+    button.appendChild(icon);
+    button.appendChild(document.createTextNode(' Uninstall'));
+    form.appendChild(button);
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        confirmUninstall(form, packageName);
+    });
+    return form;
+}
+
+async function confirmUninstall(form, packageName) {
+    if (form.dataset.pending === '1') {
+        return;
+    }
+    form.dataset.pending = '1';
+    const button = form.querySelector('button');
+    try {
+        const decision = await Swal.fire({
+            title: 'Uninstall application?',
+            text: `Uninstall ${packageName} from the selected device? `
+                + 'This removes the app and its local data.',
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Uninstall',
+            cancelButtonText: 'Cancel',
+        });
+        if (!(decision && (decision.isConfirmed || decision.value))) {
+            return;
+        }
+        if (button) {
+            button.disabled = true;
+        }
+        const response = await fetch(uninstallUrl, {
+            method: 'POST',
+            body: new FormData(form),
+            credentials: 'same-origin',
+        });
+        let result = {};
+        try {
+            result = await response.json();
+        } catch (error) {
+            result = {};
+        }
+        if (!response.ok || result.status !== 'ok') {
+            const message = typeof result.message === 'string'
+                ? result.message
+                : 'Unable to uninstall the application';
+            throw new Error(message);
+        }
+        await Swal.fire({
+            title: 'Uninstalled',
+            text: `${packageName} was removed from the device.`,
+            type: 'success',
+        });
+        await loadDeviceApps(true);
+    } catch (error) {
+        if (button) {
+            button.disabled = false;
+        }
+        Swal.fire({
+            title: 'Uninstall failed',
+            text: typeof error.message === 'string' && error.message
+                ? error.message
+                : 'Unable to uninstall the application',
+            type: 'error',
+        });
+    } finally {
+        delete form.dataset.pending;
+    }
+}
+
 function showDeviceApps(packages, deviceIdentifier) {
     iconGeneration += 1;
     iconJobs.length = 0;
@@ -984,6 +1076,10 @@ function showDeviceApps(packages, deviceIdentifier) {
             );
             pull.classList.add('device-app-pull');
             actions.appendChild(pull);
+            actions.appendChild(uninstallButton(
+                fields.packageName,
+                deviceIdentifier,
+            ));
         }
         if (reportPath) {
             const report = document.createElement('a');

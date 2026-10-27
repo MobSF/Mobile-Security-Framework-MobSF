@@ -32,6 +32,9 @@ from mobsf.DynamicAnalyzer.views.common.frida.server_update import (
     FridaServerUpdater,
 )
 from mobsf.MobSF.security import (
+    cmd_injection_check,
+    is_attack_pattern,
+    is_path_traversal,
     is_pipe_or_link,
     is_safe_android_path,
     is_safe_path,
@@ -182,6 +185,47 @@ def dynamic_report_exists(checksum):
         return False
     logcat = Path(settings.UPLD_DIR) / checksum.lower() / 'logcat.txt'
     return logcat.is_file() and not logcat.is_symlink()
+
+
+def _adb_identifier_has_traversal(identifier):
+    """Detect traversal without treating an ADB host:port colon as a path."""
+    if not isinstance(identifier, str):
+        return True
+    if '..' in identifier or identifier[:1] in '/\\':
+        return True
+    # ADB network serials use ':' as a port separator. Flatten it so the
+    # shared path check still sees encoded '..' and absolute paths.
+    return is_path_traversal(identifier.replace(':', '_'))
+
+
+def android_package_is_uninstallable(package):
+    """Return whether a package may be passed to adb uninstall."""
+    if (not isinstance(package, str)
+            or not strict_package_check(package)
+            or is_path_traversal(package)
+            or is_attack_pattern(package)
+            or cmd_injection_check(package)):
+        logger.warning(
+            'Rejected uninstall of package %s',
+            sanitize_for_logging(package),
+        )
+        return False
+    return True
+
+
+def android_device_is_uninstallable(identifier):
+    """Return whether a device identifier may be passed to adb."""
+    if (not isinstance(identifier, str)
+            or not valid_android_device_identifier(identifier)
+            or is_attack_pattern(identifier)
+            or cmd_injection_check(identifier)
+            or _adb_identifier_has_traversal(identifier)):
+        logger.warning(
+            'Rejected uninstall on device %s',
+            sanitize_for_logging(identifier),
+        )
+        return False
+    return True
 
 
 def _safe_exec_args(args):
@@ -511,8 +555,13 @@ class Environment:
 
     def uninstall_package(self, package):
         """Uninstall a package after explicit analyst confirmation."""
+        if (not android_package_is_uninstallable(package)
+                or not android_device_is_uninstallable(self.identifier)):
+            return False
         logger.info(
-            'Uninstalling existing Android package after confirmation')
+            'Uninstalling Android package %s after confirmation',
+            sanitize_for_logging(package),
+        )
         result = self.adb_command(
             ['uninstall', package],
             silent=True,
@@ -527,9 +576,17 @@ class Environment:
             and not self.has_package(package)
         )
         if success:
-            logger.info('Existing Android package was uninstalled')
+            with _DEVICE_PACKAGE_CACHE_LOCK:
+                _DEVICE_PACKAGE_CACHE.pop(self.identifier, None)
+            logger.info(
+                'Android package %s was uninstalled',
+                sanitize_for_logging(package),
+            )
         else:
-            logger.error('Existing Android package uninstall failed')
+            logger.error(
+                'Android package %s uninstall failed',
+                sanitize_for_logging(package),
+            )
         return success
 
     def adb_command(

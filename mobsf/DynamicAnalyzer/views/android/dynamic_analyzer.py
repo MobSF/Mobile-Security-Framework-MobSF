@@ -33,6 +33,8 @@ from mobsf.DynamicAnalyzer.views.android.device_icon import (
 from mobsf.DynamicAnalyzer.views.android.environment import (
     ANDROID_API_SUPPORTED,
     Environment,
+    android_device_is_uninstallable,
+    android_package_is_uninstallable,
 )
 from mobsf.DynamicAnalyzer.views.android.frida_core import Frida
 from mobsf.DynamicAnalyzer.views.android.operations import (
@@ -863,6 +865,63 @@ def logcat(request, api=False):
         logger.exception('Logcat Streaming')
         err = 'Error in Logcat streaming'
         return print_n_send_error_response(request, err, api)
+
+
+def _uninstall_error(message, status):
+    """JSON error for the device uninstall action."""
+    return JsonResponse({
+        'status': 'failed',
+        'message': message,
+    }, status=status)
+
+
+def _validated_uninstall_target(request):
+    """Return the selected device and package, or an error response."""
+    form = AndroidPullScanForm(request.POST)
+    if not form.is_valid():
+        return None, _uninstall_error(
+            'Invalid package name or Android device', 400)
+    package = form.cleaned_data['package']
+    try:
+        identifier = _get_form_device(request, form)
+    except Exception:
+        return None, _uninstall_error(
+            'Cannot connect to Android Runtime', 400)
+    if not identifier:
+        return None, _uninstall_error('No Android device selected', 400)
+    if not android_package_is_uninstallable(package):
+        return None, _uninstall_error('Invalid package name', 400)
+    if not android_device_is_uninstallable(identifier):
+        return None, _uninstall_error('Invalid Android device', 400)
+    return (package, identifier), None
+
+
+@login_required
+@permission_required(Permissions.SCAN)
+@require_http_methods(['POST'])
+def android_uninstall_app(request):
+    """Uninstall one installed app from the selected Android device."""
+    target, error = _validated_uninstall_target(request)
+    if error:
+        return error
+    package, identifier = target
+    try:
+        env = Environment(identifier)
+        if not env.connect():
+            return _uninstall_error(
+                'Selected Android device is unavailable', 503)
+        removed = env.uninstall_package(package)
+    except Exception:
+        logger.exception('Uninstalling an Android application')
+        return _uninstall_error(
+            'Failed to uninstall the application', 500)
+    if not removed:
+        return _uninstall_error(
+            'Failed to uninstall the application', 500)
+    return JsonResponse({
+        'status': 'ok',
+        'message': 'Application uninstalled',
+    })
 
 
 @login_required
