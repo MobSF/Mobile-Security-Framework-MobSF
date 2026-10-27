@@ -17,6 +17,7 @@ import stat
 import string
 import subprocess
 import sys
+import threading
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
@@ -333,7 +334,12 @@ _DISALLOWED_IPV4_NETWORKS = tuple(ipaddress.IPv4Network(n) for n in (
     '10.0.0.0/8',
     '100.64.0.0/10',  # NOSONAR - RFC 6598 shared address space denylist
 ))
+# Python classifies these as global, but they are cloud-internal endpoints.
+_DISALLOWED_IP_ADDRESSES = frozenset(ipaddress.ip_address(a) for a in (
+    '168.63.129.16',  # NOSONAR - Azure WireServer / platform DNS denylist
+))
 DEFAULT_REQUEST_TIMEOUT = 10
+DEFAULT_TOTAL_TIMEOUT = 30
 _SENSITIVE_HEADERS = ('authorization', 'cookie', 'proxy-authorization')
 _IPV6_TRANSLATION_NETWORKS = (
     ipaddress.IPv6Network('64:ff9b::/96'),
@@ -382,6 +388,8 @@ def is_disallowed_ip(ip_str):
             or ip_obj.is_unspecified):
         return True
 
+    if ip_obj in _DISALLOWED_IP_ADDRESSES:
+        return True
     if isinstance(ip_obj, ipaddress.IPv4Address):
         if any(ip_obj in network for network in _DISALLOWED_IPV4_NETWORKS):
             return True
@@ -464,11 +472,73 @@ def valid_host(host):
     return resolve_public_ip(host) is not None
 
 
-class _PinnedTLSAdapter(HTTPAdapter):
+class _RequestDeadline:
+    """Shut down a request's sockets once its total time limit passes.
+
+    Socket timeouts apply per operation, so a peer sending one byte at a
+    time could otherwise hold the TLS handshake, headers or body open
+    indefinitely and keep the calling thread blocked.
+    """
+
+    def __init__(self, seconds):
+        self.expired = False
+        self._lock = threading.Lock()
+        # Duplicates, so shutdown still reaches the connection after TLS
+        # wrapping detaches the original socket object, and so a closed
+        # and reused descriptor is never touched.
+        self._sockets = []
+        self._timer = threading.Timer(max(0, seconds), self._expire)
+        self._timer.daemon = True
+        self._timer.start()
+
+    def register(self, sock):
+        dup = sock.dup()
+        with self._lock:
+            if not self.expired:
+                self._sockets.append(dup)
+                return
+        self._shutdown(dup)
+
+    def _expire(self):
+        with self._lock:
+            self.expired = True
+            sockets, self._sockets = self._sockets, []
+        for sock in sockets:
+            self._shutdown(sock)
+
+    def cancel(self):
+        self._timer.cancel()
+        with self._lock:
+            sockets, self._sockets = self._sockets, []
+        for sock in sockets:
+            sock.close()
+
+    @staticmethod
+    def _shutdown(sock):
+        try:
+            sock.shutdown(socket.SHUT_RDWR)
+        except OSError:
+            pass
+        sock.close()
+
+
+def _deadline_pool(pool_cls, deadline):
+    """Return a pool class whose connections register with the deadline."""
+    class Connection(pool_cls.ConnectionCls):
+        def _new_conn(self):
+            sock = super()._new_conn()
+            deadline.register(sock)
+            return sock
+
+    return type(pool_cls.__name__, (pool_cls,), {'ConnectionCls': Connection})
+
+
+class _PinnedAdapter(HTTPAdapter):
     """Use the original hostname for TLS while the URL contains an IP."""
 
-    def __init__(self, hostname, **kwargs):
+    def __init__(self, hostname, deadline=None, **kwargs):
         self.hostname = hostname
+        self.deadline = deadline
         super().__init__(**kwargs)
 
     def init_poolmanager(self, connections, maxsize, block=False, **pool_kwargs):
@@ -480,6 +550,11 @@ class _PinnedTLSAdapter(HTTPAdapter):
             block=block,
             **pool_kwargs,
         )
+        if self.deadline:
+            self.poolmanager.pool_classes_by_scheme = {
+                scheme: _deadline_pool(pool_cls, self.deadline)
+                for scheme, pool_cls in
+                self.poolmanager.pool_classes_by_scheme.items()}
 
 
 def _upstream_proxy_enabled(proxies):
@@ -524,7 +599,8 @@ def _pinned_url(parsed, address):
     ))
 
 
-def _open_pinned_request(method, url, allowed_ports, **kwargs):
+def _open_pinned_request(method, url, allowed_ports, deadline=None,
+                         **kwargs):
     """Open one request to a validated literal IP with Host/SNI preserved."""
     proxies = kwargs.pop('proxies', None)
     if _upstream_proxy_enabled(proxies):
@@ -541,12 +617,14 @@ def _open_pinned_request(method, url, allowed_ports, **kwargs):
     headers['Host'] = parsed.netloc
     last_error = None
     for address in addresses:
+        if deadline and deadline.expired:
+            raise TimeoutError('Remote request exceeded the time limit')
         session = requests.Session()
         # Ignore HTTP(S)_PROXY environment variables. A proxy would perform
         # its own DNS lookup and undo connection pinning.
         session.trust_env = False
-        if parsed.scheme == 'https':
-            session.mount('https://', _PinnedTLSAdapter(parsed.hostname))
+        session.mount(f'{parsed.scheme}://',
+                      _PinnedAdapter(parsed.hostname, deadline))
         try:
             response = session.request(
                 method,
@@ -559,8 +637,11 @@ def _open_pinned_request(method, url, allowed_ports, **kwargs):
             response.url = url
             return session, response
         except requests.RequestException as exp:
-            last_error = exp
             session.close()
+            if deadline and deadline.expired:
+                raise TimeoutError(
+                    'Remote request exceeded the time limit') from exp
+            last_error = exp
     if last_error:
         raise last_error
     raise requests.ConnectionError('No public address available')
@@ -568,64 +649,91 @@ def _open_pinned_request(method, url, allowed_ports, **kwargs):
 
 @contextmanager
 def safe_stream_request(method, url, *,
-                        allowed_ports=(80, 443), max_redirects=0, **kwargs):
+                        allowed_ports=(80, 443), max_redirects=0,
+                        max_total_time=None, **kwargs):
     """Yield a streaming response with DNS rebinding protections.
 
     Redirect targets are separately resolved, validated, and pinned. Proxy
     settings fail closed because the proxy—not MobSF—would resolve the host.
+    With max_total_time, the connection is shut down once that many seconds
+    have passed, and TimeoutError is raised.
     """
     kwargs.setdefault('timeout', DEFAULT_REQUEST_TIMEOUT)
+    deadline = _RequestDeadline(max_total_time) if max_total_time else None
     current_url = url
     redirects = 0
-    while True:
-        session, response = _open_pinned_request(
-            method,
-            current_url,
-            allowed_ports,
-            **kwargs,
-        )
-        location = response.headers.get('Location')
-        if (response.status_code in (301, 302, 303, 307, 308)
-                and location and redirects < max_redirects):
-            response.close()
-            session.close()
-            next_url = urljoin(current_url, location)
-            current, nxt = urlparse(current_url), urlparse(next_url)
-            if current.scheme == 'https' and nxt.scheme != 'https':
-                raise ValueError('Redirect from HTTPS to HTTP is not allowed')
-            if (current.scheme, current.netloc) != (nxt.scheme, nxt.netloc):
-                kwargs['headers'] = {
-                    k: v for k, v in (kwargs.get('headers') or {}).items()
-                    if k.lower() not in _SENSITIVE_HEADERS}
-            if response.status_code == 303 and method.upper() != 'HEAD':
-                method = 'GET'
-                kwargs.pop('data', None)
-                kwargs.pop('json', None)
-            current_url = next_url
-            redirects += 1
-            continue
-        try:
-            yield response
-        finally:
-            response.close()
-            session.close()
-        return
+    try:
+        while True:
+            session, response = _open_pinned_request(
+                method,
+                current_url,
+                allowed_ports,
+                deadline=deadline,
+                **kwargs,
+            )
+            location = response.headers.get('Location')
+            if (response.status_code in (301, 302, 303, 307, 308)
+                    and location and redirects < max_redirects):
+                response.close()
+                session.close()
+                next_url = urljoin(current_url, location)
+                current, nxt = urlparse(current_url), urlparse(next_url)
+                if current.scheme == 'https' and nxt.scheme != 'https':
+                    raise ValueError(
+                        'Redirect from HTTPS to HTTP is not allowed')
+                if ((current.scheme, current.netloc)
+                        != (nxt.scheme, nxt.netloc)):
+                    kwargs['headers'] = {
+                        k: v for k, v in (kwargs.get('headers') or {}).items()
+                        if k.lower() not in _SENSITIVE_HEADERS}
+                if response.status_code == 303 and method.upper() != 'HEAD':
+                    method = 'GET'
+                    kwargs.pop('data', None)
+                    kwargs.pop('json', None)
+                current_url = next_url
+                redirects += 1
+                continue
+            try:
+                yield response
+            except Exception as exp:
+                if deadline and deadline.expired:
+                    raise TimeoutError(
+                        'Remote response exceeded the time limit') from exp
+                raise
+            finally:
+                response.close()
+                session.close()
+            # A body without Content-Length just ends early on shutdown.
+            if deadline and deadline.expired:
+                raise TimeoutError('Remote response exceeded the time limit')
+            return
+    finally:
+        if deadline:
+            deadline.cancel()
 
 
 def safe_request(method, url, *,
                  allowed_ports=(80, 443), max_redirects=0,
-                 max_response_size=1024 * 1024, **kwargs):
-    """Return a bounded response from an SSRF-safe network request."""
+                 max_response_size=1024 * 1024,
+                 max_total_time=DEFAULT_TOTAL_TIMEOUT, **kwargs):
+    """Return a bounded response from an SSRF-safe network request.
+
+    The timeout kwarg applies per socket operation. max_total_time caps the
+    wall-clock time of the whole request, including headers and body.
+    """
     with safe_stream_request(
             method,
             url,
             allowed_ports=allowed_ports,
             max_redirects=max_redirects,
+            max_total_time=max_total_time,
             **kwargs) as response:
-        content = response.raw.read(max_response_size + 1, decode_content=True)
-        if len(content) > max_response_size:
-            raise ValueError('Remote response exceeds the allowed size')
-        response._content = content
+        content = bytearray()
+        for chunk in response.raw.stream(65536, decode_content=True):
+            content += chunk
+            if len(content) > max_response_size:
+                raise ValueError('Remote response exceeds the allowed size')
+        response._content = bytes(content)
         response._content_consumed = True
         return response
 
