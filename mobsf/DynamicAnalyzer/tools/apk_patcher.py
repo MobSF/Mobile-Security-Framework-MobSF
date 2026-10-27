@@ -181,7 +181,38 @@ class GadgetPatcher:
         if (not metadata_file.is_file()
                 or metadata_file.is_symlink()
                 or metadata_file.stat().st_size > 65536):
-            return ()
+            # Standalone use (CLI/library): no MobSF upload flow wrote the
+            # state file, so fall back to scanning the app dir for siblings.
+            splits = []
+            for candidate in sorted(app_dir.glob('*.apk')):
+                if (candidate == base_apk
+                        or candidate.name in (
+                            'mobsf-gadget.apk',
+                            'mobsf-gadget-unsigned.apk',
+                        )):
+                    continue
+                if (not candidate.is_file()
+                        or is_pipe_or_link(candidate)):
+                    continue
+                try:
+                    relative = candidate.relative_to(app_dir).as_posix()
+                except ValueError as exp:
+                    raise ValueError('Invalid split APK path') from exp
+                if not is_safe_path(app_dir, candidate, relative):
+                    raise ValueError('Invalid split APK path')
+                splits.append(candidate)
+            selected = {}
+            for split_apk in sorted(splits):
+                split_name = cls.split_manifest(split_apk)[0]
+                if not split_name:
+                    continue
+                if split_name in selected:
+                    raise ValueError(
+                        'Multi-variant .apks sets are not supported; pull the '
+                        'installed app from the device or use bundletool '
+                        'extract-apks')
+                selected[split_name] = split_apk
+            return tuple(sorted(selected.values()))
         try:
             metadata = json.loads(
                 metadata_file.read_text(encoding='utf-8'))
