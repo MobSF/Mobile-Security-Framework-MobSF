@@ -173,6 +173,21 @@ KNOWN_SECRET_PATTERNS = (
 )
 KNOWN_SECRET_PREFIXES = tuple(
     f'{name}: ' for name, _pattern in KNOWN_SECRET_PATTERNS)
+# Fixed public identifiers of common libraries, base64 of plain text, that
+# look like high-entropy secrets. Matched as substrings: code concatenates
+# them (e.g. 'AES' + key name).
+PUBLIC_CONSTANTS = (
+    # Flutter flutter_secure_storage: "This is the key for a secure
+    # storage AES Key" (SharedPreferences key name), "This is the prefix
+    # for a secure storage"
+    'VGhpcyBpcyB0aGUga2V5IGZvciBhIHNlY3VyZSBzdG9yYWdlIEFFUyBLZXkK',
+    'VGhpcyBpcyB0aGUgcHJlZml4IGZvciBhIHNlY3VyZSBzdG9yYWdlCg',
+    # Flutter shared_preferences: "This is the prefix for a list.",
+    # "... for BigInteger", "... for Double."
+    'VGhpcyBpcyB0aGUgcHJlZml4IGZvciBhIGxpc3Qu',
+    'VGhpcyBpcyB0aGUgcHJlZml4IGZvciBCaWdJbnRlZ2Vy',
+    'VGhpcyBpcyB0aGUgcHJlZml4IGZvciBEb3VibGUu',
+)
 
 
 def _strings(data):
@@ -207,7 +222,9 @@ def get_secrets(data):
             for match in pattern.finditer(value):
                 secrets.add(f'{name}: {match.group()}')
             scrubbed = pattern.sub('', scrubbed)
-        secrets.update(get_entropies((scrubbed,)))
+        secrets.update(
+            s for s in get_entropies((scrubbed,))
+            if not any(c in s for c in PUBLIC_CONSTANTS))
     return secrets
 
 
