@@ -1752,20 +1752,29 @@ class Environment:
         return True
 
     @staticmethod
-    def _listening_uids_on_port(proc_net_output, port=27042):
-        """Extract socket owner UIDs listening on one TCP port."""
+    def _listening_sockets_on_port(proc_net_output, port=27042):
+        """Extract socket owner UIDs and inodes listening on one TCP port."""
         uids = set()
+        inodes = set()
         if not proc_net_output:
-            return uids
+            return uids, inodes
         hex_port = f':{port:04X}'
         text = proc_net_output.decode('utf-8', 'ignore')
         for line in text.splitlines():
             parts = line.split()
-            if (len(parts) >= 8
+            if (len(parts) >= 10
                     and parts[1].upper().endswith(hex_port)
                     and parts[3].upper() == '0A'
                     and parts[7].isdigit()):
                 uids.add(int(parts[7]))
+                if parts[9].isdigit() and int(parts[9]) > 0:
+                    inodes.add(parts[9])
+        return uids, inodes
+
+    @staticmethod
+    def _listening_uids_on_port(proc_net_output, port=27042):
+        """Extract socket owner UIDs listening on one TCP port."""
+        uids, _ = Environment._listening_sockets_on_port(proc_net_output, port)
         return uids
 
     @staticmethod
@@ -1832,6 +1841,30 @@ class Environment:
                     return candidate
         return None
 
+    def _kill_non_app_listener(self, inodes):
+        """Stop a root/shell daemon listening on the given socket inodes."""
+        if not inodes or not all(inode.isdigit() for inode in inodes):
+            return
+        targets = ' '.join(f'socket:[{inode}]' for inode in sorted(inodes))
+        script = (
+            'for fd in /proc/[0-9]*/fd/*; do '
+            'target=$(readlink "$fd" 2>/dev/null); '
+            f'for want in {targets}; do '
+            'if [ "$target" = "$want" ]; then '
+            'pid=$(echo "$fd" | cut -d/ -f3); '
+            'kill -9 "$pid" 2>/dev/null; '
+            'fi; done; done'
+        )
+        if self.get_environment() == 'physical':
+            if self.root_status == 'not_checked':
+                self.probe_root()
+            if self.root_method != 'none':
+                self.root_command(
+                    ['sh', '-c', script], timeout=5, silent=True)
+        else:
+            self.adb_command(
+                ['sh', '-c', script], True, True, timeout=5)
+
     def free_frida_port(self, exclude_package=None):
         """Stop leftover apps or processes holding TCP port 27042."""
         stopped = set()
@@ -1849,8 +1882,11 @@ class Environment:
                 timeout=5,
                 silent=True,
             )
-        uids = self._listening_uids_on_port(proc_net, 27042)
+        uids, inodes = self._listening_sockets_on_port(proc_net, 27042)
         app_uids = {uid for uid in uids if (uid % 100000) >= 10000}
+        non_app_uids = uids - app_uids
+        if non_app_uids:
+            self._kill_non_app_listener(inodes)
         if app_uids:
             pm_out = self.adb_command(
                 ['pm', 'list', 'packages', '-U'],
@@ -1870,15 +1906,29 @@ class Environment:
                 stopped.add(pkg)
         # On unrooted Android 10+, SELinux may hide /proc/net/tcp from shell;
         # probe any live Gadget responder and stop only the owning process.
-        if not app_uids:
+        if not uids:
             try:
                 device = self.get_frida_device(gadget=True, reset=True)
-                candidates = []
-                frontmost = device.get_frontmost_application()
-                if frontmost:
-                    candidates.append(frontmost)
-                candidates.extend(
-                    device.enumerate_applications(scope='minimal'))
+                apps = list(device.enumerate_applications(scope='minimal'))
+                gadget_apps = [
+                    app for app in apps
+                    if getattr(app, 'identifier', '') == 're.frida.Gadget'
+                ]
+                # A full frida-server enumerates all installed packages on the
+                # device, whereas Frida Gadget only exposes its host process.
+                if not gadget_apps and len(apps) > 1:
+                    return stopped
+                candidates = gadget_apps or apps
+                if len(candidates) <= 1:
+                    frontmost = device.get_frontmost_application()
+                    if (frontmost
+                            and (len(apps) == 1
+                                 or getattr(
+                                     frontmost,
+                                     'identifier',
+                                     '',
+                            ) == 're.frida.Gadget')):
+                        candidates = [frontmost, *candidates]
                 seen_pids = set()
                 for app in candidates:
                     pid = getattr(app, 'pid', 0)
