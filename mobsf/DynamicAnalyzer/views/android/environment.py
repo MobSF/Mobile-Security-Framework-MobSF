@@ -1703,6 +1703,8 @@ class Environment:
                     frida_version,
                 )
                 return True
+            self.stop_frida_server()
+            self.free_frida_port()
             started = self.root_command(
                 [server, '-D'], timeout=10, silent=True)
             if started is None:
@@ -1723,6 +1725,8 @@ class Environment:
         if running and running.strip():
             logger.info('Frida Server v%s is already running', frida_version)
             return True
+        self.stop_frida_server()
+        self.free_frida_port()
 
         def start_frida():
             fnull = open(os.devnull, 'w')
@@ -1747,11 +1751,237 @@ class Environment:
             return False
         return True
 
+    @staticmethod
+    def _listening_sockets_on_port(proc_net_output, port=27042):
+        """Extract socket owner UIDs and inodes listening on one TCP port."""
+        uids = set()
+        inodes = set()
+        if not proc_net_output:
+            return uids, inodes
+        hex_port = f':{port:04X}'
+        text = proc_net_output.decode('utf-8', 'ignore')
+        for line in text.splitlines():
+            parts = line.split()
+            if (len(parts) >= 10
+                    and parts[1].upper().endswith(hex_port)
+                    and parts[3].upper() == '0A'
+                    and parts[7].isdigit()):
+                uids.add(int(parts[7]))
+                if parts[9].isdigit() and int(parts[9]) > 0:
+                    inodes.add(parts[9])
+        return uids, inodes
+
+    @staticmethod
+    def _listening_uids_on_port(proc_net_output, port=27042):
+        """Extract socket owner UIDs listening on one TCP port."""
+        uids, _ = Environment._listening_sockets_on_port(proc_net_output, port)
+        return uids
+
+    @staticmethod
+    def _packages_for_uids(pm_output, target_uids):
+        """Map Android UIDs to validated package names from pm output."""
+        packages = []
+        if not pm_output or not target_uids:
+            return packages
+        text = pm_output.decode('utf-8', 'ignore')
+        for line in text.splitlines():
+            match = re.match(
+                r'^package:(\S+)\s+uid:([0-9,]+)\s*$',
+                line.strip(),
+            )
+            if not match:
+                continue
+            pkg = match.group(1)
+            if not strict_package_check(pkg):
+                continue
+            line_uids = {
+                int(item) for item in match.group(2).split(',')
+                if item.isdigit()
+            }
+            if line_uids & target_uids:
+                packages.append(pkg)
+        return packages
+
+    def _package_for_pid(self, pid):
+        """Resolve an Android process PID to its package name."""
+        if not isinstance(pid, int) or pid <= 0:
+            return None
+        pid_str = str(pid)
+        cmdline = self.adb_command(
+            ['cat', f'/proc/{pid_str}/cmdline'],
+            True,
+            True,
+            timeout=5,
+        )
+        if cmdline:
+            proc_name = (
+                cmdline.split(b'\x00', 1)[0]
+                .decode('utf-8', 'ignore')
+                .strip()
+            )
+            candidate = proc_name.split(':', 1)[0]
+            if (candidate != 're.frida.Gadget'
+                    and strict_package_check(candidate)):
+                return candidate
+        ps_out = self.adb_command(
+            ['ps', '-p', pid_str],
+            True,
+            True,
+            timeout=5,
+        )
+        if ps_out:
+            text = ps_out.decode('utf-8', 'ignore').strip()
+            for line in reversed(text.splitlines()):
+                tokens = line.split()
+                if not tokens:
+                    continue
+                candidate = tokens[-1].split(':', 1)[0]
+                if (candidate != 're.frida.Gadget'
+                        and strict_package_check(candidate)):
+                    return candidate
+        return None
+
+    def _kill_non_app_listener(self, inodes):
+        """Stop a root/shell daemon listening on the given socket inodes."""
+        if not inodes or not all(inode.isdigit() for inode in inodes):
+            return
+        targets = ' '.join(f'socket:[{inode}]' for inode in sorted(inodes))
+        script = (
+            'for fd in /proc/[0-9]*/fd/*; do '
+            'target=$(readlink "$fd" 2>/dev/null); '
+            f'for want in {targets}; do '
+            'if [ "$target" = "$want" ]; then '
+            'pid=$(echo "$fd" | cut -d/ -f3); '
+            'kill -9 "$pid" 2>/dev/null; '
+            'fi; done; done'
+        )
+        if self.get_environment() == 'physical':
+            if self.root_status == 'not_checked':
+                self.probe_root()
+            if self.root_method != 'none':
+                self.root_command(
+                    ['sh', '-c', script], timeout=5, silent=True)
+        else:
+            self.adb_command(
+                ['sh', '-c', script], True, True, timeout=5)
+
+    def free_frida_port(self, exclude_package=None):
+        """Stop leftover apps or processes holding TCP port 27042."""
+        stopped = set()
+        proc_net = self.adb_command(
+            ['cat', '/proc/net/tcp', '/proc/net/tcp6'],
+            True,
+            True,
+            timeout=5,
+        )
+        if (not proc_net
+                and self.root_status == 'available'
+                and self.root_method != 'none'):
+            proc_net = self.root_command(
+                ['cat', '/proc/net/tcp', '/proc/net/tcp6'],
+                timeout=5,
+                silent=True,
+            )
+        uids, inodes = self._listening_sockets_on_port(proc_net, 27042)
+        app_uids = {uid for uid in uids if (uid % 100000) >= 10000}
+        non_app_uids = uids - app_uids
+        if non_app_uids:
+            self._kill_non_app_listener(inodes)
+        if app_uids:
+            pm_out = self.adb_command(
+                ['pm', 'list', 'packages', '-U'],
+                True,
+                True,
+                timeout=10,
+            )
+            for pkg in self._packages_for_uids(pm_out, app_uids):
+                if pkg == exclude_package or pkg in stopped:
+                    continue
+                logger.info(
+                    'Stopping %s holding Frida port 27042',
+                    sanitize_for_logging(pkg),
+                )
+                self.adb_command(
+                    ['am', 'force-stop', pkg], True, True, timeout=10)
+                stopped.add(pkg)
+        # On unrooted Android 10+, SELinux may hide /proc/net/tcp from shell;
+        # probe any live Gadget responder and stop only the owning process.
+        if not uids:
+            try:
+                device = self.get_frida_device(gadget=True, reset=True)
+                apps = list(device.enumerate_applications(scope='minimal'))
+                gadget_apps = [
+                    app for app in apps
+                    if getattr(app, 'identifier', '') == 're.frida.Gadget'
+                ]
+                # A full frida-server enumerates all installed packages on the
+                # device, whereas Frida Gadget only exposes its host process.
+                if not gadget_apps and len(apps) > 1:
+                    return stopped
+                candidates = gadget_apps or apps
+                if len(candidates) <= 1:
+                    frontmost = device.get_frontmost_application()
+                    if (frontmost
+                            and (len(apps) == 1
+                                 or getattr(
+                                     frontmost,
+                                     'identifier',
+                                     '',
+                            ) == 're.frida.Gadget')):
+                        candidates = [frontmost, *candidates]
+                seen_pids = set()
+                for app in candidates:
+                    pid = getattr(app, 'pid', 0)
+                    if not isinstance(pid, int) or pid <= 0 or pid in seen_pids:
+                        continue
+                    seen_pids.add(pid)
+                    pkg = getattr(app, 'identifier', '')
+                    if (pkg == 're.frida.Gadget'
+                            or not strict_package_check(pkg)):
+                        pkg = self._package_for_pid(pid) or ''
+                    if (pkg
+                            and pkg != 're.frida.Gadget'
+                            and strict_package_check(pkg)):
+                        if pkg == exclude_package or pkg in stopped:
+                            continue
+                        logger.info(
+                            'Stopping active Gadget app %s on port 27042',
+                            sanitize_for_logging(pkg),
+                        )
+                        self.adb_command(
+                            ['am', 'force-stop', pkg],
+                            True,
+                            True,
+                            timeout=10,
+                        )
+                        stopped.add(pkg)
+                    else:
+                        logger.info(
+                            'Terminating active Gadget process %d '
+                            'on port 27042',
+                            pid,
+                        )
+                        try:
+                            device.kill(pid)
+                        except Exception:
+                            self.adb_command(
+                                ['kill', '-9', str(pid)],
+                                True,
+                                True,
+                                timeout=5,
+                            )
+            except Exception:
+                pass
+        return stopped
+
     def stop_frida_server(self):
         """Stop a running Frida server."""
         running = self.adb_command(
             ['pidof', 'fd_server'], True, True, timeout=5)
-        if not running or not running.strip():
+        external = self.adb_command(
+            ['pgrep', '-f', 'frida-server'], True, True, timeout=5)
+        if ((not running or not running.strip())
+                and (not external or not external.strip())):
             return True
         logger.info('Stopping Frida Server')
         if self.get_environment() == 'physical':
@@ -1764,12 +1994,21 @@ class Environment:
                 return False
             self.root_command(
                 ['pkill', '-f', 'fd_server'], timeout=5, silent=True)
+            if external and external.strip():
+                self.root_command(
+                    ['pkill', '-f', 'frida-server'], timeout=5, silent=True)
         else:
             self.adb_command(
                 ['pkill', '-f', 'fd_server'], True, True, timeout=5)
+            if external and external.strip():
+                self.adb_command(
+                    ['pkill', '-f', 'frida-server'], True, True, timeout=5)
         running = self.adb_command(
             ['pidof', 'fd_server'], True, True, timeout=5)
-        if running and running.strip():
+        external = self.adb_command(
+            ['pgrep', '-f', 'frida-server'], True, True, timeout=5)
+        if ((running and running.strip())
+                or (external and external.strip())):
             logger.error('Unable to stop the Frida server')
             return False
         return True
@@ -1830,7 +2069,7 @@ class Environment:
             }, target)
         return local
 
-    def get_frida_device(self, gadget=False):
+    def get_frida_device(self, gadget=False, reset=False):
         """Return a Frida device for the selected Android transport."""
         if not gadget and self.get_environment() != 'physical':
             return frida.get_device(
@@ -1926,8 +2165,14 @@ class Environment:
                 frida_host = socket_match.group(1)
                 if frida_host in ('localhost', '127.0.0.1'):
                     frida_host = '127.0.0.1'
-        return frida.get_device_manager().add_remote_device(
-            f'{frida_host}:{port}')
+        endpoint = f'{frida_host}:{port}'
+        manager = frida.get_device_manager()
+        if reset:
+            try:
+                manager.remove_remote_device(endpoint)
+            except Exception:
+                pass
+        return manager.add_remote_device(endpoint)
 
     def remove_frida_forward(self):
         """Remove the Frida port forward created by MobSF."""

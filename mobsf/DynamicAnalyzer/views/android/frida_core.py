@@ -403,6 +403,7 @@ class Frida:
                         return False
                     env.adb_command(
                         ['am', 'force-stop', self.package], True, True)
+                    env.free_frida_port(self.package)
                     if not env.run_app(self.package):
                         logger.error(
                             'Unable to launch the Gadget-injected app')
@@ -410,13 +411,17 @@ class Frida:
                     started = True
                     for attempt in range(5):
                         try:
-                            device = env.get_frida_device(gadget=True)
+                            device = env.get_frida_device(
+                                gadget=True,
+                                reset=attempt > 0,
+                            )
                             self.pid = self._find_gadget_process(device)
                             if self.pid:
                                 break
                         except (frida.ServerNotRunningError,
                                 frida.TimedOutError,
-                                frida.TransportError):
+                                frida.TransportError,
+                                frida.ProtocolError):
                             if attempt == 4:
                                 raise
                         time.sleep(1)
@@ -480,6 +485,12 @@ class Frida:
                 logger.warning('Frida server is not running')
             except frida.TimedOutError:
                 logger.error('Timed out while waiting for device to appear')
+            except frida.ProtocolError:
+                self.last_error = (
+                    'Unable to communicate with Frida on port 27042; '
+                    'ensure Frida major versions match and no other '
+                    'Frida instance is holding port 27042')
+                logger.exception(self.last_error)
             except (frida.ProcessNotFoundError,
                     frida.ProcessNotRespondingError,
                     frida.TransportError,
