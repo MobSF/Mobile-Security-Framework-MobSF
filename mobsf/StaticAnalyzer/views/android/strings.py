@@ -10,7 +10,7 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
 )
 from mobsf.StaticAnalyzer.views.common.secret_detection import (
     detect_known_secrets,
-    get_secrets,
+    get_binary_secrets,
 )
 from mobsf.MobSF.utils import (
     GOOGLE_API_KEY_REGEX,
@@ -38,7 +38,7 @@ def strings_from_so(checksum, elf_strings):
                 so_urls, so_urls_nf, so_emails_nf = url_n_email_extract(
                     so_str, so)
                 sos.append({so: {
-                    'secrets': list(get_secrets(str_list)),
+                    'secrets': list(get_binary_secrets(so, str_list)),
                     'strings': list(set(str_list)),
                     'urls_list': so_urls,
                     'urls_nf': so_urls_nf,

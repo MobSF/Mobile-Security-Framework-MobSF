@@ -784,3 +784,18 @@
     masvs: storage-14
     owasp-mobile: m9
     ref: https://github.com/MobSF/owasp-mstg/blob/master/Document/0x05d-Testing-Data-Storage.md#checking-memory-for-sensitive-data-mstg-storage-10
+- id: android_local_server_socket
+  message: >-
+    LocalServerSocket has no built-in authentication. Any app on the device
+    can connect to this abstract-namespace UNIX domain socket. Require an
+    authentication handshake before honoring commands received on it.
+  type: Regex
+  pattern: (?<![\w.])LocalServerSocket\s*\(
+  severity: warning
+  input_case: exact
+  metadata:
+    cvss: 5.5
+    cwe: cwe-306
+    owasp-mobile: m1
+    masvs: platform-4
+    ref: https://developer.android.com/reference/android/net/LocalServerSocket

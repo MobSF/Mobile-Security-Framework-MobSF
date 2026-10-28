@@ -171,8 +171,26 @@ KNOWN_SECRET_PATTERNS = (
             r'(?![A-Za-z0-9_-])'),
     ),
 )
+# Dart snapshot header string: version hash followed by the VM features
+DART_SNAPSHOT_HEADER = re.compile(
+    r'^([0-9a-f]{32})\S*\s.*\b(?:no-)?code_comments\b')
 KNOWN_SECRET_PREFIXES = tuple(
     f'{name}: ' for name, _pattern in KNOWN_SECRET_PATTERNS)
+# Fixed public identifiers of common libraries, base64 of plain text, that
+# look like high-entropy secrets. Matched as substrings: code concatenates
+# them (e.g. 'AES' + key name).
+PUBLIC_CONSTANTS = (
+    # Flutter flutter_secure_storage: "This is the key for a secure
+    # storage AES Key" (SharedPreferences key name), "This is the prefix
+    # for a secure storage"
+    'VGhpcyBpcyB0aGUga2V5IGZvciBhIHNlY3VyZSBzdG9yYWdlIEFFUyBLZXkK',
+    'VGhpcyBpcyB0aGUgcHJlZml4IGZvciBhIHNlY3VyZSBzdG9yYWdlCg',
+    # Flutter shared_preferences: "This is the prefix for a list.",
+    # "... for BigInteger", "... for Double."
+    'VGhpcyBpcyB0aGUgcHJlZml4IGZvciBhIGxpc3Qu',
+    'VGhpcyBpcyB0aGUgcHJlZml4IGZvciBCaWdJbnRlZ2Vy',
+    'VGhpcyBpcyB0aGUgcHJlZml4IGZvciBEb3VibGUu',
+)
 
 
 def _strings(data):
@@ -207,8 +225,37 @@ def get_secrets(data):
             for match in pattern.finditer(value):
                 secrets.add(f'{name}: {match.group()}')
             scrubbed = pattern.sub('', scrubbed)
-        secrets.update(get_entropies((scrubbed,)))
+        secrets.update(
+            s for s in get_entropies((scrubbed,))
+            if not any(c in s for c in PUBLIC_CONSTANTS))
     return secrets
+
+
+def is_flutter_engine(path):
+    """Prebuilt Flutter engine shipped unchanged in every Flutter app."""
+    path = path.replace('\\', '/')
+    return (path == 'libflutter.so' or path.endswith('/libflutter.so')
+            or path.endswith('Flutter.framework/Flutter'))
+
+
+def get_binary_secrets(path, strings):
+    """Detect secrets in the strings of a native library or framework.
+
+    The Flutter engine is identical across apps and cannot hold an app's
+    secrets: only known-format secrets are reported for it, as its
+    high-entropy strings (tables, revisions) are false positives. The
+    Dart snapshot version hash is not a secret either.
+    """
+    strings = _strings(strings)
+    if is_flutter_engine(path):
+        return detect_known_secrets(strings)
+    snapshot_hashes = set()
+    for value in strings:
+        if isinstance(value, str):
+            match = DART_SNAPSHOT_HEADER.match(value)
+            if match:
+                snapshot_hashes.add(match.group(1))
+    return get_secrets(strings) - snapshot_hashes
 
 
 def sort_secrets(secrets):
