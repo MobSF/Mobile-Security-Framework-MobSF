@@ -1793,6 +1793,45 @@ class Environment:
                 packages.append(pkg)
         return packages
 
+    def _package_for_pid(self, pid):
+        """Resolve an Android process PID to its package name."""
+        if not isinstance(pid, int) or pid <= 0:
+            return None
+        pid_str = str(pid)
+        cmdline = self.adb_command(
+            ['cat', f'/proc/{pid_str}/cmdline'],
+            True,
+            True,
+            timeout=5,
+        )
+        if cmdline:
+            proc_name = (
+                cmdline.split(b'\x00', 1)[0]
+                .decode('utf-8', 'ignore')
+                .strip()
+            )
+            candidate = proc_name.split(':', 1)[0]
+            if (candidate != 're.frida.Gadget'
+                    and strict_package_check(candidate)):
+                return candidate
+        ps_out = self.adb_command(
+            ['ps', '-p', pid_str],
+            True,
+            True,
+            timeout=5,
+        )
+        if ps_out:
+            text = ps_out.decode('utf-8', 'ignore').strip()
+            for line in reversed(text.splitlines()):
+                tokens = line.split()
+                if not tokens:
+                    continue
+                candidate = tokens[-1].split(':', 1)[0]
+                if (candidate != 're.frida.Gadget'
+                        and strict_package_check(candidate)):
+                    return candidate
+        return None
+
     def free_frida_port(self, exclude_package=None):
         """Stop leftover apps or processes holding TCP port 27042."""
         stopped = set()
@@ -1830,17 +1869,31 @@ class Environment:
                     ['am', 'force-stop', pkg], True, True, timeout=10)
                 stopped.add(pkg)
         # On unrooted Android 10+, SELinux may hide /proc/net/tcp from shell;
-        # probe any live Gadget responder and evict backgrounded processes.
+        # probe any live Gadget responder and stop only the owning process.
         if not app_uids:
             try:
                 device = self.get_frida_device(gadget=True, reset=True)
-                apps = device.enumerate_applications(scope='minimal')
-                for app in apps:
+                candidates = []
+                frontmost = device.get_frontmost_application()
+                if frontmost:
+                    candidates.append(frontmost)
+                candidates.extend(
+                    device.enumerate_applications(scope='minimal'))
+                seen_pids = set()
+                for app in candidates:
+                    pid = getattr(app, 'pid', 0)
+                    if not isinstance(pid, int) or pid <= 0 or pid in seen_pids:
+                        continue
+                    seen_pids.add(pid)
                     pkg = getattr(app, 'identifier', '')
-                    if (getattr(app, 'pid', 0)
-                            and pkg != exclude_package
-                            and pkg not in stopped
+                    if (pkg == 're.frida.Gadget'
+                            or not strict_package_check(pkg)):
+                        pkg = self._package_for_pid(pid) or ''
+                    if (pkg
+                            and pkg != 're.frida.Gadget'
                             and strict_package_check(pkg)):
+                        if pkg == exclude_package or pkg in stopped:
+                            continue
                         logger.info(
                             'Stopping active Gadget app %s on port 27042',
                             sanitize_for_logging(pkg),
@@ -1852,9 +1905,23 @@ class Environment:
                             timeout=10,
                         )
                         stopped.add(pkg)
+                    else:
+                        logger.info(
+                            'Terminating active Gadget process %d '
+                            'on port 27042',
+                            pid,
+                        )
+                        try:
+                            device.kill(pid)
+                        except Exception:
+                            self.adb_command(
+                                ['kill', '-9', str(pid)],
+                                True,
+                                True,
+                                timeout=5,
+                            )
             except Exception:
                 pass
-            self.adb_command(['am', 'kill-all'], True, True, timeout=5)
         return stopped
 
     def stop_frida_server(self):
