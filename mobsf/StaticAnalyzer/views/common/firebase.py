@@ -15,6 +15,7 @@ import requests
 
 
 logger = logging.getLogger(__name__)
+MAX_FIREBASE_DB_HOSTS = 20
 HIGH = 'high'
 WARNING = 'warning'
 INFO = 'info'
@@ -117,11 +118,32 @@ def firebase_db_check(checksum, code_an_dic):
     logger.info('Looking for Firebase URL(s)')
     findings = []
     try:
-        urls = list(set(code_an_dic['urls_list']))
+        urls = sorted(set(code_an_dic['urls_list']))
+        origins = []
         for url in urls:
             if '.firebaseio.com' not in url:
                 continue
-            returl, is_open = open_firebase(checksum, url)
+            # Only <host>/.json is requested, so probe one canonical origin
+            # per host: the app controls how many distinct URLs it has, and
+            # a URL's scheme or path must not decide whether a host is
+            # checked.
+            try:
+                host = urlparse(url).hostname
+            except ValueError:
+                continue
+            if not host or not host.endswith('.firebaseio.com'):
+                continue
+            origin = f'https://{host}'
+            if origin in origins:
+                continue
+            if len(origins) >= MAX_FIREBASE_DB_HOSTS:
+                logger.warning(
+                    'Firebase DB check limited to %d hosts',
+                    MAX_FIREBASE_DB_HOSTS)
+                break
+            origins.append(origin)
+        for origin in origins:
+            returl, is_open = open_firebase(checksum, origin)
             if is_open:
                 rule = FIREBASE_FINDINGS['firebase_db_open']
                 findings.append({

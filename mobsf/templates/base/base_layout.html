@@ -27,6 +27,21 @@
     body {
       zoom: 0.8; 
     }
+    /* 0.8 zoom paints AdminLTE's 100vh column and sidebar at 80% of
+       the screen, so the footer stops short. Size them in pre-zoom
+       pixels (100vh / 0.8). !important keeps Layout.fixLayoutHeight
+       from putting the short inline min-height back on load and resize.
+       min-height still grows with the page, so a tall report keeps the
+       footer after the content. */
+    .wrapper .content-wrapper {
+      min-height: calc(100vh / 0.8 - calc(3.5rem + 1px) - calc(3.5rem + 1px)) !important;
+    }
+    .layout-fixed .main-sidebar {
+      height: calc(100vh / 0.8);
+    }
+    .layout-fixed .wrapper .sidebar {
+      height: calc(100vh / 0.8 - calc(3.5rem + 1px));
+    }
     .modal-backdrop {
       position: fixed;
       top: 0;
