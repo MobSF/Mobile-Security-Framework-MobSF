@@ -52,6 +52,8 @@
             let warning = "This is a demo MobSF instance. Anything uploaded here will be publicly available. Do you want to continue?";
             var statusTimer = null;
             var analysisStarted = false;
+            var statusPrefix = "";
+            var asyncScans = {{ async_scans|yesno:"true,false" }};
             function show_started_alert(){
                 hide_loader();
                 var x = document.getElementById("alert");
@@ -88,20 +90,28 @@
                 // Navigating now freezes the last upload line for the whole analysis.
                 var url = json.analyzer + '/' + json.hash + '/';
                 analysisStarted = true;
-                _("status").innerText = "Analyzing ...";
+                statusPrefix = "";
+                _("status").innerText = asyncScans ? "Queueing scan ..." : "Analyzing ...";
                 show_started_alert();
                 if (statusTimer) {
                     clearInterval(statusTimer);
+                    statusTimer = null;
                 }
-                statusTimer = setInterval(function() {
-                    get_status(json.hash);
-                }, 500);
+                if (!asyncScans) {
+                    statusTimer = setInterval(function() {
+                        get_status(json.hash);
+                    }, 500);
+                }
                 fetch(url, {credentials: 'same-origin', cache: 'no-store'})
                     .catch(function() {})
-                    .then(function() {
+                    .then(function(response) {
                         if (statusTimer) {
                             clearInterval(statusTimer);
                             statusTimer = null;
+                        }
+                        if (asyncScans && response && response.redirected && response.url) {
+                            window.location.href = response.url;
+                            return;
                         }
                         window.location.href = url;
                     });
@@ -121,7 +131,7 @@
                         if (response.status === 'ok' && Array.isArray(response.logs) && response.logs.length) {
                             const last_log = response.logs[response.logs.length - 1];
                             if (last_log && last_log.status && last_log.status !== 'init') {
-                                _("status").innerText = last_log.status;
+                                _("status").innerText = statusPrefix + last_log.status;
                             }
                         }
                     } else {
@@ -153,6 +163,83 @@
                     _("status").innerText = rounded + "% Uploaded ...";
                 }
             }
+            function isScanFailureResponse(response, text) {
+                if (!response || !response.ok) {
+                    return true;
+                }
+                if (typeof text !== "string") {
+                    return false;
+                }
+                return (
+                    text.indexOf("<title>Error</title>") !== -1
+                    || text.indexOf("<title>Invalid ZIP archive</title>") !== -1
+                );
+            }
+            async function runBatchScans(results) {
+                analysisStarted = true;
+                show_started_alert();
+                var total = results.length;
+                var failed = [];
+                for (var i = 0; i < total; i++) {
+                    var item = results[i];
+                    var label = item.file_name || item.hash;
+                    var url = item.analyzer + '/' + item.hash + '/';
+                    _("progressBar").value = Math.round(((i + 1) / total) * 100);
+                    if (asyncScans) {
+                        statusPrefix = "";
+                        _("status").innerText = "Queueing " + (i + 1) + " of " + total + " (" + label + ") ...";
+                    } else {
+                        statusPrefix = "Analyzing " + (i + 1) + " of " + total + " (" + label + ") — ";
+                        _("status").innerText = statusPrefix + "Starting ...";
+                        if (statusTimer) {
+                            clearInterval(statusTimer);
+                        }
+                        statusTimer = setInterval((function(hash) {
+                            return function() {
+                                get_status(hash);
+                            };
+                        })(item.hash), 500);
+                    }
+                    try {
+                        var response = await fetch(url, {
+                            credentials: 'same-origin',
+                            cache: 'no-store',
+                        });
+                        var bodyText = "";
+                        if (!asyncScans && response) {
+                            bodyText = await response.text();
+                        }
+                        if (isScanFailureResponse(response, bodyText)) {
+                            failed.push(label);
+                        }
+                    } catch (err) {
+                        failed.push(label);
+                    }
+                    if (statusTimer) {
+                        clearInterval(statusTimer);
+                        statusTimer = null;
+                    }
+                }
+                statusPrefix = "";
+                var targetUrl = asyncScans ? '{% url "list_tasks" %}' : '{% url "recent" %}';
+                if (failed.length === total) {
+                    analysisStarted = false;
+                    _("progressBar").style.visibility = "hidden";
+                    _("status").innerText = "Scan failed for: " + failed.join(", ");
+                    return;
+                }
+                if (failed.length > 0) {
+                    _("status").innerText = (
+                        "Completed " + (total - failed.length) + " of " + total
+                        + " scans (" + failed.length + " failed: " + failed.join(", ") + "). Redirecting ..."
+                    );
+                    setTimeout(function() {
+                        window.location.href = targetUrl;
+                    }, 2500);
+                    return;
+                }
+                window.location.href = targetUrl;
+            }
             function finishUploads() {
                 var results = uploadResults.slice();
                 uploadResults = [];
@@ -160,13 +247,13 @@
                     _("progressBar").style.visibility = "hidden";
                     return;
                 }
-                // One file keeps the report redirect. Several files would
-                // otherwise navigate away while later uploads are still open.
+                // One file keeps the report redirect. Several files trigger
+                // each scan (or enqueue in async mode) before redirecting.
                 if (results.length === 1 && uploadTotal === 1) {
                     responseHandler(results[0]);
                     return;
                 }
-                load_result('{% url "recent" %}');
+                runBatchScans(results);
             }
             function noteUploadFailure(message) {
                 _("status").innerText = message;
