@@ -180,6 +180,7 @@
                 show_started_alert();
                 var total = results.length;
                 var failed = [];
+                var enqueuedCount = 0;
                 for (var i = 0; i < total; i++) {
                     var item = results[i];
                     var label = item.file_name || item.hash;
@@ -205,12 +206,11 @@
                             credentials: 'same-origin',
                             cache: 'no-store',
                         });
-                        var bodyText = "";
-                        if (!asyncScans && response) {
-                            bodyText = await response.text();
-                        }
+                        var bodyText = response ? await response.text() : "";
                         if (isScanFailureResponse(response, bodyText)) {
                             failed.push(label);
+                        } else if (response.redirected && response.url && response.url.indexOf('/tasks') !== -1) {
+                            enqueuedCount += 1;
                         }
                     } catch (err) {
                         failed.push(label);
@@ -221,7 +221,7 @@
                     }
                 }
                 statusPrefix = "";
-                var targetUrl = asyncScans ? '{% url "list_tasks" %}' : '{% url "recent" %}';
+                var targetUrl = enqueuedCount > 0 ? '{% url "list_tasks" %}' : '{% url "recent" %}';
                 if (failed.length === total) {
                     analysisStarted = false;
                     _("progressBar").style.visibility = "hidden";
