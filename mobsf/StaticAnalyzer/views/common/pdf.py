@@ -4,20 +4,29 @@ Shared Functions.
 
 PDF Generation
 """
+from io import BytesIO
 import json
 import logging
 import os
+from pathlib import Path
 import platform
+from urllib.parse import unquote, urlparse
 
 from django.http import HttpResponse
 from django.template.loader import get_template
 
+from xhtml2pdf import pisa
+
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.MobSF import settings
+from mobsf.MobSF.security import (
+    is_path_traversal,
+    is_pipe_or_link,
+    is_safe_path,
+)
 from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
-    upstream_proxy,
 )
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
@@ -43,14 +52,136 @@ from mobsf.MobSF.views.authentication import (
 )
 
 logger = logging.getLogger(__name__)
-try:
-    import pdfkit
-except ImportError:
-    logger.warning(
-        'wkhtmltopdf is not installed/configured properly.'
-        ' PDF Report Generation is disabled')
-logger = logging.getLogger(__name__)
+logging.getLogger('xhtml2pdf').setLevel(logging.ERROR)
 ctype = 'application/json; charset=utf-8'
+_ALLOWED_PDF_ASSET_EXTS = {
+    '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg',
+    '.ttf', '.otf',
+}
+
+
+def _fallback_pdf_icon():
+    """Return the trusted default icon path for PDF reports."""
+    icon = Path(settings.BASE_DIR).resolve() / 'static' / 'img' / 'no_icon.png'
+    return icon.as_posix() if icon.is_file() else ''
+
+
+def _uri_to_local_path(uri_str):
+    """Extract a local path string from a file:// or relative URI."""
+    parsed = urlparse(uri_str)
+    if parsed.scheme and parsed.scheme.lower() != 'file':
+        return None
+    raw_path = unquote(parsed.path or '')
+    if (os.name == 'nt'
+            and len(raw_path) >= 3
+            and raw_path[0] == '/'
+            and raw_path[2] == ':'):
+        raw_path = raw_path[1:]
+    return raw_path
+
+
+def pdf_link_callback(uri, rel=None):
+    """Resolve PDF resources strictly to contained local static/download files."""
+    if not isinstance(uri, str) or not uri.strip():
+        return ''
+    raw = uri.strip()
+    raw_path = _uri_to_local_path(raw)
+    # Block all network schemes (http, https, ftp, data, etc.) to prevent SSRF
+    if raw_path is None:
+        if raw.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.svg')):
+            return _fallback_pdf_icon()
+        return ''
+
+    static_url = getattr(settings, 'STATIC_URL', '/static/') or '/static/'
+    base_root = Path(settings.BASE_DIR).resolve()
+    static_root = (base_root / 'static').resolve()
+    dwd_root = Path(settings.DWD_DIR).resolve()
+
+    candidates = []
+    # Resolve relative CSS asset paths (e.g. ../webfonts/fa-solid-900.ttf)
+    if rel and not Path(raw_path).is_absolute() and not raw_path.startswith('/'):
+        rel_local = _uri_to_local_path(str(rel))
+        if rel_local:
+            rel_base = Path(rel_local)
+            if rel_base.suffix:
+                rel_base = rel_base.parent
+            try:
+                resolved_rel = (rel_base / raw_path).resolve()
+                for allowed_root in (static_root, dwd_root):
+                    try:
+                        rel_part = resolved_rel.relative_to(allowed_root).as_posix()
+                    except ValueError:
+                        continue
+                    if not is_path_traversal(rel_part):
+                        candidates.append((allowed_root, resolved_rel, rel_part))
+            except OSError:
+                pass
+
+    if raw_path.startswith(static_url):
+        rel_static = raw_path[len(static_url):].lstrip('/')
+        if not is_path_traversal(rel_static):
+            candidates.append((
+                static_root,
+                (static_root / rel_static).resolve(),
+                rel_static,
+            ))
+    elif raw_path.startswith('/download/'):
+        rel_dwd = raw_path[len('/download/'):].lstrip('/')
+        if not is_path_traversal(rel_dwd):
+            candidates.append((
+                dwd_root,
+                (dwd_root / rel_dwd).resolve(),
+                rel_dwd,
+            ))
+    else:
+        target = Path(raw_path)
+        if (not target.is_absolute()
+                and '..' not in raw_path
+                and not is_path_traversal(raw_path)):
+            candidates.append((
+                static_root,
+                (static_root / raw_path).resolve(),
+                raw_path,
+            ))
+            candidates.append((
+                dwd_root,
+                (dwd_root / raw_path).resolve(),
+                raw_path,
+            ))
+        elif target.is_absolute():
+            resolved = target.resolve()
+            for allowed_root in (static_root, dwd_root):
+                try:
+                    rel_part = resolved.relative_to(allowed_root).as_posix()
+                except ValueError:
+                    continue
+                if not is_path_traversal(rel_part):
+                    candidates.append((allowed_root, resolved, rel_part))
+
+    for safe_root, resolved_path, rel_part in candidates:
+        if (is_safe_path(safe_root, resolved_path, rel_part)
+                and resolved_path.is_file()
+                and not is_pipe_or_link(resolved_path)
+                and resolved_path.suffix.lower() in _ALLOWED_PDF_ASSET_EXTS):
+            return resolved_path.as_posix()
+
+    if raw_path.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.svg')):
+        return _fallback_pdf_icon()
+    return ''
+
+
+def render_html_to_pdf(html):
+    """Render HTML string to PDF bytes using xhtml2pdf."""
+    output = BytesIO()
+    status = pisa.CreatePDF(
+        src=html,
+        dest=output,
+        encoding='UTF-8',
+        link_callback=pdf_link_callback,
+    )
+    if status.err:
+        raise RuntimeError('xhtml2pdf reported errors while generating PDF')
+    return output.getvalue()
 
 
 @login_required
@@ -110,28 +241,8 @@ def pdf(request, checksum, api=False, jsonres=False):
             if api and jsonres:
                 return {'report_dat': context}
             else:
-                options = {
-                    'page-size': 'Letter',
-                    'quiet': '',
-                    'enable-local-file-access': '',
-                    'no-collate': '',
-                    'margin-top': '0.50in',
-                    'margin-right': '0.50in',
-                    'margin-bottom': '0.50in',
-                    'margin-left': '0.50in',
-                    'encoding': 'UTF-8',
-                    'orientation': 'Landscape',
-                    'custom-header': [
-                        ('Accept-Encoding', 'gzip'),
-                    ],
-                    'no-outline': None,
-                }
-                # Added proxy support to wkhtmltopdf
-                proxies, _ = upstream_proxy('https')
-                if proxies['https']:
-                    options['proxy'] = proxies['https']
                 html = template.render(context)
-                pdf_dat = pdfkit.from_string(html, False, options=options)
+                pdf_dat = render_html_to_pdf(html)
                 if api:
                     return {'pdf_dat': pdf_dat}
                 return HttpResponse(pdf_dat,

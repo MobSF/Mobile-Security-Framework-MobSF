@@ -38,20 +38,12 @@ RUN groupadd --gid $USER_ID $MOBSF_USER && \
         android-tools-adb \
         build-essential \
         curl \
-        fontconfig \
-        fontconfig-config \
         git \
-        libfontconfig1 \
-        libjpeg62-turbo \
-        libxext6 \
-        libxrender1 \
         locales \
         python3-dev \
         sqlite3 \
         unzip \
-        wget \
-        xfonts-75dpi \
-        xfonts-base && \
+        wget && \
     echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
     locale-gen en_US.UTF-8 && \
     update-locale LANG=en_US.UTF-8 && \

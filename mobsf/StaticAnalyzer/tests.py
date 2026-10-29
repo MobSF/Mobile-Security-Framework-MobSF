@@ -20,6 +20,10 @@ from mobsf.StaticAnalyzer.views.common.binary.macho import (
     MachOChecksec,
     is_debug_symbol_stripped,
 )
+from mobsf.StaticAnalyzer.views.common.pdf import (
+    pdf_link_callback,
+    render_html_to_pdf,
+)
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -735,3 +739,24 @@ class DexFileSupportTests(SimpleTestCase):
     def test_get_android_src_dir_for_dex(self):
         base = Path('/tmp/mobsf_test')
         self.assertEqual(get_android_src_dir(base, 'dex'), base / 'java_source')
+
+
+class PdfGenerationSecurityTests(SimpleTestCase):
+    """Tests for xhtml2pdf generation and link_callback containment."""
+
+    def test_render_html_to_pdf_produces_valid_pdf(self):
+        pdf_bytes = render_html_to_pdf(
+            '<html><body><h1>MobSF Report</h1></body></html>')
+        self.assertTrue(pdf_bytes.startswith(b'%PDF-'))
+
+    def test_pdf_link_callback_blocks_external_and_traversal_uris(self):
+        self.assertEqual(pdf_link_callback('https://evil.example/a.css'), '')
+        self.assertTrue(
+            pdf_link_callback('https://evil.example/icon.png')
+            .endswith('no_icon.png'))
+        self.assertEqual(pdf_link_callback('file:///etc/passwd'), '')
+        self.assertEqual(pdf_link_callback('/static/../../etc/passwd'), '')
+
+    def test_pdf_link_callback_allows_static_assets(self):
+        resolved = pdf_link_callback('/static/others/css/pdf_report.css')
+        self.assertTrue(resolved.endswith('static/others/css/pdf_report.css'))
