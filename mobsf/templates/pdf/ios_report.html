@@ -204,7 +204,7 @@
                       <td>
                         {% if scheme|key:"CFBundleURLSchemes" %}
                         {% for ul in scheme.CFBundleURLSchemes %}
-                           {{ul}} <br/>
+                           <div>{{ul}}</div>
                         {% endfor %}
                         {% endif %}
                       </td>
@@ -357,7 +357,7 @@
             {% endif %}
       {% endif %}
       
-      {% if binary_analysis and 'findings' in binary_analysis and binary_analysis.findings %}
+      {% if binary_analysis and 'findings' in binary_analysis and binary_analysis.findings or binary_analysis.summary.suppressed %}
       <h2><span class="fas">&#xf121;</span>  {% if app_type not in 'Dylib,A' %}IPA {% endif %}BINARY CODE ANALYSIS</h2>
       {% if 'summary' in binary_analysis and binary_analysis.summary|length > 0 %}
       <span class="danger">HIGH: </span>
@@ -692,7 +692,7 @@
 
 
     {% if app_type not in 'Dylib,A' %}
-    {% if code_analysis and 'findings' in code_analysis and code_analysis.findings %}
+    {% if code_analysis and 'findings' in code_analysis and code_analysis.findings or code_analysis.summary.suppressed %}
       <h2><span class="fas">&#xf121;</span>  CODE ANALYSIS</h2>
       {% if 'summary' in code_analysis and code_analysis.summary|length > 0 %}
       <span class="danger">HIGH: </span>

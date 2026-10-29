@@ -154,7 +154,7 @@
       <h5>SHA1:</h5> {{ sha1 }}<br/>
       <h5>SHA256:</h5> {{ sha256 }}<br/>
      
-{% if app_type not in 'jar,aar,so,dex' %}
+{% if app_type not in 'jar,so,dex' %}
       <h2><span class="fas">&#xf129;</span>  APP INFORMATION</h2>
 
       <h5>App Name:</h5> {{ app_name }}<br/>
@@ -398,7 +398,7 @@
             <td>{{ forloop.counter }}</td>
             <td>
               {% for url in item.scope %}
-              {{ url }}<br/>
+              <div>{{ url }}</div>
             {% endfor %}
             </td>
             <td>
@@ -461,7 +461,7 @@
     </table>
       {% endif %}
    
-    {% if manifest_analysis and 'manifest_findings' in manifest_analysis and manifest_analysis.manifest_findings %}
+    {% if manifest_analysis and 'manifest_findings' in manifest_analysis and manifest_analysis.manifest_findings or manifest_analysis.manifest_summary.suppressed %}
     <h2><span class="fas">&#xf002;</span>  MANIFEST ANALYSIS</h2>
     {% if 'manifest_summary' in manifest_analysis and manifest_analysis.manifest_summary|length > 0 %}
     <span class="danger">HIGH: </span>
@@ -511,7 +511,7 @@
 										</table>
     {% endif %}
                    
-      {% if code_analysis and 'findings' in code_analysis and code_analysis.findings %}
+      {% if code_analysis and 'findings' in code_analysis and code_analysis.findings or code_analysis.summary.suppressed %}
       <h2><span class="fas">&#xf121;</span>  CODE ANALYSIS</h2>
       {% if 'summary' in code_analysis and code_analysis.summary|length > 0 %}
       <span class="danger">HIGH: </span>
