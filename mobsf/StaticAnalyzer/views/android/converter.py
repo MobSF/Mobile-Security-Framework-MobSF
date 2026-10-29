@@ -14,7 +14,10 @@ from tempfile import gettempdir
 
 from django.conf import settings
 
-from mobsf.MobSF.tools_download import install_jadx
+from mobsf.MobSF.tools_download import (
+    JADX_VERSION,
+    install_jadx,
+)
 from mobsf.MobSF.utils import (
     append_scan_status,
     filename_from_path,
@@ -76,8 +79,9 @@ def dex_2_smali(checksum, app_dir, tools_dir):
 def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
     """Run JADX to decompile APK or all DEX files to Java source code."""
     try:
-        jadx_version = '1.5.6'
-        jadx_base_path = Path(dwd_tools_dir) / 'jadx' / f'jadx-{jadx_version}' / 'bin'
+        jadx_base_path = (
+            Path(dwd_tools_dir) / 'jadx' / f'jadx-{JADX_VERSION}' / 'bin'
+        )
         output_dir = Path(app_dir) / 'java_source'
 
         msg = 'Decompiling APK to Java with JADX'
@@ -94,7 +98,7 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
             jadx = Path(settings.JADX_BINARY)
         else:
             if not jadx_base_path.exists():
-                install_jadx(Path(dwd_tools_dir).parent, jadx_version)
+                install_jadx(Path(dwd_tools_dir).parent, JADX_VERSION)
             if platform.system() == 'Windows':
                 jadx = jadx_base_path / 'jadx.bat'
             else:
