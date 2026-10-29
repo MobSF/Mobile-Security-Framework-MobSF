@@ -355,7 +355,7 @@
              </a>
             </li>
             {% else %}
-              {% if app_type not in 'jar,aar,so' %}
+              {% if app_type not in 'jar,aar,so,dex' %}
             <li class="nav-item">
               <form method="post" action="{% url "dynamic_analyzer" checksum=md5 %}" class="dynamic-start-form" data-hash="{{ md5 }}">
                 {% csrf_token %}
@@ -442,7 +442,7 @@
                   <span class="badge bg-primary">SHA256</span>
                   {{ sha256 }}<br/>
                 </div>
-                {% if app_type not in 'jar,aar,so' %}
+                {% if app_type not in 'jar,aar,so,dex' %}
                 <div class="col-12 col-md-4">
                   <p><strong><i class="fas fa-info"></i> APP INFORMATION </strong></p>
                   <span class="badge bg-primary">App Name</span>
@@ -518,7 +518,7 @@
       </div>
   </div>
 
-  {% if app_type not in 'jar,aar,so' %}
+  {% if app_type not in 'jar,aar,so,dex' %}
   <!-- Boxes -->
    <div class="container-fluid">
       <div class="row">
@@ -619,7 +619,7 @@
                   {% endif %}
                 </p>
                 <div>
-                {% if app_type not in 'jar,aar,so' %}
+                {% if app_type not in 'jar,aar,so,dex' %}
                 <form method="post" action="{% url 'dynamic_analyzer' checksum=md5 %}" class="dynamic-start-form d-inline" data-hash="{{ md5 }}">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-success"><i class="fa fa-play-circle"></i> Start Dynamic Analysis</button>
@@ -639,7 +639,7 @@
                     <strong><i class="fas fa-file-code"></i> DECOMPILED CODE</strong>
                   </p>
                   <p>
-                    {% if app_type not in 'jar' %}
+                    {% if app_type not in 'jar,dex' %}
                     <a target="_blank" href="{% url "manifest_view" checksum=md5 %}?type={{ app_type }}" role="button" class="btn btn-primary"><i class="fa fa-eye"></i>  View AndroidManifest.xml</a>
                     {% endif %}
                     <a href="{% url "tree_view" %}?md5={{ md5 }}&amp;type=java" class="btn btn-info" role="button"><i class="fa fa-code"></i> View Source</a>

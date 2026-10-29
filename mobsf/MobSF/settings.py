@@ -80,6 +80,7 @@ ALLOWED_EXTENSIONS = {
     '.ipa': 'application/octet-stream',
     '.jar': 'application/java-archive',
     '.aar': 'application/octet-stream',
+    '.dex': 'application/octet-stream',
     '.so': 'application/octet-stream',
     '.dylib': 'application/octet-stream',
     '.a': 'application/octet-stream',
@@ -94,6 +95,7 @@ APK_MIME = [
     'binary/octet-stream',
     'application/java-archive',
     'application/x-authorware-bin',
+    'application/x-dex',
 ]
 IPA_MIME = [
     'application/iphone',
@@ -118,7 +120,7 @@ APPX_MIME = [
 # Supported File Extensions
 ANDROID_EXTS = (
     'apk', 'xapk', 'apks', 'zip',
-    'aab', 'so', 'jar', 'aar',
+    'aab', 'so', 'jar', 'aar', 'dex',
 )
 IOS_EXTS = ('ipa', 'dylib', 'a')
 WINDOWS_EXTS = ('appx',)

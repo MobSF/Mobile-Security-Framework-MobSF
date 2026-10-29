@@ -67,6 +67,7 @@ class AndroidChecks(forms.Form):
             ('apk', 'apk'),
             ('jar', 'jar'),
             ('aar', 'aar'),
+            ('dex', 'dex'),
             ('so', 'so'),
             ('a', 'a')))
 

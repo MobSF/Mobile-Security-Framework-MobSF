@@ -178,6 +178,8 @@ class Upload(object):
             return scanning.scan_aar()
         elif self.file_type.is_so():
             return scanning.scan_so()
+        elif self.file_type.is_dex():
+            return scanning.scan_dex()
         elif self.file_type.is_zip():
             return scanning.scan_zip()
         elif self.file_type.is_ipa():
