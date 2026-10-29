@@ -344,6 +344,11 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
+        'mobsf.StaticAnalyzer.tools.androguard4': {
+            'handlers': ['console', 'logfile'],
+            'level': 'CRITICAL',
+            'propagate': False,
+        },
         'mobsf.MalwareAnalyzer': {
             'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
