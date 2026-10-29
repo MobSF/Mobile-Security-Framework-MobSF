@@ -120,13 +120,8 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
             str(jadx), '-ds', str(output_dir),
             '-q', '-r', '--show-bad-code', app_path]
         result = run_jadx(args)
-        if result.returncode == 0:
-            return  # Success
-        if has_java_output(output_dir):
-            msg = 'JADX decompiled with some method errors'
-            logger.warning(msg)
-            append_scan_status(checksum, msg)
-            return
+        if result.returncode in (0, 3) or has_java_output(output_dir):
+            return  # Success (exit code 3 means finished with method errors)
         if str(app_path).lower().endswith('.dex'):
             msg = f'Decompiling with JADX failed for {Path(app_path).name}'
             logger.error(msg)
@@ -150,7 +145,8 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
             args[-1] = str(dex_file)
             result_dex = run_jadx(args)
 
-            if result_dex.returncode != 0 and not has_java_output(output_dir):
+            if (result_dex.returncode not in (0, 3)
+                    and not has_java_output(output_dir)):
                 decompile_failed = True
                 msg = f'Decompiling with JADX failed for {dex_file.name}'
                 logger.error(msg)
