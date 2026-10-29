@@ -15,8 +15,16 @@ from urllib.request import (
     getproxies,
 )
 
-from mobsf.MobSF.env import env_flag
-from mobsf.MobSF.exceptions import PathTraversalError
+try:
+    from mobsf.MobSF.env import env_flag
+    from mobsf.MobSF.exceptions import PathTraversalError
+except ImportError:
+    def env_flag(name, default='0'):
+        val = str(os.getenv(name, default)).strip().strip('"\'')
+        return val == '1'
+
+    class PathTraversalError(Exception):
+        pass
 
 logging.basicConfig(
     level=logging.INFO,
@@ -127,7 +135,7 @@ def download_file(url, file_path):
             raise Exception(f'Failed to download file. Status code: {response.status}')
 
 
-def install_jadx(mobsf_home, version='1.5.0'):
+def install_jadx(mobsf_home, version='1.5.6'):
     """Install JADX dynamically."""
     try:
         url = ('https://github.com/skylot/jadx/releases/download/'

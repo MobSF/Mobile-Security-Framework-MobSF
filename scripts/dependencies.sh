@@ -1,6 +1,8 @@
 #!/bin/bash
-JDK_FILE=openjdk-22.0.2_linux-x64_bin.tar.gz
-JDK_FILE_ARM=openjdk-22.0.2_linux-aarch64_bin.tar.gz
+set -e
+
+JDK_FILE=openjdk-24.0.2_linux-x64_bin.tar.gz
+JDK_FILE_ARM=openjdk-24.0.2_linux-aarch64_bin.tar.gz
 WKH_FILE=wkhtmltox_0.12.6.1-3.bookworm_amd64.deb
 WKH_FILE_ARM=wkhtmltox_0.12.6.1-3.bookworm_arm64.deb
 
@@ -14,11 +16,10 @@ then
 fi
 
 echo "Target platform identified as $TARGETPLATFORM"
-JDK_URL="https://download.java.net/java/GA/jdk22.0.2/c9ecb94cd31b495da20a27d4581645e8/9/GPL/${JDK_FILE}"
+JDK_URL="https://download.java.net/java/GA/jdk24.0.2/fdc5d0102fe0414db21410ad5834341f/12/GPL/${JDK_FILE}"
 WKH_URL="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/${WKH_FILE}"
 
 # Download and install wkhtmltopdf
-
 echo "Installing $WKH_FILE ..."
 wget --quiet -O /tmp/${WKH_FILE} "${WKH_URL}" && \
     dpkg -i /tmp/${WKH_FILE} && \

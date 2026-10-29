@@ -75,7 +75,7 @@ def dex_2_smali(checksum, app_dir, tools_dir):
 def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
     """Run JADX to decompile APK or all DEX files to Java source code."""
     try:
-        jadx_version = '1.5.0'
+        jadx_version = '1.5.6'
         jadx_base_path = Path(dwd_tools_dir) / 'jadx' / f'jadx-{jadx_version}' / 'bin'
         output_dir = Path(app_dir) / 'java_source'
 
