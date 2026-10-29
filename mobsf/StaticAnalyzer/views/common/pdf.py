@@ -4,20 +4,24 @@ Shared Functions.
 
 PDF Generation
 """
+from io import BytesIO
 import json
 import logging
 import os
+from pathlib import Path
 import platform
 
 from django.http import HttpResponse
 from django.template.loader import get_template
+
+from xhtml2pdf import pisa
+from xhtml2pdf.files import ResourceAccessPolicy
 
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.MobSF import settings
 from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
-    upstream_proxy,
 )
 from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
@@ -43,14 +47,31 @@ from mobsf.MobSF.views.authentication import (
 )
 
 logger = logging.getLogger(__name__)
-try:
-    import pdfkit
-except ImportError:
-    logger.warning(
-        'wkhtmltopdf is not installed/configured properly.'
-        ' PDF Report Generation is disabled')
-logger = logging.getLogger(__name__)
+logging.getLogger('xhtml2pdf').setLevel(logging.ERROR)
 ctype = 'application/json; charset=utf-8'
+
+
+def get_pdf_resource_policy():
+    """Return xhtml2pdf server policy confined to MobSF static and download dirs."""
+    return ResourceAccessPolicy.server(
+        base_dir=Path(settings.BASE_DIR) / 'static',
+        extra_roots=(Path(settings.DWD_DIR),),
+        allow_remote=False,
+    )
+
+
+def render_html_to_pdf(html):
+    """Render HTML string to PDF bytes using xhtml2pdf."""
+    output = BytesIO()
+    status = pisa.CreatePDF(
+        src=html,
+        dest=output,
+        encoding='UTF-8',
+        resource_policy=get_pdf_resource_policy(),
+    )
+    if status.err:
+        raise RuntimeError('xhtml2pdf reported errors while generating PDF')
+    return output.getvalue()
 
 
 @login_required
@@ -101,8 +122,8 @@ def pdf(request, checksum, api=False, jsonres=False):
         if platform.system() == 'Windows':
             proto = 'file:///'
             host_os = 'windows'
-        context['base_url'] = proto + settings.BASE_DIR
-        context['dwd_dir'] = proto + settings.DWD_DIR
+        context['base_url'] = proto + Path(settings.BASE_DIR).as_posix()
+        context['dwd_dir'] = proto + Path(settings.DWD_DIR).as_posix() + '/'
         context['host_os'] = host_os
         context['timestamp'] = RecentScansDB.objects.get(
             MD5=checksum).TIMESTAMP
@@ -110,28 +131,8 @@ def pdf(request, checksum, api=False, jsonres=False):
             if api and jsonres:
                 return {'report_dat': context}
             else:
-                options = {
-                    'page-size': 'Letter',
-                    'quiet': '',
-                    'enable-local-file-access': '',
-                    'no-collate': '',
-                    'margin-top': '0.50in',
-                    'margin-right': '0.50in',
-                    'margin-bottom': '0.50in',
-                    'margin-left': '0.50in',
-                    'encoding': 'UTF-8',
-                    'orientation': 'Landscape',
-                    'custom-header': [
-                        ('Accept-Encoding', 'gzip'),
-                    ],
-                    'no-outline': None,
-                }
-                # Added proxy support to wkhtmltopdf
-                proxies, _ = upstream_proxy('https')
-                if proxies['https']:
-                    options['proxy'] = proxies['https']
                 html = template.render(context)
-                pdf_dat = pdfkit.from_string(html, False, options=options)
+                pdf_dat = render_html_to_pdf(html)
                 if api:
                     return {'pdf_dat': pdf_dat}
                 return HttpResponse(pdf_dat,

@@ -39,26 +39,6 @@ jobs:
       run: |
         tox -e lint
 
-    - name: Install Ubuntu Dependencies
-      if: startsWith(matrix.os, 'ubuntu')
-      run: |
-        sudo apt update && sudo apt install -y xfonts-75dpi xfonts-base libssl3
-        export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/
-        export WKHTML_DEB=wkhtmltox_0.12.6.1-2.jammy_amd64.deb
-        wget ${WKHTML_URL}${WKHTML_DEB} && sudo dpkg -i ${WKHTML_DEB} && rm -rf ${WKHTML_DEB}
-
-    - name: Install macOS Dependencies
-      if: startsWith(matrix.os, 'macOS')
-      run: |
-        export WKHTML_URL=https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-2/
-        export WKHTML_PKG=wkhtmltox-0.12.6-2.macos-cocoa.pkg
-        curl -L ${WKHTML_URL}${WKHTML_PKG} -O && sudo installer -pkg ${WKHTML_PKG} -target ~ && rm -rf ${WKHTML_PKG}
-
-    - name: Install Windows Dependencies
-      if: startsWith(matrix.os, 'windows')
-      run: |
-        choco install wkhtmltopdf
-
     - name: Install Python dependencies
       run: |
         poetry install --only main --no-root --no-interaction --no-ansi || poetry install --only main --no-root --no-interaction --no-ansi || poetry install --only main --no-root --no-interaction --no-ansi

@@ -20,6 +20,10 @@ from mobsf.StaticAnalyzer.views.common.binary.macho import (
     MachOChecksec,
     is_debug_symbol_stripped,
 )
+from mobsf.StaticAnalyzer.views.common.pdf import (
+    get_pdf_resource_policy,
+    render_html_to_pdf,
+)
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -735,3 +739,29 @@ class DexFileSupportTests(SimpleTestCase):
     def test_get_android_src_dir_for_dex(self):
         base = Path('/tmp/mobsf_test')
         self.assertEqual(get_android_src_dir(base, 'dex'), base / 'java_source')
+
+
+class PdfGenerationSecurityTests(SimpleTestCase):
+    """Tests for xhtml2pdf generation and ResourceAccessPolicy confinement."""
+
+    def test_render_html_to_pdf_produces_valid_pdf(self):
+        pdf_bytes = render_html_to_pdf(
+            '<html><body><h1>MobSF Report</h1></body></html>')
+        self.assertTrue(pdf_bytes.startswith(b'%PDF-'))
+
+    def test_pdf_resource_policy_blocks_remote_and_outside_paths(self):
+        from xhtml2pdf.files import ResourceAccessError
+        policy = get_pdf_resource_policy()
+        with self.assertRaises(ResourceAccessError):
+            policy.check_url('https://evil.example/a.css')
+        with self.assertRaises(ResourceAccessError):
+            policy.check_path('/etc/passwd')
+        with self.assertRaises(ResourceAccessError):
+            policy.check_path(Path(settings.BASE_DIR) / 'MobSF' / 'settings.py')
+
+    def test_pdf_resource_policy_allows_static_and_download_roots(self):
+        policy = get_pdf_resource_policy()
+        css_path = Path(settings.BASE_DIR) / 'static' / \
+            'others' / 'css' / 'pdf_report.css'
+        policy.check_path(css_path)
+        policy.check_path(Path(settings.DWD_DIR))
