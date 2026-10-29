@@ -7,6 +7,9 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from mobsf.MobSF.init import api_key
+from mobsf.StaticAnalyzer.views.common.appsec import (
+    calculate_security_score,
+)
 from mobsf.StaticAnalyzer.views.common.binary.macho import (
     MachOChecksec,
     is_debug_symbol_stripped,
@@ -660,3 +663,37 @@ class MachODebugSymbolStripped(SimpleTestCase):
     def test_stripped_dylib_with_local_symbols(self):
         dylib = Path(settings.BASE_DIR) / 'StaticAnalyzer/test_files/macho.dylib'
         self.assertTrue(MachOChecksec(dylib).is_symbols_stripped())
+
+
+class SecurityScoreTests(SimpleTestCase):
+    """AppSec security score monotonicity and scaling tests."""
+
+    def test_no_findings_scores_100(self):
+        self.assertEqual(calculate_security_score(0, 0, 0), 100)
+        self.assertEqual(calculate_security_score(0, 0, 5), 100)
+
+    def test_single_high_does_not_zero_score(self):
+        self.assertEqual(calculate_security_score(1, 0, 0), 85)
+
+    def test_fixing_warnings_increases_score(self):
+        before = calculate_security_score(4, 11, 2)
+        after = calculate_security_score(4, 8, 2)
+        self.assertGreater(after, before)
+
+    def test_fewer_findings_scores_higher_independent_of_secure_count(self):
+        fewer = calculate_security_score(3, 5, 2)
+        more_with_high_sec = calculate_security_score(4, 6, 8)
+        much_more = calculate_security_score(9, 15, 8)
+        self.assertGreater(fewer, more_with_high_sec)
+        self.assertGreater(more_with_high_sec, much_more)
+
+    def test_score_is_non_decreasing_and_approaches_floor(self):
+        self.assertGreaterEqual(
+            calculate_security_score(4, 29, 2),
+            calculate_security_score(4, 30, 2),
+        )
+        self.assertGreater(
+            calculate_security_score(50, 0, 0),
+            calculate_security_score(100, 0, 0),
+        )
+        self.assertGreaterEqual(calculate_security_score(1000, 1000, 0), 10)
