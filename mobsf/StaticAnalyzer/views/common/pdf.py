@@ -68,13 +68,29 @@ def _fallback_pdf_icon():
 
 def _uri_to_local_path(uri_str):
     """Extract a local path string from a file:// or relative URI."""
-    parsed = urlparse(uri_str)
-    if parsed.scheme and parsed.scheme.lower() != 'file':
+    raw = uri_str.strip()
+    if raw.startswith('//') or raw.startswith('\\\\'):
         return None
-    raw_path = unquote(parsed.path or '')
-    if (os.name == 'nt'
-            and len(raw_path) >= 3
+    parsed = urlparse(raw)
+    if parsed.scheme and parsed.scheme.lower() != 'file':
+        # Allow Windows drive-letter paths (e.g. C:/... or C:\...)
+        if not (len(parsed.scheme) == 1
+                and parsed.scheme.isalpha()
+                and len(raw) >= 3
+                and raw[1] == ':'
+                and raw[2] in ('/', '\\')):
+            return None
+        raw_path = unquote(raw)
+    elif parsed.scheme.lower() == 'file':
+        if parsed.netloc and parsed.netloc.lower() not in ('', 'localhost'):
+            return None
+        raw_path = unquote(parsed.path or '')
+    else:
+        raw_path = unquote(parsed.path or raw)
+    raw_path = raw_path.replace('\\', '/')
+    if (len(raw_path) >= 3
             and raw_path[0] == '/'
+            and raw_path[1].isalpha()
             and raw_path[2] == ':'):
         raw_path = raw_path[1:]
     return raw_path
@@ -232,8 +248,8 @@ def pdf(request, checksum, api=False, jsonres=False):
         if platform.system() == 'Windows':
             proto = 'file:///'
             host_os = 'windows'
-        context['base_url'] = proto + settings.BASE_DIR
-        context['dwd_dir'] = proto + settings.DWD_DIR
+        context['base_url'] = proto + Path(settings.BASE_DIR).as_posix()
+        context['dwd_dir'] = proto + Path(settings.DWD_DIR).as_posix() + '/'
         context['host_os'] = host_os
         context['timestamp'] = RecentScansDB.objects.get(
             MD5=checksum).TIMESTAMP

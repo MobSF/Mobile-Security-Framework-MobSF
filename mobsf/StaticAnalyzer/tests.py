@@ -751,12 +751,21 @@ class PdfGenerationSecurityTests(SimpleTestCase):
 
     def test_pdf_link_callback_blocks_external_and_traversal_uris(self):
         self.assertEqual(pdf_link_callback('https://evil.example/a.css'), '')
+        self.assertEqual(pdf_link_callback('//evil.example/a.css'), '')
+        self.assertEqual(pdf_link_callback('\\\\evil.example\\share\\a.css'), '')
+        self.assertEqual(pdf_link_callback('file://evil.example/a.css'), '')
         self.assertTrue(
             pdf_link_callback('https://evil.example/icon.png')
             .endswith('no_icon.png'))
         self.assertEqual(pdf_link_callback('file:///etc/passwd'), '')
         self.assertEqual(pdf_link_callback('/static/../../etc/passwd'), '')
+        self.assertEqual(pdf_link_callback('/static/..\\..\\Windows\\win.ini'), '')
 
     def test_pdf_link_callback_allows_static_assets(self):
         resolved = pdf_link_callback('/static/others/css/pdf_report.css')
         self.assertTrue(resolved.endswith('static/others/css/pdf_report.css'))
+        base_posix = Path(settings.BASE_DIR).as_posix()
+        win_style = f'file:///{base_posix}/static/others/css/pdf_report.css'
+        self.assertTrue(
+            pdf_link_callback(win_style)
+            .endswith('static/others/css/pdf_report.css'))
