@@ -758,8 +758,7 @@
                   </td>
                   <td style="word-break:break-all;">
                   {% for file_path in details.files %}
-                   {{ file_path }}
-                  <br/>
+                   <div>{{ file_path }}</div>
                   {% endfor %}
                   </td>
                 </tr>    
@@ -887,7 +886,7 @@
                     <tr>
                        <td style="word-break:break-all;">
                        {% for u in urldict|key:"urls" %}
-                         {{ u }} <br/>
+                         <div>{{ u }}</div>
                        {% endfor %}
                         </td>
                        <td width="35%" style="word-break:break-all;">
@@ -913,7 +912,7 @@
                     <tr>
                        <td style="word-break:break-all;">
                        {% for em in email_dict|key:"emails" %}
-                         {{ em }} <br/>
+                         <div>{{ em }}</div>
                        {% endfor %}
                         </td>
 

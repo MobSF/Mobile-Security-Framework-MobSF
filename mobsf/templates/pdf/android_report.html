@@ -297,7 +297,7 @@
                                <span class="info">{{detail}}</span>
                                {% endif %}
                               </td>
-                              <td> {% for idn in idens %} {{ idn }}<br/> {% endfor %}</td>
+                              <td> {% for idn in idens %}<div>{{ idn }}</div>{% endfor %}</td>
                             </tr>
                             {% endfor %}
                          {% endfor %}
@@ -578,8 +578,7 @@
                   </td>
                  <td style="word-break:break-all;">
                   {% for file_path in details.files %}
-                    {{ file_path }}
-                  <br/>
+                    <div>{{ file_path }}</div>
                   {% endfor %}
                   </td>
                 </tr>    
@@ -707,8 +706,7 @@
           </td>
           <td style="word-break:break-all;">
             {% for file_path in details.files %}
-              {{ file_path }}
-            <br/>
+              <div>{{ file_path }}</div>
             {% endfor %}
           </td>
         </tr>    
@@ -872,7 +870,7 @@
                     <tr>
                        <td style="word-break:break-all;">
                        {% for u in urldict|key:"urls" %}
-                         {{ u }} <br/>
+                         <div>{{ u }}</div>
                        {% endfor %}
                         </td>
                        <td style="word-break:break-all;">
@@ -898,7 +896,7 @@
                     <tr>
                        <td style="word-break:break-all;">
                        {% for em in email_dict|key:"emails" %}
-                         {{ em }} <br/>
+                         <div>{{ em }}</div>
                        {% endfor %}
                         </td>
 
