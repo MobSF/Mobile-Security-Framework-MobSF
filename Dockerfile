@@ -56,11 +56,11 @@ RUN groupadd --gid $USER_ID $MOBSF_USER && \
     locale-gen en_US.UTF-8 && \
     update-locale LANG=en_US.UTF-8 && \
     ./dependencies.sh && \
-    curl -sSL https://install.python-poetry.org | python3 - && \
+    python3 -m pip install --no-cache-dir poetry && \
     poetry config virtualenvs.create false && \
     poetry install --only main --no-root --no-interaction --no-ansi && \
     poetry cache clear . --all --no-interaction && \
-    curl -sSL https://install.python-poetry.org | python3 - --uninstall && \
+    python3 -m pip uninstall -y poetry poetry-core && \
     rm -f pyproject.toml poetry.lock && \
     chown -R $USER_ID:$USER_ID /home/mobsf && \
     apt-get remove --purge -y \
@@ -72,9 +72,11 @@ RUN groupadd --gid $USER_ID $MOBSF_USER && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* /root/.cache /root/.local
 
-# Copy source code with final ownership to avoid a duplicate chown layer
+# Copy application source with final ownership to avoid a duplicate chown layer
 WORKDIR /home/mobsf/Mobile-Security-Framework-MobSF
-COPY --chown=$USER_ID:$USER_ID . .
+COPY --chown=$USER_ID:$USER_ID manage.py pyproject.toml ./
+COPY --chown=$USER_ID:$USER_ID mobsf ./mobsf
+COPY --chown=$USER_ID:$USER_ID scripts ./scripts
 
 HEALTHCHECK CMD curl --fail http://localhost:8000/login/ || exit 1
 

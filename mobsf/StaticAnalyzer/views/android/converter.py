@@ -14,6 +14,7 @@ from tempfile import gettempdir
 
 from django.conf import settings
 
+from mobsf.MobSF.tools_download import install_jadx
 from mobsf.MobSF.utils import (
     append_scan_status,
     filename_from_path,
@@ -91,10 +92,13 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
         if (len(settings.JADX_BINARY) > 0
                 and is_file_exists(settings.JADX_BINARY)):
             jadx = Path(settings.JADX_BINARY)
-        elif platform.system() == 'Windows':
-            jadx = jadx_base_path / 'jadx.bat'
         else:
-            jadx = jadx_base_path / 'jadx'
+            if not jadx_base_path.exists():
+                install_jadx(Path(dwd_tools_dir).parent, jadx_version)
+            if platform.system() == 'Windows':
+                jadx = jadx_base_path / 'jadx.bat'
+            else:
+                jadx = jadx_base_path / 'jadx'
 
         # Ensure JADX has execute permissions
         if not os.access(str(jadx), os.X_OK):
