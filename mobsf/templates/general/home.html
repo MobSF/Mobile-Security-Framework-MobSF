@@ -208,7 +208,7 @@
                 var regex = new RegExp("^(.{1,300}?)\.({{exts}})$");
                 val = val.replace(/^.*[\\\/]/, '');
                 if (!(regex.test(val))) {
-                    _('status').innerText = "MobSF only supports APK, APKS, XAPK, AAB, JAR, AAR, SO, IPA, DYLIB, A, ZIP, and APPX files.";
+                    _('status').innerText = "MobSF only supports APK, APKS, XAPK, AAB, JAR, AAR, DEX, SO, IPA, DYLIB, A, ZIP, and APPX files.";
                     return false;
                 }
                 return true;

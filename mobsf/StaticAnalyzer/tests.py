@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import io
 import json
 import logging
 import os
@@ -7,6 +8,11 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from mobsf.MobSF.init import api_key
+from mobsf.MobSF.utils import (
+    get_android_src_dir,
+    is_dex_magic,
+)
+from mobsf.MobSF.views.helpers import FileType
 from mobsf.StaticAnalyzer.views.common.appsec import (
     calculate_security_score,
 )
@@ -697,3 +703,35 @@ class SecurityScoreTests(SimpleTestCase):
             calculate_security_score(100, 0, 0),
         )
         self.assertGreaterEqual(calculate_security_score(1000, 1000, 0), 10)
+
+
+class DexFileSupportTests(SimpleTestCase):
+    """Direct DEX upload and magic byte validation tests."""
+
+    def test_valid_dex_magic(self):
+        buf = io.BytesIO(b'dex\n039\x00' + b'\x00' * 32)
+        self.assertTrue(is_dex_magic(buf))
+        self.assertEqual(buf.tell(), 0)
+
+    def test_invalid_dex_magic(self):
+        for payload in (b'PK\x03\x04', b'dex\n03a\x00', b'dex\n035\x01', b'dex'):
+            buf = io.BytesIO(payload)
+            self.assertFalse(is_dex_magic(buf))
+
+    def test_filetype_accepts_valid_dex_and_rejects_mismatched_magic(self):
+        valid_obj = io.BytesIO(b'dex\n035\x00' + b'\x00' * 32)
+        valid_obj.name = 'classes.dex'
+        valid_obj.content_type = 'application/octet-stream'
+        ft = FileType(valid_obj)
+        self.assertTrue(ft.is_dex())
+        self.assertTrue(ft.is_allow_file())
+
+        invalid_obj = io.BytesIO(b'PK\x03\x04' + b'\x00' * 32)
+        invalid_obj.name = 'classes.dex'
+        invalid_obj.content_type = 'application/octet-stream'
+        ft_invalid = FileType(invalid_obj)
+        self.assertFalse(ft_invalid.is_allow_file())
+
+    def test_get_android_src_dir_for_dex(self):
+        base = Path('/tmp/mobsf_test')
+        self.assertEqual(get_android_src_dir(base, 'dex'), base / 'java_source')

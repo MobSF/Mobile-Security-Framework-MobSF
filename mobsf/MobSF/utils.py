@@ -902,6 +902,18 @@ def is_elf_so_magic(file_obj):
     return bool(magic == b'\x7F\x45\x4C\x46')
 
 
+def is_dex_magic(file_obj):
+    magic = file_obj.read(8)
+    file_obj.seek(0, 0)
+    # DEX Magic: "dex\n" + 3-digit version + "\x00"
+    return bool(
+        len(magic) == 8
+        and magic[:4] == b'dex\n'
+        and magic[4:7].isdigit()
+        and magic[7:8] == b'\x00',
+    )
+
+
 def is_dylib_magic(file_obj):
     magic = file_obj.read(4)
     file_obj.seek(0, 0)
@@ -1048,7 +1060,7 @@ def get_android_dm_exception_msg():
 def get_android_src_dir(app_dir, typ):
     """Get Android source code location."""
     src = None
-    if typ == 'apk':
+    if typ in ('apk', 'jar', 'aar', 'dex'):
         src = app_dir / 'java_source'
     elif typ == 'studio':
         src = app_dir / 'app' / 'src' / 'main' / 'java'

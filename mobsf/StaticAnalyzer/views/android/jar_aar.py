@@ -8,6 +8,7 @@ from django.shortcuts import render
 import mobsf.MalwareAnalyzer.views.Trackers as Trackers
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
 from mobsf.MalwareAnalyzer.views.android import (
+    apkid,
     permissions,
 )
 from mobsf.MobSF.utils import (
@@ -49,6 +50,7 @@ from mobsf.StaticAnalyzer.models import (
 from mobsf.StaticAnalyzer.views.android.code_analysis import code_analysis
 from mobsf.StaticAnalyzer.views.android.converter import (
     apk_2_java,
+    dex_2_smali,
 )
 from mobsf.StaticAnalyzer.views.android.db_interaction import (
     get_context_from_db_entry,
@@ -85,17 +87,21 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             checksum,
             app_dic['app_path'])
         app_dic['zipped'] = analysis_type
-        app_dic['files'] = unzip(
-            checksum,
-            app_dic['app_path'],
-            app_dic['app_dir'])
-        logger.info('%s Extracted', analysis_type.upper())
-        if not app_dic['files']:
-            return print_n_send_error_response(
-                request,
-                f'{analysis_type.upper()} file is invalid or corrupt',
-                api)
-        get_hardcoded_cert_keystore(app_dic)
+        if analysis_type == 'dex':
+            app_dic['files'] = [app_dic['app_file']]
+            app_dic['file_analysis'] = []
+        else:
+            app_dic['files'] = unzip(
+                checksum,
+                app_dic['app_path'],
+                app_dic['app_dir'])
+            logger.info('%s Extracted', analysis_type.upper())
+            if not app_dic['files']:
+                return print_n_send_error_response(
+                    request,
+                    f'{analysis_type.upper()} file is invalid or corrupt',
+                    api)
+            get_hardcoded_cert_keystore(app_dic)
         app_dic['playstore'] = {'error': True}
         if analysis_type == 'aar':
             # AAR has manifest and sometimes certificate
@@ -153,10 +159,17 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
                 'certificate_summary': {},
             }
         app_dic['real_name'] = ''
-        elf_dict = library_analysis(
-            checksum,
-            app_dic['app_dir'],
-            'elf')
+        if analysis_type == 'dex':
+            elf_dict = {'elf_analysis': [], 'elf_strings': []}
+            apkid_results = apkid.apkid_analysis(
+                checksum,
+                app_dic['app_path'])
+        else:
+            elf_dict = library_analysis(
+                checksum,
+                app_dic['app_dir'],
+                'elf')
+            apkid_results = {}
         tracker = Trackers.Trackers(
             checksum,
             app_dic['app_dir'],
@@ -167,16 +180,22 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             app_dic['app_path'],
             app_dic['app_dir'],
             settings.DOWNLOADED_TOOLS_DIR)
+        if analysis_type == 'dex':
+            dex_2_smali(
+                checksum,
+                app_dic['app_dir'],
+                app_dic['tools_dir'])
         code_an_dic = code_analysis(
             checksum,
             app_dic['app_dir'],
             APK_TYPE,
             app_dic['manifest_file'],
             man_data_dic['perm'])
-        obfuscated_check(
-            checksum,
-            app_dic['app_dir'],
-            code_an_dic)
+        if analysis_type != 'dex':
+            obfuscated_check(
+                checksum,
+                app_dic['app_dir'],
+                code_an_dic)
         # Get the strings and metadata
         get_strings_metadata(
             app_dic,
@@ -199,7 +218,7 @@ def common_analysis(request, app_dic, rescan, api, analysis_type):
             code_an_dic,
             cert_dic,
             elf_dict['elf_analysis'],
-            {},
+            apkid_results,
             tracker_res,
             rescan,
         )
@@ -225,6 +244,10 @@ def jar_analysis(request, app_dic, rescan, api):
 
 def aar_analysis(request, app_dic, rescan, api):
     return common_analysis(request, app_dic, rescan, api, 'aar')
+
+
+def dex_analysis(request, app_dic, rescan, api):
+    return common_analysis(request, app_dic, rescan, api, 'dex')
 
 
 def obfuscated_check(checksum, src, code_an_dic):

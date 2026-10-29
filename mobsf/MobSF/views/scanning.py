@@ -136,6 +136,15 @@ class Scanning(object):
         logger.info('Shared Object Library uploaded')
         return self.data
 
+    def scan_dex(self):
+        """Android DEX file."""
+        md5 = handle_uploaded_file(self.file, '.dex')
+        self.data['hash'] = md5
+        self.data['scan_type'] = 'dex'
+        add_to_recent_scan(self.data)
+        logger.info('Android DEX uploaded')
+        return self.data
+
     def scan_zip(self):
         """Android /iOS Zipped Source."""
         md5 = handle_uploaded_file(self.file, '.zip')

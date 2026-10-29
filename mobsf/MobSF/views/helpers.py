@@ -3,6 +3,7 @@ import functools
 
 from mobsf.MobSF.utils import (
     is_a_magic,
+    is_dex_magic,
     is_dylib_magic,
     is_elf_so_magic,
     is_zip_magic,
@@ -22,6 +23,7 @@ class FileType(object):
         self.file_name_lower = file_obj.name.lower()
         self.zip = is_zip_magic(file_obj)
         self.so = is_elf_so_magic(file_obj)
+        self.dex = is_dex_magic(file_obj)
         self.dylib = is_dylib_magic(file_obj)
         self.a = is_a_magic(file_obj)
 
@@ -32,6 +34,8 @@ class FileType(object):
         return bool
         """
         if self.so and self.is_so():
+            return True
+        if self.dex and self.is_dex():
             return True
         if self.dylib and self.is_dylib():
             return True
@@ -77,6 +81,10 @@ class FileType(object):
     def is_so(self):
         return (self.file_type in settings.APK_MIME
                 and self.file_name_lower.endswith('.so'))
+
+    def is_dex(self):
+        return (self.file_type in settings.APK_MIME
+                and self.file_name_lower.endswith('.dex'))
 
     def is_dylib(self):
         return (self.file_type in settings.IPA_MIME
