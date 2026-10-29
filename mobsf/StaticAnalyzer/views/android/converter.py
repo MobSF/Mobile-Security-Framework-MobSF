@@ -112,20 +112,33 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
                     stderr=subprocess.STDOUT,
                     timeout=settings.JADX_TIMEOUT)
 
-        # First attempt to decompile APK
+        def has_java_output(directory):
+            return directory.is_dir() and any(directory.rglob('*.java'))
+
+        # First attempt to decompile APK/DEX
         args = [
             str(jadx), '-ds', str(output_dir),
             '-q', '-r', '--show-bad-code', app_path]
         result = run_jadx(args)
         if result.returncode == 0:
             return  # Success
+        if has_java_output(output_dir):
+            msg = 'JADX decompiled with some method errors'
+            logger.warning(msg)
+            append_scan_status(checksum, msg)
+            return
+        if str(app_path).lower().endswith('.dex'):
+            msg = f'Decompiling with JADX failed for {Path(app_path).name}'
+            logger.error(msg)
+            append_scan_status(checksum, msg)
+            return
 
-        # If APK decompilation fails, attempt to decompile all DEX files recursively
+        # If APK decompilation produced no output, attempt top-level DEX files
         msg = 'Decompiling with JADX failed, attempting on all DEX files'
         logger.warning(msg)
         append_scan_status(checksum, msg)
 
-        dex_files = Path(app_path).parent.rglob('*.dex')
+        dex_files = Path(app_path).parent.glob('*.dex')
         decompile_failed = False
 
         for dex_file in dex_files:
@@ -137,7 +150,7 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
             args[-1] = str(dex_file)
             result_dex = run_jadx(args)
 
-            if result_dex.returncode != 0:
+            if result_dex.returncode != 0 and not has_java_output(output_dir):
                 decompile_failed = True
                 msg = f'Decompiling with JADX failed for {dex_file.name}'
                 logger.error(msg)
