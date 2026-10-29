@@ -29,10 +29,9 @@ logger = logging.getLogger(__name__)
 
 
 def calculate_security_score(high, warn, sec):
-    """Calculate a monotonic AppSec security score in [10, 100]."""
-    risk = (high * 3) + warn
-    positive = 15 + sec
-    return max(10, min(100, round(100 * positive / (positive + risk))))
+    """Calculate a non-decreasing AppSec security score in [10, 100]."""
+    risk = (max(0, high) * 3) + max(0, warn)
+    return round(10 + (90 * 15 / (15 + risk)))
 
 
 def common_fields(findings, data):

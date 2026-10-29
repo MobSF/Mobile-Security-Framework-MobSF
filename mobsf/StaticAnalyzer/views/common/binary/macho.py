@@ -1,7 +1,5 @@
 # !/usr/bin/python
 # coding=utf-8
-import shutil
-import subprocess
 from pathlib import Path
 
 import lief
@@ -16,19 +14,15 @@ from mobsf.MobSF.utils import (
 from django.conf import settings
 
 
-def objdump_is_debug_symbol_stripped(macho_file):
-    """Check if debug symbols are stripped using OS utility."""
-    # https://www.unix.com/man-page/osx/1/objdump/
-    # Works only on MacOS
-    out = subprocess.check_output(
-        [shutil.which('objdump'), '--syms', macho_file],
-        stderr=subprocess.STDOUT)
-    out = out.decode('utf-8', 'ignore')
-    # radr://5614542 symbol is added back for
-    # debug symbols stripped binaries
+def is_debug_symbol_stripped(symbols):
+    """Check if a Mach-O symbol table has no debugging (stab) entries."""
+    # Any N_STAB (0xe0) bit set in n_type marks a symbolic debugging entry
+    # https://github.com/apple-oss-distributions/xnu/blob/main/
+    # EXTERNAL_HEADERS/mach-o/nlist.h
+    # strip(1) adds back an N_OPT stab named radr://5614542
     stripped_sym = 'radr://5614542'
-    for line in out.splitlines():
-        if ' d  ' in line and stripped_sym not in line:
+    for sym in symbols:
+        if sym.raw_type & 0xe0 and sym.name != stripped_sym:
             return False
     return True
 
@@ -278,39 +272,7 @@ class MachOChecksec:
             return False
 
     def is_symbols_stripped(self):
-        try:
-            return objdump_is_debug_symbol_stripped(self.macho_path)
-        except Exception:
-            # Based on issues/1917#issuecomment-1238078359
-            # and issues/2233#issue-1846914047
-            stripped_sym = 'radr://5614542'
-            # radr://5614542 symbol is added back for
-            # debug symbols stripped binaries
-            for i in self.macho.symbols:
-                if i.name.lower().strip() in (
-                        '__mh_execute_header', stripped_sym):
-                    # __mh_execute_header is present in both
-                    # stripped and unstripped binaries
-                    # also ignore radr://5614542
-                    continue
-                symbol_type = getattr(i.type, 'value', i.type)
-                if (symbol_type & 0xe0) > 0 or symbol_type in (0x0e, 0x1e):
-                    # N_STAB set or 14, 30
-
-                    # N_STAB	0xe0  /* if any of these bits set,
-                    # a symbolic debugging entry */ -> 224
-                    # https://opensource.apple.com/source/xnu/xnu-201/
-                    # EXTERNAL_HEADERS/mach-o/nlist.h
-                    # Only symbolic debugging entries have
-                    # some of the N_STAB bits set and if any
-                    # of these bits are set then it is a
-                    # symbolic debugging entry (a stab).
-
-                    # Identified a debugging symbol
-                    return False
-            if stripped_sym in self.get_symbols():
-                return True
-            return False
+        return is_debug_symbol_stripped(self.macho.symbols)
 
     def get_libraries(self):
         libs = []

@@ -3,10 +3,16 @@ import json
 import logging
 import os
 import platform
+from pathlib import Path
+from types import SimpleNamespace
 
 from mobsf.MobSF.init import api_key
 from mobsf.StaticAnalyzer.views.common.appsec import (
     calculate_security_score,
+)
+from mobsf.StaticAnalyzer.views.common.binary.macho import (
+    MachOChecksec,
+    is_debug_symbol_stripped,
 )
 
 from django.conf import settings
@@ -607,6 +613,58 @@ class StaticAnalyzerAndAPI(TestCase):
         self.assertEqual(resp.status_code, 200)
 
 
+def _symbols(*entries):
+    return [SimpleNamespace(name=n, raw_type=t) for n, t in entries]
+
+
+class MachODebugSymbolStripped(SimpleTestCase):
+    """Mach-O debug symbol strip detection."""
+
+    def test_debug_build(self):
+        syms = _symbols(
+            ('_helper', 0x0e),
+            ('', 0x64),
+            ('main.c', 0x64),
+            ('/tmp/main.o', 0x66),
+            ('_main', 0x24),
+            ('_main', 0x0f))
+        self.assertFalse(is_debug_symbol_stripped(syms))
+
+    def test_debug_build_without_local_symbols(self):
+        syms = _symbols(
+            ('', 0x64),
+            ('/tmp/bar.o', 0x66),
+            ('_only_exported', 0x24),
+            ('_only_exported', 0x0f))
+        self.assertFalse(is_debug_symbol_stripped(syms))
+
+    def test_strip_debugging_symbols_only(self):
+        syms = _symbols(
+            ('_helper', 0x0e),
+            ('__mh_execute_header', 0x0f),
+            ('_main', 0x0f),
+            ('_printf', 0x01))
+        self.assertTrue(is_debug_symbol_stripped(syms))
+
+    def test_strip_non_global_symbols(self):
+        syms = _symbols(('_foo_exported', 0x0f))
+        self.assertTrue(is_debug_symbol_stripped(syms))
+
+    def test_strip_all_symbols(self):
+        syms = _symbols(
+            ('radr://5614542', 0x3c),
+            ('__mh_execute_header', 0x0f),
+            ('_printf', 0x01))
+        self.assertTrue(is_debug_symbol_stripped(syms))
+
+    def test_no_symbols(self):
+        self.assertTrue(is_debug_symbol_stripped([]))
+
+    def test_stripped_dylib_with_local_symbols(self):
+        dylib = Path(settings.BASE_DIR) / 'StaticAnalyzer/test_files/macho.dylib'
+        self.assertTrue(MachOChecksec(dylib).is_symbols_stripped())
+
+
 class SecurityScoreTests(SimpleTestCase):
     """AppSec security score monotonicity and scaling tests."""
 
@@ -615,17 +673,27 @@ class SecurityScoreTests(SimpleTestCase):
         self.assertEqual(calculate_security_score(0, 0, 5), 100)
 
     def test_single_high_does_not_zero_score(self):
-        self.assertEqual(calculate_security_score(1, 0, 0), 83)
+        self.assertEqual(calculate_security_score(1, 0, 0), 85)
 
     def test_fixing_warnings_increases_score(self):
         before = calculate_security_score(4, 11, 2)
         after = calculate_security_score(4, 8, 2)
         self.assertGreater(after, before)
 
-    def test_fewer_findings_scores_higher(self):
+    def test_fewer_findings_scores_higher_independent_of_secure_count(self):
         fewer = calculate_security_score(3, 5, 2)
-        more = calculate_security_score(9, 15, 8)
-        self.assertGreater(fewer, more)
+        more_with_high_sec = calculate_security_score(4, 6, 8)
+        much_more = calculate_security_score(9, 15, 8)
+        self.assertGreater(fewer, more_with_high_sec)
+        self.assertGreater(more_with_high_sec, much_more)
 
-    def test_score_has_floor_at_10(self):
-        self.assertEqual(calculate_security_score(100, 100, 0), 10)
+    def test_score_is_non_decreasing_and_approaches_floor(self):
+        self.assertGreaterEqual(
+            calculate_security_score(4, 29, 2),
+            calculate_security_score(4, 30, 2),
+        )
+        self.assertGreater(
+            calculate_security_score(50, 0, 0),
+            calculate_security_score(100, 0, 0),
+        )
+        self.assertGreaterEqual(calculate_security_score(1000, 1000, 0), 10)
