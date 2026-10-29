@@ -80,6 +80,7 @@ def index(request):
         'version': settings.MOBSF_VER,
         'mimes': mimes,
         'exts': '|'.join(exts),
+        'async_scans': settings.ASYNC_ANALYSIS,
     }
     template = 'general/home.html'
     return render(request, template, context)
