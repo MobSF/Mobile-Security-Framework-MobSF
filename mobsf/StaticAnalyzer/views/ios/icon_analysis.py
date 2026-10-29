@@ -81,11 +81,27 @@ def get_icon_from_ipa(app_dict):
                     icon_file.as_posix(), outfile.as_posix()]
             try:
                 out = subprocess.run(args, capture_output=True)
-                if b'libpng error:' in out.stdout:
-                    # PNG looks normal
-                    raise ValueError('PNG is not CgBI')
+                if (out.returncode != 0
+                        or b'libpng error:' in out.stdout
+                        or not outfile.is_file()):
+                    raise ValueError('pngcrush unavailable or PNG is not CgBI')
             except Exception:
-                shutil.copy2(icon_file.as_posix(), outfile.as_posix())
+                try:
+                    subprocess.run(
+                        [
+                            'sips',
+                            '-s',
+                            'format',
+                            'png',
+                            icon_file.as_posix(),
+                            '--out',
+                            outfile.as_posix(),
+                        ],
+                        capture_output=True,
+                        check=True,
+                    )
+                except Exception:
+                    shutil.copy2(icon_file.as_posix(), outfile.as_posix())
         else:
             # Windows/Linux
             cgbipng_bin = None
@@ -101,6 +117,8 @@ def get_icon_from_ipa(app_dict):
                         icon_file.as_posix(), '-o', outfile.as_posix()]
                 try:
                     out = subprocess.run(args, capture_output=True)
+                    if out.returncode != 0 or not outfile.is_file():
+                        shutil.copy2(icon_file.as_posix(), outfile.as_posix())
                 except Exception:
                     # Fails or PNG is not crushed
                     shutil.copy2(icon_file.as_posix(), outfile.as_posix())

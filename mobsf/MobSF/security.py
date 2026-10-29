@@ -123,6 +123,7 @@ def get_executable_hashes():
         'ar',
         'nm',
         'objdump',
+        'sips',
         'strings',
         'xcrun',
         'BinSkim.exe',
