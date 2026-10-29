@@ -5,10 +5,13 @@ import os
 import platform
 
 from mobsf.MobSF.init import api_key
+from mobsf.StaticAnalyzer.views.common.appsec import (
+    calculate_security_score,
+)
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.test import Client, TestCase
+from django.test import Client, SimpleTestCase, TestCase
 
 logger = logging.getLogger(__name__)
 
@@ -602,3 +605,27 @@ class StaticAnalyzerAndAPI(TestCase):
     def test_rest_api(self):
         resp = self.http_client.post('/tests/?module=api')
         self.assertEqual(resp.status_code, 200)
+
+
+class SecurityScoreTests(SimpleTestCase):
+    """AppSec security score monotonicity and scaling tests."""
+
+    def test_no_findings_scores_100(self):
+        self.assertEqual(calculate_security_score(0, 0, 0), 100)
+        self.assertEqual(calculate_security_score(0, 0, 5), 100)
+
+    def test_single_high_does_not_zero_score(self):
+        self.assertEqual(calculate_security_score(1, 0, 0), 83)
+
+    def test_fixing_warnings_increases_score(self):
+        before = calculate_security_score(4, 11, 2)
+        after = calculate_security_score(4, 8, 2)
+        self.assertGreater(after, before)
+
+    def test_fewer_findings_scores_higher(self):
+        fewer = calculate_security_score(3, 5, 2)
+        more = calculate_security_score(9, 15, 8)
+        self.assertGreater(fewer, more)
+
+    def test_score_has_floor_at_10(self):
+        self.assertEqual(calculate_security_score(100, 100, 0), 10)

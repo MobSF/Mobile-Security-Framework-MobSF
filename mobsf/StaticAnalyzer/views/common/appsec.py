@@ -28,6 +28,13 @@ from mobsf.MobSF.views.authentication import (
 logger = logging.getLogger(__name__)
 
 
+def calculate_security_score(high, warn, sec):
+    """Calculate a monotonic AppSec security score in [10, 100]."""
+    risk = (high * 3) + warn
+    positive = 15 + sec
+    return max(10, min(100, round(100 * positive / (positive + risk))))
+
+
 def common_fields(findings, data):
     """Common Fields for Android and iOS."""
     # Code Analysis
@@ -189,14 +196,7 @@ def common_fields(findings, data):
     high = len(findings.get('high'))
     warn = len(findings.get('warning'))
     sec = len(findings.get('secure'))
-    total = high + warn + sec
-    score = 0
-    if total > 0:
-        score = int(100 - (
-            ((high * 1) + (warn * .5) - (sec * .2)) / total) * 100)
-    if score > 100:
-        score = 100
-    findings['security_score'] = score
+    findings['security_score'] = calculate_security_score(high, warn, sec)
     findings['app_name'] = data.get('app_name', '')
     findings['file_name'] = data.get('file_name', '')
     findings['hash'] = data['md5']
