@@ -33,19 +33,17 @@
         <img src="{{base_url}}{% static "img/mobsf_logo.png" %}" class="center logo" alt="MobSF Logo"/>
         <div class="htext">ANDROID STATIC ANALYSIS REPORT </div>
       </div>
-      <br/><br/><br/>
      <div class="app">
       <img class="center" id="icon" src="{% if icon_path %}{{dwd_dir}}{{icon_path}}{% else %}{{base_url}}{% static 'img/no_icon.png' %}{% endif %}" alt="app_icon"/>
      </div>
       <div class="center">
         <h1><span class="fab">&#xf17b;</span>  {% if app_name %}  {{ app_name }}  {% else %} {{ file_name }} {% endif %} {% if version_name %}  ({{version_name}}) {% endif %}</h1>
       </div>
-     <br/><br/><br/><br/><br/>
       <div class="container">
       <table class="basic no_border">
       <tr class="no_border">
-        <td class="no_border"><h3>File Name:</h3></td>
-        <td class="no_border"><h3>{{file_name}}</h3></td>
+        <td width="30%" class="no_border"><h3>File Name:</h3></td>
+        <td width="70%" class="no_border"><h3>{{file_name}}</h3></td>
       </tr>
       <tr>
         <td class="no_border"><h3>Package Name:</h3></td>
@@ -124,15 +122,14 @@
     
     </table>
     {% if app_type not in 'so' %}
-  <div class="page-break"></div>
 <h2><span class="fas">&#xf200;</span>  FINDINGS SEVERITY</h2>
     <table class="basic tbl-white">
       <tr>
-        <th class="td-high"><span class="fas">&#xf188;</span>  HIGH</th>
-        <th class="td-warning"><span class="fas">&#xf071;</span>  MEDIUM</th>
-        <th class="td-info"><span class="fas">&#xf129;</span>  INFO</th>
-        <th class="td-success"><span class="fas">&#xf00c;</span>  SECURE</th>
-        <th class="td-secondary"><span class="fab">&#xf3eb;</span>  HOTSPOT</th>
+        <th width="20%" class="td-high"><span class="fas">&#xf188;</span>  HIGH</th>
+        <th width="20%" class="td-warning"><span class="fas">&#xf071;</span>  MEDIUM</th>
+        <th width="20%" class="td-info"><span class="fas">&#xf129;</span>  INFO</th>
+        <th width="20%" class="td-success"><span class="fas">&#xf00c;</span>  SECURE</th>
+        <th width="20%" class="td-secondary"><span class="fab">&#xf3eb;</span>  HOTSPOT</th>
       </tr>
       <tr>
         <td class="td-high"><h2>{{ appsec.high | length}}</h2></td>
@@ -143,7 +140,7 @@
       </tr>
     </table>
       </div>
-      
+    <div class="page-break"></div>
     </article>
   {% endif %}
     <article id="contents">
@@ -157,7 +154,7 @@
       <h5>SHA1:</h5> {{ sha1 }}<br/>
       <h5>SHA256:</h5> {{ sha256 }}<br/>
      
-{% if app_type not in 'so' %}
+{% if app_type not in 'jar,aar,so,dex' %}
       <h2><span class="fas">&#xf129;</span>  APP INFORMATION</h2>
 
       <h5>App Name:</h5> {{ app_name }}<br/>
@@ -182,7 +179,7 @@
         <h5>Exported Receivers:</h5> <span {% if exported_count.exported_receivers > 0 %} class="danger" {% endif %}> {{ exported_count.exported_receivers }}</span><br/>
         <h5>Exported Providers:</h5> <span {% if exported_count.exported_providers > 0 %} class="danger" {% endif %}> {{ exported_count.exported_providers }}</span><br/>
   {% endif %}
-  {% if app_type not in 'so' %}
+  {% if app_type not in 'jar,so,dex' %}
         <h2><span class="fas">&#xf0a3;</span>  CERTIFICATE INFORMATION</h2>
         {% if certificate_analysis.certificate_info %}
         <div class="panel-body">
@@ -198,10 +195,10 @@
             <table class="basic">
               <thead>
             <tr>
-                <th>PERMISSION</th>
-                <th>STATUS</th>
-                <th>INFO </th>
-                <th>DESCRIPTION</th>
+                <th width="28%">PERMISSION</th>
+                <th width="14%">STATUS</th>
+                <th width="18%">INFO </th>
+                <th width="40%">DESCRIPTION</th>
               </tr>
             </thead>
             <tbody>
@@ -264,28 +261,17 @@
        <table class="basic">
                   <thead>
                       <tr>
-                          <th>FILE</th>
-                          <th>DETAILS</th>
+                          <th width="35%">FILE</th>
+                          <th width="25%">FINDINGS</th>
+                          <th width="40%">DETAILS</th>
                       </tr>
                   </thead>
                   <tbody>
                       {% if apkid %}
                        {% for file, details in apkid.items %}
-                       <tr>
-                         <td>
-                             {{file}}
-                        </td>
-                        <td>
-                            <table class="basic">
-                              <thead>
-                                  <tr>
-                                      <th>FINDINGS</th>
-                                      <th>DETAILS</th>
-                                  </tr>
-                              </thead>
-                            <tbody>
                             {% for detail, idens in details.items %}
                             <tr>
+                              <td>{{file}}</td>
                               <td>
                                {% if detail == "anti_vm" %}
                                <span class="warning">Anti-VM Code</span>
@@ -310,18 +296,13 @@
                                {% else %}
                                <span class="info">{{detail}}</span>
                                {% endif %}
-                            </td>
+                              </td>
                               <td> {% for idn in idens %} {{ idn }}<br/> {% endfor %}</td>
                             </tr>
                             {% endfor %}
-                           </tbody>
-                            </table>
-                        </td>
-                 
-                        </tr>
                          {% endfor %}
                       {% else %}
-                      <p align="center"><strong>APKiD not enabled.</strong></p>
+                      <tr><td colspan="3" align="center"><strong>APKiD not enabled.</strong></td></tr>
                       {% endif %}
                     </tbody>
                     </table>
@@ -331,8 +312,8 @@
        <table class="basic">
                                         <thead>
                                             <tr>
-                                                <th>ACTIVITY</th>
-                                                <th>INTENT</th>   
+                                                <th width="40%">ACTIVITY</th>
+                                                <th width="60%">INTENT</th>   
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -383,15 +364,16 @@
                                       {% endfor %} 
                                       <br/>
                                    {% endif %}
-                              {% endfor %}
                             </td>
                           </tr>
+                      {% endfor %}
                     </tbody>
                     </table>
       {% endif %}
     {% if app_type not in 'so' %}
+     {% if network_security and 'network_findings' in network_security and network_security.network_findings %}
      <h2><span class="fas">&#xf023;</span>  NETWORK SECURITY</h2>
-     {% if network_security and 'network_summary' in network_security and network_security.network_summary|length > 0 %}
+     {% if 'network_summary' in network_security and network_security.network_summary|length > 0 %}
      <span class="danger">HIGH: </span>
      <h5 class="description-header">{{ network_security.network_summary.high }}</h5> | 
      <span class="warning">WARNING: </span>
@@ -404,14 +386,13 @@
      <table class="basic">
         <thead>
             <tr>
-              <th>NO</th>
-              <th>SCOPE</th>
-              <th>SEVERITY</th>
-              <th>DESCRIPTION</th>
+              <th width="6%">NO</th>
+              <th width="24%">SCOPE</th>
+              <th width="12%">SEVERITY</th>
+              <th width="58%">DESCRIPTION</th>
                     </tr>
                 </thead>
                 <tbody>
-        {% if network_security and 'network_findings' in network_security %}
         {% for item in network_security.network_findings %}
           <tr>
             <td>{{ forloop.counter }}</td>
@@ -436,12 +417,13 @@
             </td>
             </tr>
           {% endfor %}
-          {% endif %}
         </tbody>
         </table>
+     {% endif %}
        
+      {% if certificate_analysis and 'certificate_findings' in certificate_analysis and certificate_analysis.certificate_findings %}
       <h2><span class="fas">&#xf2c2;</span>  CERTIFICATE ANALYSIS</h2>
-      {% if certificate_analysis and 'certificate_summary' in certificate_analysis and certificate_analysis.certificate_summary|length > 0 %}
+      {% if 'certificate_summary' in certificate_analysis and certificate_analysis.certificate_summary|length > 0 %}
       <span class="danger">HIGH: </span>
       <h5 class="description-header">{{ certificate_analysis.certificate_summary.high }}</h5> | 
       <span class="warning">WARNING: </span>
@@ -452,13 +434,12 @@
       <table class="basic">
         <thead>
             <tr>
-                <th>TITLE</th>
-                <th>SEVERITY</th>
-                <th>DESCRIPTION</th>
+                <th width="30%">TITLE</th>
+                <th width="12%">SEVERITY</th>
+                <th width="58%">DESCRIPTION</th>
             </tr>
         </thead>
         <tbody>
-          {% if certificate_analysis and 'certificate_findings' in certificate_analysis %}
             {% for find in certificate_analysis.certificate_findings %}
             <tr>
             <td>{{ find.2 }}</td>
@@ -476,12 +457,13 @@
             <td>{{ find.1 }}</td>
             </tr>
             {% endfor %}
-          {% endif %}
         </tbody>
     </table>
+      {% endif %}
    
+    {% if manifest_analysis and 'manifest_findings' in manifest_analysis and manifest_analysis.manifest_findings %}
     <h2><span class="fas">&#xf002;</span>  MANIFEST ANALYSIS</h2>
-    {% if manifest_analysis and 'manifest_summary' in manifest_analysis and manifest_analysis.manifest_summary|length > 0 %}
+    {% if 'manifest_summary' in manifest_analysis and manifest_analysis.manifest_summary|length > 0 %}
     <span class="danger">HIGH: </span>
     <h5 class="description-header">{{ manifest_analysis.manifest_summary.high }}</h5> | 
     <span class="warning">WARNING: </span>
@@ -494,14 +476,13 @@
      <table class="basic">
                     <thead>
                         <tr>
-                            <th>NO</th>
-                            <th>ISSUE</th>
-                            <th>SEVERITY</th>
-												    <th>DESCRIPTION</th>
+                            <th width="6%">NO</th>
+                            <th width="32%">ISSUE</th>
+                            <th width="12%">SEVERITY</th>
+                            <th width="50%">DESCRIPTION</th>
                                 </tr>
                             </thead>
                             <tbody>
-                    {% if manifest_analysis and 'manifest_findings' in manifest_analysis %}
                     {% for item in manifest_analysis.manifest_findings %}
                     <tr>
                       <td>{{ forloop.counter }}</td>
@@ -525,13 +506,14 @@
  
                      </tr>
                      {% endfor %}
-                     {% endif %}
 
 										</tbody>
 										</table>
+    {% endif %}
                    
+      {% if code_analysis and 'findings' in code_analysis and code_analysis.findings %}
       <h2><span class="fas">&#xf121;</span>  CODE ANALYSIS</h2>
-      {% if code_analysis and 'summary' in code_analysis and code_analysis.summary|length > 0 %}
+      {% if 'summary' in code_analysis and code_analysis.summary|length > 0 %}
       <span class="danger">HIGH: </span>
       <h5 class="description-header">{{ code_analysis.summary.high }}</h5> | 
       <span class="warning">WARNING: </span>
@@ -546,19 +528,18 @@
        <table class="basic">
                 <thead>
                     <tr>
-                        <th>NO</th>
-                        <th>ISSUE</th>
-                        <th>SEVERITY</th>
-                        <th>STANDARDS</th>
-                        <th>FILES</th>
+                        <th width="6%">NO</th>
+                        <th width="32%">ISSUE</th>
+                        <th width="10%">SEVERITY</th>
+                        <th width="22%">STANDARDS</th>
+                        <th width="30%">FILES</th>
                     </tr>
                 </thead>
                 <tbody>
-                   {% if code_analysis and 'findings' in code_analysis %}
                    {% for rule, details in code_analysis.findings.items %}
                   <tr>
                   <td>{{ forloop.counter }}</td>
-                  <td width="25%">
+                  <td>
                     {% if details.metadata|key:"ref" %}
                     <a href="{{details.metadata.ref}}" target="_blank" rel="noopener"> {{ details.metadata.description }}</a>
                     {% else %}
@@ -603,9 +584,9 @@
                   </td>
                 </tr>    
               {% endfor %} 
-              {% endif %}
           </tbody>
           </table>
+      {% endif %}
     {% endif %}
             
      {% if binary_analysis  %}
@@ -614,26 +595,23 @@
         <table class="basic">
                     <thead>
                       <tr>
-                        <th>NO</th>
-                        <th>SHARED OBJECT</th>
-                        <th>NX</th>
-                        <th>PIE</th>
-                        <th>STACK CANARY</th>
-                        <th>RELRO</th>
-                        <th>RPATH</th>
-                        <th>RUNPATH</th>
-                        <th>FORTIFY</th>
-                        <th>SYMBOLS STRIPPED</th>
+                        <th width="4%">NO</th>
+                        <th width="16%">SHARED OBJECT</th>
+                        <th width="10%">NX</th>
+                        <th width="10%">PIE</th>
+                        <th width="10%">STACK CANARY</th>
+                        <th width="10%">RELRO</th>
+                        <th width="10%">RPATH</th>
+                        <th width="10%">RUNPATH</th>
+                        <th width="10%">FORTIFY</th>
+                        <th width="10%">SYMBOLS STRIPPED</th>
                      </tr>
                     </thead>
                     <tbody>
-                      {% if not binary_analysis %}
-                        No Shared Objects found.
-                      {% endif %}
                        {% for so in binary_analysis %}
                        <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td width="20%">{{so.name | relative_path}}</td>
+                        <td>{{so.name | relative_path}}</td>
                         <td style="vertical-align: top;"><b>{{so.nx.is_nx}}</b>
                           <br/>
                           <span class="{% if so.nx.severity == 'high' %}danger{% elif so.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.nx.severity}}</span>
@@ -671,16 +649,16 @@
                   </tbody>
                     </table>
     {% endif %}
-    {% if app_type not in 'so' %}
+    {% if app_type not in 'so' and niap_analysis %}
     <h2><span class="fas">&#xf2c1;</span>  NIAP ANALYSIS v1.3</h2>
     <table class="basic">
               <thead>
                   <tr>
-                    <th>NO</th>
-                    <th>IDENTIFIER</th>
-                    <th>REQUIREMENT</th>
-                    <th>FEATURE</th>
-                    <th>DESCRIPTION</th>
+                    <th width="6%">NO</th>
+                    <th width="14%">IDENTIFIER</th>
+                    <th width="20%">REQUIREMENT</th>
+                    <th width="30%">FEATURE</th>
+                    <th width="30%">DESCRIPTION</th>
                 </tr>
               </thead>
               <tbody>
@@ -710,17 +688,17 @@
     <table class="basic">
       <thead>
         <tr>
-          <th>RULE ID</th>
-          <th>BEHAVIOUR</th>
-          <th>LABEL</th>
-          <th>FILES</th>
+          <th width="10%">RULE ID</th>
+          <th width="30%">BEHAVIOUR</th>
+          <th width="20%">LABEL</th>
+          <th width="40%">FILES</th>
       </tr>
       </thead>
       <tbody>
           {% for rule, details in behaviour.items %}
           <tr>
           <td>{{ rule }}</td>
-          <td width="25%">
+          <td>
             {{ details.metadata.description }}
           </td>
           <td> {% for lbl in details.metadata.label %} 
@@ -744,9 +722,9 @@
         <table class="basic">
               <thead>
               <tr>
-                <th>TITLE</th>
-                <th>SEVERITY</th>
-                <th>DESCRIPTION</th>
+                <th width="30%">TITLE</th>
+                <th width="15%">SEVERITY</th>
+                <th width="55%">DESCRIPTION</th>
               </tr>
             </thead>
         <tbody>
@@ -774,25 +752,25 @@
     {% if malware_permissions %}
     <h2><span class="fas">&#xf2a1;</span>  ABUSED PERMISSIONS</h2>
 
-    <table id="table_ofac" class="table table-bordered table-hover table-striped">
+    <table id="table_ofac" class="basic">
       <thead>
       <tr>
-         <th>TYPE</th>
-         <th>MATCHES</th>
-         <th>PERMISSIONS</th>
+         <th width="25%">TYPE</th>
+         <th width="15%">MATCHES</th>
+         <th width="60%">PERMISSIONS</th>
       </tr>
      </thead>
      <tbody>
       <tr>
         <td>Malware Permissions</td>
-        <td>{{ malware_permissions.top_malware_permissions | length}}</b>/{{malware_permissions.total_malware_permissions}}</td>
+        <td>{{ malware_permissions.top_malware_permissions | length}}/{{malware_permissions.total_malware_permissions}}</td>
         <td>
           {{ malware_permissions.top_malware_permissions | join:", "}}
       </td>
       </tr>
       <tr>
         <td>Other Common Permissions</td>
-        <td>{{ malware_permissions.other_abused_permissions | length}}</b>/{{malware_permissions.total_other_permissions}}</td>
+        <td>{{ malware_permissions.other_abused_permissions | length}}/{{malware_permissions.total_other_permissions}}</td>
         <td>
           {{ malware_permissions.other_abused_permissions | join:", "}}
       </td>
@@ -812,11 +790,11 @@
       {% if domains  %}
       <h2><span class="fas">&#xf12a;</span>  OFAC SANCTIONED COUNTRIES</h2>
       <p>This app may communicate with the following OFAC sanctioned list of countries.</p>
-      <table id="table_ofac" class="table table-bordered table-hover table-striped">
+      <table id="table_ofac" class="basic">
            <thead>
            <tr>
-              <th>DOMAIN</th>
-              <th>COUNTRY/REGION</th>
+              <th width="40%">DOMAIN</th>
+              <th width="60%">COUNTRY/REGION</th>
            </tr>
           </thead>
           <tbody>
@@ -836,12 +814,12 @@
      </table>
 
       <h2><span class="fab">&#xf3eb;</span>  DOMAIN MALWARE CHECK</h2>
-         <table  class="basic">
+         <table class="basic">
                   <thead>
                   <tr>
-                     <th>DOMAIN</th>
-                     <th>STATUS</th>
-                     <th>GEOLOCATION</th>
+                     <th width="35%">DOMAIN</th>
+                     <th width="15%">STATUS</th>
+                     <th width="50%">GEOLOCATION</th>
                   </tr>
                  </thead>
                  <tbody>
@@ -885,8 +863,8 @@
       <table class="basic">
                   <thead>
                   <tr>
-                     <th>URL</th>
-                     <th>FILE</th>
+                     <th width="65%">URL</th>
+                     <th width="35%">FILE</th>
                   </tr>
                  </thead>
                   <tbody>
@@ -911,8 +889,8 @@
           <table class="basic">
                   <thead>
                   <tr>
-                     <th>EMAIL</th>
-                     <th>FILE</th>
+                     <th width="50%">EMAIL</th>
+                     <th width="50%">FILE</th>
                   </tr>
                  </thead>
                   <tbody>
@@ -939,9 +917,9 @@
        <table class="basic">
             <thead>
                 <tr>
-                    <th>TRACKER</th>
-                    <th>CATEGORIES</th>
-                    <th>URL</th>
+                    <th width="30%">TRACKER</th>
+                    <th width="30%">CATEGORIES</th>
+                    <th width="40%">URL</th>
                 </tr>
             </thead>
           
@@ -968,7 +946,7 @@
             <table class="basic">
                     <thead>
                     <tr>
-                      <th>POSSIBLE SECRETS</th>
+                      <th width="100%">POSSIBLE SECRETS</th>
                     </tr>
                   </thead>
                     <tbody>
@@ -990,7 +968,7 @@
                     <tbody>
                     {% for val in file_analysis %}
                       <tr>
-                        <td style="word-break:break-all;">
+                        <td width="100%" style="word-break:break-all;">
                         {{ val }}
                           </td>
                       </tr>
@@ -1048,11 +1026,13 @@
        {% endif %}
        <h2><span class="fas">&#xf03a;</span>  SCAN LOGS</h2>
     <table id="scan_logs" class="basic">
+      <thead>
       <tr>
-          <th>Timestamp</th>
-          <th>Event</th>
-          <th>Error</th>
+          <th width="25%">Timestamp</th>
+          <th width="55%">Event</th>
+          <th width="20%">Error</th>
       </tr>
+      </thead>
   <tbody>
     {% for log in logs %}
     <tr>

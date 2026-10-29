@@ -33,7 +33,6 @@
         <img src="{{base_url}}{% static "img/mobsf_logo.png" %}" class="center logo" alt="MobSF Logo"/>
         <div class="htext">IOS STATIC ANALYSIS REPORT </div>
       </div>
-      <br/><br/><br/>
       
      <div class="app">
       {% if app_type not in 'Dylib,A' %}
@@ -45,12 +44,11 @@
       <div class="center">
         <h1><span class="fab">&#xf179;</span>  {{ app_name }} {% if app_version %} ({{app_version}}) {% endif %}</h1>
       </div>
-     <br/><br/><br/><br/><br/>
       <div class="container">
       <table class="basic no_border">
       <tr class="no_border">
-        <td class="no_border"><h3>File Name:</h3></td>
-        <td class="no_border"><h3>{{file_name}}</h3></td>
+        <td width="30%" class="no_border"><h3>File Name:</h3></td>
+        <td width="70%" class="no_border"><h3>{{file_name}}</h3></td>
       </tr>
       <tr>
         <td class="no_border"><h3>Identifier:</h3></td>
@@ -128,15 +126,14 @@
       {% endif %}
     </table>
 {% if app_type not in 'Dylib,A' %}
-  <div class="page-break"></div>
 <h2><span class="fas">&#xf200;</span>  FINDINGS SEVERITY</h2>
     <table class="basic tbl-white">
       <tr>
-        <th class="td-high"><span class="fas">&#xf188;</span>  HIGH</th>
-        <th class="td-warning"><span class="fas">&#xf071;</span>  MEDIUM</th>
-        <th class="td-info"><span class="fas">&#xf129;</span>  INFO</th>
-        <th class="td-success"><span class="fas">&#xf00c;</span>  SECURE</th>
-        <th class="td-secondary"><span class="fab">&#xf3eb;</span>  HOTSPOT</th>
+        <th width="20%" class="td-high"><span class="fas">&#xf188;</span>  HIGH</th>
+        <th width="20%" class="td-warning"><span class="fas">&#xf071;</span>  MEDIUM</th>
+        <th width="20%" class="td-info"><span class="fas">&#xf129;</span>  INFO</th>
+        <th width="20%" class="td-success"><span class="fas">&#xf00c;</span>  SECURE</th>
+        <th width="20%" class="td-secondary"><span class="fab">&#xf3eb;</span>  HOTSPOT</th>
       </tr>
       <tr>
         <td class="td-high"><h2>{{ appsec.high | length}}</h2></td>
@@ -147,6 +144,7 @@
       </tr>
     </table>
       </div>
+  <div class="page-break"></div>
     </article>
 {% endif %}   
     <article id="contents">
@@ -249,9 +247,9 @@
             </table>
       {% endif %}
 
-       {% if ats_analysis  %}
+      {% if ats_analysis and 'ats_findings' in ats_analysis and ats_analysis.ats_findings %}
       <h2><span class="fas">&#xf023;</span>  APP TRANSPORT SECURITY (ATS)</h2>
-      {% if ats_analysis and 'ats_summary' in ats_analysis and ats_analysis.ats_summary|length > 0 %}
+      {% if 'ats_summary' in ats_analysis and ats_analysis.ats_summary|length > 0 %}
       <span class="danger">HIGH: </span>
       <h5 class="description-header">{{ ats_analysis.ats_summary.high }}</h5> | 
       <span class="warning">WARNING: </span>
@@ -264,19 +262,19 @@
        <table class="basic">
                    <thead>
                       <tr>
-                        <th>NO</th>
-                        <th>ISSUE</th>
-                        <th>SEVERITY</th>
-                        <th>DESCRIPTION</th>
+                        <th width="6%">NO</th>
+                        <th width="32%">ISSUE</th>
+                        <th width="12%">SEVERITY</th>
+                        <th width="50%">DESCRIPTION</th>
                       </tr>
                   </thead>
                   <tbody>
-                    {% if ats_analysis and 'ats_findings' in ats_analysis %}
                       {% for findings in ats_analysis.ats_findings %}
                         <tr>
                           <td>{{ forloop.counter }}</td>
                           <td>
                           {{findings.issue}}
+                          </td>
                           <td>
                             {% if findings.severity == "high" %}
                             <span class="danger"> high</span>
@@ -293,7 +291,6 @@
                           </td>
                         </tr>
                       {% endfor %}
-                    {% endif %}
                   </tbody>
                     </table>
                   
@@ -360,9 +357,9 @@
             {% endif %}
       {% endif %}
       
-      {% if binary_analysis  %}
+      {% if binary_analysis and 'findings' in binary_analysis and binary_analysis.findings %}
       <h2><span class="fas">&#xf121;</span>  {% if app_type not in 'Dylib,A' %}IPA {% endif %}BINARY CODE ANALYSIS</h2>
-      {% if binary_analysis and 'summary' in binary_analysis and binary_analysis.summary|length > 0 %}
+      {% if 'summary' in binary_analysis and binary_analysis.summary|length > 0 %}
       <span class="danger">HIGH: </span>
       <h5 class="description-header">{{ binary_analysis.summary.high }}</h5> | 
       <span class="warning">WARNING: </span>
@@ -377,16 +374,15 @@
        <table class="basic">
                   <thead>
                       <tr>
-                          <th>NO</th>
-                          <th>ISSUE</th>
-                          <th>SEVERITY</th>
-                          <th>STANDARDS</th>
-                          <th>DESCRIPTION</th>
+                          <th width="6%">NO</th>
+                          <th width="26%">ISSUE</th>
+                          <th width="10%">SEVERITY</th>
+                          <th width="20%">STANDARDS</th>
+                          <th width="38%">DESCRIPTION</th>
 
                       </tr>
                   </thead>
                      <tbody>
-                   {% if binary_analysis and 'findings' in binary_analysis %}
                    {% for issue, details in binary_analysis.findings.items %}
                     <tr>
                       <td>{{ forloop.counter }}</td>
@@ -427,7 +423,6 @@
                       </td>
                     </tr>
                     {% endfor %}
-                    {% endif %}
                  </tbody>
                     </table>
                
@@ -697,9 +692,9 @@
 
 
     {% if app_type not in 'Dylib,A' %}
-    {% if code_analysis  %}
+    {% if code_analysis and 'findings' in code_analysis and code_analysis.findings %}
       <h2><span class="fas">&#xf121;</span>  CODE ANALYSIS</h2>
-      {% if code_analysis and 'summary' in code_analysis and code_analysis.summary|length > 0 %}
+      {% if 'summary' in code_analysis and code_analysis.summary|length > 0 %}
       <span class="danger">HIGH: </span>
       <h5 class="description-header">{{ code_analysis.summary.high }}</h5> | 
       <span class="warning">WARNING: </span>
@@ -714,19 +709,18 @@
        <table class="basic">
                 <thead>
                     <tr>
-                        <th>NO</th>
-                        <th>ISSUE</th>
-                        <th>SEVERITY</th>
-                        <th>STANDARDS</th>
-                        <th>FILES</th>
+                        <th width="6%">NO</th>
+                        <th width="32%">ISSUE</th>
+                        <th width="10%">SEVERITY</th>
+                        <th width="22%">STANDARDS</th>
+                        <th width="30%">FILES</th>
                     </tr>
                 </thead>
                 <tbody>
-                  {% if code_analysis and 'findings' in code_analysis %}
 									 {% for rule, details in code_analysis.findings.items %}
                   <tr>
                   <td>{{ forloop.counter }}</td>
-                  <td width="25%">
+                  <td>
                     {% if details.metadata|key:"ref" %}
                     <a href="{{details.metadata.ref}}" target="_blank" rel="noopener"> {{ details.metadata.description }}</a>
                     {% else %}
@@ -770,7 +764,6 @@
                   </td>
                 </tr>    
               {% endfor %}
-              {% endif %}
               </tbody>
               </table>
                    
@@ -811,11 +804,11 @@
 
       <h2><span class="fas">&#xf12a;</span>  OFAC SANCTIONED COUNTRIES</h2>
       <p>This app may communicate with the following OFAC sanctioned list of countries.</p>
-      <table id="table_ofac" class="table table-bordered table-hover table-striped">
+      <table id="table_ofac" class="basic">
            <thead>
            <tr>
-              <th>DOMAIN</th>
-              <th>COUNTRY/REGION</th>
+              <th width="40%">DOMAIN</th>
+              <th width="60%">COUNTRY/REGION</th>
            </tr>
           </thead>
           <tbody>
@@ -835,12 +828,12 @@
      </table>
      
       <h2><span class="fab">&#xf3eb;</span>  DOMAIN MALWARE CHECK</h2>
-         <table  class="basic">
+         <table class="basic">
                   <thead>
                   <tr>
-                     <th>DOMAIN</th>
-                     <th>STATUS</th>
-                     <th>GEOLOCATION</th>
+                     <th width="35%">DOMAIN</th>
+                     <th width="15%">STATUS</th>
+                     <th width="50%">GEOLOCATION</th>
                   </tr>
                  </thead>
                  <tbody>
@@ -911,8 +904,8 @@
           <table class="basic">
                   <thead>
                   <tr>
-                     <th>EMAIL</th>
-                     <th>FILE</th>
+                     <th width="50%">EMAIL</th>
+                     <th width="50%">FILE</th>
                   </tr>
                  </thead>
                   <tbody>
@@ -938,9 +931,9 @@
        <table class="basic">
             <thead>
                 <tr>
-                    <th>TRACKER</th>
-                    <th>CATEGORIES</th>
-                    <th>URL</th>
+                    <th width="30%">TRACKER</th>
+                    <th width="30%">CATEGORIES</th>
+                    <th width="40%">URL</th>
                 </tr>
             </thead>
           
@@ -967,7 +960,7 @@
           <table class="basic">
                   <thead>
                   <tr>
-                    <th>POSSIBLE SECRETS</th>
+                    <th width="100%">POSSIBLE SECRETS</th>
                   </tr>
                 </thead>
                   <tbody>
@@ -989,7 +982,7 @@
                 <tbody>
                 {% for val in file_analysis %}
                   <tr>
-                    <td style="word-break:break-all;">
+                    <td width="100%" style="word-break:break-all;">
                     {{ val }}
                       </td>
                   </tr>
@@ -1050,11 +1043,13 @@
     {% endif %}
     <h2><span class="fas">&#xf03a;</span>  SCAN LOGS</h2>
     <table id="scan_logs" class="basic">
+      <thead>
       <tr>
-          <th>Timestamp</th>
-          <th>Event</th>
-          <th>Error</th>
+          <th width="25%">Timestamp</th>
+          <th width="55%">Event</th>
+          <th width="20%">Error</th>
       </tr>
+      </thead>
   <tbody>
     {% for log in logs %}
     <tr>

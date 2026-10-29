@@ -33,19 +33,17 @@
         <img src="{{base_url}}{% static "img/mobsf_logo.png" %}" class="center logo" alt="MobSF Logo"/>
         <div class="htext">WINDOWS STATIC ANALYSIS REPORT </div>
       </div>
-      <br/><br/><br/>
      <div class="app">
       <img class="center" id="icon" src="{{base_url}}{% static 'img/no_icon.png' %}" alt="app_icon"/>
      </div>
       <div class="center">
         <h1><span class="fab">&#xf17a;</span>  {{ app_name }} {% if app_version %} ({{app_version}}) {% endif %}</h1>
       </div>
-     <br/><br/><br/><br/><br/>
       <div class="container">
       <table class="basic no_border">
       <tr class="no_border">
-        <td class="no_border"><h3>File Name:</h3></td>
-        <td class="no_border"><h3>{{file_name}}</h3></td>
+        <td width="30%" class="no_border"><h3>File Name:</h3></td>
+        <td width="70%" class="no_border"><h3>{{file_name}}</h3></td>
       </tr>
       <tr>
         <td class="no_border"><h3>Publisher:</h3></td>
@@ -133,10 +131,10 @@
        <table class="basic">
                   <thead>
                       <tr>
-                          <th>ISSUE</th>
-                          <th>STATUS</th>
-                          <th>DESCRIPTION</th>
-                          <th>INFO</th>
+                          <th width="25%">ISSUE</th>
+                          <th width="15%">STATUS</th>
+                          <th width="40%">DESCRIPTION</th>
+                          <th width="20%">INFO</th>
 
                       </tr>
                   </thead>
@@ -146,16 +144,14 @@
                         <td>{{ result.rule_id }}</td>
                         <td>
                           {% if result.status == "Insecure" %}
-                            <span class='danger'>
+                            <span class='danger'>{{ result.status }}</span>
+                          {% elif result.status == "Secure" %}
+                            <span class='success'>{{ result.status }}</span>
+                          {% elif result.status == "Info" %}
+                            <span class='info'>{{ result.status }}</span>
+                          {% else %}
+                            {{ result.status }}
                           {% endif %}
-                          {% if result.status == "Secure" %}
-                            <span class='success'>
-                          {% endif %}
-                          {% if result.status == "Info" %}
-                            <span class='info'>
-                          {% endif %}
-                              {{ result.status }}
-                          </span>
                         </td>
                         <td>{{ result.desc }}</td>
                         <td>{{ result.info }}</td>
@@ -170,7 +166,7 @@
                         </span>
                       </td>
                       <td>{{ warn.desc }}</td>
-                      <td>{{ warn.info }}
+                      <td>{{ warn.info }}</td>
                     </tr>
                     {% endfor %}
                     </tbody>
@@ -178,11 +174,13 @@
 
                     <h2><span class="fas">&#xf03a;</span>  SCAN LOGS</h2>
                     <table id="scan_logs" class="basic">
+                      <thead>
                       <tr>
-                          <th>Timestamp</th>
-                          <th>Event</th>
-                          <th>Error</th>
+                          <th width="25%">Timestamp</th>
+                          <th width="55%">Event</th>
+                          <th width="20%">Error</th>
                       </tr>
+                      </thead>
                   <tbody>
                     {% for log in logs %}
                     <tr>
