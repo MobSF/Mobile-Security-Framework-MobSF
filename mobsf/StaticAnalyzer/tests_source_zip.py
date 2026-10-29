@@ -44,31 +44,50 @@ class SourceZipTypeTests(SimpleTestCase):
     def test_flutter_project_at_zip_root(self):
         with tempfile.TemporaryDirectory() as tmp:
             self._tree(tmp, FLUTTER_PROJECT)
-            self.assertEqual(self._check(tmp), ('studio', True))
             root = Path(tmp)
+            pro, valid, src = self._check(tmp)
+            self.assertEqual((pro, valid), ('studio', True))
+            # The android/ module is scanned in place; nothing is moved.
+            self.assertEqual(src, root / 'android')
             self.assertTrue(
-                (root / 'app/src/main/AndroidManifest.xml').is_file())
-            # Files already at the root are kept, not overwritten
+                (src / 'app/src/main/AndroidManifest.xml').is_file())
+            self.assertTrue((root / 'lib/main.dart').is_file())
             self.assertEqual((root / '.gitignore').read_text(),
                              'flutter-ignore\n')
-            self.assertTrue((root / 'lib/main.dart').is_file())
 
     def test_flutter_project_wrapped_in_folder(self):
         with tempfile.TemporaryDirectory() as tmp:
             self._tree(Path(tmp) / 'demo', FLUTTER_PROJECT)
-            self.assertEqual(self._check(tmp), ('studio', True))
+            pro, valid, src = self._check(tmp)
+            self.assertEqual((pro, valid), ('studio', True))
+            self.assertEqual(src, Path(tmp) / 'demo' / 'android')
             self.assertTrue(
-                (Path(tmp) / 'app/src/main/AndroidManifest.xml').is_file())
+                (src / 'app/src/main/AndroidManifest.xml').is_file())
+
+    def test_flutter_project_wrapped_in_app_folder(self):
+        # A wrapper literally named "app" is harmless with no moving.
+        with tempfile.TemporaryDirectory() as tmp:
+            self._tree(Path(tmp) / 'app', FLUTTER_PROJECT)
+            pro, valid, src = self._check(tmp)
+            self.assertEqual((pro, valid), ('studio', True))
+            self.assertEqual(src, Path(tmp) / 'app' / 'android')
+            self.assertTrue(
+                (src / 'app/src/main/AndroidManifest.xml').is_file())
 
     def test_studio_project_at_root(self):
         with tempfile.TemporaryDirectory() as tmp:
             self._tree(tmp, STUDIO_PROJECT)
-            self.assertEqual(self._check(tmp), ('studio', True))
+            pro, valid, src = self._check(tmp)
+            self.assertEqual((pro, valid), ('studio', True))
+            self.assertEqual(src, Path(tmp))
 
     def test_studio_project_one_level_down(self):
         with tempfile.TemporaryDirectory() as tmp:
             self._tree(Path(tmp) / 'MyApp', STUDIO_PROJECT)
-            self.assertEqual(self._check(tmp), ('studio', True))
+            pro, valid, src = self._check(tmp)
+            self.assertEqual((pro, valid), ('studio', True))
+            # Wrapped non-Flutter Android sources are still moved to the root.
+            self.assertEqual(src, Path(tmp))
             self.assertTrue(
                 (Path(tmp) / 'app/src/main/AndroidManifest.xml').is_file())
             self.assertEqual((Path(tmp) / '.gitignore').read_text(),
@@ -77,4 +96,5 @@ class SourceZipTypeTests(SimpleTestCase):
     def test_unsupported_zip(self):
         with tempfile.TemporaryDirectory() as tmp:
             self._tree(tmp, {'README.md': 'x'})
-            self.assertEqual(self._check(tmp), ('', False))
+            pro, valid, _src = self._check(tmp)
+            self.assertEqual((pro, valid), ('', False))

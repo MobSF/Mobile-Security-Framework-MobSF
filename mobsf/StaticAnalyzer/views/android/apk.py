@@ -396,7 +396,7 @@ def src_analysis(request, app_dic, rescan, api):
             app_dic['app_path'],
             app_dic['app_dir'])
         # Check if Valid Directory Structure and get ZIP Type
-        pro_type, valid = valid_source_code(
+        pro_type, valid, src_dir = valid_source_code(
             checksum,
             app_dic['app_dir'])
         msg = f'Source code type - {pro_type}'
@@ -416,6 +416,9 @@ def src_analysis(request, app_dic, rescan, api):
                 'Permission Denied',
                 False)
         if valid and (pro_type in ['eclipse', 'studio']):
+            # For a Flutter project this points at the standard android/
+            # module; for other sources it is unchanged.
+            app_dic['app_dir'] = src_dir.as_posix().rstrip('/') + '/'
             if settings.ASYNC_ANALYSIS:
                 return async_analysis(
                     checksum,
@@ -460,32 +463,39 @@ def is_android_source(app_path):
 
 
 def move_to_parent(inside_path, app_path):
-    """Move contents of inside to app dir.
-
-    Files already present in app dir are kept: a Flutter project has a
-    .gitignore both at its root and in android/.
-    """
+    """Move contents of inside to app dir."""
     for item in inside_path.iterdir():
-        target = app_path / item.name
-        if (is_pipe_or_link(item) or target.exists()
-                or target.is_symlink()):
-            continue
-        shutil.move(str(item), str(target))
+        shutil.move(str(item), str(app_path))
     shutil.rmtree(inside_path)
 
 
-def flutter_android_dir(app_path):
-    """Return the android/ dir of a Flutter project at or below app_path."""
-    candidates = [app_path] + [
-        d for d in app_path.iterdir()
-        if d.is_dir() and not is_pipe_or_link(d)]
+def flutter_project_root(app_path):
+    """Return the Flutter project root (app_path or one level down), or None.
+
+    A Flutter project has a pubspec.yaml at its root and the Android app as a
+    Gradle/Studio project in android/.
+    """
+    candidates = [app_path]
+    for d in app_path.iterdir():
+        if d.is_dir() and not is_pipe_or_link(d):
+            candidates.append(d)
     for candidate in candidates:
         android = candidate / 'android'
         if ((candidate / 'pubspec.yaml').is_file()
                 and not is_pipe_or_link(android)
                 and is_android_source(android)[0]):
-            return android
+            return candidate
     return None
+
+
+def flutter_android_source(app_path):
+    """Return the Android module dir of a Flutter project, or None.
+
+    Detected by the standard Flutter layout, like the Eclipse/Studio/iOS
+    source types; the android/ module is scanned in place, no files moved.
+    """
+    root = flutter_project_root(app_path)
+    return root / 'android' if root else None
 
 
 def valid_source_code(checksum, app_dir):
@@ -499,7 +509,12 @@ def valid_source_code(checksum, app_dir):
         ide, is_and = is_android_source(app_path)
 
         if ide:
-            return ide, is_and
+            return ide, is_and, app_path
+
+        # Flutter project: scan its android/ module in place (no move).
+        android = flutter_android_source(app_path)
+        if android:
+            return 'studio', True, android
 
         # Relaxed Android Source check, one level down
         for subdir in app_path.iterdir():
@@ -507,28 +522,22 @@ def valid_source_code(checksum, app_dir):
                 ide, is_and = is_android_source(subdir)
                 if ide:
                     move_to_parent(subdir, app_path)
-                    return ide, is_and
-
-        # Flutter project, Android app in <project>/android
-        android = flutter_android_dir(app_path)
-        if android:
-            ide, is_and = is_android_source(android)
-            move_to_parent(android, app_path)
-            return ide, is_and
+                    return ide, is_and, app_path
 
         # iOS Source
         xcode = [f for f in app_path.iterdir() if f.suffix == '.xcodeproj']
         if xcode:
-            return 'ios', True
+            return 'ios', True, app_path
 
         # Relaxed iOS Source Check
         for subdir in app_path.iterdir():
             if subdir.is_dir() and subdir.exists():
                 if any(f.suffix == '.xcodeproj' for f in subdir.iterdir()):
-                    return 'ios', True
+                    return 'ios', True, app_path
 
-        return '', False
+        return '', False, app_path
     except Exception as exp:
         msg = 'Error identifying source code type from zip'
         logger.exception(msg)
         append_scan_status(checksum, msg, repr(exp))
+        return '', False, Path(app_dir)
