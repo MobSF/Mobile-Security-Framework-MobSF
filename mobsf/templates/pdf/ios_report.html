@@ -6,29 +6,25 @@
     <meta charset="utf-8">
     <title>MobSF Static Analysis Report</title>
     <meta name="description" content="MobSF Report">
-    <style>
-    
-      /* latin */
+        <style>
       @font-face {
         font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 400;
-        font-display: swap;
-        src: local('Open Sans Regular'), local('OpenSans-Regular'), url('{{base_url}}{% static 'fonts/Open_Sans/OpenSans-Regular.ttf' %}') format('truetype');
+        src: url('{{base_url}}{% static 'fonts/Open_Sans/OpenSans-Regular.ttf' %}');
       }
-
-      /* latin */
       @font-face {
         font-family: 'Oswald';
-        font-style: normal;
-        font-weight: 400;
-        font-display: swap;
-        src: local('Oswald'), local('Oswald'), url('{{base_url}}{% static 'fonts/Oswald/Oswald-Regular.ttf' %}') format('truetype');
+        src: url('{{base_url}}{% static 'fonts/Oswald/Oswald-Regular.ttf' %}');
       }
-     
-  </style>
-  <link rel="stylesheet" href="{{base_url}}{% static "others/css/pdf_report.css" %}">
-  <link rel="stylesheet" href="{{base_url}}{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
+      @font-face {
+        font-family: 'FontAwesomeSolid';
+        src: url('{{base_url}}{% static 'adminlte/plugins/fontawesome-free/webfonts/fa-solid-900.ttf' %}');
+      }
+      @font-face {
+        font-family: 'FontAwesomeBrands';
+        src: url('{{base_url}}{% static 'adminlte/plugins/fontawesome-free/webfonts/fa-brands-400.ttf' %}');
+      }
+    </style>
+    <link rel="stylesheet" href="{{base_url}}{% static "others/css/pdf_report.css" %}">
 </head>
 
   <body bgcolor="FFFFFF">
@@ -37,19 +33,19 @@
         <img src="{{base_url}}{% static "img/mobsf_logo.png" %}" class="center logo" alt="MobSF Logo"/>
         <div class="htext">IOS STATIC ANALYSIS REPORT </div>
       </div>
-      </br></br></br>
+      <br/><br/><br/>
       
      <div class="app">
       {% if app_type not in 'Dylib,A' %}
-      <img class="center" id="icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_path %}{{dwd_dir}}{{ icon_path }}{% else %}{{base_url}}{% static 'img/no_icon.png' %}{% endif %}" alt="app_icon"/>
+      <img class="center" id="icon" src="{% if icon_path %}{{dwd_dir}}{{ icon_path }}{% else %}{{base_url}}{% static 'img/no_icon.png' %}{% endif %}" alt="app_icon"/>
       {% else %}
       <img class="center" id="icon" src="{{base_url}}{% static 'img/no_icon.png' %}" alt="app_icon"/>
       {% endif %}
     </div>
       <div class="center">
-        <h1><i class="fab fa-apple"></i> {{ app_name }} {% if app_version %} ({{app_version}}) {% endif %}</h1>
+        <h1><span class="fab">&#xf179;</span>  {{ app_name }} {% if app_version %} ({{app_version}}) {% endif %}</h1>
       </div>
-     </br></br></br></br></br>
+     <br/><br/><br/><br/><br/>
       <div class="container">
       <table class="basic no_border">
       <tr class="no_border">
@@ -113,7 +109,7 @@
           #28a745">A
           {% endif %}
           </span>
-        </br>
+        <br/>
         </h3>
         </td>
       </tr>
@@ -132,23 +128,15 @@
       {% endif %}
     </table>
 {% if app_type not in 'Dylib,A' %}
-  </br></br>
-</br></br>
-</br></br>
-</br></br>
-</br></br>
-</br></br>
-</br></br>
-</br></br>
-</br></br>
-    <h2><i class="fas fa-chart-pie mr-1"></i> FINDINGS SEVERITY</h2>
+  <div class="page-break"></div>
+<h2><span class="fas">&#xf200;</span>  FINDINGS SEVERITY</h2>
     <table class="basic tbl-white">
       <tr>
-        <th class="td-high"><i class="fas fa-bug"> </i> HIGH</th>
-        <th class="td-warning"><i class="fas fa-exclamation-triangle"> </i> MEDIUM</th>
-        <th class="td-info"><i class="fas fa-info"> </i> INFO</th>
-        <th class="td-success"><i class="fas fa-check"></i> SECURE</th>
-        <th class="td-secondary"><i class="fab fa-searchengin"></i> HOTSPOT</th>
+        <th class="td-high"><span class="fas">&#xf188;</span>  HIGH</th>
+        <th class="td-warning"><span class="fas">&#xf071;</span>  MEDIUM</th>
+        <th class="td-info"><span class="fas">&#xf129;</span>  INFO</th>
+        <th class="td-success"><span class="fas">&#xf00c;</span>  SECURE</th>
+        <th class="td-secondary"><span class="fab">&#xf3eb;</span>  HOTSPOT</th>
       </tr>
       <tr>
         <td class="td-high"><h2>{{ appsec.high | length}}</h2></td>
@@ -164,39 +152,39 @@
     <article id="contents">
 
       
-      <h2><i class="fas fa-box-open"></i> FILE INFORMATION</h2>
+      <h2><span class="fas">&#xf49e;</span>  FILE INFORMATION</h2>
 
-      <h5>File Name:</h5> {{ file_name }}</br>
-      <h5>Size: </h5> {{ size }}</br>
-      <h5>MD5:</h5> {{ md5 }}</br>
-      <h5>SHA1:</h5> {{ sha1 }}</br>
-      <h5>SHA256:</h5> {{ sha256 }}</br>
+      <h5>File Name:</h5> {{ file_name }}<br/>
+      <h5>Size: </h5> {{ size }}<br/>
+      <h5>MD5:</h5> {{ md5 }}<br/>
+      <h5>SHA1:</h5> {{ sha1 }}<br/>
+      <h5>SHA256:</h5> {{ sha256 }}<br/>
      
 {% if app_type not in 'Dylib,A' %}
-      <h2><i class="fas fa-info"></i> APP INFORMATION</h2>
+      <h2><span class="fas">&#xf129;</span>  APP INFORMATION</h2>
 
-      <h5>App Name:</h5> {{ app_name }}</br>
-      <h5>App Type:</h5> {{ app_type }}</br>
-      <h5>Identifier:</h5> {{ bundle_id }}</br>
-      <h5>SDK Name:</h5> {{ sdk_name }}</br>
-      <h5>Version:</h5> {{ app_version }}</br>
-      <h5>Build:</h5> {{ build }}</br>
-      <h5>Platform Version:</h5> {{ platform }}</br>
-      <h5>Min OS Version:</h5> {{ min_os_version }}</br>
-      <h5>Supported Platforms:</h5> {% for pl in bundle_supported_platforms %} {{pl}}, {% endfor %}</br>
+      <h5>App Name:</h5> {{ app_name }}<br/>
+      <h5>App Type:</h5> {{ app_type }}<br/>
+      <h5>Identifier:</h5> {{ bundle_id }}<br/>
+      <h5>SDK Name:</h5> {{ sdk_name }}<br/>
+      <h5>Version:</h5> {{ app_version }}<br/>
+      <h5>Build:</h5> {{ build }}<br/>
+      <h5>Platform Version:</h5> {{ platform }}<br/>
+      <h5>Min OS Version:</h5> {{ min_os_version }}<br/>
+      <h5>Supported Platforms:</h5> {% for pl in bundle_supported_platforms %} {{pl}}, {% endfor %}<br/>
 {% endif %}
      {% if binary_info %}
-      <h2><i class="fas fa-ad"></i> BINARY INFORMATION </h2>
+      <h2><span class="fas">&#xf641;</span>  BINARY INFORMATION </h2>
 
-      <h5>Arch:</h5> {{ binary_info.arch }}</br>
-      <h5>Sub Arch:</h5> {{ binary_info.subarch }}</br>
-      <h5>Bit:</h5> {{ binary_info.bit }}</br>
-      <h5>Endian:</h5> {{ binary_info.endian }}</br>
+      <h5>Arch:</h5> {{ binary_info.arch }}<br/>
+      <h5>Sub Arch:</h5> {{ binary_info.subarch }}<br/>
+      <h5>Bit:</h5> {{ binary_info.bit }}<br/>
+      <h5>Endian:</h5> {{ binary_info.endian }}<br/>
       
      {% endif %}
 
        {% if bundle_url_types|length > 0 %}
-       <h2><i class="fas fa-hashtag"></i>CUSTOM URL SCHEMES</h2>
+       <h2><span class="fas">&#xf292;</span> CUSTOM URL SCHEMES</h2>
        <table class="basic">
                   <thead>
                       <tr>
@@ -229,7 +217,7 @@
         {% endif %}
 
       {% if permissions %}
-      <h2><i class="fa fa-list"></i> APPLICATION PERMISSIONS</h2>
+      <h2><span class="fas">&#xf03a;</span>  APPLICATION PERMISSIONS</h2>
 
             <table class="basic">
               <thead>
@@ -262,17 +250,17 @@
       {% endif %}
 
        {% if ats_analysis  %}
-      <h2><i class="fas fa-lock"></i> APP TRANSPORT SECURITY (ATS)</h2>
+      <h2><span class="fas">&#xf023;</span>  APP TRANSPORT SECURITY (ATS)</h2>
       {% if ats_analysis and 'ats_summary' in ats_analysis and ats_analysis.ats_summary|length > 0 %}
       <span class="danger">HIGH: </span>
       <h5 class="description-header">{{ ats_analysis.ats_summary.high }}</h5> | 
-      <span class="warning"></i> WARNING: </span>
+      <span class="warning">WARNING: </span>
       <h5 class="description-header">{{ ats_analysis.ats_summary.warning }}</h5> |
       <span class="info">INFO: </span>
       <h5 class="description-header">{{ ats_analysis.ats_summary.info }}</h5> |
       <span class="success">SECURE: </span>
       <h5 class="description-header">{{ ats_analysis.ats_summary.secure }}</h5>
-    {% endif %}</br>
+    {% endif %}<br/>
        <table class="basic">
                    <thead>
                       <tr>
@@ -314,7 +302,7 @@
 {% if app_type not in 'Dylib,A' %} 
 <!--
          {% if file_analysis %}
-      <h2><i class="fa fa-file"></i> FILE ANALYSIS</h2>
+      <h2><span class="fas">&#xf15b;</span>  FILE ANALYSIS</h2>
                 <table class="basic">
                    <thead>
                       <tr>
@@ -343,7 +331,7 @@
 -->
 {% endif %}
         {% if virus_total and virus_total.items|length > 9 and 'request successfully queued' not in virus_total.verbose_msg %}
-       <h2><i class="fas fa-spider"></i> VIRUSTOTAL SCAN</h2>
+       <h2><span class="fas">&#xf717;</span>  VIRUSTOTAL SCAN</h2>
        <p> <h5>{{ virus_total.positives }} / {{ virus_total.total }}</h5> &nbsp; AVs found this file Malicious! </p>
             {% if virus_total.positives %}
           
@@ -373,11 +361,11 @@
       {% endif %}
       
       {% if binary_analysis  %}
-      <h2><i class="fas fa-code"></i> {% if app_type not in 'Dylib,A' %}IPA {% endif %}BINARY CODE ANALYSIS</h2>
+      <h2><span class="fas">&#xf121;</span>  {% if app_type not in 'Dylib,A' %}IPA {% endif %}BINARY CODE ANALYSIS</h2>
       {% if binary_analysis and 'summary' in binary_analysis and binary_analysis.summary|length > 0 %}
       <span class="danger">HIGH: </span>
       <h5 class="description-header">{{ binary_analysis.summary.high }}</h5> | 
-      <span class="warning"></i> WARNING: </span>
+      <span class="warning">WARNING: </span>
       <h5 class="description-header">{{ binary_analysis.summary.warning }}</h5> |
       <span class="info">INFO: </span>
       <h5 class="description-header">{{ binary_analysis.summary.info }}</h5> |
@@ -385,7 +373,7 @@
       <h5 class="description-header">{{ binary_analysis.summary.secure }}</h5> |
       <span class="disabled">SUPPRESSED: </span>
       <h5 class="description-header">{{ binary_analysis.summary.suppressed }}</h5>
-    {% endif %}</br>
+    {% endif %}<br/>
        <table class="basic">
                   <thead>
                       <tr>
@@ -428,11 +416,11 @@
                           {% elif details|key:"cvss" < 4 %}
                           <span class="success">{{ details|key:"cvss" }} (low)</span>
                           {% endif %}
-                          </br>
+                          <br/>
                         {% endif %}
                         {% if details|key:"cwe" %}<h5>CWE: </h5>{{ details|key:"cwe" }}{% endif %}
-                        {% if details|key:"owasp-mobile" %}</br> <h5>OWASP Top 10: </h5>{{ details|key:"owasp-mobile" }}{% endif %}
-                        {% if details|key:"masvs" %}</br> <h5>OWASP MASVS: </h5>{{ details|key:"masvs" }}{% endif %}
+                        {% if details|key:"owasp-mobile" %}<br/> <h5>OWASP Top 10: </h5>{{ details|key:"owasp-mobile" }}{% endif %}
+                        {% if details|key:"masvs" %}<br/> <h5>OWASP MASVS: </h5>{{ details|key:"masvs" }}{% endif %}
                        </td>
                       <td>
                         {{ details|key:"detailed_desc" }}
@@ -445,7 +433,7 @@
                
         {% endif %}
         {% if macho_analysis  %}
-      <h2><i class="fa fa-braille"></i> IPA BINARY ANALYSIS</h2>
+      <h2><span class="fas">&#xf2a1;</span>  IPA BINARY ANALYSIS</h2>
        <table class="basic">
                   <thead>
                     <tr>
@@ -513,7 +501,7 @@
         {% endif %}
   {% if app_type not in 'A' %}
     {% if dylib_analysis or framework_analysis %}
-        <h2><i class="fa fa-flag"></i> DYNAMIC LIBRARY & FRAMEWORK BINARY ANALYSIS</h2>
+        <h2><span class="fas">&#xf024;</span>  DYNAMIC LIBRARY & FRAMEWORK BINARY ANALYSIS</h2>
         <table class="basic">
                 <thead>
                     <tr>
@@ -603,7 +591,7 @@
   {% endif %}
 <!--static library-->
 {% if app_type in 'A' %}
-  <h2><i class="fa fa-flag"></i> STATIC LIBRARY BINARY ANALYSIS</h2>
+  <h2><span class="fas">&#xf024;</span>  STATIC LIBRARY BINARY ANALYSIS</h2>
   {% if binary_info.arch == 'MachO' %}
 
             <table class="basic">
@@ -710,11 +698,11 @@
 
     {% if app_type not in 'Dylib,A' %}
     {% if code_analysis  %}
-      <h2><i class="fas fa-code"></i> CODE ANALYSIS</h2>
+      <h2><span class="fas">&#xf121;</span>  CODE ANALYSIS</h2>
       {% if code_analysis and 'summary' in code_analysis and code_analysis.summary|length > 0 %}
       <span class="danger">HIGH: </span>
       <h5 class="description-header">{{ code_analysis.summary.high }}</h5> | 
-      <span class="warning"></i> WARNING: </span>
+      <span class="warning">WARNING: </span>
       <h5 class="description-header">{{ code_analysis.summary.warning }}</h5> |
       <span class="info">INFO: </span>
       <h5 class="description-header">{{ code_analysis.summary.info }}</h5> |
@@ -722,7 +710,7 @@
       <h5 class="description-header">{{ code_analysis.summary.secure }}</h5> |
       <span class="disabled">SUPPRESSED: </span>
       <h5 class="description-header">{{ code_analysis.summary.suppressed }}</h5>
-    {% endif %}</br>
+    {% endif %}<br/>
        <table class="basic">
                 <thead>
                     <tr>
@@ -768,16 +756,16 @@
                       {% elif details.metadata.cvss < 4 %}
                       <span class="success">{{ details.metadata.cvss }} (low)</span>
                       {% endif %}
-                      </br>
+                      <br/>
                     {% endif %}
                     {% if details.metadata.cwe %}<strong>CWE: </strong>{{details.metadata.cwe }}{% endif %}
-                    {% if details.metadata|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
-                    {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs  }}{% endif %}
+                    {% if details.metadata|key:"owasp-mobile" %}<br/> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
+                    {% if details.metadata.masvs %}<br/> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs  }}{% endif %}
                   </td>
                   <td style="word-break:break-all;">
                   {% for file_path in details.files %}
                    {{ file_path }}
-                  </br>
+                  <br/>
                   {% endfor %}
                   </td>
                 </tr>    
@@ -789,7 +777,7 @@
       {% endif %}
     {% endif %}
     {% if firebase_urls %} 
-    <h2><i class="fas fa-database"></i> FIREBASE DATABASES ANALYSIS</h2>
+    <h2><span class="fas">&#xf1c0;</span>  FIREBASE DATABASES ANALYSIS</h2>
           <table class="basic">
                 <thead>
                 <tr>
@@ -821,7 +809,7 @@
       {% endif %}
       {% if domains  %}
 
-      <h2><i class="fa fa-exclamation"></i> OFAC SANCTIONED COUNTRIES</h2>
+      <h2><span class="fas">&#xf12a;</span>  OFAC SANCTIONED COUNTRIES</h2>
       <p>This app may communicate with the following OFAC sanctioned list of countries.</p>
       <table id="table_ofac" class="table table-bordered table-hover table-striped">
            <thead>
@@ -846,7 +834,7 @@
          </tbody>
      </table>
      
-      <h2><i class="fab fa-searchengin"></i> DOMAIN MALWARE CHECK</h2>
+      <h2><span class="fab">&#xf3eb;</span>  DOMAIN MALWARE CHECK</h2>
          <table  class="basic">
                   <thead>
                   <tr>
@@ -893,7 +881,7 @@
 <!-- Display urls only for dylib files-->
 {% if app_type in 'Dylib,A' %}
        {% if urls %} 
-      <h2><i class="fas fa-globe"></i> URLS </h2>
+      <h2><span class="fas">&#xf0ac;</span>  URLS </h2>
       <table class="basic">
                   <thead>
                   <tr>
@@ -906,7 +894,7 @@
                     <tr>
                        <td style="word-break:break-all;">
                        {% for u in urldict|key:"urls" %}
-                         {{ u }} </br>
+                         {{ u }} <br/>
                        {% endfor %}
                         </td>
                        <td width="35%" style="word-break:break-all;">
@@ -919,7 +907,7 @@
         {% endif %}
 {% endif %}
       {% if emails %}
-      <h2><i class="fas fa-envelope"></i> EMAILS</h2>
+      <h2><span class="fas">&#xf0e0;</span>  EMAILS</h2>
           <table class="basic">
                   <thead>
                   <tr>
@@ -932,7 +920,7 @@
                     <tr>
                        <td style="word-break:break-all;">
                        {% for em in email_dict|key:"emails" %}
-                         {{ em }} </br>
+                         {{ em }} <br/>
                        {% endfor %}
                         </td>
 
@@ -946,7 +934,7 @@
       {% endif %}
 
       {% if trackers|key:"trackers" %}
-      <h2><i class="fas fa-user-secret"></i> TRACKERS</h2>
+      <h2><span class="fas">&#xf21b;</span>  TRACKERS</h2>
        <table class="basic">
             <thead>
                 <tr>
@@ -975,7 +963,7 @@
          {% endif %}
   
     {% if secrets %}
-      <h2><i class="fas fa-key"></i> HARDCODED SECRETS</h2>
+      <h2><span class="fas">&#xf084;</span>  HARDCODED SECRETS</h2>
           <table class="basic">
                   <thead>
                   <tr>
@@ -996,7 +984,7 @@
 
     <!--Only for dylib-->
     {% if app_type in 'Dylib,A' %}
-    <h2><i class="fa fa-th"></i> SYMBOLS</h2>
+    <h2><span class="fas">&#xf00a;</span>  SYMBOLS</h2>
         <table class="basic">
                 <tbody>
                 {% for val in file_analysis %}
@@ -1012,7 +1000,7 @@
 
     {% if app_type not in 'Dylib,A' %}
     {% if not appstore_details.error %}
-    <h2><i class="fab fa-app-store-ios"></i> APP STORE INFORMATION </h2>
+    <h2><span class="fab">&#xf370;</span>  APP STORE INFORMATION </h2>
 
                   <p>                                       
                     <h5>Title:</h5> 
@@ -1034,7 +1022,7 @@
                      {% for cat in appstore_details.category %}
                         {{ cat }}, 
                     {% endfor %}
-                   </br>
+                   <br/>
                     <h5>App Store URL:</h5> 
 		                <a target="_blank" href="{{ appstore_details.itunes_url }}" rel="noopener noreferrer">{{ appstore_details.app_id }} </a>
                 
@@ -1060,7 +1048,7 @@
                   </p>
        {% endif %}
     {% endif %}
-    <h2><i class="fas fa-list"></i> SCAN LOGS</h2>
+    <h2><span class="fas">&#xf03a;</span>  SCAN LOGS</h2>
     <table id="scan_logs" class="basic">
       <tr>
           <th>Timestamp</th>
@@ -1093,7 +1081,7 @@
   </table>
     </article>
     <article id="columns">
-      </br>
+      <br/>
       <hr>
       <h3>Report Generated by - MobSF {{ version }} </h3>
       <section>

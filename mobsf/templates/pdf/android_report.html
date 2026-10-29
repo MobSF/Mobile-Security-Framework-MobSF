@@ -6,28 +6,25 @@
     <meta charset="utf-8">
     <title>MobSF Static Analysis Report</title>
     <meta name="description" content="MobSF Report">
-    <style>
-    
-      /* latin */
+        <style>
       @font-face {
         font-family: 'Open Sans';
-        font-style: normal;
-        font-weight: 400;
-        font-display: swap;
-        src: local('Open Sans Regular'), local('OpenSans-Regular'), url('{{base_url}}{% static 'fonts/Open_Sans/OpenSans-Regular.ttf' %}') format('truetype');
+        src: url('{{base_url}}{% static 'fonts/Open_Sans/OpenSans-Regular.ttf' %}');
       }
-
-      /* latin */
       @font-face {
         font-family: 'Oswald';
-        font-style: normal;
-        font-weight: 400;
-        font-display: swap;
-        src: local('Oswald'), local('Oswald'), url('{{base_url}}{% static 'fonts/Oswald/Oswald-Regular.ttf' %}') format('truetype');
+        src: url('{{base_url}}{% static 'fonts/Oswald/Oswald-Regular.ttf' %}');
       }
-  </style>
-  <link rel="stylesheet" href="{{base_url}}{% static "others/css/pdf_report.css" %}">
-  <link rel="stylesheet" href="{{base_url}}{% static "adminlte/plugins/fontawesome-free/css/all.min.css" %}">
+      @font-face {
+        font-family: 'FontAwesomeSolid';
+        src: url('{{base_url}}{% static 'adminlte/plugins/fontawesome-free/webfonts/fa-solid-900.ttf' %}');
+      }
+      @font-face {
+        font-family: 'FontAwesomeBrands';
+        src: url('{{base_url}}{% static 'adminlte/plugins/fontawesome-free/webfonts/fa-brands-400.ttf' %}');
+      }
+    </style>
+    <link rel="stylesheet" href="{{base_url}}{% static "others/css/pdf_report.css" %}">
   </head>
 
   <body bgcolor="FFFFFF">
@@ -36,14 +33,14 @@
         <img src="{{base_url}}{% static "img/mobsf_logo.png" %}" class="center logo" alt="MobSF Logo"/>
         <div class="htext">ANDROID STATIC ANALYSIS REPORT </div>
       </div>
-      </br></br></br>
+      <br/><br/><br/>
      <div class="app">
       <img class="center" id="icon" src="{% if icon_path %}{{dwd_dir}}{{icon_path}}{% else %}{{base_url}}{% static 'img/no_icon.png' %}{% endif %}" alt="app_icon"/>
      </div>
       <div class="center">
-        <h1><i class="fab fa-android"></i> {% if app_name %}  {{ app_name }}  {% else %} {{ file_name }} {% endif %} {% if version_name %}  ({{version_name}}) {% endif %}</h1>
+        <h1><span class="fab">&#xf17b;</span>  {% if app_name %}  {{ app_name }}  {% else %} {{ file_name }} {% endif %} {% if version_name %}  ({{version_name}}) {% endif %}</h1>
       </div>
-     </br></br></br></br></br>
+     <br/><br/><br/><br/><br/>
       <div class="container">
       <table class="basic no_border">
       <tr class="no_border">
@@ -107,7 +104,7 @@
           #28a745">A
           {% endif %}
           </span>
-        </br>
+        <br/>
         </h3>
         </td>
       </tr>
@@ -127,23 +124,15 @@
     
     </table>
     {% if app_type not in 'so' %}
-  </br></br>
-</br></br>
-</br></br>
-</br></br>
-</br></br>
-</br></br>
-</br></br>
-</br></br>
-</br></br>
-    <h2><i class="fas fa-chart-pie mr-1"></i> FINDINGS SEVERITY</h2>
+  <div class="page-break"></div>
+<h2><span class="fas">&#xf200;</span>  FINDINGS SEVERITY</h2>
     <table class="basic tbl-white">
       <tr>
-        <th class="td-high"><i class="fas fa-bug"> </i> HIGH</th>
-        <th class="td-warning"><i class="fas fa-exclamation-triangle"> </i> MEDIUM</th>
-        <th class="td-info"><i class="fas fa-info"> </i> INFO</th>
-        <th class="td-success"><i class="fas fa-check"></i> SECURE</th>
-        <th class="td-secondary"><i class="fab fa-searchengin"></i> HOTSPOT</th>
+        <th class="td-high"><span class="fas">&#xf188;</span>  HIGH</th>
+        <th class="td-warning"><span class="fas">&#xf071;</span>  MEDIUM</th>
+        <th class="td-info"><span class="fas">&#xf129;</span>  INFO</th>
+        <th class="td-success"><span class="fas">&#xf00c;</span>  SECURE</th>
+        <th class="td-secondary"><span class="fab">&#xf3eb;</span>  HOTSPOT</th>
       </tr>
       <tr>
         <td class="td-high"><h2>{{ appsec.high | length}}</h2></td>
@@ -160,41 +149,41 @@
     <article id="contents">
 
       
-      <h2><i class="fas fa-box-open"></i> FILE INFORMATION</h2>
+      <h2><span class="fas">&#xf49e;</span>  FILE INFORMATION</h2>
 
-      <h5>File Name:</h5> {{ file_name }}</br>
-      <h5>Size: </h5> {{ size }}</br>
-      <h5>MD5:</h5> {{ md5 }}</br>
-      <h5>SHA1:</h5> {{ sha1 }}</br>
-      <h5>SHA256:</h5> {{ sha256 }}</br>
+      <h5>File Name:</h5> {{ file_name }}<br/>
+      <h5>Size: </h5> {{ size }}<br/>
+      <h5>MD5:</h5> {{ md5 }}<br/>
+      <h5>SHA1:</h5> {{ sha1 }}<br/>
+      <h5>SHA256:</h5> {{ sha256 }}<br/>
      
 {% if app_type not in 'so' %}
-      <h2><i class="fas fa-info"></i> APP INFORMATION</h2>
+      <h2><span class="fas">&#xf129;</span>  APP INFORMATION</h2>
 
-      <h5>App Name:</h5> {{ app_name }}</br>
-      <h5>Package Name:</h5> {{ package_name }}</br>
-      <h5>Main Activity:</h5> {{ main_activity }}</br>
-      <h5>Target SDK:</h5> {{ target_sdk }}</br>
-      <h5>Min SDK:</h5> {{ min_sdk }}</br>
-      <h5>Max SDK:</h5> {{ max_sdk }}</br>
-      <h5>Android Version Name:</h5> {{ version_name }}</br>
-      <h5>Android Version Code:</h5> {{ version_code }}</br>
+      <h5>App Name:</h5> {{ app_name }}<br/>
+      <h5>Package Name:</h5> {{ package_name }}<br/>
+      <h5>Main Activity:</h5> {{ main_activity }}<br/>
+      <h5>Target SDK:</h5> {{ target_sdk }}<br/>
+      <h5>Min SDK:</h5> {{ min_sdk }}<br/>
+      <h5>Max SDK:</h5> {{ max_sdk }}<br/>
+      <h5>Android Version Name:</h5> {{ version_name }}<br/>
+      <h5>Android Version Code:</h5> {{ version_code }}<br/>
 {% endif %}
 
 {% if app_type not in 'jar,aar,so,dex' %}
-      <h2><i class="fas fa-th-large"></i> APP COMPONENTS </h2>
+      <h2><span class="fas">&#xf009;</span>  APP COMPONENTS </h2>
 
-        <h5>Activities:</h5> {{ activities | length }}</br>
-        <h5>Services:</h5> {{ services | length }}</br>
-        <h5>Receivers:</h5> {{ receivers | length }}</br>
-        <h5>Providers:</h5> {{ providers | length }}</br>
-        <h5>Exported Activities:</h5> <span {% if exported_count.exported_activities > 0 %} class="danger" {% endif %}> {{ exported_count.exported_activities }}</span></br>
-        <h5>Exported Services:</h5> <span {% if exported_count.exported_services > 0 %} class="danger" {% endif %}> {{ exported_count.exported_services }}</span></br>
-        <h5>Exported Receivers:</h5> <span {% if exported_count.exported_receivers > 0 %} class="danger" {% endif %}> {{ exported_count.exported_receivers }}</span></br>
-        <h5>Exported Providers:</h5> <span {% if exported_count.exported_providers > 0 %} class="danger" {% endif %}> {{ exported_count.exported_providers }}</span></br>
+        <h5>Activities:</h5> {{ activities | length }}<br/>
+        <h5>Services:</h5> {{ services | length }}<br/>
+        <h5>Receivers:</h5> {{ receivers | length }}<br/>
+        <h5>Providers:</h5> {{ providers | length }}<br/>
+        <h5>Exported Activities:</h5> <span {% if exported_count.exported_activities > 0 %} class="danger" {% endif %}> {{ exported_count.exported_activities }}</span><br/>
+        <h5>Exported Services:</h5> <span {% if exported_count.exported_services > 0 %} class="danger" {% endif %}> {{ exported_count.exported_services }}</span><br/>
+        <h5>Exported Receivers:</h5> <span {% if exported_count.exported_receivers > 0 %} class="danger" {% endif %}> {{ exported_count.exported_receivers }}</span><br/>
+        <h5>Exported Providers:</h5> <span {% if exported_count.exported_providers > 0 %} class="danger" {% endif %}> {{ exported_count.exported_providers }}</span><br/>
   {% endif %}
   {% if app_type not in 'so' %}
-        <h2><i class="fa fa-certificate"></i> CERTIFICATE INFORMATION</h2>
+        <h2><span class="fas">&#xf0a3;</span>  CERTIFICATE INFORMATION</h2>
         {% if certificate_analysis.certificate_info %}
         <div class="panel-body">
               <p class="wrapped-text">{{ certificate_analysis.certificate_info }}</p>
@@ -204,7 +193,7 @@
       {% endif %}
   {% endif %}
       {% if permissions %}
-      <h2><i class="fa fa-list"></i> APPLICATION PERMISSIONS</h2>
+      <h2><span class="fas">&#xf03a;</span>  APPLICATION PERMISSIONS</h2>
 
             <table class="basic">
               <thead>
@@ -241,7 +230,7 @@
       {% endif %}
       
        {% if virus_total and virus_total.items|length > 9 and 'request successfully queued' not in virus_total.verbose_msg %}
-       <h2><i class="fas fa-spider"></i> VIRUSTOTAL SCAN</h2>
+       <h2><span class="fas">&#xf717;</span>  VIRUSTOTAL SCAN</h2>
        <p> <h5>{{ virus_total.positives }} / {{ virus_total.total }}</h5> &nbsp; AVs found this file Malicious! </p>
             {% if virus_total.positives %}
           
@@ -270,7 +259,7 @@
             {% endif %}
       {% endif %}
       {% if apkid and app_type not in 'jar,aar'%}
-      <h2><i class="fas fa-fingerprint"></i> APKID ANALYSIS</h2>
+      <h2><span class="fas">&#xf577;</span>  APKID ANALYSIS</h2>
 
        <table class="basic">
                   <thead>
@@ -322,7 +311,7 @@
                                <span class="info">{{detail}}</span>
                                {% endif %}
                             </td>
-                              <td> {% for idn in idens %} {{ idn }}</br> {% endfor %}</td>
+                              <td> {% for idn in idens %} {{ idn }}<br/> {% endfor %}</td>
                             </tr>
                             {% endfor %}
                            </tbody>
@@ -338,7 +327,7 @@
                     </table>
       {% endif %}
       {% if browsable_activities %}
-      <h2><i class="fas fa-clone"></i> BROWSABLE ACTIVITIES</h2>
+      <h2><span class="fas">&#xf24d;</span>  BROWSABLE ACTIVITIES</h2>
        <table class="basic">
                                         <thead>
                                             <tr>
@@ -356,43 +345,43 @@
                                       {% for scheme in intent_details|key:"schemes" %}
                                         {{scheme}},
                                       {% endfor %}
-                                       </br>
+                                       <br/>
                                    {% endif %}
                                    {% if intent_details|key:"hosts" %}
                                       <strong>Hosts:</strong> {% for host in intent_details|key:"hosts" %}
                                         {{host}},
                                       {% endfor %} 
-                                      </br>
+                                      <br/>
                                    {% endif %}
                                    {% if intent_details|key:"ports" %}
                                       <strong>Ports:</strong> {% for port in intent_details|key:"ports" %}
                                         {{port}},
                                       {% endfor %} 
-                                      </br>
+                                      <br/>
                                    {% endif %}
                                    {% if intent_details|key:"mime_types" %}
                                       <strong>Mime Types:</strong> {% for mime in intent_details|key:"mime_types" %}
                                         {{mime}},
                                       {% endfor %} 
-                                      </br>
+                                      <br/>
                                    {% endif %}
                                    {% if intent_details|key:"paths" %}
                                       <strong>Paths:</strong> {% for path in intent_details|key:"paths" %}
                                         {{path}},
                                       {% endfor %} 
-                                      </br>
+                                      <br/>
                                    {% endif %}
                                    {% if intent_details|key:"path_prefixs" %}
                                       <strong>Path Prefixes:</strong> {% for prefix in intent_details|key:"path_prefixs" %}
                                         {{prefix}},
                                       {% endfor %} 
-                                      </br>
+                                      <br/>
                                    {% endif %}
                                    {% if intent_details|key:"path_patterns" %}
                                       <strong>Path Patterns:</strong> {% for pattern in intent_details|key:"path_patterns" %}
                                         {{pattern}},
                                       {% endfor %} 
-                                      </br>
+                                      <br/>
                                    {% endif %}
                               {% endfor %}
                             </td>
@@ -401,17 +390,17 @@
                     </table>
       {% endif %}
     {% if app_type not in 'so' %}
-     <h2><i class="fas fa-lock"></i> NETWORK SECURITY</h2>
+     <h2><span class="fas">&#xf023;</span>  NETWORK SECURITY</h2>
      {% if network_security and 'network_summary' in network_security and network_security.network_summary|length > 0 %}
      <span class="danger">HIGH: </span>
      <h5 class="description-header">{{ network_security.network_summary.high }}</h5> | 
-     <span class="warning"></i> WARNING: </span>
+     <span class="warning">WARNING: </span>
      <h5 class="description-header">{{ network_security.network_summary.warning }}</h5> |
      <span class="info">INFO: </span>
      <h5 class="description-header">{{ network_security.network_summary.info }}</h5> |
      <span class="success">SECURE: </span>
      <h5 class="description-header">{{ network_security.network_summary.secure }}</h5>
-   {% endif %}</br>
+   {% endif %}<br/>
      <table class="basic">
         <thead>
             <tr>
@@ -428,7 +417,7 @@
             <td>{{ forloop.counter }}</td>
             <td>
               {% for url in item.scope %}
-              {{ url }}</br>
+              {{ url }}<br/>
             {% endfor %}
             </td>
             <td>
@@ -451,15 +440,15 @@
         </tbody>
         </table>
        
-      <h2><i class="fas fa fa-id-card"></i> CERTIFICATE ANALYSIS</h2>
+      <h2><span class="fas">&#xf2c2;</span>  CERTIFICATE ANALYSIS</h2>
       {% if certificate_analysis and 'certificate_summary' in certificate_analysis and certificate_analysis.certificate_summary|length > 0 %}
       <span class="danger">HIGH: </span>
       <h5 class="description-header">{{ certificate_analysis.certificate_summary.high }}</h5> | 
-      <span class="warning"></i> WARNING: </span>
+      <span class="warning">WARNING: </span>
       <h5 class="description-header">{{ certificate_analysis.certificate_summary.warning }}</h5> |
       <span class="info">INFO: </span>
       <h5 class="description-header">{{ certificate_analysis.certificate_summary.info }}</h5>
-    {% endif %}</br>
+    {% endif %}<br/>
       <table class="basic">
         <thead>
             <tr>
@@ -491,17 +480,17 @@
         </tbody>
     </table>
    
-    <h2><i class="fas fa-search"></i> MANIFEST ANALYSIS</h2>
+    <h2><span class="fas">&#xf002;</span>  MANIFEST ANALYSIS</h2>
     {% if manifest_analysis and 'manifest_summary' in manifest_analysis and manifest_analysis.manifest_summary|length > 0 %}
     <span class="danger">HIGH: </span>
     <h5 class="description-header">{{ manifest_analysis.manifest_summary.high }}</h5> | 
-    <span class="warning"></i> WARNING: </span>
+    <span class="warning">WARNING: </span>
     <h5 class="description-header">{{ manifest_analysis.manifest_summary.warning }}</h5> |
     <span class="info">INFO: </span>
     <h5 class="description-header">{{ manifest_analysis.manifest_summary.info }}</h5> |
     <span class="disabled">SUPPRESSED: </span>
     <h5 class="description-header">{{ manifest_analysis.manifest_summary.suppressed }}</h5>
-  {% endif %}</br>
+  {% endif %}<br/>
      <table class="basic">
                     <thead>
                         <tr>
@@ -541,11 +530,11 @@
 										</tbody>
 										</table>
                    
-      <h2><i class="fas fa-code"></i> CODE ANALYSIS</h2>
+      <h2><span class="fas">&#xf121;</span>  CODE ANALYSIS</h2>
       {% if code_analysis and 'summary' in code_analysis and code_analysis.summary|length > 0 %}
       <span class="danger">HIGH: </span>
       <h5 class="description-header">{{ code_analysis.summary.high }}</h5> | 
-      <span class="warning"></i> WARNING: </span>
+      <span class="warning">WARNING: </span>
       <h5 class="description-header">{{ code_analysis.summary.warning }}</h5> |
       <span class="info">INFO: </span>
       <h5 class="description-header">{{ code_analysis.summary.info }}</h5> |
@@ -553,7 +542,7 @@
       <h5 class="description-header">{{ code_analysis.summary.secure }}</h5> |
       <span class="disabled">SUPPRESSED: </span>
       <h5 class="description-header">{{ code_analysis.summary.suppressed }}</h5>
-    {% endif %}</br>
+    {% endif %}<br/>
        <table class="basic">
                 <thead>
                     <tr>
@@ -600,11 +589,11 @@
                       {% elif details.metadata.cvss < 4 %}
                         <span class="success"> (low)</span>
                       {% endif %}
-                      </br>
+                      <br/>
                     {% endif %}
                       {% if details.metadata.cwe %}<strong>CWE: </strong>{{ details.metadata.cwe }}{% endif %}
-                      {% if details.metadata|key:"owasp-mobile" %}</br> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
-                      {% if details.metadata.masvs %}</br> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs }}{% endif %}
+                      {% if details.metadata|key:"owasp-mobile" %}<br/> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
+                      {% if details.metadata.masvs %}<br/> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs }}{% endif %}
                   </td>
                  <td style="word-break:break-all;">
                   {% for file_path in details.files %}
@@ -620,7 +609,7 @@
     {% endif %}
             
      {% if binary_analysis  %}
-      <h2><i class="fa fa-flag"></i> SHARED LIBRARY BINARY ANALYSIS</h2>
+      <h2><span class="fas">&#xf024;</span>  SHARED LIBRARY BINARY ANALYSIS</h2>
 
         <table class="basic">
                     <thead>
@@ -683,7 +672,7 @@
                     </table>
     {% endif %}
     {% if app_type not in 'so' %}
-    <h2><i class="fa fa-id-badge"></i> NIAP ANALYSIS v1.3</h2>
+    <h2><span class="fas">&#xf2c1;</span>  NIAP ANALYSIS v1.3</h2>
     <table class="basic">
               <thead>
                   <tr>
@@ -717,7 +706,7 @@
     {% endif %}
 
     {% if behaviour %}
-    <h2><i class="fas fa-sitemap"></i> BEHAVIOUR ANALYSIS</h2>
+    <h2><span class="fas">&#xf0e8;</span>  BEHAVIOUR ANALYSIS</h2>
     <table class="basic">
       <thead>
         <tr>
@@ -751,7 +740,7 @@
   {% endif %}
 
   {% if firebase_urls %} 
-  <h2><i class="fas fa-database"></i> FIREBASE DATABASES ANALYSIS</h2>
+  <h2><span class="fas">&#xf1c0;</span>  FIREBASE DATABASES ANALYSIS</h2>
         <table class="basic">
               <thead>
               <tr>
@@ -783,7 +772,7 @@
     {% endif %}
 
     {% if malware_permissions %}
-    <h2><i class="fa fa-braille"></i> ABUSED PERMISSIONS</h2>
+    <h2><span class="fas">&#xf2a1;</span>  ABUSED PERMISSIONS</h2>
 
     <table id="table_ofac" class="table table-bordered table-hover table-striped">
       <thead>
@@ -821,7 +810,7 @@
  <!-- ===========================end malware permissions  ================================== -->
 
       {% if domains  %}
-      <h2><i class="fa fa-exclamation"></i> OFAC SANCTIONED COUNTRIES</h2>
+      <h2><span class="fas">&#xf12a;</span>  OFAC SANCTIONED COUNTRIES</h2>
       <p>This app may communicate with the following OFAC sanctioned list of countries.</p>
       <table id="table_ofac" class="table table-bordered table-hover table-striped">
            <thead>
@@ -846,7 +835,7 @@
          </tbody>
      </table>
 
-      <h2><i class="fab fa-searchengin"></i> DOMAIN MALWARE CHECK</h2>
+      <h2><span class="fab">&#xf3eb;</span>  DOMAIN MALWARE CHECK</h2>
          <table  class="basic">
                   <thead>
                   <tr>
@@ -892,7 +881,7 @@
 <!-- Display urls only for so files-->
 {% if app_type in 'so' %}
        {% if urls %} 
-      <h2><i class="fas fa-globe"></i> URLS </h2>
+      <h2><span class="fas">&#xf0ac;</span>  URLS </h2>
       <table class="basic">
                   <thead>
                   <tr>
@@ -905,7 +894,7 @@
                     <tr>
                        <td style="word-break:break-all;">
                        {% for u in urldict|key:"urls" %}
-                         {{ u }} </br>
+                         {{ u }} <br/>
                        {% endfor %}
                         </td>
                        <td style="word-break:break-all;">
@@ -918,7 +907,7 @@
         {% endif %}
 {% endif %}
       {% if emails %}
-      <h2><i class="fas fa-envelope"></i> EMAILS</h2>
+      <h2><span class="fas">&#xf0e0;</span>  EMAILS</h2>
           <table class="basic">
                   <thead>
                   <tr>
@@ -931,7 +920,7 @@
                     <tr>
                        <td style="word-break:break-all;">
                        {% for em in email_dict|key:"emails" %}
-                         {{ em }} </br>
+                         {{ em }} <br/>
                        {% endfor %}
                         </td>
 
@@ -946,7 +935,7 @@
 
   
       {% if trackers|key:"trackers" %}
-      <h2><i class="fas fa-user-secret"></i> TRACKERS</h2>
+      <h2><span class="fas">&#xf21b;</span>  TRACKERS</h2>
        <table class="basic">
             <thead>
                 <tr>
@@ -975,7 +964,7 @@
          {% endif %}
     
         {% if secrets %}
-        <h2><i class="fas fa-key"></i> HARDCODED SECRETS</h2>
+        <h2><span class="fas">&#xf084;</span>  HARDCODED SECRETS</h2>
             <table class="basic">
                     <thead>
                     <tr>
@@ -996,7 +985,7 @@
 
         <!--Only for so-->
         {% if app_type in 'so' %}
-        <h2><i class="fa fa-th"></i> SYMBOLS</h2>
+        <h2><span class="fas">&#xf00a;</span>  SYMBOLS</h2>
             <table class="basic">
                     <tbody>
                     {% for val in file_analysis %}
@@ -1011,7 +1000,7 @@
        {% endif %}
 
      {% if not playstore_details.error %}
-    <h2><i class="fab fa-google-play"></i> PLAYSTORE INFORMATION </h2>
+    <h2><span class="fab">&#xf3ab;</span>  PLAYSTORE INFORMATION </h2>
 
                   <p>                                       
                     <h5>Title:</h5> 
@@ -1057,7 +1046,7 @@
                   </p>
              
        {% endif %}
-       <h2><i class="fas fa-list"></i> SCAN LOGS</h2>
+       <h2><span class="fas">&#xf03a;</span>  SCAN LOGS</h2>
     <table id="scan_logs" class="basic">
       <tr>
           <th>Timestamp</th>
@@ -1090,7 +1079,7 @@
   </table>
 </article>
     <article id="columns">
-      </br>
+      <br/>
       <hr>
       <h3>Report Generated by - MobSF {{ version }} </h3>
       <section>
