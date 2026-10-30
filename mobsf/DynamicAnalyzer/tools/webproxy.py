@@ -15,6 +15,10 @@ from mitmproxy.http import HTTPFlow
 
 import psutil
 
+import requests
+
+import urllib3
+
 from mobsf.MobSF.security import (
     is_path_traversal,
     is_pipe_or_link,
@@ -184,30 +188,50 @@ def replay_flows(project, proxy_url):
     normalized_proxy = _parse_fuzzer_proxy(proxy_url)
     if not normalized_proxy:
         return False, 'Invalid fuzzer proxy URL (expected http://host:port)'
-    args = [
-        'mitmdump',
-        '--no-server',
-        '--ssl-insecure',
-        '--set', 'upstream_cert=false',
-        '--set', 'connection_strategy=lazy',
-        '--mode', f'upstream:{normalized_proxy}',
-        '--client-replay', flow_file.as_posix(),
-    ]
+    flows = load_flows(flow_file)
+    if not flows:
+        return False, 'No captured HTTP(S) requests found in project flow file'
 
     def _run_replay():
-        with open(os.devnull, 'w', encoding='utf-8') as fnull:
-            subprocess.run(
-                args,
-                stdin=subprocess.DEVNULL,
-                stdout=fnull,
-                stderr=subprocess.STDOUT,
-                timeout=120,
-                check=False,
-            )
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        proxies = {
+            'http': normalized_proxy,
+            'https': normalized_proxy,
+        }
+        skip_ports = {int(settings.PROXY_PORT)}
+        with requests.Session() as session:
+            for flow in flows:
+                req = getattr(flow, 'request', None)
+                if not req or not getattr(req, 'url', None):
+                    continue
+                parsed_req = urlparse(req.url)
+                if (parsed_req.hostname in ('127.0.0.1', 'localhost')
+                        and parsed_req.port in skip_ports):
+                    continue
+                headers = {
+                    k: v for k, v in req.headers.items()
+                    if k.lower() not in ('content-length', 'host')
+                }
+                try:
+                    session.request(
+                        method=req.method,
+                        url=req.url,
+                        headers=headers,
+                        data=req.raw_content,
+                        proxies=proxies,
+                        verify=False,
+                        allow_redirects=False,
+                        timeout=15,
+                    )
+                except Exception:
+                    continue
 
     thread = threading.Thread(target=_run_replay, daemon=True)
     thread.start()
-    return True, f'Replaying captured requests to {normalized_proxy}'
+    return (
+        True,
+        f'Replaying {len(flows)} captured request(s) to {normalized_proxy}',
+    )
 
 
 def stop_httptools():

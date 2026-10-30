@@ -70,7 +70,9 @@ class WebProxyTests(SimpleTestCase):
             valid_flow.write_bytes(b'')
             ok, _ = webproxy.replay_flows('com.example.app', 'ftp://127.0.0.1:8080')
             self.assertFalse(ok)
-            with mock.patch.object(webproxy.threading, 'Thread') as mock_thread:
+            fake_flow = mock.MagicMock()
+            with (mock.patch.object(webproxy, 'load_flows', return_value=[fake_flow]),
+                  mock.patch.object(webproxy.threading, 'Thread') as mock_thread):
                 ok, msg = webproxy.replay_flows(
                     'com.example.app', 'http://127.0.0.1:8080')
                 self.assertTrue(ok)
