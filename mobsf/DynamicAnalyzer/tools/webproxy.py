@@ -89,9 +89,9 @@ def load_flows(flow_file):
 
 
 def get_sorted_flows(flows):
-    """Group captured HTTPFlows by scheme://netloc for the traffic viewer."""
+    """Group captured HTTPFlows by scheme://netloc (newest first)."""
     sorted_flows = {}
-    for flow in flows:
+    for flow in reversed(flows):
         if not isinstance(flow, HTTPFlow):
             continue
         parsed = urlparse(flow.request.url)
