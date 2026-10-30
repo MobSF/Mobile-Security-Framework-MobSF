@@ -50,14 +50,18 @@ class WebProxyTests(SimpleTestCase):
             webproxy._parse_fuzzer_proxy('https://localhost:8443/'),
             'https://localhost:8443',
         )
+        self.assertEqual(
+            webproxy._parse_fuzzer_proxy('http://[::1]:8080'),
+            'http://[::1]:8080',
+        )
         for invalid in (
-                '',
-                'ftp://127.0.0.1:8080',
-                'http://127.0.0.1',
-                'http://user:pass@127.0.0.1:8080',
-                'http://127.0.0.1:8080/path',
-                'http://127.0.0.1:1337',
-                'http://bad;host:8080',
+            '',
+            'ftp://127.0.0.1:8080',
+            'http://127.0.0.1',
+            'http://user:pass@127.0.0.1:8080',
+            'http://127.0.0.1:8080/path',
+            'http://127.0.0.1:1337',
+            'http://bad;host:8080',
         ):
             with self.subTest(invalid=invalid):
                 self.assertIsNone(webproxy._parse_fuzzer_proxy(invalid))

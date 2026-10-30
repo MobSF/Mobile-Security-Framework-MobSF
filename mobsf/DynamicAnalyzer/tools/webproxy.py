@@ -1,3 +1,4 @@
+import ipaddress
 import logging
 import os
 from pathlib import Path
@@ -15,10 +16,6 @@ from mitmproxy.http import HTTPFlow
 
 import psutil
 
-import requests
-
-import urllib3
-
 from mobsf.MobSF.security import (
     is_path_traversal,
     is_pipe_or_link,
@@ -32,6 +29,8 @@ from mobsf.MobSF.utils import (
 logger = logging.getLogger(__name__)
 _PROXY_LOCK = threading.Lock()
 _PROXY_PROCESS = None
+_FLOW_CACHE_LOCK = threading.Lock()
+_FLOW_CACHE = {}
 
 
 def flows_dir():
@@ -78,18 +77,29 @@ def list_flow_projects():
 
 
 def load_flows(flow_file):
-    """Read HTTPFlow entries from a mitmproxy stream file."""
-    flows = []
+    """Read HTTPFlow entries from a mitmproxy stream file with mtime/size cache."""
     if not flow_file:
-        return flows
+        return []
+    path = Path(flow_file)
     try:
-        with Path(flow_file).open('rb') as handle:
+        stat = path.stat()
+        key = path.as_posix()
+        sig = (stat.st_mtime_ns, stat.st_size)
+        with _FLOW_CACHE_LOCK:
+            cached = _FLOW_CACHE.get(key)
+            if cached and cached[0] == sig:
+                return list(cached[1])
+        flows = []
+        with path.open('rb') as handle:
             for item in mitm_io.FlowReader(handle).stream():
                 if isinstance(item, HTTPFlow):
                     flows.append(item)
+        with _FLOW_CACHE_LOCK:
+            _FLOW_CACHE[key] = (sig, flows)
+        return list(flows)
     except Exception:
         logger.warning('Unable to read full flow stream from %s', flow_file)
-    return flows
+        return []
 
 
 def get_sorted_flows(flows):
@@ -156,8 +166,19 @@ def get_flow_meta(flow):
     return meta
 
 
-def _parse_fuzzer_proxy(proxy_url):
-    """Validate and normalize an upstream fuzzer proxy URL (e.g. Burp/ZAP)."""
+def _valid_host_or_ip(host):
+    """Return True if host is a valid IPv4/IPv6 literal or DNS hostname."""
+    if not isinstance(host, str) or not host:
+        return False
+    try:
+        ipaddress.ip_address(host)
+        return True
+    except ValueError:
+        return bool(re.fullmatch(r'[A-Za-z0-9.-]{1,253}', host))
+
+
+def _parse_fuzzer_proxy_parts(proxy_url):
+    """Validate an upstream fuzzer proxy URL and return (scheme, host, port, url)."""
     if not isinstance(proxy_url, str) or not proxy_url.strip():
         return None
     parsed = urlparse(proxy_url.strip())
@@ -167,17 +188,26 @@ def _parse_fuzzer_proxy(proxy_url):
         return None
     host = parsed.hostname
     port = parsed.port
-    if (not host
-            or not re.fullmatch(
-                r'\[[0-9A-Fa-f:.]+\]|[A-Za-z0-9.-]{1,253}', host)
+    if (not _valid_host_or_ip(host)
             or not isinstance(port, int)
             or not (1 <= port <= 65535)):
         return None
     if port == int(settings.PROXY_PORT) and host in (
             '127.0.0.1', 'localhost', '::1', '0.0.0.0'):
         return None
-    formatted_host = f'[{host}]' if ':' in host and not host.startswith('[') else host
-    return f'{parsed.scheme}://{formatted_host}:{port}'
+    formatted_host = f'[{host}]' if ':' in host else host
+    return (
+        parsed.scheme,
+        host,
+        port,
+        f'{parsed.scheme}://{formatted_host}:{port}',
+    )
+
+
+def _parse_fuzzer_proxy(proxy_url):
+    """Validate and normalize an upstream fuzzer proxy URL (e.g. Burp/ZAP)."""
+    parts = _parse_fuzzer_proxy_parts(proxy_url)
+    return parts[3] if parts else None
 
 
 def replay_flows(project, proxy_url):
@@ -185,46 +215,39 @@ def replay_flows(project, proxy_url):
     flow_file = get_flow_file(project)
     if not flow_file:
         return False, 'No captured HTTP(S) traffic found for this project'
-    normalized_proxy = _parse_fuzzer_proxy(proxy_url)
-    if not normalized_proxy:
+    parts = _parse_fuzzer_proxy_parts(proxy_url)
+    if not parts:
         return False, 'Invalid fuzzer proxy URL (expected http://host:port)'
+    scheme, host, port, normalized_proxy = parts
     flows = load_flows(flow_file)
     if not flows:
         return False, 'No captured HTTP(S) requests found in project flow file'
 
+    capture_script = Path(__file__).resolve().parent / 'mitm_capture.py'
+    args = [
+        'mitmdump',
+        '--no-server',
+        '--ssl-insecure',
+        '--scripts', capture_script.as_posix(),
+        '--set', 'connection_strategy=lazy',
+        '--set', 'upstream_cert=false',
+        '--set', f'mobsf_replay_scheme={scheme}',
+        '--set', f'mobsf_replay_host={host}',
+        '--set', f'mobsf_replay_port={port}',
+        '--set', f'mobsf_skip_port={int(settings.PROXY_PORT)}',
+        '--client-replay', flow_file.as_posix(),
+    ]
+
     def _run_replay():
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        proxies = {
-            'http': normalized_proxy,
-            'https': normalized_proxy,
-        }
-        skip_ports = {int(settings.PROXY_PORT)}
-        with requests.Session() as session:
-            for flow in flows:
-                req = getattr(flow, 'request', None)
-                if not req or not getattr(req, 'url', None):
-                    continue
-                parsed_req = urlparse(req.url)
-                if (parsed_req.hostname in ('127.0.0.1', 'localhost')
-                        and parsed_req.port in skip_ports):
-                    continue
-                headers = {
-                    k: v for k, v in req.headers.items()
-                    if k.lower() not in ('content-length', 'host')
-                }
-                try:
-                    session.request(
-                        method=req.method,
-                        url=req.url,
-                        headers=headers,
-                        data=req.raw_content,
-                        proxies=proxies,
-                        verify=False,
-                        allow_redirects=False,
-                        timeout=15,
-                    )
-                except Exception:
-                    continue
+        with open(os.devnull, 'w', encoding='utf-8') as fnull:
+            subprocess.run(
+                args,
+                stdin=subprocess.DEVNULL,
+                stdout=fnull,
+                stderr=subprocess.STDOUT,
+                timeout=120,
+                check=False,
+            )
 
     thread = threading.Thread(target=_run_replay, daemon=True)
     thread.start()
@@ -250,16 +273,41 @@ def stop_httptools():
                 proc.wait()
         # Best-effort cleanup of any orphaned mitmdump listening on PROXY_PORT
         port_arg = str(settings.PROXY_PORT)
+        orphans = []
         for item in psutil.process_iter(['name', 'cmdline']):
             try:
                 name = (item.info.get('name') or '').lower()
                 cmdline = item.info.get('cmdline') or []
-                if ('mitmdump' in name
-                        or any('mitmdump' in part.lower() for part in cmdline)):
-                    if port_arg in cmdline:
-                        item.terminate()
+                if (('mitmdump' in name
+                        or any('mitmdump' in part.lower() for part in cmdline))
+                        and port_arg in cmdline):
+                    item.terminate()
+                    orphans.append(item)
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
+        if orphans:
+            _, alive = psutil.wait_procs(orphans, timeout=5)
+            for item in alive:
+                try:
+                    item.kill()
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    continue
+            psutil.wait_procs(alive, timeout=2)
+
+
+def _upstream_mitm_args(proxy_url):
+    """Build mitmdump `--mode upstream:...` and `--upstream-auth` arguments."""
+    if not proxy_url:
+        return []
+    parsed = urlparse(proxy_url)
+    if not parsed.scheme or not parsed.hostname or not parsed.port:
+        return []
+    host = f'[{parsed.hostname}]' if ':' in parsed.hostname else parsed.hostname
+    args = ['--mode', f'upstream:{parsed.scheme}://{host}:{parsed.port}']
+    if parsed.username:
+        password = parsed.password or ''
+        args.extend(['--upstream-auth', f'{parsed.username}:{password}'])
+    return args
 
 
 def start_proxy(port, project):
@@ -273,6 +321,8 @@ def start_proxy(port, project):
     txt_file = flow_dir / f'{project}.flow.txt'
     flow_file.unlink(missing_ok=True)
     txt_file.unlink(missing_ok=True)
+    with _FLOW_CACHE_LOCK:
+        _FLOW_CACHE.pop(flow_file.as_posix(), None)
 
     capture_script = Path(__file__).resolve().parent / 'mitm_capture.py'
     argz = [
@@ -285,8 +335,8 @@ def start_proxy(port, project):
         '--scripts', capture_script.as_posix(),
     ]
     proxies, _ = upstream_proxy('http')
-    if proxies['http']:
-        argz.extend(['--mode', f'upstream:{proxies["http"]}'])
+    if proxies.get('http'):
+        argz.extend(_upstream_mitm_args(proxies['http']))
     with _PROXY_LOCK:
         with open(os.devnull, 'w', encoding='utf-8') as fnull:
             _PROXY_PROCESS = subprocess.Popen(

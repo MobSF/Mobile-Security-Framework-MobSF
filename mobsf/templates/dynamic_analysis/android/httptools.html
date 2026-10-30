@@ -17,6 +17,11 @@
     word-break: break-all;
   }
   .traffic-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 0;
     cursor: pointer;
     padding: 6px 10px;
     border-bottom: 1px solid #f0f0f0;
@@ -144,7 +149,8 @@
 <script>
 (function() {
   const trafficUrl = "{% url 'httptools' %}";
-  let currentProject = "{{ project|escapejs }}";
+  const projectSelect = document.getElementById("project_select");
+  let currentProject = "{{ project|escapejs }}" || (projectSelect ? projectSelect.value : "");
   let selectedFlowId = null;
   let lastSignature = "";
 
@@ -226,7 +232,8 @@
       group.appendChild(title);
 
       (sortedFlows[domain] || []).forEach(function(flw) {
-        const item = document.createElement("div");
+        const item = document.createElement("button");
+        item.type = "button";
         item.className = "traffic-item";
         if (flw.id === selectedFlowId) {
           item.classList.add("active");
