@@ -29,14 +29,17 @@
     color: #1e293b;
   }
   .traffic-pane {
-    max-height: 72vh;
+    max-height: 82vh;
     overflow-y: auto;
   }
   .traffic-textarea {
     width: 100%;
-    height: 300px;
+    height: 460px;
+    min-height: 360px;
+    resize: vertical;
     font-family: "Courier New", Courier, monospace;
-    font-size: 12px;
+    font-size: 13px;
+    line-height: 1.45;
     background: #f8f9fa;
   }
 </style>
@@ -76,7 +79,7 @@
 
   <div class="container-fluid">
     <div class="row">
-      <div class="col-md-5">
+      <div class="col-md-4">
         <div class="card card-default">
           <div class="card-header">
             <h3 class="card-title"><i class="fas fa-globe mr-1"></i> Captured Requests (<span id="flow_count">0</span>)</h3>
@@ -87,16 +90,16 @@
         </div>
       </div>
 
-      <div class="col-md-7">
+      <div class="col-md-8">
         <div class="card card-default">
           <div class="card-header">
             <h3 class="card-title"><i class="fas fa-exchange-alt mr-1"></i> Request &amp; Response</h3>
           </div>
           <div class="card-body">
             <h6><strong>REQUEST</strong></h6>
-            <textarea class="form-control traffic-textarea mb-3" id="request_box" readonly></textarea>
+            <textarea class="form-control traffic-textarea mb-3" rows="18" id="request_box" readonly></textarea>
             <h6><strong>RESPONSE</strong></h6>
-            <textarea class="form-control traffic-textarea" id="response_box" readonly></textarea>
+            <textarea class="form-control traffic-textarea" rows="18" id="response_box" readonly></textarea>
           </div>
         </div>
       </div>
