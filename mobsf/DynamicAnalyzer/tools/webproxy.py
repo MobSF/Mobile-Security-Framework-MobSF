@@ -81,6 +81,7 @@ def load_flows(flow_file):
     if not flow_file:
         return []
     path = Path(flow_file)
+    flows = []
     try:
         stat = path.stat()
         key = path.as_posix()
@@ -89,17 +90,17 @@ def load_flows(flow_file):
             cached = _FLOW_CACHE.get(key)
             if cached and cached[0] == sig:
                 return list(cached[1])
-        flows = []
         with path.open('rb') as handle:
             for item in mitm_io.FlowReader(handle).stream():
                 if isinstance(item, HTTPFlow):
                     flows.append(item)
         with _FLOW_CACHE_LOCK:
+            _FLOW_CACHE.clear()
             _FLOW_CACHE[key] = (sig, flows)
         return list(flows)
     except Exception:
         logger.warning('Unable to read full flow stream from %s', flow_file)
-        return []
+        return list(flows)
 
 
 def get_sorted_flows(flows):

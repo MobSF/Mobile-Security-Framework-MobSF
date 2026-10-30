@@ -33,14 +33,30 @@
     background-color: #e2e8f0;
     color: #1e293b;
   }
+  .traffic-row {
+    min-height: calc(100vh - 180px);
+  }
+  .traffic-card {
+    height: calc(100vh - 180px);
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+  }
   .traffic-pane {
-    max-height: 82vh;
+    flex: 1 1 auto;
     overflow-y: auto;
+  }
+  .traffic-detail-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
   }
   .traffic-textarea {
     width: 100%;
-    height: 460px;
-    min-height: 360px;
+    flex: 1 1 0;
+    min-height: 220px;
     resize: vertical;
     font-family: "Courier New", Courier, monospace;
     font-size: 13px;
@@ -55,7 +71,7 @@
     <div class="container-fluid">
       <div class="row mb-2 align-items-center">
         <div class="col-md-7">
-          <h2><strong>HTTP(S) Traffic Viewer</strong> {% if project %}— {{ project }}{% endif %}</h2>
+          <h2 id="page_heading"><strong>Web Traffic</strong>{% if project %} - {{ project }}{% endif %}</h2>
         </div>
         <div class="col-md-5 text-md-right">
           <div class="d-inline-flex align-items-center">
@@ -114,10 +130,10 @@
     </div>
   </div>
 
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-md-4">
-        <div class="card card-default">
+  <div class="container-fluid pb-2">
+    <div class="row traffic-row">
+      <div class="col-md-4 d-flex flex-column">
+        <div class="card card-default traffic-card">
           <div class="card-header">
             <h3 class="card-title"><i class="fas fa-globe mr-1"></i> Captured Requests (<span id="flow_count">0</span>)</h3>
           </div>
@@ -127,16 +143,16 @@
         </div>
       </div>
 
-      <div class="col-md-8">
-        <div class="card card-default">
+      <div class="col-md-8 d-flex flex-column">
+        <div class="card card-default traffic-card">
           <div class="card-header">
             <h3 class="card-title"><i class="fas fa-exchange-alt mr-1"></i> Request &amp; Response</h3>
           </div>
-          <div class="card-body">
+          <div class="card-body traffic-detail-body">
             <h6><strong>REQUEST</strong></h6>
-            <textarea class="form-control traffic-textarea mb-3" rows="18" id="request_box" readonly></textarea>
+            <textarea class="form-control traffic-textarea mb-3" id="request_box" readonly></textarea>
             <h6><strong>RESPONSE</strong></h6>
-            <textarea class="form-control traffic-textarea" rows="18" id="response_box" readonly></textarea>
+            <textarea class="form-control traffic-textarea" id="response_box" readonly></textarea>
           </div>
         </div>
       </div>
@@ -153,6 +169,21 @@
   let currentProject = "{{ project|escapejs }}" || (projectSelect ? projectSelect.value : "");
   let selectedFlowId = null;
   let lastSignature = "";
+
+  function updateTitle(pkg) {
+    const titleText = pkg ? "Web Traffic - " + pkg : "Web Traffic";
+    document.title = titleText;
+    const heading = document.getElementById("page_heading");
+    if (heading) {
+      heading.textContent = "";
+      const strong = document.createElement("strong");
+      strong.textContent = "Web Traffic";
+      heading.appendChild(strong);
+      if (pkg) {
+        heading.appendChild(document.createTextNode(" - " + pkg));
+      }
+    }
+  }
 
   function formatRequest(req) {
     if (!req) return "";
@@ -183,15 +214,19 @@
   }
 
   function loadFlowDetail(flowId) {
+    const requestedProject = currentProject;
     selectedFlowId = flowId;
     document.querySelectorAll(".traffic-item").forEach(function(el) {
       el.classList.toggle("active", el.dataset.flowId === flowId);
     });
-    const url = trafficUrl + "?project=" + encodeURIComponent(currentProject)
+    const url = trafficUrl + "?project=" + encodeURIComponent(requestedProject)
       + "&flow_id=" + encodeURIComponent(flowId) + "&json=1";
     fetch(url, {credentials: "same-origin", cache: "no-store"})
       .then(function(r) { return r.json(); })
       .then(function(data) {
+        if (requestedProject !== currentProject || selectedFlowId !== flowId) {
+          return;
+        }
         if (data && data.request) {
           document.getElementById("request_box").value = formatRequest(data.request);
           document.getElementById("response_box").value = formatResponse(data.response);
@@ -252,10 +287,14 @@
 
   function refreshFlows() {
     if (!currentProject) return;
-    const url = trafficUrl + "?project=" + encodeURIComponent(currentProject) + "&json=1";
+    const requestedProject = currentProject;
+    const url = trafficUrl + "?project=" + encodeURIComponent(requestedProject) + "&json=1";
     fetch(url, {credentials: "same-origin", cache: "no-store"})
       .then(function(r) { return r.json(); })
       .then(function(data) {
+        if (requestedProject !== currentProject) {
+          return;
+        }
         if (data && data.sorted_flows) {
           renderFlows(data.sorted_flows);
         }
@@ -263,14 +302,17 @@
       .catch(function() {});
   }
 
-  document.getElementById("project_select").addEventListener("change", function(e) {
-    currentProject = e.target.value;
-    selectedFlowId = null;
-    lastSignature = "";
-    document.getElementById("request_box").value = "";
-    document.getElementById("response_box").value = "";
-    refreshFlows();
-  });
+  if (projectSelect) {
+    projectSelect.addEventListener("change", function(e) {
+      currentProject = e.target.value;
+      updateTitle(currentProject);
+      selectedFlowId = null;
+      lastSignature = "";
+      document.getElementById("request_box").value = "";
+      document.getElementById("response_box").value = "";
+      refreshFlows();
+    });
+  }
 
   document.getElementById("refresh_btn").addEventListener("click", refreshFlows);
 
@@ -312,6 +354,7 @@
       });
   });
 
+  updateTitle(currentProject);
   refreshFlows();
   setInterval(function() {
     const toggle = document.getElementById("live_toggle");

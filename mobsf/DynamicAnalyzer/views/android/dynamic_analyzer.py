@@ -811,10 +811,14 @@ def httptools_start(request):
                 'project': project,
                 'sorted_flows': get_sorted_flows(flows),
             })
+        projects = list_flow_projects()
+        if not project and projects:
+            project = projects[0]
+        title = f'Web Traffic - {project}' if project else 'Web Traffic'
         context = {
-            'title': 'HTTP(S) Traffic Viewer',
+            'title': title,
             'project': project,
-            'projects': list_flow_projects(),
+            'projects': projects,
             'version': settings.MOBSF_VER,
         }
         return render(
