@@ -1,6 +1,7 @@
 import logging
 import os
 from pathlib import Path
+import re
 import subprocess
 import threading
 import time
@@ -149,6 +150,64 @@ def get_flow_meta(flow):
             'content': res_content,
         }
     return meta
+
+
+def _parse_fuzzer_proxy(proxy_url):
+    """Validate and normalize an upstream fuzzer proxy URL (e.g. Burp/ZAP)."""
+    if not isinstance(proxy_url, str) or not proxy_url.strip():
+        return None
+    parsed = urlparse(proxy_url.strip())
+    if parsed.scheme not in ('http', 'https'):
+        return None
+    if parsed.username or parsed.password or parsed.path not in ('', '/'):
+        return None
+    host = parsed.hostname
+    port = parsed.port
+    if (not host
+            or not re.fullmatch(
+                r'\[[0-9A-Fa-f:.]+\]|[A-Za-z0-9.-]{1,253}', host)
+            or not isinstance(port, int)
+            or not (1 <= port <= 65535)):
+        return None
+    if port == int(settings.PROXY_PORT) and host in (
+            '127.0.0.1', 'localhost', '::1', '0.0.0.0'):
+        return None
+    formatted_host = f'[{host}]' if ':' in host and not host.startswith('[') else host
+    return f'{parsed.scheme}://{formatted_host}:{port}'
+
+
+def replay_flows(project, proxy_url):
+    """Replay captured project flows through an upstream proxy (e.g. Burp/ZAP)."""
+    flow_file = get_flow_file(project)
+    if not flow_file:
+        return False, 'No captured HTTP(S) traffic found for this project'
+    normalized_proxy = _parse_fuzzer_proxy(proxy_url)
+    if not normalized_proxy:
+        return False, 'Invalid fuzzer proxy URL (expected http://host:port)'
+    args = [
+        'mitmdump',
+        '--no-server',
+        '--ssl-insecure',
+        '--set', 'upstream_cert=false',
+        '--set', 'connection_strategy=lazy',
+        '--mode', f'upstream:{normalized_proxy}',
+        '--client-replay', flow_file.as_posix(),
+    ]
+
+    def _run_replay():
+        with open(os.devnull, 'w', encoding='utf-8') as fnull:
+            subprocess.run(
+                args,
+                stdin=subprocess.DEVNULL,
+                stdout=fnull,
+                stderr=subprocess.STDOUT,
+                timeout=120,
+                check=False,
+            )
+
+    thread = threading.Thread(target=_run_replay, daemon=True)
+    thread.start()
+    return True, f'Replaying captured requests to {normalized_proxy}'
 
 
 def stop_httptools():

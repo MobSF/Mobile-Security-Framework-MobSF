@@ -40,3 +40,39 @@ class WebProxyTests(SimpleTestCase):
             resp = httptools_start(req)
         self.assertEqual(resp.status_code, 200)
         self.assertIn(b'"sorted_flows": {}', resp.content)
+
+    def test_parse_fuzzer_proxy_validation(self):
+        self.assertEqual(
+            webproxy._parse_fuzzer_proxy('http://127.0.0.1:8080'),
+            'http://127.0.0.1:8080',
+        )
+        self.assertEqual(
+            webproxy._parse_fuzzer_proxy('https://localhost:8443/'),
+            'https://localhost:8443',
+        )
+        for invalid in (
+                '',
+                'ftp://127.0.0.1:8080',
+                'http://127.0.0.1',
+                'http://user:pass@127.0.0.1:8080',
+                'http://127.0.0.1:8080/path',
+                'http://127.0.0.1:1337',
+                'http://bad;host:8080',
+        ):
+            with self.subTest(invalid=invalid):
+                self.assertIsNone(webproxy._parse_fuzzer_proxy(invalid))
+
+    def test_replay_flows_rejects_invalid_proxy_or_missing_flow(self):
+        with mock.patch.object(webproxy, 'flows_dir', return_value=self.flows_root):
+            ok, _ = webproxy.replay_flows('com.example.app', 'http://127.0.0.1:8080')
+            self.assertFalse(ok)
+            valid_flow = self.flows_root / 'com.example.app.flow'
+            valid_flow.write_bytes(b'')
+            ok, _ = webproxy.replay_flows('com.example.app', 'ftp://127.0.0.1:8080')
+            self.assertFalse(ok)
+            with mock.patch.object(webproxy.threading, 'Thread') as mock_thread:
+                ok, msg = webproxy.replay_flows(
+                    'com.example.app', 'http://127.0.0.1:8080')
+                self.assertTrue(ok)
+                self.assertIn('http://127.0.0.1:8080', msg)
+                mock_thread.return_value.start.assert_called_once()

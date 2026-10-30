@@ -67,12 +67,44 @@
             <button id="refresh_btn" type="button" class="btn btn-sm btn-primary mr-2">
               <i class="fas fa-sync-alt"></i> Refresh
             </button>
+            <button id="fuzzer_btn" type="button" class="btn btn-sm btn-success mr-2" data-toggle="modal" data-target="#fuzzer_modal">
+              <i class="fas fa-paper-plane"></i> Send to Fuzzer
+            </button>
             <div class="custom-control custom-switch d-inline-block">
               <input type="checkbox" class="custom-control-input" id="live_toggle" checked>
               <label class="custom-control-label" for="live_toggle">Live</label>
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Send to Fuzzer Modal -->
+  <div id="fuzzer_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fuzzer_modal_label" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="fuzzer_modal_label"><i class="fas fa-paper-plane mr-1"></i> Send to Fuzzer</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="fuzzer_form">
+          {% csrf_token %}
+          <div class="modal-body">
+            <p class="text-muted mb-2">Forward captured requests for the selected project to Burp Suite, OWASP ZAP, or another upstream proxy.</p>
+            <div class="form-group mb-2">
+              <label for="fuzzer_proxy">Fuzzer Proxy URL</label>
+              <input type="text" class="form-control" id="fuzzer_proxy" name="proxy" value="http://127.0.0.1:8080" required>
+            </div>
+            <div id="fuzzer_status" class="small mt-2"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+            <button type="submit" id="fuzzer_submit" class="btn btn-info btn-sm">Repeat Requests</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -234,6 +266,44 @@
   });
 
   document.getElementById("refresh_btn").addEventListener("click", refreshFlows);
+
+  document.getElementById("fuzzer_form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const statusEl = document.getElementById("fuzzer_status");
+    const submitBtn = document.getElementById("fuzzer_submit");
+    if (!currentProject) {
+      statusEl.className = "small mt-2 text-danger";
+      statusEl.textContent = "No project selected.";
+      return;
+    }
+    const formData = new FormData(e.target);
+    formData.set("action", "repeat");
+    formData.set("project", currentProject);
+    submitBtn.disabled = true;
+    statusEl.className = "small mt-2 text-muted";
+    statusEl.textContent = "Sending captured traffic to upstream proxy...";
+    fetch(trafficUrl, {
+      method: "POST",
+      body: formData,
+      credentials: "same-origin",
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        submitBtn.disabled = false;
+        if (data && data.status === "ok") {
+          statusEl.className = "small mt-2 text-success";
+          statusEl.textContent = data.message || "Replaying captured requests to upstream proxy.";
+        } else {
+          statusEl.className = "small mt-2 text-danger";
+          statusEl.textContent = (data && data.message) || "Failed to replay requests.";
+        }
+      })
+      .catch(function() {
+        submitBtn.disabled = false;
+        statusEl.className = "small mt-2 text-danger";
+        statusEl.textContent = "Failed to replay requests.";
+      });
+  });
 
   refreshFlows();
   setInterval(function() {

@@ -49,6 +49,7 @@ from mobsf.DynamicAnalyzer.tools.webproxy import (
     get_sorted_flows,
     list_flow_projects,
     load_flows,
+    replay_flows,
 )
 from mobsf.MobSF.security import is_path_traversal
 from mobsf.MobSF.utils import (
@@ -789,6 +790,13 @@ def httptools_start(request):
                      or is_path_traversal(project))):
             return print_n_send_error_response(
                 request, 'Invalid project name')
+        if request.method == 'POST' and request.POST.get('action') == 'repeat':
+            proxy_url = request.POST.get('proxy', '')
+            ok, message = replay_flows(project, proxy_url)
+            return JsonResponse(
+                {'status': 'ok' if ok else 'failed', 'message': message},
+                status=200 if ok else 400,
+            )
         flow_id = request.GET.get('flow_id', '').strip()
         as_json = request.GET.get('json') == '1'
         flow_file = get_flow_file(project) if project else None
