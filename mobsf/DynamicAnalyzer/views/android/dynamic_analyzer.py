@@ -2,9 +2,8 @@
 """Android Dynamic Analysis."""
 import logging
 import os
-import time
 from pathlib import Path
-from urllib.parse import quote, urlsplit
+from urllib.parse import quote
 
 from shelljob import proc
 
@@ -16,7 +15,6 @@ from django.http import (
 )
 from django.conf import settings
 from django.shortcuts import redirect, render
-from django.utils.http import url_has_allowed_host_and_scheme
 from django.db.models import ObjectDoesNotExist
 from django.views.decorators.http import require_http_methods
 
@@ -46,9 +44,11 @@ from mobsf.DynamicAnalyzer.views.android.progress import (
     progress_response,
 )
 from mobsf.DynamicAnalyzer.tools.webproxy import (
-    get_http_tools_url,
-    start_httptools_ui,
-    stop_httptools,
+    get_flow_file,
+    get_flow_meta,
+    get_sorted_flows,
+    list_flow_projects,
+    load_flows,
 )
 from mobsf.MobSF.security import is_path_traversal
 from mobsf.MobSF.utils import (
@@ -774,34 +774,50 @@ def dynamic_analyzer(request, checksum, api=False, stream=False):
 
 @login_required
 @permission_required(Permissions.SCAN)
-@require_http_methods(['POST'])
+@require_http_methods(['GET', 'POST'])
 def httptools_start(request):
-    """Start httprools UI."""
-    logger.info('Starting httptools Web UI')
+    """Render or stream captured HTTP(S) traffic in MobSF."""
+    logger.info('Opening HTTP(S) Traffic Viewer')
     try:
-        httptools_url = get_http_tools_url(request)
-        stop_httptools()
-        start_httptools_ui(settings.PROXY_PORT)
-        time.sleep(3)
-        logger.info('httptools UI started')
-        project = request.POST.get('project', '')
+        project = (
+            request.POST.get('project')
+            or request.GET.get('project')
+            or ''
+        ).strip()
         if (project
                 and (not strict_package_check(project)
                      or is_path_traversal(project))):
-            raise ValueError('Invalid HTTPTools project')
-        project = quote(project, safe='')
-        url = f'{httptools_url}/dashboard/{project}'
-        trusted_netloc = urlsplit(httptools_url).netloc
-        if not url_has_allowed_host_and_scheme(
-                url,
-                allowed_hosts={trusted_netloc},
-                require_https=request.is_secure()):
-            raise ValueError('Untrusted HTTPTools redirect')
-        return redirect(url)
+            return print_n_send_error_response(
+                request, 'Invalid project name')
+        flow_id = request.GET.get('flow_id', '').strip()
+        as_json = request.GET.get('json') == '1'
+        flow_file = get_flow_file(project) if project else None
+        flows = load_flows(flow_file) if flow_file else []
+        if as_json:
+            if flow_id:
+                for flow in flows:
+                    if flow.id == flow_id:
+                        return JsonResponse(get_flow_meta(flow))
+                return JsonResponse({'id': ''})
+            return JsonResponse({
+                'project': project,
+                'sorted_flows': get_sorted_flows(flows),
+            })
+        context = {
+            'title': 'HTTP(S) Traffic Viewer',
+            'project': project,
+            'projects': list_flow_projects(),
+            'version': settings.MOBSF_VER,
+        }
+        return render(
+            request,
+            'dynamic_analysis/android/httptools.html',
+            context,
+        )
     except Exception:
-        logger.exception('Starting httptools Web UI')
-        err = 'Error Starting httptools UI'
-        return print_n_send_error_response(request, err)
+        logger.exception('Opening HTTP(S) Traffic Viewer')
+        return print_n_send_error_response(
+            request, 'Error opening HTTP(S) Traffic Viewer')
 
 
 @login_required

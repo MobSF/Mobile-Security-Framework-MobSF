@@ -1,0 +1,244 @@
+{% extends "base/base_layout.html" %}
+{% load static %}
+{% block sidebar_option %}
+    sidebar-collapse
+{% endblock %}
+{% block extra_css %}
+<style>
+  .traffic-domain-group {
+    margin-bottom: 10px;
+  }
+  .traffic-domain-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 6px 10px;
+    background: #eef2f7;
+    border-radius: 4px;
+    word-break: break-all;
+  }
+  .traffic-item {
+    cursor: pointer;
+    padding: 6px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    font-family: monospace;
+    font-size: 0.82rem;
+    word-break: break-all;
+  }
+  .traffic-item:hover, .traffic-item.active {
+    background-color: #e2e8f0;
+    color: #1e293b;
+  }
+  .traffic-pane {
+    max-height: 72vh;
+    overflow-y: auto;
+  }
+  .traffic-textarea {
+    width: 100%;
+    height: 300px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 12px;
+    background: #f8f9fa;
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="content-wrapper">
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2 align-items-center">
+        <div class="col-md-7">
+          <h2><strong>HTTP(S) Traffic Viewer</strong> {% if project %}— {{ project }}{% endif %}</h2>
+        </div>
+        <div class="col-md-5 text-md-right">
+          <div class="d-inline-flex align-items-center">
+            <select id="project_select" class="form-control form-control-sm mr-2" style="width: auto;">
+              {% if project %}
+              <option value="{{ project }}" selected>{{ project }}</option>
+              {% endif %}
+              {% for pp in projects %}
+                {% if pp != project %}
+                <option value="{{ pp }}">{{ pp }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+            <button id="refresh_btn" type="button" class="btn btn-sm btn-primary mr-2">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <div class="custom-control custom-switch d-inline-block">
+              <input type="checkbox" class="custom-control-input" id="live_toggle" checked>
+              <label class="custom-control-label" for="live_toggle">Live</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-5">
+        <div class="card card-default">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-globe mr-1"></i> Captured Requests (<span id="flow_count">0</span>)</h3>
+          </div>
+          <div class="card-body p-2 traffic-pane" id="traffic_list">
+            <p class="text-muted p-2 mb-0" id="empty_msg">Waiting for HTTP(S) traffic...</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-7">
+        <div class="card card-default">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-exchange-alt mr-1"></i> Request &amp; Response</h3>
+          </div>
+          <div class="card-body">
+            <h6><strong>REQUEST</strong></h6>
+            <textarea class="form-control traffic-textarea mb-3" id="request_box" readonly></textarea>
+            <h6><strong>RESPONSE</strong></h6>
+            <textarea class="form-control traffic-textarea" id="response_box" readonly></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function() {
+  const trafficUrl = "{% url 'httptools' %}";
+  let currentProject = "{{ project|escapejs }}";
+  let selectedFlowId = null;
+  let lastSignature = "";
+
+  function formatRequest(req) {
+    if (!req) return "";
+    let lines = [req.method + " " + req.url + " " + req.http_version];
+    if (req.headers) {
+      Object.keys(req.headers).forEach(function(k) {
+        lines.push(k + ": " + req.headers[k]);
+      });
+    }
+    if (req.content) {
+      lines.push("", req.content);
+    }
+    return lines.join("\n");
+  }
+
+  function formatResponse(res) {
+    if (!res) return "";
+    let lines = [res.http_version + " " + res.status_code + " " + (res.reason || "")];
+    if (res.headers) {
+      Object.keys(res.headers).forEach(function(k) {
+        lines.push(k + ": " + res.headers[k]);
+      });
+    }
+    if (res.content) {
+      lines.push("", res.content);
+    }
+    return lines.join("\n");
+  }
+
+  function loadFlowDetail(flowId) {
+    selectedFlowId = flowId;
+    document.querySelectorAll(".traffic-item").forEach(function(el) {
+      el.classList.toggle("active", el.dataset.flowId === flowId);
+    });
+    const url = trafficUrl + "?project=" + encodeURIComponent(currentProject)
+      + "&flow_id=" + encodeURIComponent(flowId) + "&json=1";
+    fetch(url, {credentials: "same-origin", cache: "no-store"})
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data.request) {
+          document.getElementById("request_box").value = formatRequest(data.request);
+          document.getElementById("response_box").value = formatResponse(data.response);
+        }
+      })
+      .catch(function() {});
+  }
+
+  function renderFlows(sortedFlows) {
+    const container = document.getElementById("traffic_list");
+    const domains = Object.keys(sortedFlows || {});
+    let total = 0;
+    domains.forEach(function(d) { total += sortedFlows[d].length; });
+    document.getElementById("flow_count").textContent = String(total);
+
+    const sig = JSON.stringify(sortedFlows);
+    if (sig === lastSignature) {
+      return;
+    }
+    lastSignature = sig;
+    container.textContent = "";
+
+    if (!domains.length) {
+      const empty = document.createElement("p");
+      empty.className = "text-muted p-2 mb-0";
+      empty.textContent = "Waiting for HTTP(S) traffic...";
+      container.appendChild(empty);
+      return;
+    }
+
+    domains.forEach(function(domain) {
+      const group = document.createElement("div");
+      group.className = "traffic-domain-group";
+
+      const title = document.createElement("div");
+      title.className = "traffic-domain-title";
+      title.textContent = domain;
+      group.appendChild(title);
+
+      (sortedFlows[domain] || []).forEach(function(flw) {
+        const item = document.createElement("div");
+        item.className = "traffic-item";
+        if (flw.id === selectedFlowId) {
+          item.classList.add("active");
+        }
+        item.dataset.flowId = flw.id;
+        const statusText = flw.status_code ? " [" + flw.status_code + "]" : "";
+        item.textContent = flw.method + statusText + " " + flw.relative;
+        item.addEventListener("click", function() {
+          loadFlowDetail(flw.id);
+        });
+        group.appendChild(item);
+      });
+      container.appendChild(group);
+    });
+  }
+
+  function refreshFlows() {
+    if (!currentProject) return;
+    const url = trafficUrl + "?project=" + encodeURIComponent(currentProject) + "&json=1";
+    fetch(url, {credentials: "same-origin", cache: "no-store"})
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data.sorted_flows) {
+          renderFlows(data.sorted_flows);
+        }
+      })
+      .catch(function() {});
+  }
+
+  document.getElementById("project_select").addEventListener("change", function(e) {
+    currentProject = e.target.value;
+    selectedFlowId = null;
+    lastSignature = "";
+    document.getElementById("request_box").value = "";
+    document.getElementById("response_box").value = "";
+    refreshFlows();
+  });
+
+  document.getElementById("refresh_btn").addEventListener("click", refreshFlows);
+
+  refreshFlows();
+  setInterval(function() {
+    const toggle = document.getElementById("live_toggle");
+    if (toggle && toggle.checked) {
+      refreshFlows();
+    }
+  }, 2000);
+})();
+</script>
+{% endblock %}

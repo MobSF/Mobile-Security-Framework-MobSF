@@ -116,7 +116,6 @@ def get_executable_hashes():
         'adb',
         'adb.exe',
         'which',
-        'httptools',
         'mitmdump',
         'unzip',
         'lipo',
