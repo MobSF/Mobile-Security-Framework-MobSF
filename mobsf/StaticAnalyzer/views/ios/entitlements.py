@@ -39,9 +39,23 @@ def _extract_cms_signer(cms_bytes):
     """Extract the leaf signer human-friendly subject from CMS SignedData."""
     try:
         info = cms.ContentInfo.load(cms_bytes)
-        certs = info['content']['certificates']
-        for cert_choice in reversed(list(certs)):
-            subject = cert_choice.chosen.subject.human_friendly
+        signed_data = info['content']
+        certs = [c.chosen for c in signed_data['certificates']]
+        for signer_info in signed_data['signer_infos']:
+            sid = signer_info['sid']
+            if sid.name == 'issuer_and_serial_number':
+                ias = sid.chosen
+                for cert in certs:
+                    if (cert.issuer == ias['issuer']
+                            and cert.serial_number == ias['serial_number'].native):
+                        return cert.subject.human_friendly
+            elif sid.name == 'subject_key_identifier':
+                ski = sid.chosen.native
+                for cert in certs:
+                    if cert.key_identifier == ski:
+                        return cert.subject.human_friendly
+        for cert in reversed(certs):
+            subject = cert.subject.human_friendly
             if ('Apple Root CA' not in subject
                     and 'Certification Authority' not in subject):
                 return subject
@@ -54,6 +68,7 @@ def _parse_cs_superblob(raw):
     """Parse Mach-O LC_CODE_SIGNATURE SuperBlob for entitlements and signer."""
     entitlements = {}
     signer = ''
+    seen_blobs = set()
     if len(raw) < 12:
         return entitlements, signer
     magic, _, count = struct.unpack('>III', raw[:12])
@@ -65,17 +80,22 @@ def _parse_cs_superblob(raw):
         if offset < 0 or offset + 8 > len(raw):
             continue
         blob_magic, blob_len = struct.unpack('>II', raw[offset:offset + 8])
-        if blob_len < 8 or offset + blob_len > len(raw):
+        if (blob_magic not in (
+                CSMAGIC_EMBEDDED_ENTITLEMENTS, CSMAGIC_BLOBWRAPPER)
+                or blob_magic in seen_blobs
+                or blob_len < 8
+                or offset + blob_len > len(raw)):
             continue
+        seen_blobs.add(blob_magic)
         payload = raw[offset + 8:offset + blob_len]
-        if blob_magic == CSMAGIC_EMBEDDED_ENTITLEMENTS and not entitlements:
+        if blob_magic == CSMAGIC_EMBEDDED_ENTITLEMENTS:
             try:
                 loaded = plistlib.loads(payload)
                 if isinstance(loaded, dict):
                     entitlements = loaded
             except Exception:
                 pass
-        elif blob_magic == CSMAGIC_BLOBWRAPPER and not signer:
+        elif blob_magic == CSMAGIC_BLOBWRAPPER:
             signer = _extract_cms_signer(payload)
     return entitlements, signer
 
@@ -140,16 +160,22 @@ def extract_mobileprovision(dot_app_path):
     if not plist_obj:
         return {}
     signer = ''
-    for cert_der in plist_obj.get('DeveloperCertificates', []):
-        try:
-            cert = x509.Certificate.load(cert_der)
-            signer = cert.subject.human_friendly
-            if signer:
-                break
-        except Exception:
-            continue
-    team_ids = plist_obj.get('TeamIdentifier') or []
-    team_id = team_ids[0] if isinstance(team_ids, list) and team_ids else ''
+    dev_certs = plist_obj.get('DeveloperCertificates')
+    if isinstance(dev_certs, (list, tuple)):
+        for cert_der in dev_certs:
+            try:
+                cert = x509.Certificate.load(cert_der)
+                signer = cert.subject.human_friendly
+                if signer:
+                    break
+            except Exception:
+                continue
+    team_ids = plist_obj.get('TeamIdentifier')
+    team_id = (
+        team_ids[0]
+        if isinstance(team_ids, (list, tuple)) and team_ids
+        else ''
+    )
     entitlements = plist_obj.get('Entitlements')
     return {
         'entitlements': entitlements if isinstance(entitlements, dict) else {},
@@ -370,13 +396,16 @@ def ipa_entitlements_analysis(checksum, findings, dot_app_path, bin_path):
         macho_ents, macho_signer = extract_macho_entitlements(bin_path)
         profile = extract_mobileprovision(dot_app_path)
         prof_ents = profile.get('entitlements') or {}
-        effective_ents = dict(prof_ents)
-        effective_ents.update(macho_ents)
+        effective_ents = dict(macho_ents) if macho_ents else dict(prof_ents)
         for _, title, detailed_desc, rule in evaluate_entitlements(
                 effective_ents, profile):
             _add_bfindings(findings, title, detailed_desc, rule)
         signer = macho_signer or profile.get('signer') or ''
-        app_id = effective_ents.get('application-identifier', '')
+        app_id = (
+            effective_ents.get('application-identifier')
+            or prof_ents.get('application-identifier')
+            or ''
+        )
         team_id = (
             effective_ents.get('com.apple.developer.team-identifier')
             or profile.get('team_id')
@@ -429,20 +458,25 @@ def source_entitlements_analysis(src, code_findings):
             rel_posix = rel.as_posix()
             for rule_id, title, detailed_desc, rule in evaluate_entitlements(
                     ent_dict):
-                entry = code_findings.setdefault(
-                    rule_id,
-                    {
+                desc = f'{title}: {detailed_desc}'
+                if rule_id not in code_findings:
+                    code_findings[rule_id] = {
                         'files': {},
                         'metadata': {
-                            'description': f'{title}: {detailed_desc}',
+                            'description': desc,
                             'severity': rule['severity'],
                             'cvss': rule['cvss'],
                             'cwe': rule['cwe'],
                             'owasp-mobile': rule['owasp-mobile'],
                             'masvs': rule['masvs'],
                         },
-                    },
-                )
-                entry['files'][rel_posix] = '1'
+                    }
+                else:
+                    existing = code_findings[rule_id]['metadata']['description']
+                    if detailed_desc not in existing:
+                        code_findings[rule_id]['metadata']['description'] = (
+                            f'{existing} {detailed_desc}'
+                        )
+                code_findings[rule_id]['files'][rel_posix] = '1'
         except Exception:
             logger.warning('Failed to parse source entitlements file')
