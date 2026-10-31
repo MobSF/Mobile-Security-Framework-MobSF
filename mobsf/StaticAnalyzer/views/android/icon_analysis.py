@@ -198,6 +198,12 @@ def guess_icon_path(res_dir):
                             if _is_valid_icon_file(match):
                                 return match
 
+    for fname in ('ic_launcher.xml', 'ic_launcher_round.xml'):
+        for xml_path in res_index.get(fname, ()):
+            path = Path(xml_path)
+            if path.is_file() and not is_pipe_or_link(path):
+                return path.as_posix()
+
     return ''
 
 
@@ -333,8 +339,13 @@ def get_icon_apk_res(app_dic):
         if res_path.exists() and not icon_name:
             icon_name = ''
             logger.warning('androguard/aapt2 cannot find icon resource')
-            icon_name = guess_icon_path(str(res_path))
-            icon_src = icon_name
+            guessed = guess_icon_path(str(res_path))
+            if guessed:
+                try:
+                    icon_name = Path(guessed).relative_to(app_dir).as_posix()
+                except ValueError:
+                    icon_name = guessed
+                icon_src = guessed
 
         if icon_name and icon_name.endswith('.xml'):
             # Handle XML icon case
@@ -451,17 +462,17 @@ def _resolve_adaptive_icon_xml(app_dir, icon_xml_file):
     """Return the readable adaptive-icon XML Path in apktool_out or app_dir."""
     if not is_safe_path(app_dir, app_dir / icon_xml_file, icon_xml_file):
         return None
-    for candidate in (
-        app_dir / 'apktool_out' / icon_xml_file,
-        app_dir / icon_xml_file,
-    ):
-        if candidate.is_file() and not is_pipe_or_link(candidate):
-            return candidate
+    apktool_candidate = app_dir / 'apktool_out' / icon_xml_file
+    if apktool_candidate.is_file() and not is_pipe_or_link(apktool_candidate):
+        return apktool_candidate
     apktool_res = app_dir / 'apktool_out' / 'res'
     if apktool_res.exists():
         for candidate in apktool_res.glob('mipmap-anydpi*/ic_launcher*.xml'):
             if candidate.is_file() and not is_pipe_or_link(candidate):
                 return candidate
+    direct_candidate = app_dir / icon_xml_file
+    if direct_candidate.is_file() and not is_pipe_or_link(direct_candidate):
+        return direct_candidate
     return None
 
 
@@ -480,12 +491,16 @@ def get_icon_svg_from_xml(app_dir, icon_xml_file):
         foreground = parsed.getElementsByTagName('foreground')
         background = parsed.getElementsByTagName('background')
         ficon = foreground[0].getAttribute(
-            'android:drawable').rsplit('/', 1)[1]
+            'android:drawable').rsplit('/', 1)[1].strip()
         bicon = background[0].getAttribute(
-            'android:drawable').rsplit('/', 1)[1]
+            'android:drawable').rsplit('/', 1)[1].strip()
+        if is_path_traversal(ficon) or is_path_traversal(bicon):
+            return None
         fpath = search_loc / f'{ficon}.svg'
         bpath = search_loc / f'{bicon}.svg'
-        if not (_is_valid_icon_file(fpath) and _is_valid_icon_file(bpath)):
+        if (not is_safe_path(search_loc, fpath, f'{ficon}.svg')
+                or not is_safe_path(search_loc, bpath, f'{bicon}.svg')
+                or not (_is_valid_icon_file(fpath) and _is_valid_icon_file(bpath))):
             return None
         output = search_loc / f'{icon_xml.stem}.svg'
         return transform_svg(fpath, bpath, output)
@@ -530,20 +545,29 @@ def _collect_vector_xml_names(app_dir, icon_name, drawable_dir):
     """Return vector XML filenames in drawable_dir referenced by the icon."""
     if not drawable_dir.is_dir():
         return []
-    candidates = set()
-    icon_xml = _resolve_adaptive_icon_xml(app_dir, icon_name)
-    if icon_xml:
-        for ref in _extract_drawable_refs_from_xml(icon_xml):
-            candidates.add(f'{ref}.xml')
-    candidates.update((
+    queue = [
         'ic_launcher.xml',
         'ic_launcher_foreground.xml',
         'ic_launcher_background.xml',
-    ))
-    vector_files = []
-    for fname in sorted(candidates):
-        if fname.startswith('-'):
+    ]
+    icon_xml = _resolve_adaptive_icon_xml(app_dir, icon_name)
+    if icon_xml:
+        for ref in _extract_drawable_refs_from_xml(icon_xml):
+            queue.append(f'{ref}.xml')
+    visited = set()
+    while queue:
+        fname = queue.pop(0)
+        if fname in visited or fname.startswith('-'):
             continue
+        visited.add(fname)
+        fpath = drawable_dir / fname
+        if fpath.is_file() and not is_pipe_or_link(fpath):
+            for sub_ref in _extract_drawable_refs_from_xml(fpath):
+                sub_name = f'{sub_ref}.xml'
+                if sub_name not in visited:
+                    queue.append(sub_name)
+    vector_files = []
+    for fname in sorted(visited):
         fpath = drawable_dir / fname
         if not fpath.is_file() or is_pipe_or_link(fpath):
             continue
