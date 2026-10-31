@@ -416,11 +416,15 @@ def get_icon_apk(app_dic):
 def transform_svg(fpath, bpath, output):
     """Transform SVG from foreground and background."""
     try:
+        if not (_is_valid_icon_file(fpath) and _is_valid_icon_file(bpath)):
+            return None
         parser = etree.XMLParser(resolve_entities=False, no_network=True)
         background = etree.parse(bpath, parser=parser)
         logo = etree.parse(fpath, parser=parser)
         bg_root = background.getroot()
         logo_root = logo.getroot()
+        if not len(logo_root):
+            return None
         attrib = {'transform': 'translate(1, 1)'}
         if 'class' in logo_root.attrib:
             attrib['class'] = logo_root.attrib['class']
