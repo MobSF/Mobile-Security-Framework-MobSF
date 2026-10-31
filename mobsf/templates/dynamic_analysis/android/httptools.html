@@ -13,6 +13,7 @@
     font-size: 0.9rem;
     padding: 6px 10px;
     background: #eef2f7;
+    color: #1e293b;
     border-radius: 4px;
     word-break: break-all;
   }
@@ -21,6 +22,7 @@
     width: 100%;
     text-align: left;
     background: transparent;
+    color: inherit;
     border: 0;
     cursor: pointer;
     padding: 6px 10px;
@@ -62,6 +64,26 @@
     font-size: 13px;
     line-height: 1.45;
     background: #f8f9fa;
+  }
+  .dark-mode .traffic-domain-title {
+    background: #2c3136;
+    color: #f8f9fa;
+  }
+  .dark-mode .traffic-item {
+    color: #dee2e6;
+    border-bottom-color: #4b545c;
+  }
+  .dark-mode .traffic-item:hover,
+  .dark-mode .traffic-item.active {
+    background-color: #3f474e;
+    color: #ffffff;
+  }
+  .dark-mode .traffic-textarea,
+  .dark-mode .traffic-textarea:focus,
+  .dark-mode .traffic-textarea[readonly] {
+    background-color: #2c3136;
+    color: #dee2e6;
+    border-color: #4b545c;
   }
 </style>
 {% endblock %}
