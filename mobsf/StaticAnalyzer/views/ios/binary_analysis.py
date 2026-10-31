@@ -23,6 +23,9 @@ from mobsf.StaticAnalyzer.views.common.binary.strings import (
 from mobsf.StaticAnalyzer.views.ios.binary_rule_matcher import (
     binary_rule_matcher,
 )
+from mobsf.StaticAnalyzer.views.ios.entitlements import (
+    ipa_entitlements_analysis,
+)
 from mobsf.MobSF.utils import (
     append_scan_status,
 )
@@ -257,6 +260,11 @@ def binary_analysis(
                 checksum,
                 binary_findings,
                 macho['symbols'], classdump)
+            ipa_entitlements_analysis(
+                checksum,
+                binary_findings,
+                dot_app_path,
+                bin_path)
             bin_dict['checksec'] = macho['checksec']
             bin_dict['libraries'] = macho['libraries']
             bin_dict['bin_code_analysis'] = binary_findings
