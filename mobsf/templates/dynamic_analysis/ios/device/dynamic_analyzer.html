@@ -112,6 +112,7 @@
                  <div id="but" align="center">
                   <a href="#" id="ss" class="btn btn-primary" role="button"><i class="fa fa-camera"></i> Take a Screenshot</a>
                   <a href="{% url 'system_logs_device' %}?device_id={{device_id}}" target="_blank" id="system_logs" class="btn btn-primary"><i class="fa fa-water"></i> System Logs</a>
+                  <a href="{% url 'httptools' %}?project={{ bundle_id }}" target="_blank" class="btn btn-primary" role="button"><i class="fa fa-globe"></i> Live Web Traffic</a>
                   <a href="{% url 'ios_api_monitor' %}?checksum={{ checksum }}&bundle_id={{ bundle_id }}" id="apimon" target="_blank" class="btn btn-primary" style='display: none'><i class="fa fa-search"></i> Live API Monitor</a>
                   <a href="#" id="report" class="btn btn-info disabled" role="button"><i class="fa fa-file-alt"></i> Generate Report</a>
                 </div>

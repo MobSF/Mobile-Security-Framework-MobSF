@@ -1,0 +1,367 @@
+{% extends "base/base_layout.html" %}
+{% load static %}
+{% block sidebar_option %}
+    sidebar-collapse
+{% endblock %}
+{% block extra_css %}
+<style>
+  .traffic-domain-group {
+    margin-bottom: 10px;
+  }
+  .traffic-domain-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 6px 10px;
+    background: #eef2f7;
+    border-radius: 4px;
+    word-break: break-all;
+  }
+  .traffic-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    font-family: monospace;
+    font-size: 0.82rem;
+    word-break: break-all;
+  }
+  .traffic-item:hover, .traffic-item.active {
+    background-color: #e2e8f0;
+    color: #1e293b;
+  }
+  .traffic-row {
+    min-height: calc(100vh / 0.8 - 205px);
+  }
+  .traffic-card {
+    height: calc(100vh / 0.8 - 205px);
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+  }
+  .traffic-pane {
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+  .traffic-detail-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .traffic-textarea {
+    width: 100%;
+    flex: 1 1 0;
+    min-height: 220px;
+    resize: vertical;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 13px;
+    line-height: 1.45;
+    background: #f8f9fa;
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="content-wrapper">
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2 align-items-center">
+        <div class="col-md-7">
+          <h2 id="page_heading"><strong>Web Traffic</strong>{% if project %} - {{ project }}{% endif %}</h2>
+        </div>
+        <div class="col-md-5 text-md-right">
+          <div class="d-inline-flex align-items-center">
+            <select id="project_select" class="form-control form-control-sm mr-2" style="width: auto;">
+              {% if project %}
+              <option value="{{ project }}" selected>{{ project }}</option>
+              {% endif %}
+              {% for pp in projects %}
+                {% if pp != project %}
+                <option value="{{ pp }}">{{ pp }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+            <button id="refresh_btn" type="button" class="btn btn-sm btn-primary mr-2">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <button id="fuzzer_btn" type="button" class="btn btn-sm btn-success mr-2" data-toggle="modal" data-target="#fuzzer_modal">
+              <i class="fas fa-paper-plane"></i> Send to Fuzzer
+            </button>
+            <div class="custom-control custom-switch d-inline-block">
+              <input type="checkbox" class="custom-control-input" id="live_toggle" checked>
+              <label class="custom-control-label" for="live_toggle">Live</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Send to Fuzzer Modal -->
+  <div id="fuzzer_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fuzzer_modal_label" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="fuzzer_modal_label"><i class="fas fa-paper-plane mr-1"></i> Send to Fuzzer</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="fuzzer_form">
+          {% csrf_token %}
+          <div class="modal-body">
+            <p class="text-muted mb-2">Forward captured requests for the selected project to Burp Suite, OWASP ZAP, or another upstream proxy.</p>
+            <div class="form-group mb-2">
+              <label for="fuzzer_proxy">Fuzzer Proxy URL</label>
+              <input type="text" class="form-control" id="fuzzer_proxy" name="proxy" value="http://127.0.0.1:8080" required>
+            </div>
+            <div id="fuzzer_status" class="small mt-2"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+            <button type="submit" id="fuzzer_submit" class="btn btn-info btn-sm">Repeat Requests</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid pb-2">
+    <div class="row traffic-row">
+      <div class="col-md-4 d-flex flex-column">
+        <div class="card card-default traffic-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-globe mr-1"></i> Captured Requests (<span id="flow_count">0</span>)</h3>
+          </div>
+          <div class="card-body p-2 traffic-pane" id="traffic_list">
+            <p class="text-muted p-2 mb-0" id="empty_msg">Waiting for HTTP(S) traffic...</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-8 d-flex flex-column">
+        <div class="card card-default traffic-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-exchange-alt mr-1"></i> Request &amp; Response</h3>
+          </div>
+          <div class="card-body traffic-detail-body">
+            <h6><strong>REQUEST</strong></h6>
+            <textarea class="form-control traffic-textarea mb-3" id="request_box" readonly></textarea>
+            <h6><strong>RESPONSE</strong></h6>
+            <textarea class="form-control traffic-textarea" id="response_box" readonly></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function() {
+  const trafficUrl = "{% url 'httptools' %}";
+  const projectSelect = document.getElementById("project_select");
+  let currentProject = "{{ project|escapejs }}" || (projectSelect ? projectSelect.value : "");
+  let selectedFlowId = null;
+  let lastSignature = "";
+
+  function updateTitle(pkg) {
+    const titleText = pkg ? "Web Traffic - " + pkg : "Web Traffic";
+    document.title = titleText;
+    const heading = document.getElementById("page_heading");
+    if (heading) {
+      heading.textContent = "";
+      const strong = document.createElement("strong");
+      strong.textContent = "Web Traffic";
+      heading.appendChild(strong);
+      if (pkg) {
+        heading.appendChild(document.createTextNode(" - " + pkg));
+      }
+    }
+  }
+
+  function formatRequest(req) {
+    if (!req) return "";
+    let lines = [req.method + " " + req.url + " " + req.http_version];
+    if (req.headers) {
+      Object.keys(req.headers).forEach(function(k) {
+        lines.push(k + ": " + req.headers[k]);
+      });
+    }
+    if (req.content) {
+      lines.push("", req.content);
+    }
+    return lines.join("\n");
+  }
+
+  function formatResponse(res) {
+    if (!res) return "";
+    let lines = [res.http_version + " " + res.status_code + " " + (res.reason || "")];
+    if (res.headers) {
+      Object.keys(res.headers).forEach(function(k) {
+        lines.push(k + ": " + res.headers[k]);
+      });
+    }
+    if (res.content) {
+      lines.push("", res.content);
+    }
+    return lines.join("\n");
+  }
+
+  function loadFlowDetail(flowId) {
+    const requestedProject = currentProject;
+    selectedFlowId = flowId;
+    document.querySelectorAll(".traffic-item").forEach(function(el) {
+      el.classList.toggle("active", el.dataset.flowId === flowId);
+    });
+    const url = trafficUrl + "?project=" + encodeURIComponent(requestedProject)
+      + "&flow_id=" + encodeURIComponent(flowId) + "&json=1";
+    fetch(url, {credentials: "same-origin", cache: "no-store"})
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (requestedProject !== currentProject || selectedFlowId !== flowId) {
+          return;
+        }
+        if (data && data.request) {
+          document.getElementById("request_box").value = formatRequest(data.request);
+          document.getElementById("response_box").value = formatResponse(data.response);
+        }
+      })
+      .catch(function() {});
+  }
+
+  function renderFlows(sortedFlows) {
+    const container = document.getElementById("traffic_list");
+    const domains = Object.keys(sortedFlows || {});
+    let total = 0;
+    domains.forEach(function(d) { total += sortedFlows[d].length; });
+    document.getElementById("flow_count").textContent = String(total);
+
+    const sig = JSON.stringify(sortedFlows);
+    if (sig === lastSignature) {
+      return;
+    }
+    lastSignature = sig;
+    container.textContent = "";
+
+    if (!domains.length) {
+      const empty = document.createElement("p");
+      empty.className = "text-muted p-2 mb-0";
+      empty.textContent = "Waiting for HTTP(S) traffic...";
+      container.appendChild(empty);
+      return;
+    }
+
+    domains.forEach(function(domain) {
+      const group = document.createElement("div");
+      group.className = "traffic-domain-group";
+
+      const title = document.createElement("div");
+      title.className = "traffic-domain-title";
+      title.textContent = domain;
+      group.appendChild(title);
+
+      (sortedFlows[domain] || []).forEach(function(flw) {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "traffic-item";
+        if (flw.id === selectedFlowId) {
+          item.classList.add("active");
+        }
+        item.dataset.flowId = flw.id;
+        const statusText = flw.status_code ? " [" + flw.status_code + "]" : "";
+        item.textContent = flw.method + statusText + " " + flw.relative;
+        item.addEventListener("click", function() {
+          loadFlowDetail(flw.id);
+        });
+        group.appendChild(item);
+      });
+      container.appendChild(group);
+    });
+  }
+
+  function refreshFlows() {
+    if (!currentProject) return;
+    const requestedProject = currentProject;
+    const url = trafficUrl + "?project=" + encodeURIComponent(requestedProject) + "&json=1";
+    fetch(url, {credentials: "same-origin", cache: "no-store"})
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (requestedProject !== currentProject) {
+          return;
+        }
+        if (data && data.sorted_flows) {
+          renderFlows(data.sorted_flows);
+        }
+      })
+      .catch(function() {});
+  }
+
+  if (projectSelect) {
+    projectSelect.addEventListener("change", function(e) {
+      currentProject = e.target.value;
+      updateTitle(currentProject);
+      selectedFlowId = null;
+      lastSignature = "";
+      document.getElementById("request_box").value = "";
+      document.getElementById("response_box").value = "";
+      refreshFlows();
+    });
+  }
+
+  document.getElementById("refresh_btn").addEventListener("click", refreshFlows);
+
+  document.getElementById("fuzzer_form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const statusEl = document.getElementById("fuzzer_status");
+    const submitBtn = document.getElementById("fuzzer_submit");
+    if (!currentProject) {
+      statusEl.className = "small mt-2 text-danger";
+      statusEl.textContent = "No project selected.";
+      return;
+    }
+    const formData = new FormData(e.target);
+    formData.set("action", "repeat");
+    formData.set("project", currentProject);
+    submitBtn.disabled = true;
+    statusEl.className = "small mt-2 text-muted";
+    statusEl.textContent = "Sending captured traffic to upstream proxy...";
+    fetch(trafficUrl, {
+      method: "POST",
+      body: formData,
+      credentials: "same-origin",
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        submitBtn.disabled = false;
+        if (data && data.status === "ok") {
+          statusEl.className = "small mt-2 text-success";
+          statusEl.textContent = data.message || "Replaying captured requests to upstream proxy.";
+        } else {
+          statusEl.className = "small mt-2 text-danger";
+          statusEl.textContent = (data && data.message) || "Failed to replay requests.";
+        }
+      })
+      .catch(function() {
+        submitBtn.disabled = false;
+        statusEl.className = "small mt-2 text-danger";
+        statusEl.textContent = "Failed to replay requests.";
+      });
+  });
+
+  updateTitle(currentProject);
+  refreshFlows();
+  setInterval(function() {
+    const toggle = document.getElementById("live_toggle");
+    if (toggle && toggle.checked) {
+      refreshFlows();
+    }
+  }, 2000);
+})();
+</script>
+{% endblock %}

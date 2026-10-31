@@ -622,11 +622,6 @@ def check_basic_env():
     """Check if we have basic env for MobSF to run."""
     logger.info('MobSF Basic Environment Check')
     try:
-        import http_tools  # noqa F401
-    except ImportError:
-        logger.exception('httptools not installed!')
-        os.kill(os.getpid(), signal.SIGTERM)
-    try:
         import lxml  # noqa F401
     except ImportError:
         logger.exception('lxml is not installed!')
