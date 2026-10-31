@@ -154,7 +154,7 @@ def common_analysis(scan_type, app_dic, checksum):
 
 
 def get_embedded_framework_deps(app_dic):
-    """Extract CFBundleIdentifier values from embedded .framework bundles."""
+    """Extract bundle IDs and names from embedded .framework bundles."""
     from plistlib import load
     deps = []
     scan_dir = app_dic.get('app_root') or app_dic.get('app_dir')
@@ -170,13 +170,17 @@ def get_embedded_framework_deps(app_dic):
                     or not plist_path.is_file()
                     or is_pipe_or_link(plist_path)):
                 continue
+            for part in rel.parts:
+                if part.endswith('.framework') and len(part) > 10:
+                    deps.append(part[:-10])
             with open(plist_path, 'rb') as fp:
                 plist_obj = load(fp)
             if not isinstance(plist_obj, dict):
                 continue
-            bundle_id = plist_obj.get('CFBundleIdentifier')
-            if isinstance(bundle_id, str) and bundle_id.strip():
-                deps.append(bundle_id.strip())
+            for key in ('CFBundleIdentifier', 'CFBundleName'):
+                val = plist_obj.get(key)
+                if isinstance(val, str) and val.strip():
+                    deps.append(val.strip())
         except Exception:
             continue
     return deps

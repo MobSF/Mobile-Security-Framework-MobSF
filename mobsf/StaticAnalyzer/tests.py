@@ -958,14 +958,31 @@ class IOSPlistAndFrameworkTrackerTests(SimpleTestCase):
     def test_get_embedded_framework_deps_extracts_bundle_identifiers(self):
         import plistlib
         import tempfile
+        from unittest import mock
+        from mobsf.MalwareAnalyzer.views.Trackers import Trackers
         with tempfile.TemporaryDirectory() as tmp:
-            fw_dir = (
-                Path(tmp) / 'Payload' / 'App.app' / 'Frameworks'
-                / 'AppsFlyerLib.framework'
-            )
-            fw_dir.mkdir(parents=True)
-            (fw_dir / 'Info.plist').write_bytes(
-                plistlib.dumps({'CFBundleIdentifier': 'com.appsflyer.sdk'}))
-            deps = get_embedded_framework_deps(
-                {'app_root': Path(tmp) / 'Payload' / 'App.app'})
-            self.assertEqual(deps, ['com.appsflyer.sdk'])
+            app_root = Path(tmp) / 'Payload' / 'App.app'
+            for fw_name, bid in (
+                ('AppsFlyerLib.framework', 'com.appsflyer.AppsFlyerLib'),
+                ('FirebaseAnalytics.framework', 'org.cocoapods.FirebaseAnalytics'),
+                ('Adjust.framework', 'com.adjust.sdk'),
+                ('Localytics.framework', 'com.localytics.ios'),
+            ):
+                fw_dir = app_root / 'Frameworks' / fw_name
+                fw_dir.mkdir(parents=True)
+                (fw_dir / 'Info.plist').write_bytes(
+                    plistlib.dumps({'CFBundleIdentifier': bid}))
+            deps = get_embedded_framework_deps({'app_root': app_root})
+            self.assertIn('com.appsflyer.AppsFlyerLib', deps)
+            self.assertIn('FirebaseAnalytics', deps)
+            with (mock.patch.object(Trackers, '_update_tracker_db'),
+                  mock.patch(
+                      'mobsf.MalwareAnalyzer.views.Trackers.append_scan_status',
+            )):
+                trk = Trackers('0' * 32, None, settings.TOOLS_DIR)
+                res = trk.get_trackers_domains_or_deps([], deps)
+            names = {t['name'] for t in res['trackers']}
+            self.assertIn('AppsFlyer', names)
+            self.assertIn('Google Firebase Analytics', names)
+            self.assertIn('Adjust', names)
+            self.assertIn('Localytics', names)
