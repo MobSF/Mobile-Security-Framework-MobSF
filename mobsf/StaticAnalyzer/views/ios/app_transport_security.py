@@ -1,6 +1,8 @@
 def check_transport_security(p_list):
     """Check info.plist for insecure connection configurations."""
     ats = []
+    if not isinstance(p_list, dict):
+        return ats
     if 'NSAppTransportSecurity' in p_list:
         ats_dict = p_list['NSAppTransportSecurity']
         if ats_dict and ats_dict.get('NSAllowsArbitraryLoads'):
@@ -246,17 +248,18 @@ def check_transport_security(p_list):
                 'device trusts. Do not store sensitive application data in '
                 '/Documents when file sharing is enabled.'),
         })
-    if p_list.get('LSSupportsOpeningDocumentsInPlace') is True:
-        ats.append({
-            'issue': 'Opening documents in place is enabled '
-                     '(LSSupportsOpeningDocumentsInPlace)',
-            'severity': 'warning',
-            'description': (
-                'LSSupportsOpeningDocumentsInPlace is set to true in '
-                'Info.plist. This allows the Files app and other installed '
-                'applications to directly read and modify files inside the '
-                'application\'s /Documents directory in place rather than '
-                'working on a copy.'),
-        })
+        if p_list.get('LSSupportsOpeningDocumentsInPlace') is True:
+            ats.append({
+                'issue': 'Opening documents in place is enabled '
+                         '(LSSupportsOpeningDocumentsInPlace)',
+                'severity': 'warning',
+                'description': (
+                    'Both UIFileSharingEnabled and '
+                    'LSSupportsOpeningDocumentsInPlace are set to true in '
+                    'Info.plist. This exposes the application\'s /Documents '
+                    'directory in the Files app and allows user-authorized '
+                    'applications to open and modify those files in place '
+                    'rather than working on a copy.'),
+            })
 
     return ats
