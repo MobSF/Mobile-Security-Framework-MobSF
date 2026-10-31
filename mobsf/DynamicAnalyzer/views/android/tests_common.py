@@ -319,6 +319,7 @@ def collect_logs(request, api=False, identifier=None):
             if env.get_android_version() < 5:
                 download_xposed_log(apk_dir, env.identifier)
         finally:
+            stop_httptools()
             env.adb_command(['am', 'force-stop', package], True)
             logger.info('Stopping app')
             env.clear_proxy()
