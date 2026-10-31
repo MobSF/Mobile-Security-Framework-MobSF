@@ -9,7 +9,6 @@ import time
 from urllib.parse import urlparse
 
 from django.conf import settings
-from django.http.request import split_domain_port
 
 from mitmproxy import io as mitm_io
 from mitmproxy.http import HTTPFlow
@@ -351,11 +350,6 @@ def start_proxy(port, project):
             )
 
 
-def start_httptools_ui(port):
-    """No-op kept for backwards compatibility; UI is served directly by Django."""
-    return True
-
-
 def _mitm_ca_file():
     """Path to the mitmproxy generated CA cert."""
     from mitmproxy import options
@@ -410,12 +404,3 @@ def get_traffic(package):
     if web.is_file() and not is_pipe_or_link(web):
         return web.read_text('utf-8', 'ignore')
     return ''
-
-
-def get_http_tools_url(req):
-    """Get a validated browser URL for the local httptools UI."""
-    domain, _ = split_domain_port(req.get_host())
-    if not domain:
-        raise ValueError('Untrusted HTTPTools redirect host')
-    scheme = req.scheme if req.scheme in ('http', 'https') else 'http'
-    return f'{scheme}://{domain}:{settings.PROXY_PORT}'
