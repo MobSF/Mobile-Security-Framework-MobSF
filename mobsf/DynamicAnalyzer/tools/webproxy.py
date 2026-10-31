@@ -22,6 +22,7 @@ from mobsf.MobSF.security import (
     is_safe_path,
 )
 from mobsf.MobSF.utils import (
+    docker_translate_proxy_ip,
     strict_package_check,
     upstream_proxy,
 )
@@ -196,6 +197,7 @@ def _parse_fuzzer_proxy_parts(proxy_url):
     if port == int(settings.PROXY_PORT) and host in (
             '127.0.0.1', 'localhost', '::1', '0.0.0.0'):
         return None
+    host = docker_translate_proxy_ip(host)
     formatted_host = f'[{host}]' if ':' in host else host
     return (
         parsed.scheme,
