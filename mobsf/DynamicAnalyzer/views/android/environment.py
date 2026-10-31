@@ -1733,25 +1733,11 @@ class Environment:
             return True
         self.stop_frida_server()
         self.free_frida_port()
-        temp_path = '/data/local/tmp/mobsf-fd-server'
-        target_dir = '/data/local/tmp/mobsf'
-        target_path = f'{target_dir}/fd_server'
+        target_path = '/data/local/tmp/mobsf/fd_server'
         if self.adb_command(
                 ['test', '-x', target_path], True, True, timeout=5) is None:
-            if (self.adb_command(
-                    ['mkdir', '-p', target_dir], True, True, timeout=5) is None
-                    or self.adb_command(
-                        ['cp', '/system/fd_server', temp_path],
-                        True, True, timeout=10) is None
-                    or self.adb_command(
-                        ['chmod', '755', temp_path],
-                        True, True, timeout=5) is None
-                    or self.adb_command(
-                        ['mv', temp_path, target_path],
-                        True, True, timeout=5) is None):
-                self.adb_command(['rm', '-f', temp_path], True, True, timeout=5)
-                if not self.frida_setup():
-                    return False
+            if not self.frida_setup():
+                return False
 
         def start_frida():
             fnull = open(os.devnull, 'w')
