@@ -96,6 +96,8 @@ class ColorLogsWrapper(logging.Formatter):
     def __init__(self, fmt=None, datefmt=None, style='%', log_colors=None):
         super().__init__(fmt=fmt, datefmt=datefmt, style=style)
         self.log_colors = log_colors or {}
+        if platform.system() == 'Windows':
+            os.system('')
 
     def format(self, record):  # noqa: A003
         color_name = self.log_colors.get(record.levelname, '')
