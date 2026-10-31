@@ -1,7 +1,6 @@
 # -*- coding: utf_8 -*-
 """Android Dynamic Analysis."""
 import logging
-import os
 import subprocess
 from pathlib import Path
 from urllib.parse import quote
@@ -54,6 +53,7 @@ from mobsf.MobSF.security import is_path_traversal
 from mobsf.MobSF.utils import (
     clear_analysis_state,
     docker_translate_localhost,
+    get_adb,
     get_android_devices,
     get_android_dm_exception_msg,
     get_config_loc,
@@ -879,12 +879,17 @@ def logcat(request, api=False):
                 for ch in app_pkg
                 if ch in _SAFE_PKG_CHARS
             )
-            adb = os.environ['MOBSF_ADB']
+            identifier = get_device(request)
+            if not identifier:
+                return print_n_send_error_response(
+                    request,
+                    'Selected Android device is unavailable',
+                    api)
             logcat_proc = subprocess.Popen(
                 [
-                    adb,
+                    get_adb(),
                     '-s',
-                    get_device(request),
+                    identifier,
                     'logcat',
                     f'{safe_pkg}:V',
                     '*:*',
@@ -892,13 +897,14 @@ def logcat(request, api=False):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
+                bufsize=1,
                 errors='replace',
             )
 
             def read_process():
                 try:
-                    for line in logcat_proc.stdout:
-                        yield f'data:{line}\n\n'
+                    for line in iter(logcat_proc.stdout.readline, ''):
+                        yield f'data:{line.rstrip()}\n\n'
                 finally:
                     if logcat_proc.poll() is None:
                         logcat_proc.terminate()
