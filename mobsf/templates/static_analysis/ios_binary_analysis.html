@@ -62,6 +62,14 @@
           </li>
           {% if app_type not in 'Dylib,A' %}
            <li class="nav-item">
+            <a href="#code_signing" class="nav-link">
+              <i class="nav-icon fa fa-certificate"></i>
+              <p>
+                Code Signing
+              </p>
+            </a>
+          </li>
+           <li class="nav-item">
             <a href="#url_schemes" class="nav-link">
               <i class="nav-icon fas fa-hashtag"></i>
               <p>
@@ -482,6 +490,29 @@
 </section>
   <!-- ===========================end scan options================================== -->
 {% if app_type not in 'Dylib,A' %}
+<a id="code_signing" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+              <p>
+                <strong><i class="fa fa-certificate"></i> CODE SIGNING &amp; ENTITLEMENTS</strong>
+              </p>
+              {% if binary_info.code_signing %}
+                <pre><code>{{ binary_info.code_signing }}</code></pre>
+              {% else %}
+                <p>No Code Signing or Entitlements information found.</p>
+              {% endif %}
+          </div>
+        </div><!-- /.card -->
+        </div>
+        <!-- end row -->
+        </div>
+    </div>
+</section>
+ <!-- ===========================end code signing ================================== -->
 <a id="url_schemes" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">

@@ -260,11 +260,13 @@ def binary_analysis(
                 checksum,
                 binary_findings,
                 macho['symbols'], classdump)
-            ipa_entitlements_analysis(
+            code_signing_info = ipa_entitlements_analysis(
                 checksum,
                 binary_findings,
                 dot_app_path,
                 bin_path)
+            if code_signing_info:
+                bin_info['code_signing'] = code_signing_info
             bin_dict['checksec'] = macho['checksec']
             bin_dict['libraries'] = macho['libraries']
             bin_dict['bin_code_analysis'] = binary_findings

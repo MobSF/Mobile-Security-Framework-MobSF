@@ -819,17 +819,15 @@ class IOSEntitlementsAnalysisTests(SimpleTestCase):
             with mock.patch(
                 'mobsf.StaticAnalyzer.views.ios.entitlements.append_scan_status',
             ):
-                ipa_entitlements_analysis(
+                cs_info = ipa_entitlements_analysis(
                     '0' * 32, findings, app_root, bin_path)
             self.assertIn(
                 'Application is provisioned for Enterprise / '
                 'All-Devices distribution',
                 findings,
             )
-            self.assertIn(
-                'Application Code Signing and Entitlements',
-                findings,
-            )
+            self.assertIn('Signer:', cs_info)
+            self.assertIn('application-identifier:', cs_info)
             self.assertNotIn(
                 'Application uses a wildcard Keychain access group',
                 findings,

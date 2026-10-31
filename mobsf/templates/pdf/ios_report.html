@@ -181,6 +181,11 @@
       
      {% endif %}
 
+     {% if binary_info.code_signing %}
+      <h2><span class="fas">&#xf0a3;</span>  CODE SIGNING &amp; ENTITLEMENTS </h2>
+      <p class="wrapped-text">{{ binary_info.code_signing }}</p>
+     {% endif %}
+
        {% if bundle_url_types|length > 0 %}
        <h2><span class="fas">&#xf292;</span> CUSTOM URL SCHEMES</h2>
        <table class="basic">

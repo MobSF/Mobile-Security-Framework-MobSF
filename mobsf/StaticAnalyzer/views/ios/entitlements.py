@@ -387,6 +387,26 @@ def evaluate_entitlements(entitlements, profile_info=None):
     return results
 
 
+def _format_code_signing_info(signer, team_id, team_name, app_id, profile, ents):
+    """Format human-readable code signing and entitlements summary."""
+    lines = []
+    if signer:
+        lines.append(f'Signer: {signer}')
+    if team_name:
+        lines.append(f'Team Name: {team_name}')
+    if team_id:
+        lines.append(f'Team ID: {team_id}')
+    if app_id:
+        lines.append(f'Application ID: {app_id}')
+    if profile.get('profile_name'):
+        lines.append(f"Provisioning Profile: {profile['profile_name']}")
+    if ents:
+        lines.append('\nEntitlements:')
+        for key in sorted(ents.keys()):
+            lines.append(f'  {key}: {ents[key]}')
+    return '\n'.join(lines)
+
+
 def ipa_entitlements_analysis(checksum, findings, dot_app_path, bin_path):
     """Run Entitlements and Code Signing analysis on an extracted IPA."""
     try:
@@ -411,33 +431,19 @@ def ipa_entitlements_analysis(checksum, findings, dot_app_path, bin_path):
             or profile.get('team_id')
             or ''
         )
-        if signer or effective_ents:
-            parts = []
-            if signer:
-                parts.append(f'Signer: {signer}')
-            if team_id:
-                parts.append(f'Team ID: {team_id}')
-            if app_id:
-                parts.append(f'App ID: {app_id}')
-            if effective_ents:
-                keys = ', '.join(sorted(effective_ents.keys()))
-                parts.append(f'Entitlements: {keys}')
-            _add_bfindings(
-                findings,
-                'Application Code Signing and Entitlements',
-                ' | '.join(parts),
-                {
-                    'severity': 'info',
-                    'cvss': 0,
-                    'cwe': '',
-                    'owasp-mobile': '',
-                    'masvs': 'MSTG-RESILIENCE-1',
-                },
-            )
+        return _format_code_signing_info(
+            signer,
+            team_id,
+            profile.get('team_name', ''),
+            app_id,
+            profile,
+            effective_ents,
+        )
     except Exception as exp:
         msg = 'Failed to analyze iOS Entitlements'
         logger.exception(msg)
         append_scan_status(checksum, msg, repr(exp))
+    return ''
 
 
 def source_entitlements_analysis(src, code_findings):
