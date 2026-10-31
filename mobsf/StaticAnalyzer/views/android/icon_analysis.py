@@ -36,17 +36,6 @@ from mobsf.StaticAnalyzer.views.common.shared_func import (
 logger = logging.getLogger(__name__)
 
 
-# relative to res folder
-KNOWN_PATHS = [
-    'mipmap-hdpi',
-    'mipmap-xhdpi',
-    'drawable-hdpi',
-    'drawable-xhdpi',
-    'mipmap-mdpi',
-    'drawable-mdpi',
-    'mipmap-hdpi-v4',
-]
-
 KNOWN_MIPMAP_SIZES = [
     '-hdpi',
     '-hdpi-v4',
@@ -103,6 +92,17 @@ def _search_folder(src, file_pattern):
     return matches
 
 
+def _index_res_files(roots):
+    """Build a single-pass {filename: [paths]} index across resource roots."""
+    index = {}
+    for root in roots:
+        for dirpath, _, filenames in os.walk(root):
+            for fname in filenames:
+                index.setdefault(fname, []).append(
+                    os.path.join(dirpath, fname))
+    return index
+
+
 def _is_safe_icon_path(root, icon_file):
     """Verify a resolved icon path remains inside its application root."""
     try:
@@ -121,7 +121,7 @@ def _extract_drawable_refs_from_xml(xml_path):
     refs = []
     try:
         path = Path(xml_path)
-        if is_pipe_or_link(path):
+        if not path.is_file() or is_pipe_or_link(path):
             return refs
         parsed = parseString(path.read_text('utf8', 'ignore'))
         for tag in ('foreground', 'monochrome', 'item', 'bitmap', 'background'):
@@ -149,7 +149,7 @@ def guess_icon_path(res_dir):
     if apktool_res.exists() and apktool_res != res_path:
         search_roots.append(apktool_res)
 
-    icon_folders = [
+    icon_folders = (
         'mipmap-xxxhdpi',
         'mipmap-xxhdpi',
         'mipmap-xhdpi',
@@ -157,44 +157,45 @@ def guess_icon_path(res_dir):
         'mipmap-hdpi-v4',
         'mipmap-mdpi',
         'drawable',
-    ]
+    )
+    candidate_names = (
+        'ic_launcher.png',
+        'ic_launcher.webp',
+        'ic_launcher_round.png',
+        'ic_launcher_foreground.png',
+    )
     for root in search_roots:
         for icon_folder in icon_folders:
-            for candidate_name in (
-                'ic_launcher.png',
-                'ic_launcher.webp',
-                'ic_launcher_round.png',
-                'ic_launcher_foreground.png',
-            ):
+            for candidate_name in candidate_names:
                 guessed = root / icon_folder / candidate_name
                 if _is_valid_icon_file(guessed):
                     return guessed.as_posix()
 
-    for root in search_roots:
-        for pattern in ('ic_launcher.*', 'ic_launcher*'):
-            for guess in _search_folder(root.as_posix(), pattern):
-                if _is_valid_icon_file(guess):
-                    return guess
+    res_index = _index_res_files(search_roots)
+    for fname, paths in res_index.items():
+        if fname.startswith('ic_launcher'):
+            for candidate in paths:
+                if _is_valid_icon_file(candidate):
+                    return candidate
 
-    # Check adaptive-icon / layer-list XMLs in apktool_out/res for referenced PNGs
-    if apktool_res.exists():
-        xml_candidates = list(apktool_res.rglob('ic_launcher*.xml'))
-        for xml_file in xml_candidates:
-            for ref in _extract_drawable_refs_from_xml(xml_file):
-                for ext in ('.png', '.webp', '.svg'):
-                    for match in _search_folder(
-                            apktool_res.as_posix(), f'{ref}{ext}'):
-                        if _is_valid_icon_file(match):
-                            return match
-                nested_xmls = _search_folder(
-                    apktool_res.as_posix(), f'{ref}.xml')
-                for nested in nested_xmls:
-                    for sub_ref in _extract_drawable_refs_from_xml(nested):
-                        for ext in ('.png', '.webp', '.svg'):
-                            for match in _search_folder(
-                                    apktool_res.as_posix(), f'{sub_ref}{ext}'):
-                                if _is_valid_icon_file(match):
-                                    return match
+    # Follow adaptive-icon / layer-list XML references using the indexed map
+    xml_candidates = [
+        p for fname, paths in res_index.items()
+        if fname.startswith('ic_launcher') and fname.endswith('.xml')
+        for p in paths
+    ]
+    for xml_file in xml_candidates:
+        for ref in _extract_drawable_refs_from_xml(xml_file):
+            for ext in ('.png', '.webp', '.svg'):
+                for match in res_index.get(f'{ref}{ext}', ()):
+                    if _is_valid_icon_file(match):
+                        return match
+            for nested in res_index.get(f'{ref}.xml', ()):
+                for sub_ref in _extract_drawable_refs_from_xml(nested):
+                    for ext in ('.png', '.webp', '.svg'):
+                        for match in res_index.get(f'{sub_ref}{ext}', ()):
+                            if _is_valid_icon_file(match):
+                                return match
 
     return ''
 
@@ -441,15 +442,34 @@ def transform_svg(fpath, bpath, output):
         return None
 
 
+def _resolve_adaptive_icon_xml(app_dir, icon_xml_file):
+    """Return the readable adaptive-icon XML Path in apktool_out or app_dir."""
+    if not is_safe_path(app_dir, app_dir / icon_xml_file, icon_xml_file):
+        return None
+    for candidate in (
+        app_dir / 'apktool_out' / icon_xml_file,
+        app_dir / icon_xml_file,
+    ):
+        if candidate.is_file() and not is_pipe_or_link(candidate):
+            return candidate
+    apktool_res = app_dir / 'apktool_out' / 'res'
+    if apktool_res.exists():
+        for candidate in apktool_res.glob('mipmap-anydpi*/ic_launcher*.xml'):
+            if candidate.is_file() and not is_pipe_or_link(candidate):
+                return candidate
+    return None
+
+
 def get_icon_svg_from_xml(app_dir, icon_xml_file):
     """
     Parse XML file for icon path.
 
     Get icon path from XML.
     """
+    search_loc = app_dir / 'apktool_out' / 'res' / 'drawable'
     try:
-        icon_xml = app_dir / 'apktool_out' / icon_xml_file
-        if not is_safe_path(app_dir, icon_xml, icon_xml_file):
+        icon_xml = _resolve_adaptive_icon_xml(app_dir, icon_xml_file)
+        if not icon_xml or not search_loc.exists():
             return None
         parsed = parseString(icon_xml.read_text('utf8', 'ignore'))
         foreground = parsed.getElementsByTagName('foreground')
@@ -458,36 +478,25 @@ def get_icon_svg_from_xml(app_dir, icon_xml_file):
             'android:drawable').rsplit('/', 1)[1]
         bicon = background[0].getAttribute(
             'android:drawable').rsplit('/', 1)[1]
-        fpath, bpath = None, None
-        for f in icon_xml.parent.rglob('*.svg'):
-            if ficon in f.name:
-                fpath = f
-            if bicon in f.name:
-                bpath = f
-            if fpath and bpath:
-                break
-        # To not break existing users
-        output = icon_xml.parent / f'{icon_xml.stem}.svg'
+        fpath = search_loc / f'{ficon}.svg'
+        bpath = search_loc / f'{bicon}.svg'
+        if not (_is_valid_icon_file(fpath) and _is_valid_icon_file(bpath)):
+            return None
+        output = search_loc / f'{icon_xml.stem}.svg'
         return transform_svg(fpath, bpath, output)
     except Exception:
         try:
-            fsvg, bsvg = None, None
-            search_loc = app_dir / 'apktool_out' / 'res' / 'drawable'
             if not search_loc.exists():
                 return None
-            for f in search_loc.rglob('*.svg'):
-                if 'ic_launcher_foreground.svg' in f.name:
-                    fsvg = f
-                if 'ic_launcher_background.svg' in f.name:
-                    bsvg = f
-                if fsvg and bsvg:
-                    break
-            if fsvg and bsvg:
+            fsvg = search_loc / 'ic_launcher_foreground.svg'
+            bsvg = search_loc / 'ic_launcher_background.svg'
+            if _is_valid_icon_file(fsvg) and _is_valid_icon_file(bsvg):
                 output = search_loc / 'ic_launcher.svg'
                 return transform_svg(fsvg, bsvg, output)
             return None
         except Exception:
             logger.exception('Guessing icon svg')
+    return None
 
 
 def convert_axml_to_xml(app_dir, icon_file):
@@ -512,10 +521,45 @@ def convert_axml_to_xml(app_dir, icon_file):
         logger.exception('Failed to convert axml to xml')
 
 
+def _collect_vector_xml_names(app_dir, icon_name, drawable_dir):
+    """Return vector XML filenames in drawable_dir referenced by the icon."""
+    if not drawable_dir.is_dir():
+        return []
+    candidates = set()
+    icon_xml = _resolve_adaptive_icon_xml(app_dir, icon_name)
+    if icon_xml:
+        for ref in _extract_drawable_refs_from_xml(icon_xml):
+            candidates.add(f'{ref}.xml')
+    candidates.update((
+        'ic_launcher.xml',
+        'ic_launcher_foreground.xml',
+        'ic_launcher_background.xml',
+    ))
+    vector_files = []
+    for fname in sorted(candidates):
+        if fname.startswith('-'):
+            continue
+        fpath = drawable_dir / fname
+        if not fpath.is_file() or is_pipe_or_link(fpath):
+            continue
+        try:
+            raw = fpath.read_bytes()
+            if b'<vector' not in raw:
+                continue
+            modified = raw
+            for sys_color, hex_color in ANDROID_SYSTEM_COLORS:
+                modified = modified.replace(sys_color, hex_color)
+            if modified != raw:
+                fpath.write_bytes(modified)
+            vector_files.append(fname)
+        except OSError:
+            continue
+    return vector_files
+
+
 def convert_vector_to_svg(app_dir, tools_dir, icon_name, apktool_res):
     """Convert android vector graphics to svg."""
     try:
-        fnull = open(os.devnull, 'w')
         userbin = getattr(settings, 'VD2SVG_BINARY', '')
         if userbin and is_file_exists(userbin):
             vd2svg = userbin
@@ -529,33 +573,32 @@ def convert_vector_to_svg(app_dir, tools_dir, icon_name, apktool_res):
         cwd = direct.parent.as_posix()
 
         # When xml is referencing to vector use apktool_res
-        files = []
         if apktool_res:
             values = app_dir / 'apktool_out' / 'res' / 'values'
             drawable = app_dir / 'apktool_out' / 'res' / 'drawable'
             cwd = drawable.as_posix()
-            for f in drawable.parent.rglob('*.xml'):
-                if not f.name.startswith('-'):
-                    files.append(f.name)
-        elif direct.name.startswith('-'):
-            return
-        # Pass xml filename(s) and set cwd as parent
-        args = [
-            find_java_binary(),
-            '-jar',
-            vd2svg.as_posix(),
-            '-r',
-            values.as_posix(),
-        ]
-        if files:
-            args.extend(files)
+            files = _collect_vector_xml_names(app_dir, icon_name, drawable)
+            if not files:
+                return
         else:
-            args.extend([direct.name])
-        subprocess.run(
-            args,
-            stdout=fnull,
-            stderr=subprocess.STDOUT,
-            cwd=cwd,
-            timeout=30)
+            if direct.name.startswith('-'):
+                return
+            files = [direct.name]
+        for xml_file in files:
+            subprocess.run(
+                [
+                    find_java_binary(),
+                    '-jar',
+                    vd2svg.as_posix(),
+                    '-r',
+                    values.as_posix(),
+                    xml_file,
+                ],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                cwd=cwd,
+                timeout=30,
+                check=False,
+            )
     except Exception:
         logger.exception('Android vector to svg conversion failed')
