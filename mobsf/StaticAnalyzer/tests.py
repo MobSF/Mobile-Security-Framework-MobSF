@@ -24,6 +24,9 @@ from mobsf.StaticAnalyzer.views.common.pdf import (
     get_pdf_resource_policy,
     render_html_to_pdf,
 )
+from mobsf.StaticAnalyzer.views.ios.app_transport_security import (
+    check_transport_security,
+)
 from mobsf.StaticAnalyzer.views.ios.binary_rule_matcher import (
     binary_rule_matcher,
 )
@@ -33,6 +36,9 @@ from mobsf.StaticAnalyzer.views.ios.classdump import (
 from mobsf.StaticAnalyzer.views.ios.entitlements import (
     evaluate_entitlements,
     ipa_entitlements_analysis,
+)
+from mobsf.StaticAnalyzer.views.ios.ipa import (
+    get_embedded_framework_deps,
 )
 
 from django.conf import settings
@@ -906,3 +912,77 @@ class IOSBinaryRulesAndClassdumpTests(SimpleTestCase):
             dump = classdump_lief(bin_path.as_posix())
             self.assertIn(b'AppDelegate', dump)
             self.assertIn(b'application:didFinishLaunchingWithOptions:', dump)
+
+
+class IOSPlistAndFrameworkTrackerTests(SimpleTestCase):
+    """Tests for iOS Info.plist file-sharing checks, TLSv1.2 ATS, and frameworks."""
+
+    def test_check_transport_security_tlsv12_is_info_and_file_sharing_flagged(self):
+        plist_data = {
+            'UIFileSharingEnabled': True,
+            'LSSupportsOpeningDocumentsInPlace': True,
+            'NSAppTransportSecurity': {
+                'NSExceptionDomains': {
+                    'api.example.com': {
+                        'NSExceptionMinimumTLSVersion': 'TLSv1.2',
+                        'NSRequiresCertificateTransparency': 'YES',
+                    },
+                },
+            },
+        }
+        findings = {
+            item['issue']: item
+            for item in check_transport_security(plist_data)
+        }
+        self.assertEqual(
+            findings[
+                'NSExceptionMinimumTLSVersion set to TLSv1.2 on api.example.com'
+            ]['severity'],
+            'info',
+        )
+        self.assertEqual(
+            findings[
+                'iTunes / Finder File Sharing is enabled '
+                '(UIFileSharingEnabled)'
+            ]['severity'],
+            'warning',
+        )
+        self.assertEqual(
+            findings[
+                'Opening documents in place is enabled '
+                '(LSSupportsOpeningDocumentsInPlace)'
+            ]['severity'],
+            'warning',
+        )
+
+    def test_get_embedded_framework_deps_extracts_bundle_identifiers(self):
+        import plistlib
+        import tempfile
+        from unittest import mock
+        from mobsf.MalwareAnalyzer.views.Trackers import Trackers
+        with tempfile.TemporaryDirectory() as tmp:
+            app_root = Path(tmp) / 'Payload' / 'App.app'
+            for fw_name, bid in (
+                ('AppsFlyerLib.framework', 'com.appsflyer.AppsFlyerLib'),
+                ('FirebaseAnalytics.framework', 'org.cocoapods.FirebaseAnalytics'),
+                ('Adjust.framework', 'com.adjust.sdk'),
+                ('Localytics.framework', 'com.localytics.ios'),
+            ):
+                fw_dir = app_root / 'Frameworks' / fw_name
+                fw_dir.mkdir(parents=True)
+                (fw_dir / 'Info.plist').write_bytes(
+                    plistlib.dumps({'CFBundleIdentifier': bid}))
+            deps = get_embedded_framework_deps({'app_root': app_root})
+            self.assertIn('com.appsflyer.AppsFlyerLib', deps)
+            self.assertIn('FirebaseAnalytics', deps)
+            with (mock.patch.object(Trackers, '_update_tracker_db'),
+                  mock.patch(
+                      'mobsf.MalwareAnalyzer.views.Trackers.append_scan_status',
+            )):
+                trk = Trackers('0' * 32, None, settings.TOOLS_DIR)
+                res = trk.get_trackers_domains_or_deps([], deps)
+            names = {t['name'] for t in res['trackers']}
+            self.assertIn('AppsFlyer', names)
+            self.assertIn('Google Firebase Analytics', names)
+            self.assertIn('Adjust', names)
+            self.assertIn('Localytics', names)

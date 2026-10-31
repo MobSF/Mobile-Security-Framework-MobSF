@@ -1,6 +1,8 @@
 def check_transport_security(p_list):
     """Check info.plist for insecure connection configurations."""
     ats = []
+    if not isinstance(p_list, dict):
+        return ats
     if 'NSAppTransportSecurity' in p_list:
         ats_dict = p_list['NSAppTransportSecurity']
         if ats_dict and ats_dict.get('NSAllowsArbitraryLoads'):
@@ -125,15 +127,12 @@ def check_transport_security(p_list):
                     findings = {
                         'issue': ('NSExceptionMinimumTLSVersion set to {}'
                                   ' on {}'.format(inc_min_tls, domain)),
-                        'severity': 'warning',
+                        'severity': 'info',
                         'description': (
                             'The minimum Transport Layer '
                             'Security (TLS) version '
                             'for network connections sent to {} '
-                            'is set to {}. '
-                            'This version is vulnerable to '
-                            'attacks such as POODLE, FREAK, '
-                            'or CurveSwap etc.'.format(domain, inc_min_tls)
+                            'is set to {}.'.format(domain, inc_min_tls)
                         ),
                     }
                     ats.append(findings)
@@ -236,5 +235,31 @@ def check_transport_security(p_list):
                             'This key is optional. The default value is NO.'),
                     }
                     ats.append(findings)
+
+    if p_list.get('UIFileSharingEnabled') is True:
+        ats.append({
+            'issue': 'iTunes / Finder File Sharing is enabled '
+                     '(UIFileSharingEnabled)',
+            'severity': 'warning',
+            'description': (
+                'UIFileSharingEnabled is set to true in Info.plist. This '
+                'exposes the contents of the application\'s /Documents '
+                'directory over USB (Finder / iTunes) to any computer the '
+                'device trusts. Do not store sensitive application data in '
+                '/Documents when file sharing is enabled.'),
+        })
+        if p_list.get('LSSupportsOpeningDocumentsInPlace') is True:
+            ats.append({
+                'issue': 'Opening documents in place is enabled '
+                         '(LSSupportsOpeningDocumentsInPlace)',
+                'severity': 'warning',
+                'description': (
+                    'Both UIFileSharingEnabled and '
+                    'LSSupportsOpeningDocumentsInPlace are set to true in '
+                    'Info.plist. This exposes the application\'s /Documents '
+                    'directory in the Files app and allows user-authorized '
+                    'applications to open and modify those files in place '
+                    'rather than working on a copy.'),
+            })
 
     return ats

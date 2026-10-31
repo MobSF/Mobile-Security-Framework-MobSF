@@ -83,6 +83,8 @@ COCOA_KEYS = {
 def check_permissions(p_list):
     """Check the permissions the app requests."""
     permissions = {}
+    if not isinstance(p_list, dict):
+        return permissions
     for perm, desc in COCOA_KEYS.items():
         if perm in p_list:
             permissions[perm] = {
