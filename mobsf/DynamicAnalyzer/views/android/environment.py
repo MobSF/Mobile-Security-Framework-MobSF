@@ -1656,10 +1656,10 @@ class Environment:
             return False
         frida_path = os.path.join(settings.DWD_DIR, frida_bin)
         logger.info('Copying frida server v%s for %s', frida_version, frida_arch)
+        temp_path = '/data/local/tmp/mobsf-fd-server'
+        target_dir = '/data/local/tmp/mobsf'
+        target_path = f'{target_dir}/fd_server'
         if rooted:
-            temp_path = '/data/local/tmp/mobsf-fd-server'
-            target_dir = '/data/local/tmp/mobsf'
-            target_path = f'{target_dir}/fd_server'
             if self.root_command(
                     ['mkdir', '-p', target_dir], silent=True) is None:
                 return False
@@ -1669,24 +1669,25 @@ class Environment:
                     ['push', frida_path, temp_path], silent=True):
                 return False
             if self.root_command([
-                    'mv', temp_path, target_path], silent=True) is None:
+                    'chmod', '700', temp_path], silent=True) is None:
                 return False
             if self.root_command([
-                    'chmod', '700', target_path], silent=True) is None:
+                    'mv', temp_path, target_path], silent=True) is None:
                 return False
         else:
-            target_dir = '/data/local/tmp/mobsf'
-            target_path = f'{target_dir}/fd_server'
             self.adb_command(
                 ['pkill', '-f', 'fd_server'], True, True)
             if self.adb_command(
                     ['mkdir', '-p', target_dir], True, True) is None:
                 return False
             if not self.adb_command(
-                    ['push', frida_path, target_path]):
+                    ['push', frida_path, temp_path]):
                 return False
             if self.adb_command(
-                    ['chmod', '755', target_path], True) is None:
+                    ['chmod', '755', temp_path], True) is None:
+                return False
+            if self.adb_command(
+                    ['mv', temp_path, target_path], True, True) is None:
                 return False
         return True
 
@@ -1732,11 +1733,25 @@ class Environment:
             return True
         self.stop_frida_server()
         self.free_frida_port()
-        target_path = '/data/local/tmp/mobsf/fd_server'
+        temp_path = '/data/local/tmp/mobsf-fd-server'
+        target_dir = '/data/local/tmp/mobsf'
+        target_path = f'{target_dir}/fd_server'
         if self.adb_command(
                 ['test', '-x', target_path], True, True, timeout=5) is None:
-            if not self.frida_setup():
-                return False
+            if (self.adb_command(
+                    ['mkdir', '-p', target_dir], True, True, timeout=5) is None
+                    or self.adb_command(
+                        ['cp', '/system/fd_server', temp_path],
+                        True, True, timeout=10) is None
+                    or self.adb_command(
+                        ['chmod', '755', temp_path],
+                        True, True, timeout=5) is None
+                    or self.adb_command(
+                        ['mv', temp_path, target_path],
+                        True, True, timeout=5) is None):
+                self.adb_command(['rm', '-f', temp_path], True, True, timeout=5)
+                if not self.frida_setup():
+                    return False
 
         def start_frida():
             fnull = open(os.devnull, 'w')
