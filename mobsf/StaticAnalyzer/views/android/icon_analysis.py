@@ -173,7 +173,8 @@ def guess_icon_path(res_dir):
 
     res_index = _index_res_files(search_roots)
     for fname, paths in res_index.items():
-        if fname.startswith('ic_launcher'):
+        if (fname.startswith('ic_launcher')
+                and not fname.startswith('ic_launcher_background')):
             for candidate in paths:
                 if _is_valid_icon_file(candidate):
                     return candidate
