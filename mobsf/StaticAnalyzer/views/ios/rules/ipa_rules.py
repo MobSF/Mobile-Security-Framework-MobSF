@@ -214,7 +214,9 @@ IPA_RULES = [
             'security controls. Migrate to WKWebView.'
         ),
         'type': 'Regex',
-        'pattern': rb'\bUIWebView\b',
+        'pattern': (
+            rb'\b_?OBJC_(?:CLASS|METACLASS)_\$_UIWebView\b|\bUIWebView\b'
+        ),
         'severity': WARNING,
         'input_case': 'exact',
         'cvss': 4.3,
@@ -283,8 +285,8 @@ IPA_RULES = [
         ),
         'type': 'Regex',
         'pattern': (
-            rb'allowFileAccessFromFileURLs|'
-            rb'allowUniversalAccessFromFileURLs'
+            rb'(?:set[Aa]llow|[Aa]llow)FileAccessFromFileURLs:?|'
+            rb'(?:set[Aa]llow|[Aa]llow)UniversalAccessFromFileURLs:?'
         ),
         'severity': WARNING,
         'input_case': 'exact',

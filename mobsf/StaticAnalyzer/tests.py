@@ -851,13 +851,13 @@ class IOSBinaryRulesAndClassdumpTests(SimpleTestCase):
             '_malloc',
             '_kSecAttrAccessibleAlways',
             '_sqlite3_exec',
+            '_OBJC_CLASS_$_UIWebView',
             '_gets',
         ]
         classdump = (
             b'setAllowsAnyHTTPSCertificate:forHost:\n'
-            b'allowFileAccessFromFileURLs\n'
+            b'setAllowFileAccessFromFileURLs:\n'
             b'generalPasteboard\n'
-            b'UIWebView\n'
         )
         binary_rule_matcher('0' * 32, findings, symbols, classdump)
         self.assertIn('Binary makes use of insecure API(s)', findings)
