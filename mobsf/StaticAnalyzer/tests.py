@@ -24,6 +24,12 @@ from mobsf.StaticAnalyzer.views.common.pdf import (
     get_pdf_resource_policy,
     render_html_to_pdf,
 )
+from mobsf.StaticAnalyzer.views.ios.binary_rule_matcher import (
+    binary_rule_matcher,
+)
+from mobsf.StaticAnalyzer.views.ios.classdump import (
+    classdump_lief,
+)
 from mobsf.StaticAnalyzer.views.ios.entitlements import (
     evaluate_entitlements,
     ipa_entitlements_analysis,
@@ -832,3 +838,71 @@ class IOSEntitlementsAnalysisTests(SimpleTestCase):
                 'Application uses a wildcard Keychain access group',
                 findings,
             )
+
+
+class IOSBinaryRulesAndClassdumpTests(SimpleTestCase):
+    """Tests for iOS binary regex rules and LIEF Objective-C/Swift classdump."""
+
+    def test_binary_rule_matcher_matches_last_symbol_and_modern_ios_rules(self):
+        findings = {}
+        symbols = [
+            '_NSLog',
+            '_srand',
+            '_malloc',
+            '_kSecAttrAccessibleAlways',
+            '_sqlite3_exec',
+            '_OBJC_CLASS_$_UIWebView',
+            '_gets',
+        ]
+        classdump = (
+            b'setAllowsAnyHTTPSCertificate:forHost:\n'
+            b'setAllowFileAccessFromFileURLs:\n'
+            b'generalPasteboard\n'
+        )
+        binary_rule_matcher('0' * 32, findings, symbols, classdump)
+        self.assertIn('Binary makes use of insecure API(s)', findings)
+        self.assertIn(
+            '_gets',
+            findings['Binary makes use of insecure API(s)']['detailed_desc'],
+        )
+        self.assertIn(
+            'Binary makes use of the insecure Random function(s)', findings)
+        self.assertIn('Binary makes use of Logging function', findings)
+        self.assertIn('Binary makes use of malloc function', findings)
+        self.assertEqual(
+            findings[
+                'Binary references insecure SSL/TLS certificate '
+                'validation API(s)'
+            ]['severity'],
+            'high',
+        )
+        self.assertEqual(
+            findings[
+                'Binary references weak Keychain accessibility attribute(s)'
+            ]['severity'],
+            'warning',
+        )
+        self.assertEqual(
+            findings[
+                'Binary references dangerous WKWebView file access selector(s)'
+            ]['severity'],
+            'warning',
+        )
+        self.assertEqual(
+            findings['Binary uses deprecated UIWebView Component']['severity'],
+            'warning',
+        )
+        self.assertIn('Binary makes use of UIPasteboard', findings)
+        self.assertIn('Binary makes use of SQLite API(s)', findings)
+
+    def test_classdump_lief_extracts_objc_classes_and_selectors(self):
+        import tempfile
+        import zipfile
+        ipa_path = Path(settings.BASE_DIR) / 'StaticAnalyzer/test_files/ios.ipa'
+        with tempfile.TemporaryDirectory() as tmp:
+            with zipfile.ZipFile(ipa_path) as zf:
+                zf.extractall(tmp)
+            bin_path = Path(tmp) / 'Payload' / 'helloworld.app' / 'helloworld'
+            dump = classdump_lief(bin_path.as_posix())
+            self.assertIn(b'AppDelegate', dump)
+            self.assertIn(b'application:didFinishLaunchingWithOptions:', dump)
