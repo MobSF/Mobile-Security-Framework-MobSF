@@ -1679,21 +1679,14 @@ class Environment:
             target_path = f'{target_dir}/fd_server'
             self.adb_command(
                 ['pkill', '-f', 'fd_server'], True, True)
-            if not self.adb_command(
-                    ['push', frida_path, '/system/fd_server']):
-                return False
-            if self.adb_command(
-                    ['chmod', '755', '/system/fd_server'], True) is None:
-                return False
             if self.adb_command(
                     ['mkdir', '-p', target_dir], True, True) is None:
                 return False
-            if self.adb_command(
-                    ['cp', '/system/fd_server', target_path],
-                    True, True) is None:
+            if not self.adb_command(
+                    ['push', frida_path, target_path]):
                 return False
             if self.adb_command(
-                    ['chmod', '755', target_path], True, True) is None:
+                    ['chmod', '755', target_path], True) is None:
                 return False
         return True
 
@@ -1739,21 +1732,11 @@ class Environment:
             return True
         self.stop_frida_server()
         self.free_frida_port()
-        target_dir = '/data/local/tmp/mobsf'
-        target_path = f'{target_dir}/fd_server'
-        server = '/system/fd_server'
-        if (self.adb_command(
-                ['mkdir', '-p', target_dir], True, True, timeout=5) is not None
-                and self.adb_command(
-                    ['cp', '/system/fd_server', target_path],
-                    True, True, timeout=10) is not None
-                and self.adb_command(
-                    ['chmod', '755', target_path],
-                    True, True, timeout=5) is not None):
-            server = target_path
-        elif self.adb_command(
-                ['test', '-x', target_path], True, True, timeout=5) is not None:
-            server = target_path
+        target_path = '/data/local/tmp/mobsf/fd_server'
+        if self.adb_command(
+                ['test', '-x', target_path], True, True, timeout=5) is None:
+            if not self.frida_setup():
+                return False
 
         def start_frida():
             fnull = open(os.devnull, 'w')
@@ -1761,7 +1744,7 @@ class Environment:
                     '-s',
                     self.identifier,
                     'shell',
-                    server]
+                    target_path]
             subprocess.call(argz, stdout=fnull, stderr=subprocess.STDOUT)
         trd = threading.Thread(target=start_frida)
         trd.daemon = True
