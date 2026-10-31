@@ -125,15 +125,12 @@ def check_transport_security(p_list):
                     findings = {
                         'issue': ('NSExceptionMinimumTLSVersion set to {}'
                                   ' on {}'.format(inc_min_tls, domain)),
-                        'severity': 'warning',
+                        'severity': 'info',
                         'description': (
                             'The minimum Transport Layer '
                             'Security (TLS) version '
                             'for network connections sent to {} '
-                            'is set to {}. '
-                            'This version is vulnerable to '
-                            'attacks such as POODLE, FREAK, '
-                            'or CurveSwap etc.'.format(domain, inc_min_tls)
+                            'is set to {}.'.format(domain, inc_min_tls)
                         ),
                     }
                     ats.append(findings)
@@ -236,5 +233,30 @@ def check_transport_security(p_list):
                             'This key is optional. The default value is NO.'),
                     }
                     ats.append(findings)
+
+    if p_list.get('UIFileSharingEnabled') is True:
+        ats.append({
+            'issue': 'iTunes / Finder File Sharing is enabled '
+                     '(UIFileSharingEnabled)',
+            'severity': 'warning',
+            'description': (
+                'UIFileSharingEnabled is set to true in Info.plist. This '
+                'exposes the contents of the application\'s /Documents '
+                'directory over USB (Finder / iTunes) to any computer the '
+                'device trusts. Do not store sensitive application data in '
+                '/Documents when file sharing is enabled.'),
+        })
+    if p_list.get('LSSupportsOpeningDocumentsInPlace') is True:
+        ats.append({
+            'issue': 'Opening documents in place is enabled '
+                     '(LSSupportsOpeningDocumentsInPlace)',
+            'severity': 'warning',
+            'description': (
+                'LSSupportsOpeningDocumentsInPlace is set to true in '
+                'Info.plist. This allows the Files app and other installed '
+                'applications to directly read and modify files inside the '
+                'application\'s /Documents directory in place rather than '
+                'working on a copy.'),
+        })
 
     return ats

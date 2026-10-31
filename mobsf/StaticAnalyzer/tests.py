@@ -24,6 +24,9 @@ from mobsf.StaticAnalyzer.views.common.pdf import (
     get_pdf_resource_policy,
     render_html_to_pdf,
 )
+from mobsf.StaticAnalyzer.views.ios.app_transport_security import (
+    check_transport_security,
+)
 from mobsf.StaticAnalyzer.views.ios.binary_rule_matcher import (
     binary_rule_matcher,
 )
@@ -33,6 +36,9 @@ from mobsf.StaticAnalyzer.views.ios.classdump import (
 from mobsf.StaticAnalyzer.views.ios.entitlements import (
     evaluate_entitlements,
     ipa_entitlements_analysis,
+)
+from mobsf.StaticAnalyzer.views.ios.ipa import (
+    get_embedded_framework_deps,
 )
 
 from django.conf import settings
@@ -906,3 +912,60 @@ class IOSBinaryRulesAndClassdumpTests(SimpleTestCase):
             dump = classdump_lief(bin_path.as_posix())
             self.assertIn(b'AppDelegate', dump)
             self.assertIn(b'application:didFinishLaunchingWithOptions:', dump)
+
+
+class IOSPlistAndFrameworkTrackerTests(SimpleTestCase):
+    """Tests for iOS Info.plist file-sharing checks, TLSv1.2 ATS, and frameworks."""
+
+    def test_check_transport_security_tlsv12_is_info_and_file_sharing_flagged(self):
+        plist_data = {
+            'UIFileSharingEnabled': True,
+            'LSSupportsOpeningDocumentsInPlace': True,
+            'NSAppTransportSecurity': {
+                'NSExceptionDomains': {
+                    'api.example.com': {
+                        'NSExceptionMinimumTLSVersion': 'TLSv1.2',
+                        'NSRequiresCertificateTransparency': 'YES',
+                    },
+                },
+            },
+        }
+        findings = {
+            item['issue']: item
+            for item in check_transport_security(plist_data)
+        }
+        self.assertEqual(
+            findings[
+                'NSExceptionMinimumTLSVersion set to TLSv1.2 on api.example.com'
+            ]['severity'],
+            'info',
+        )
+        self.assertEqual(
+            findings[
+                'iTunes / Finder File Sharing is enabled '
+                '(UIFileSharingEnabled)'
+            ]['severity'],
+            'warning',
+        )
+        self.assertEqual(
+            findings[
+                'Opening documents in place is enabled '
+                '(LSSupportsOpeningDocumentsInPlace)'
+            ]['severity'],
+            'warning',
+        )
+
+    def test_get_embedded_framework_deps_extracts_bundle_identifiers(self):
+        import plistlib
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            fw_dir = (
+                Path(tmp) / 'Payload' / 'App.app' / 'Frameworks'
+                / 'AppsFlyerLib.framework'
+            )
+            fw_dir.mkdir(parents=True)
+            (fw_dir / 'Info.plist').write_bytes(
+                plistlib.dumps({'CFBundleIdentifier': 'com.appsflyer.sdk'}))
+            deps = get_embedded_framework_deps(
+                {'app_root': Path(tmp) / 'Payload' / 'App.app'})
+            self.assertEqual(deps, ['com.appsflyer.sdk'])

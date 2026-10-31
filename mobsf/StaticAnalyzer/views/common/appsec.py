@@ -251,16 +251,16 @@ def get_android_dashboard(context, from_ctx=False):
         for m in data['manifest_analysis']['manifest_findings']:
             if m['severity'] == 'info':
                 continue
-            title = m['title'].replace('<strong>', '')
-            title = title.replace('</strong>', '')
-            fmt = title.split('<br>', 1)
-            if len(fmt) > 1:
-                desc = fmt[1].replace('<br>', '') + '\n' + m['description']
-            else:
-                desc = m['description']
+            title = (
+                m['title']
+                .replace('<strong>', '')
+                .replace('</strong>', '')
+                .replace('</br>', ', ')
+                .replace('<br>', ', ')
+            )
             findings[m['severity']].append({
-                'title': fmt[0],
-                'description': desc,
+                'title': title,
+                'description': m['description'],
                 'section': 'manifest',
             })
     common_fields(findings, data)
