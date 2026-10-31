@@ -261,7 +261,6 @@ IPA_RULES = [
             rb'setAllowsAnyHTTPSCertificate|'
             rb'allowsAnyHTTPSCertificateForHost|'
             rb'continueWithoutCredentialForAuthenticationChallenge|'
-            rb'\b_?kCFStreamSSLValidatesCertificateChain\b|'
             rb'\b_?kCFStreamSSLAllowsAnyRoot\b|'
             rb'\b_?kCFStreamSSLAllowsExpiredCertificates\b|'
             rb'\b_?kCFStreamSSLAllowsExpiredRoots\b'
@@ -328,6 +327,6 @@ IPA_RULES = [
         'cvss': 0,
         'cwe': STDS['cwe']['cwe-89'],
         'owasp-mobile': STDS['owasp-mobile']['m7'],
-        'masvs': STDS['masvs']['code-4'],
+        'masvs': STDS['masvs']['platform-2'],
     },
 ]
