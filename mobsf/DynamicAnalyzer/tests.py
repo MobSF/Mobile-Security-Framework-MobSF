@@ -9,6 +9,7 @@ from mobsf.DynamicAnalyzer.tools import webproxy
 from mobsf.DynamicAnalyzer.views.android.dynamic_analyzer import (
     httptools_start,
 )
+from mobsf.DynamicAnalyzer.views.android.environment import Environment
 
 
 class WebProxyTests(SimpleTestCase):
@@ -82,3 +83,55 @@ class WebProxyTests(SimpleTestCase):
                 self.assertTrue(ok)
                 self.assertIn('http://127.0.0.1:8080', msg)
                 mock_thread.return_value.start.assert_called_once()
+
+
+class AndroidFridaServerTests(SimpleTestCase):
+    """Test Android emulator Frida server staging and execution."""
+
+    def test_emulator_run_frida_server_stages_to_data_local_tmp(self):
+        env = Environment('emulator-5554')
+        adb_calls = []
+
+        def fake_adb_command(cmd_list, shell=False, silent=False, timeout=None):
+            adb_calls.append((cmd_list, shell))
+            if cmd_list == ['pidof', 'fd_server']:
+                return b'' if len(adb_calls) == 1 else b'1234\n'
+            return b''
+
+        started_cmds = []
+
+        class ImmediateThread:
+            def __init__(self, target=None):
+                self.target = target
+                self.daemon = False
+
+            def start(self):
+                if self.target:
+                    self.target()
+
+        env_mod = 'mobsf.DynamicAnalyzer.views.android.environment'
+        with (mock.patch.object(env, 'get_environment', return_value='emulator'),
+              mock.patch.object(env, 'adb_command', side_effect=fake_adb_command),
+              mock.patch.object(env, 'stop_frida_server'),
+              mock.patch.object(env, 'free_frida_port'),
+              mock.patch(f'{env_mod}.get_adb', return_value='adb'),
+              mock.patch(f'{env_mod}.threading.Thread', side_effect=ImmediateThread),
+              mock.patch(f'{env_mod}.subprocess.call',
+                         side_effect=lambda args, **kwargs: started_cmds.append(args)),
+              mock.patch(f'{env_mod}.time.sleep')):
+            self.assertTrue(env.run_frida_server())
+
+        self.assertIn((['mkdir', '-p', '/data/local/tmp/mobsf'], True), adb_calls)
+        self.assertIn(
+            (['cp', '/system/fd_server', '/data/local/tmp/mobsf/fd_server'], True),
+            adb_calls,
+        )
+        self.assertIn(
+            (['chmod', '755', '/data/local/tmp/mobsf/fd_server'], True),
+            adb_calls,
+        )
+        self.assertEqual(
+            started_cmds,
+            [['adb', '-s', 'emulator-5554', 'shell',
+              '/data/local/tmp/mobsf/fd_server']],
+        )
