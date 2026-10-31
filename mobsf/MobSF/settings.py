@@ -18,33 +18,6 @@ from mobsf.MobSF.init import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-class ColorLogsWrapper(logging.Formatter):
-    """ANSI colored log formatter."""
-
-    COLOR_MAP = {
-        'cyan': '\033[36m',
-        'green': '\033[32m',
-        'yellow': '\033[33m',
-        'red': '\033[31m',
-        'red,bg_white': '\033[31;47m',
-    }
-    RESET = '\033[0m'
-
-    def __init__(self, fmt=None, datefmt=None, style='%', log_colors=None):
-        super().__init__(fmt=fmt, datefmt=datefmt, style=style)
-        self.log_colors = log_colors or {}
-
-    def format(self, record):  # noqa: A003
-        color_name = self.log_colors.get(record.levelname, '')
-        record.log_color = self.COLOR_MAP.get(color_name, '')
-        message = super().format(record)
-        if record.log_color:
-            return f'{message}{self.RESET}'
-        return message
-
-
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #       MOBSF CONFIGURATION
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -318,7 +291,7 @@ LOGGING = {
             'datefmt': '%d/%b/%Y %H:%M:%S',
         },
         'color': {
-            '()': 'mobsf.MobSF.settings.ColorLogsWrapper',
+            '()': 'mobsf.MobSF.utils.ColorLogsWrapper',
             'format':
                 '%(log_color)s[%(levelname)s] %(asctime)-15s - %(message)s',
             'datefmt': '%d/%b/%Y %H:%M:%S',

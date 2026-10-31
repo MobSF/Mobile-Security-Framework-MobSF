@@ -35,7 +35,6 @@ import requests
 from django.shortcuts import render
 from django.utils import timezone
 
-from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.MobSF.env import flag_from_value
 from mobsf.MobSF. init import api_key
 
@@ -80,6 +79,31 @@ class Color(object):
     RED = '\033[91m'
     BOLD = '\033[1m'
     END = '\033[0m'
+
+
+class ColorLogsWrapper(logging.Formatter):
+    """ANSI colored log formatter."""
+
+    COLOR_MAP = {
+        'cyan': '\033[36m',
+        'green': '\033[32m',
+        'yellow': '\033[33m',
+        'red': '\033[31m',
+        'red,bg_white': '\033[31;47m',
+    }
+    RESET = '\033[0m'
+
+    def __init__(self, fmt=None, datefmt=None, style='%', log_colors=None):
+        super().__init__(fmt=fmt, datefmt=datefmt, style=style)
+        self.log_colors = log_colors or {}
+
+    def format(self, record):  # noqa: A003
+        color_name = self.log_colors.get(record.levelname, '')
+        record.log_color = self.COLOR_MAP.get(color_name, '')
+        message = super().format(record)
+        if record.log_color:
+            return f'{message}{self.RESET}'
+        return message
 
 
 def upstream_proxy(flaw_type):
@@ -1087,6 +1111,7 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 
 def append_scan_status(checksum, status, exception=None):
     """Append Scan Status to Database."""
+    from mobsf.StaticAnalyzer.models import RecentScansDB
     try:
         db_obj = RecentScansDB.objects.only('SCAN_LOGS').get(MD5=checksum)
         if status == 'init':
@@ -1110,6 +1135,7 @@ def append_scan_status(checksum, status, exception=None):
 
 def get_scan_logs(checksum):
     """Get the scan logs for the given checksum."""
+    from mobsf.StaticAnalyzer.models import RecentScansDB
     try:
         logs = RecentScansDB.objects.filter(
             MD5=checksum).values_list('SCAN_LOGS', flat=True).first()
