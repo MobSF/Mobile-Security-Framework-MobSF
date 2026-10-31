@@ -903,8 +903,10 @@ def logcat(request, api=False):
 
             def read_process():
                 try:
+                    yield ':ok\n\n'
                     for line in iter(logcat_proc.stdout.readline, ''):
-                        yield f'data:{line.rstrip()}\n\n'
+                        if safe_pkg in line:
+                            yield f'data:{line.rstrip()}\n\n'
                 finally:
                     if logcat_proc.poll() is None:
                         logcat_proc.terminate()

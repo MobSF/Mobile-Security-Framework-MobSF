@@ -1,5 +1,5 @@
-<div id="messages"></div>
-<button id="tgl" onclick="toggle()">Stop Streaming</button>
+<div id="messages" style="padding-bottom: 48px;"></div>
+<button id="tgl" onclick="toggle()" style="position: fixed; bottom: 12px; left: 12px; z-index: 1000;">Stop Streaming</button>
 <script type="text/javascript">
 var i = 0;
 var stream = true;
@@ -13,7 +13,7 @@ function renderMessage(data) {
         i = i + 1;
         // Display only last 500 lines
         if (i < 500){
-            div.innerHTML = div.innerHTML + html_safe(data) + "<br>" ;
+            div.insertAdjacentHTML('beforeend', html_safe(data) + "<br>");
         } else {
             div.innerHTML = html_safe(data) + "<br>";
             i=0;
@@ -53,6 +53,9 @@ async function startStream() {
             messages.forEach(function(message) {
                 if (message.startsWith('data:'))
                     renderMessage(message.substring(5));
+            });
+            await new Promise(function(resolve) {
+                setTimeout(resolve, 0);
             });
         }
         buffer += decoder.decode();
