@@ -79,6 +79,14 @@ from mobsf.MobSF.views.authorization import (
 )
 
 logger = logging.getLogger(__name__)
+_SAFE_PKG_CHARS = {
+    ch: ch
+    for ch in (
+        'abcdefghijklmnopqrstuvwxyz'
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        '0123456789_.-'
+    )
+}
 
 
 def _get_form_device(request, form):
@@ -866,6 +874,11 @@ def logcat(request, api=False):
                     request,
                     'Invalid package name',
                     api)
+            safe_pkg = ''.join(
+                _SAFE_PKG_CHARS[ch]
+                for ch in app_pkg
+                if ch in _SAFE_PKG_CHARS
+            )
             adb = os.environ['MOBSF_ADB']
             logcat_proc = subprocess.Popen(
                 [
@@ -873,7 +886,7 @@ def logcat(request, api=False):
                     '-s',
                     get_device(request),
                     'logcat',
-                    app_pkg + ':V',
+                    f'{safe_pkg}:V',
                     '*:*',
                 ],
                 stdout=subprocess.PIPE,
