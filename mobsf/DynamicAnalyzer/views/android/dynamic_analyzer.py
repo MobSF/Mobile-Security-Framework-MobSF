@@ -1,11 +1,10 @@
 # -*- coding: utf_8 -*-
 """Android Dynamic Analysis."""
 import logging
-import os
+import re
+import subprocess
 from pathlib import Path
 from urllib.parse import quote
-
-from shelljob import proc
 
 
 from django.http import (
@@ -55,6 +54,7 @@ from mobsf.MobSF.security import is_path_traversal
 from mobsf.MobSF.utils import (
     clear_analysis_state,
     docker_translate_localhost,
+    get_adb,
     get_android_devices,
     get_android_dm_exception_msg,
     get_config_loc,
@@ -80,6 +80,14 @@ from mobsf.MobSF.views.authorization import (
 )
 
 logger = logging.getLogger(__name__)
+_SAFE_PKG_CHARS = {
+    ch: ch
+    for ch in (
+        'abcdefghijklmnopqrstuvwxyz'
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        '0123456789_.-'
+    )
+}
 
 
 def _get_form_device(request, form):
@@ -832,6 +840,40 @@ def httptools_start(request):
             request, 'Error opening Web Traffic Viewer')
 
 
+def _get_package_uid(identifier, safe_pkg):
+    """Resolve the numeric Android UID(s) if logcat --uid is supported."""
+    try:
+        env = Environment(identifier)
+        out = env.adb_command(
+            ['dumpsys', 'package', safe_pkg],
+            shell=True,
+            silent=True,
+            timeout=5,
+        )
+        if not out:
+            return None
+        match = re.search(
+            r'\buserId=(\d+)\b',
+            out.decode('utf-8', 'ignore'),
+        )
+        if not match:
+            return None
+        app_id = int(match.group(1))
+        user_ids = env.android_user_ids() or (0,)
+        uids = ','.join(str(int(u) * 100000 + app_id) for u in user_ids)
+        probe = env.adb_command(
+            ['logcat', '-d', '-t', '1', f'--uid={uids}'],
+            shell=True,
+            silent=True,
+            timeout=5,
+        )
+        if probe is not None:
+            return uids
+    except Exception:
+        pass
+    return None
+
+
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['GET', 'POST'])
@@ -867,22 +909,52 @@ def logcat(request, api=False):
                     request,
                     'Invalid package name',
                     api)
-            adb = os.environ['MOBSF_ADB']
-            g = proc.Group()
-            g.run([
-                adb,
-                '-s',
-                get_device(request),
-                'logcat',
-                app_pkg + ':V',
-                '*:*',
-            ])
+            safe_pkg = ''.join(
+                _SAFE_PKG_CHARS[ch]
+                for ch in app_pkg
+                if ch in _SAFE_PKG_CHARS
+            )
+            identifier = get_device(request)
+            if not identifier:
+                return print_n_send_error_response(
+                    request,
+                    'Selected Android device is unavailable',
+                    api)
+            uid = _get_package_uid(identifier, safe_pkg)
+            filter_arg = f'--uid={uid}' if uid else f'{safe_pkg}:V'
+            logcat_proc = subprocess.Popen(
+                [
+                    get_adb(),
+                    '-s',
+                    identifier,
+                    'logcat',
+                    filter_arg,
+                    '*:V',
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+                errors='replace',
+            )
+            short_pkg = safe_pkg[-15:]
 
             def read_process():
-                while g.is_pending():
-                    lines = g.readlines()
-                    for _, line in lines:
-                        yield 'data:{}\n\n'.format(line)
+                try:
+                    yield ':ok\n\n'
+                    for line in iter(logcat_proc.stdout.readline, ''):
+                        if uid or safe_pkg in line or short_pkg in line:
+                            yield f'data:{line.rstrip()}\n\n'
+                finally:
+                    if logcat_proc.stdout:
+                        logcat_proc.stdout.close()
+                    if logcat_proc.poll() is None:
+                        logcat_proc.terminate()
+                        try:
+                            logcat_proc.wait(timeout=2)
+                        except subprocess.TimeoutExpired:
+                            logcat_proc.kill()
+                            logcat_proc.wait()
             return StreamingHttpResponse(read_process(),
                                          content_type='text/event-stream')
         return print_n_send_error_response(

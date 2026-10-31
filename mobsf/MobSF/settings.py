@@ -291,7 +291,7 @@ LOGGING = {
             'datefmt': '%d/%b/%Y %H:%M:%S',
         },
         'color': {
-            '()': 'colorlog.ColoredFormatter',
+            '()': 'mobsf.MobSF.utils.ColorLogsWrapper',
             'format':
                 '%(log_color)s[%(levelname)s] %(asctime)-15s - %(message)s',
             'datefmt': '%d/%b/%Y %H:%M:%S',

@@ -25,6 +25,7 @@ from mobsf.MobSF.security import (
     sanitize_filename,
     sanitize_for_logging,
     sanitize_redirect,
+    sanitize_svg,
     subprocess_hook,
 )
 from mobsf.MobSF.utils import sha256
@@ -443,3 +444,32 @@ class PipeOrLinkTests(SimpleTestCase):
         if os.name == 'nt' or not os.path.exists('/dev/null'):
             self.skipTest('No /dev/null')
         self.assertTrue(is_pipe_or_link('/dev/null'))
+
+
+class SanitizeSvgTests(SimpleTestCase):
+
+    def test_strips_scripts_events_and_unsafe_hrefs(self):
+        raw = (
+            '<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)">'
+            '<script>alert(1)</script>'
+            '<a href="javascript:alert(1)">'
+            '<rect width="10" height="10" onclick="evil()"/>'
+            '</a>'
+            '<image href="&#x6a;avascript:alert(1)" x="1" y="2"/>'
+            '</svg>'
+        )
+        cleaned = sanitize_svg(raw)
+        self.assertNotIn('script', cleaned)
+        self.assertNotIn('onload', cleaned)
+        self.assertNotIn('onclick', cleaned)
+        self.assertNotIn('javascript:', cleaned)
+        self.assertNotIn('<a', cleaned)
+        self.assertIn('<rect', cleaned)
+
+    def test_rejects_non_svg_and_entities(self):
+        self.assertEqual(sanitize_svg('<html><body>x</body></html>'), '')
+        xxe = (
+            '<!DOCTYPE svg [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>'
+            '<svg xmlns="http://www.w3.org/2000/svg"><text>&xxe;</text></svg>'
+        )
+        self.assertEqual(sanitize_svg(xxe), '')

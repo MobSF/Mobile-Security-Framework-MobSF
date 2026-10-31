@@ -4,10 +4,7 @@
 import logging
 from pathlib import Path
 
-
-from macholib.mach_o import (CPU_TYPE_NAMES, MH_CIGAM_64, MH_MAGIC_64,
-                             get_cpu_subtype)
-from macholib.MachO import MachO
+import lief
 
 from mobsf.MobSF.security import (
     is_path_traversal,
@@ -41,20 +38,115 @@ def detect_bin_type(libs):
         return 'Objective C'
 
 
+MACHO_CPU_TYPES = {
+    -1: 'ANY',
+    1: 'VAX',
+    6: 'MC680x0',
+    7: 'i386',
+    16777223: 'x86_64',
+    8: 'MIPS',
+    10: 'MC98000',
+    11: 'HPPA',
+    12: 'ARM',
+    16777228: 'ARM64',
+    13: 'MC88000',
+    14: 'SPARC',
+    15: 'i860',
+    16: 'Alpha',
+    18: 'PowerPC',
+    16777234: 'PowerPC64',
+}
+MACHO_CPU_SUBTYPES = {
+    7: {
+        0: 'CPU_SUBTYPE_INTEL_MODEL_ALL',
+        1: 'CPU_THREADTYPE_INTEL_HTT',
+        3: 'CPU_SUBTYPE_I386_ALL',
+        4: 'CPU_SUBTYPE_486',
+        5: 'CPU_SUBTYPE_586',
+        8: 'CPU_SUBTYPE_PENTIUM_3',
+        9: 'CPU_SUBTYPE_PENTIUM_M',
+        10: 'CPU_SUBTYPE_PENTIUM_4',
+        11: 'CPU_SUBTYPE_ITANIUM',
+        12: 'CPU_SUBTYPE_XEON',
+        34: 'CPU_SUBTYPE_XEON_MP',
+        38: 'CPU_SUBTYPE_PENTPRO',
+        40: 'CPU_SUBTYPE_PENTIUM_3_M',
+        42: 'CPU_SUBTYPE_PENTIUM_4_M',
+        43: 'CPU_SUBTYPE_ITANIUM_2',
+        52: 'CPU_SUBTYPE_PENTIUM_3_XEON',
+        102: 'CPU_SUBTYPE_PENTII_M3',
+        132: 'CPU_SUBTYPE_486SX',
+        166: 'CPU_SUBTYPE_PENTII_M5',
+        199: 'CPU_SUBTYPE_CELERON',
+        231: 'CPU_SUBTYPE_CELERON_MOBILE',
+    },
+    16777223: {
+        3: 'CPU_SUBTYPE_X86_64_ALL',
+        4: 'CPU_SUBTYPE_X86_ARCH1',
+        8: 'CPU_SUBTYPE_X86_64_H',
+    },
+    12: {
+        0: 'CPU_SUBTYPE_ARM_ALL12',
+        5: 'CPU_SUBTYPE_ARM_V4T',
+        6: 'CPU_SUBTYPE_ARM_V6',
+        7: 'CPU_SUBTYPE_ARM_V5TEJ',
+        8: 'CPU_SUBTYPE_ARM_XSCALE',
+        9: 'CPU_SUBTYPE_ARM_V7',
+        10: 'CPU_SUBTYPE_ARM_V7F',
+        11: 'CPU_SUBTYPE_ARM_V7S',
+        12: 'CPU_SUBTYPE_ARM_V7K',
+        13: 'CPU_SUBTYPE_ARM_V8',
+        14: 'CPU_SUBTYPE_ARM_V6M',
+        15: 'CPU_SUBTYPE_ARM_V7M',
+        16: 'CPU_SUBTYPE_ARM_V7EM',
+        17: 'CPU_SUBTYPE_ARM_V8M',
+    },
+    16777228: {
+        0: 'CPU_SUBTYPE_ARM64_ALL',
+        1: 'CPU_SUBTYPE_ARM64_V8',
+        2: 'CPU_SUBTYPE_ARM64E',
+    },
+    18: {
+        0: 'CPU_SUBTYPE_POWERPC_ALL',
+        1: 'CPU_SUBTYPE_POWERPC_601',
+        2: 'CPU_SUBTYPE_POWERPC_602',
+        3: 'CPU_SUBTYPE_POWERPC_603',
+        4: 'CPU_SUBTYPE_POWERPC_603e',
+        5: 'CPU_SUBTYPE_POWERPC_603ev',
+        6: 'CPU_SUBTYPE_POWERPC_604',
+        7: 'CPU_SUBTYPE_POWERPC_604e',
+        8: 'CPU_SUBTYPE_POWERPC_620',
+        9: 'CPU_SUBTYPE_POWERPC_750',
+        10: 'CPU_SUBTYPE_POWERPC_7400',
+        11: 'CPU_SUBTYPE_POWERPC_7450',
+        100: 'CPU_SUBTYPE_POWERPC_970',
+    },
+}
+MACHO_CPU_SUBTYPES[16777234] = MACHO_CPU_SUBTYPES[18]
+
+
 def get_bin_info(bin_file):
     """Get Binary Information."""
     logger.info('Getting Binary Information')
-    m = MachO(bin_file.as_posix())
-    for header in m.headers:
-        if header.MH_MAGIC == MH_MAGIC_64 or header.MH_MAGIC == MH_CIGAM_64:
+    fat = lief.MachO.parse(bin_file.as_posix())
+    if not fat:
+        return {}
+    for binary in fat:
+        magic = binary.header.magic
+        if magic in (
+                lief.MachO.MACHO_TYPES.MAGIC_64,
+                lief.MachO.MACHO_TYPES.CIGAM_64):
             sz = '64-bit'
         else:
             sz = '32-bit'
-        arch = CPU_TYPE_NAMES.get(
-            header.header.cputype, header.header.cputype)
-        subarch = get_cpu_subtype(
-            header.header.cputype, header.header.cpusubtype)
-        return {'endian': header.endian,
+        endian = '>' if magic in (
+            lief.MachO.MACHO_TYPES.CIGAM,
+            lief.MachO.MACHO_TYPES.CIGAM_64) else '<'
+        cputype = int(binary.header.cpu_type)
+        st = int(binary.header.cpu_subtype) & 0x00FFFFFF
+        arch = MACHO_CPU_TYPES.get(cputype, cputype)
+        subarch = MACHO_CPU_SUBTYPES.get(cputype, {}).get(st, st)
+        return {'endian': endian,
                 'bit': sz,
                 'arch': arch,
                 'subarch': subarch}

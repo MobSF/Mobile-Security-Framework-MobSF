@@ -28,8 +28,6 @@ from concurrent.futures import (
 
 from packaging.version import Version
 
-import distro
-
 import psutil
 
 import requests
@@ -37,7 +35,6 @@ import requests
 from django.shortcuts import render
 from django.utils import timezone
 
-from mobsf.StaticAnalyzer.models import RecentScansDB
 from mobsf.MobSF.env import flag_from_value
 from mobsf.MobSF. init import api_key
 
@@ -82,6 +79,33 @@ class Color(object):
     RED = '\033[91m'
     BOLD = '\033[1m'
     END = '\033[0m'
+
+
+class ColorLogsWrapper(logging.Formatter):
+    """ANSI colored log formatter."""
+
+    COLOR_MAP = {
+        'cyan': '\033[36m',
+        'green': '\033[32m',
+        'yellow': '\033[33m',
+        'red': '\033[31m',
+        'red,bg_white': '\033[31;47m',
+    }
+    RESET = '\033[0m'
+
+    def __init__(self, fmt=None, datefmt=None, style='%', log_colors=None):
+        super().__init__(fmt=fmt, datefmt=datefmt, style=style)
+        self.log_colors = log_colors or {}
+        if platform.system() == 'Windows':
+            os.system('')
+
+    def format(self, record):  # noqa: A003
+        color_name = self.log_colors.get(record.levelname, '')
+        record.log_color = self.COLOR_MAP.get(color_name, '')
+        message = super().format(record)
+        if record.log_color:
+            return f'{message}{self.RESET}'
+        return message
 
 
 def upstream_proxy(flaw_type):
@@ -137,11 +161,18 @@ def print_version():
         print(f'Default Credentials: {Color.BOLD}mobsf/mobsf{Color.END}')
     os = platform.system()
     pltfm = platform.platform()
-    dist = ' '.join(distro.linux_distribution(
-        full_distribution_name=False)).strip()
-    dst_str = ' '
-    if dist:
-        dst_str = f' ({dist}) '
+    dist = ''
+    if hasattr(platform, 'freedesktop_os_release'):
+        try:
+            os_rel = platform.freedesktop_os_release()
+            dist = ' '.join(filter(None, (
+                os_rel.get('ID', ''),
+                os_rel.get('VERSION_ID', ''),
+                os_rel.get('VERSION_CODENAME', ''),
+            ))).strip()
+        except OSError:
+            pass
+    dst_str = f' ({dist}) ' if dist else ' '
     env_str = f'OS Environment: {os}{dst_str}{pltfm}'
     logger.info(env_str)
     python_version = sys.version.split(' ')[0]
@@ -1082,6 +1113,7 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 
 def append_scan_status(checksum, status, exception=None):
     """Append Scan Status to Database."""
+    from mobsf.StaticAnalyzer.models import RecentScansDB
     try:
         db_obj = RecentScansDB.objects.only('SCAN_LOGS').get(MD5=checksum)
         if status == 'init':
@@ -1105,6 +1137,7 @@ def append_scan_status(checksum, status, exception=None):
 
 def get_scan_logs(checksum):
     """Get the scan logs for the given checksum."""
+    from mobsf.StaticAnalyzer.models import RecentScansDB
     try:
         logs = RecentScansDB.objects.filter(
             MD5=checksum).values_list('SCAN_LOGS', flat=True).first()

@@ -736,40 +736,97 @@ def safe_request(method, url, *,
         return response
 
 
+_SVG_SAFE_TAGS = {
+    'svg', 'g', 'path', 'rect', 'circle', 'ellipse',
+    'line', 'polyline', 'polygon', 'text', 'tspan',
+    'defs', 'use', 'image', 'mask', 'clipPath',
+    'filter', 'linearGradient', 'radialGradient', 'stop',
+}
+_SVG_SAFE_ATTRS = {
+    '*': {
+        'id', 'class', 'transform', 'fill', 'stroke',
+        'stroke-width', 'opacity',
+    },
+    'svg': {'width', 'height', 'viewBox', 'xmlns', 'version'},
+    'path': {'d'},
+    'rect': {'x', 'y', 'width', 'height', 'rx', 'ry'},
+    'circle': {'cx', 'cy', 'r'},
+    'ellipse': {'cx', 'cy', 'rx', 'ry'},
+    'line': {'x1', 'y1', 'x2', 'y2'},
+    'polyline': {'points'},
+    'polygon': {'points'},
+    'text': {'x', 'y', 'font-family', 'font-size'},
+    'image': {'x', 'y', 'width', 'height', 'href'},
+    'use': {'x', 'y', 'width', 'height', 'href'},
+    'filter': {'x', 'y', 'width', 'height', 'href'},
+    'linearGradient': {'gradientUnits', 'x1', 'y1', 'x2', 'y2'},
+    'radialGradient': {'cx', 'cy', 'r', 'fx', 'fy'},
+    'stop': {'offset', 'stop-color', 'stop-opacity'},
+}
+
+
+def _local_xml_name(name):
+    """Strip XML namespace URI prefix from tag or attribute name."""
+    if name.startswith('{') and '}' in name:
+        return name.split('}', 1)[1]
+    return name
+
+
+def _is_unsafe_svg_attr_value(attr_val):
+    """Return True if an SVG attribute value contains script URI vectors."""
+    val_norm = re.sub(r'[\x00-\x20]+', '', attr_val).lower()
+    return (
+        val_norm.startswith(('javascript:', 'vbscript:', 'data:'))
+        or 'javascript:' in val_norm
+        or 'expression(' in val_norm
+    )
+
+
+_SVG_DROP_SUBTREE_TAGS = {
+    'script', 'style', 'foreignObject', 'iframe', 'object', 'embed',
+    'audio', 'video', 'canvas', 'animate', 'animateMotion',
+    'animateTransform', 'set', 'title', 'desc', 'metadata',
+}
+
+
+def _clean_svg_element(elem):
+    """Recursively strip disallowed SVG tags and attributes in place."""
+    tag = _local_xml_name(elem.tag)
+    allowed = _SVG_SAFE_ATTRS['*'] | _SVG_SAFE_ATTRS.get(tag, set())
+    cleaned_attrib = {}
+    for attr_key, attr_val in elem.attrib.items():
+        attr_name = _local_xml_name(attr_key)
+        if attr_name in allowed and not _is_unsafe_svg_attr_value(attr_val):
+            cleaned_attrib[attr_name] = attr_val
+    elem.tag = tag
+    elem.attrib = cleaned_attrib
+    new_children = []
+    for child in elem:
+        child_tag = _local_xml_name(child.tag)
+        if child_tag in _SVG_DROP_SUBTREE_TAGS:
+            continue
+        _clean_svg_element(child)
+        if child_tag in _SVG_SAFE_TAGS:
+            new_children.append(child)
+        else:
+            new_children.extend(child)
+    elem[:] = new_children
+
+
 def sanitize_svg(svg_content):
     """Sanitize SVG content to prevent XSS attacks."""
-    import bleach
-    # Allow standard SVG tags and attributes, but remove scripts and event handlers
-    safe_tags = [
-        'svg', 'g', 'path', 'rect', 'circle', 'ellipse',
-        'line', 'polyline', 'polygon', 'text', 'tspan',
-        'defs', 'use', 'image', 'mask', 'clipPath',
-        'filter', 'linearGradient', 'radialGradient', 'stop',
-    ]
-    safe_attrs = {
-        '*': ['id', 'class', 'transform', 'fill', 'stroke', 'stroke-width', 'opacity'],
-        'svg': ['width', 'height', 'viewBox', 'xmlns', 'version'],
-        'path': ['d'],
-        'rect': ['x', 'y', 'width', 'height', 'rx', 'ry'],
-        'circle': ['cx', 'cy', 'r'],
-        'ellipse': ['cx', 'cy', 'rx', 'ry'],
-        'line': ['x1', 'y1', 'x2', 'y2'],
-        'polyline': ['points'],
-        'polygon': ['points'],
-        'text': ['x', 'y', 'font-family', 'font-size'],
-        'image': ['x', 'y', 'width', 'height', 'href'],
-        'use': ['x', 'y', 'width', 'height', 'href'],
-        'filter': ['x', 'y', 'width', 'height', 'href'],
-        'linearGradient': ['gradientUnits', 'x1', 'y1', 'x2', 'y2'],
-        'radialGradient': ['cx', 'cy', 'r', 'fx', 'fy'],
-        'stop': ['offset', 'stop-color', 'stop-opacity'],
-    }
-    return bleach.clean(
-        svg_content,
-        tags=safe_tags,
-        attributes=safe_attrs,
-        strip=True,
-    )
+    from xml.etree import ElementTree as StdET
+    import defusedxml.ElementTree as DefusedET
+    try:
+        StdET.register_namespace('', 'http://www.w3.org/2000/svg')
+        root = DefusedET.fromstring(svg_content)
+        if _local_xml_name(root.tag) != 'svg':
+            return ''
+        _clean_svg_element(root)
+        root.attrib.setdefault('xmlns', 'http://www.w3.org/2000/svg')
+        return StdET.tostring(root, encoding='unicode')
+    except Exception:
+        return ''
 
 
 def is_path_traversal(user_input):
