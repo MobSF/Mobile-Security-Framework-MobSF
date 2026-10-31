@@ -810,13 +810,13 @@ def sanitize_svg(svg_content):
     try:
         StdET.register_namespace('', 'http://www.w3.org/2000/svg')
         root = DefusedET.fromstring(svg_content)
+        if _local_xml_name(root.tag) != 'svg':
+            return ''
+        _clean_svg_element(root)
+        root.attrib.setdefault('xmlns', 'http://www.w3.org/2000/svg')
+        return StdET.tostring(root, encoding='unicode')
     except Exception:
         return ''
-    if _local_xml_name(root.tag) != 'svg':
-        return ''
-    _clean_svg_element(root)
-    root.attrib.setdefault('xmlns', 'http://www.w3.org/2000/svg')
-    return StdET.tostring(root, encoding='unicode')
 
 
 def is_path_traversal(user_input):

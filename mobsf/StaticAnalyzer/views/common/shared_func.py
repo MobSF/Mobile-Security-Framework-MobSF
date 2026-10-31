@@ -505,7 +505,7 @@ def _resolve_ar_entry(raw_name, data, gnu_table):
     """Resolve member name and payload for BSD, GNU, or normal ar headers."""
     if raw_name.startswith(b'#1/'):
         name_len = int(raw_name[3:])
-        return data[:name_len], data[name_len:]
+        return data[:name_len].rstrip(b'\x00'), data[name_len:]
     if raw_name.startswith(b'/') and gnu_table is not None:
         offset = int(raw_name[1:])
         sep = b'\x00' if b'\x00' in gnu_table else b'\n'

@@ -143,7 +143,7 @@ def get_bin_info(bin_file):
             lief.MachO.MACHO_TYPES.CIGAM,
             lief.MachO.MACHO_TYPES.CIGAM_64) else '<'
         cputype = int(binary.header.cpu_type)
-        st = int(binary.header.cpu_subtype) & 0x0FFFFFFF
+        st = int(binary.header.cpu_subtype) & 0x00FFFFFF
         arch = MACHO_CPU_TYPES.get(cputype, cputype)
         subarch = MACHO_CPU_SUBTYPES.get(cputype, {}).get(st, st)
         return {'endian': endian,

@@ -908,8 +908,15 @@ def logcat(request, api=False):
                         if safe_pkg in line:
                             yield f'data:{line.rstrip()}\n\n'
                 finally:
+                    if logcat_proc.stdout:
+                        logcat_proc.stdout.close()
                     if logcat_proc.poll() is None:
                         logcat_proc.terminate()
+                        try:
+                            logcat_proc.wait(timeout=2)
+                        except subprocess.TimeoutExpired:
+                            logcat_proc.kill()
+                            logcat_proc.wait()
             return StreamingHttpResponse(read_process(),
                                          content_type='text/event-stream')
         return print_n_send_error_response(
