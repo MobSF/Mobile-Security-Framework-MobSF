@@ -16,7 +16,9 @@ from django.conf import settings
 
 from mobsf.MobSF.security import (
     is_path_traversal,
+    is_pipe_or_link,
     is_safe_path,
+    sanitize_for_logging,
 )
 from mobsf.MobSF.utils import (
     append_scan_status,
@@ -72,7 +74,9 @@ def _is_valid_icon_file(file_path):
     """Verify a candidate icon file is non-empty and has valid image magic/content."""
     try:
         path = Path(file_path)
-        if not path.is_file() or path.stat().st_size == 0:
+        if (not path.is_file()
+                or is_pipe_or_link(path)
+                or path.stat().st_size == 0):
             return False
         suffix = path.suffix.lower()
         if suffix == '.png':
@@ -102,6 +106,8 @@ def _search_folder(src, file_pattern):
 def _is_safe_icon_path(root, icon_file):
     """Verify a resolved icon path remains inside its application root."""
     try:
+        if is_pipe_or_link(icon_file):
+            return False
         resolved_root = Path(root).resolve()
         resolved_icon = Path(icon_file).resolve()
         relative_icon = resolved_icon.relative_to(resolved_root)
@@ -114,14 +120,22 @@ def _extract_drawable_refs_from_xml(xml_path):
     """Extract drawable/mipmap resource names referenced inside an XML icon."""
     refs = []
     try:
-        parsed = parseString(Path(xml_path).read_text('utf8', 'ignore'))
+        path = Path(xml_path)
+        if is_pipe_or_link(path):
+            return refs
+        parsed = parseString(path.read_text('utf8', 'ignore'))
         for tag in ('foreground', 'monochrome', 'item', 'bitmap', 'background'):
             for node in parsed.getElementsByTagName(tag):
                 for attr in ('android:drawable', 'android:src'):
                     val = node.getAttribute(attr)
                     if val and '/' in val:
                         name = val.rsplit('/', 1)[1].strip()
-                        if name and name not in refs:
+                        if (name
+                                and not is_path_traversal(name)
+                                and not any(
+                                    c in name
+                                    for c in ('*', '?', '[', '/', '\\'))
+                                and name not in refs):
                             refs.append(name)
     except Exception:
         pass
@@ -223,7 +237,10 @@ def find_icon_path_zip(checksum, res_dir, icon_paths_from_manifest):
         append_scan_status(checksum, msg)
         for icon_path in icon_paths_from_manifest:
             if is_path_traversal(icon_path):
-                logger.warning('Path traversal detected in icon path: %s', icon_path)
+                logger.warning(
+                    'Path traversal detected in icon path: %s',
+                    sanitize_for_logging(icon_path),
+                )
                 continue
             if icon_path.startswith('@'):
                 path_array = icon_path.strip('@').split(os.sep)
@@ -303,7 +320,12 @@ def get_icon_apk_res(app_dic):
             logger.warning('Cannot find res directory,'
                            ' fallback to apktool res directory')
             try:
-                copytree(apktool_res_path, res_path, dirs_exist_ok=True)
+                copytree(
+                    apktool_res_path,
+                    res_path,
+                    symlinks=True,
+                    dirs_exist_ok=True,
+                )
             except Exception:
                 pass
         if res_path.exists() and not icon_name:
@@ -513,7 +535,10 @@ def convert_vector_to_svg(app_dir, tools_dir, icon_name, apktool_res):
             drawable = app_dir / 'apktool_out' / 'res' / 'drawable'
             cwd = drawable.as_posix()
             for f in drawable.parent.rglob('*.xml'):
-                files.append(f.name)
+                if not f.name.startswith('-'):
+                    files.append(f.name)
+        elif direct.name.startswith('-'):
+            return
         # Pass xml filename(s) and set cwd as parent
         args = [
             find_java_binary(),
