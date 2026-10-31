@@ -622,11 +622,6 @@ def check_basic_env():
     """Check if we have basic env for MobSF to run."""
     logger.info('MobSF Basic Environment Check')
     try:
-        import mitmproxy  # noqa F401
-    except ImportError:
-        logger.exception('mitmproxy is not installed!')
-        os.kill(os.getpid(), signal.SIGTERM)
-    try:
         import lxml  # noqa F401
     except ImportError:
         logger.exception('lxml is not installed!')
