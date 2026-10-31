@@ -346,6 +346,19 @@ def get_icon_apk_res(app_dic):
                 except ValueError:
                     icon_name = guessed
                 icon_src = guessed
+        elif icon_name and not icon_name.endswith('.xml'):
+            candidate = app_dir / icon_name
+            if _is_valid_icon_file(candidate):
+                icon_src = candidate.as_posix()
+            else:
+                guessed = guess_icon_path(str(res_path))
+                if guessed and guessed.endswith('.xml'):
+                    try:
+                        icon_name = Path(guessed).relative_to(app_dir).as_posix()
+                    except ValueError:
+                        icon_name = guessed
+                else:
+                    icon_src = guessed
 
         if icon_name and icon_name.endswith('.xml'):
             # Handle XML icon case
@@ -374,13 +387,6 @@ def get_icon_apk_res(app_dic):
                 icon_src = icon_path
             else:
                 # if we cannot find from xml
-                icon_src = guess_icon_path(str(res_path))
-        elif icon_name:
-            # We found png icon, the easy path
-            candidate = app_dir / icon_name
-            if _is_valid_icon_file(candidate):
-                icon_src = candidate.as_posix()
-            else:
                 icon_src = guess_icon_path(str(res_path))
 
         # Log warning if correct icon is not found
@@ -462,7 +468,11 @@ def _resolve_adaptive_icon_xml(app_dir, icon_xml_file):
     """Return the readable adaptive-icon XML Path in apktool_out or app_dir."""
     if not is_safe_path(app_dir, app_dir / icon_xml_file, icon_xml_file):
         return None
-    apktool_candidate = app_dir / 'apktool_out' / icon_xml_file
+    rel_xml = Path(icon_xml_file)
+    if rel_xml.parts and rel_xml.parts[0] == 'apktool_out':
+        apktool_candidate = app_dir / rel_xml
+    else:
+        apktool_candidate = app_dir / 'apktool_out' / rel_xml
     if apktool_candidate.is_file() and not is_pipe_or_link(apktool_candidate):
         return apktool_candidate
     apktool_res = app_dir / 'apktool_out' / 'res'
@@ -546,16 +556,18 @@ def _collect_vector_xml_names(app_dir, icon_name, drawable_dir):
     if not drawable_dir.is_dir():
         return []
     queue = [
+        Path(icon_name).name,
         'ic_launcher.xml',
         'ic_launcher_foreground.xml',
         'ic_launcher_background.xml',
     ]
     icon_xml = _resolve_adaptive_icon_xml(app_dir, icon_name)
     if icon_xml:
+        queue.append(icon_xml.name)
         for ref in _extract_drawable_refs_from_xml(icon_xml):
             queue.append(f'{ref}.xml')
     visited = set()
-    while queue:
+    while queue and len(visited) < 16:
         fname = queue.pop(0)
         if fname in visited or fname.startswith('-'):
             continue
@@ -613,21 +625,20 @@ def convert_vector_to_svg(app_dir, tools_dir, icon_name, apktool_res):
             if direct.name.startswith('-'):
                 return
             files = [direct.name]
-        for xml_file in files:
-            subprocess.run(
-                [
-                    find_java_binary(),
-                    '-jar',
-                    vd2svg.as_posix(),
-                    '-r',
-                    values.as_posix(),
-                    xml_file,
-                ],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                cwd=cwd,
-                timeout=30,
-                check=False,
-            )
+        subprocess.run(
+            [
+                find_java_binary(),
+                '-jar',
+                vd2svg.as_posix(),
+                '-r',
+                values.as_posix(),
+                *files,
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            cwd=cwd,
+            timeout=30,
+            check=False,
+        )
     except Exception:
         logger.exception('Android vector to svg conversion failed')
