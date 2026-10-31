@@ -46,17 +46,6 @@ service-identity = ">=24.1.0"
 dev = ["coverage[toml] (>=7.2.2)"]
 
 [[package]]
-name = "altgraph"
-version = "0.17.5"
-description = "Python graph (network) package"
-optional = false
-python-versions = "*"
-files = [
-    {file = "altgraph-0.17.5-py2.py3-none-any.whl", hash = "sha256:f3a22400bce1b0c701683820ac4f3b159cd301acab067c51c653e06961600597"},
-    {file = "altgraph-0.17.5.tar.gz", hash = "sha256:c87b395dd12fabde9c99573a9749d67da8d29ef9de0125c7f536699b4a9bc9e7"},
-]
-
-[[package]]
 name = "apkid"
 version = "3.2.0"
 description = "Android Package Identifier"
@@ -188,17 +177,6 @@ files = [
 cffi = [
     {version = ">=1.0.1", markers = "python_version < \"3.14\""},
     {version = ">=2", markers = "python_version >= \"3.14\""},
-]
-
-[[package]]
-name = "arpy"
-version = "2.4.0"
-description = "Library for accessing 'ar' files"
-optional = false
-python-versions = ">=3.10"
-files = [
-    {file = "arpy-2.4.0-py3-none-any.whl", hash = "sha256:c341410d0df54af903fcd18e4b82e7cfe2b5ed10a186cf6cb53e664e70449ba2"},
-    {file = "arpy-2.4.0.tar.gz", hash = "sha256:e2ce13869a2df98b420adeaf7429b63796e8c000969d2dfe471854c0be3d9a54"},
 ]
 
 [[package]]
@@ -441,23 +419,6 @@ files = [
     {file = "billiard-4.3.1-py3-none-any.whl", hash = "sha256:2c7075283191d9c0add66cf8fca8e06ba599e75fe7319b67186759f8877dfdaf"},
     {file = "billiard-4.3.1.tar.gz", hash = "sha256:c88559b306ee5dc93f8d5f843d07da15d795d67af26720d14ee9d09f09eb0b22"},
 ]
-
-[[package]]
-name = "bleach"
-version = "6.4.0"
-description = "An easy safelist-based HTML-sanitizing tool."
-optional = false
-python-versions = ">=3.10"
-files = [
-    {file = "bleach-6.4.0-py3-none-any.whl", hash = "sha256:4b6b6a54fff2e69a3dde9d21cc6301220bee3c3cb792187d11403fd795031081"},
-    {file = "bleach-6.4.0.tar.gz", hash = "sha256:4202482733d85cedd04e59fcb2f89f4e4c7c385a78d3c3c23c30446843a37452"},
-]
-
-[package.dependencies]
-webencodings = "*"
-
-[package.extras]
-css = ["tinycss2 (>=1.1.0)"]
 
 [[package]]
 name = "blinker"
@@ -963,23 +924,6 @@ files = [
 ]
 
 [[package]]
-name = "colorlog"
-version = "6.12.0"
-description = "Add colours to the output of Python's logging module."
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "colorlog-6.12.0-py3-none-any.whl", hash = "sha256:30d392604e9110045a2c2aeefc27d7a017abbab63f3a8aee594eac0801df784e"},
-    {file = "colorlog-6.12.0.tar.gz", hash = "sha256:2a7924c1dadf18b22a0eb8b06d1c7b01d5341707ec1641eb6fcc4fde0c3e8e5f"},
-]
-
-[package.dependencies]
-colorama = {version = "*", markers = "sys_platform == \"win32\""}
-
-[package.extras]
-development = ["black", "flake8", "mypy", "pytest", "types-colorama"]
-
-[[package]]
 name = "cryptography"
 version = "50.0.2"
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
@@ -1081,17 +1025,6 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 files = [
     {file = "defusedxml-0.7.1-py2.py3-none-any.whl", hash = "sha256:a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61"},
     {file = "defusedxml-0.7.1.tar.gz", hash = "sha256:1bb3032db185915b62d7c6209c5a8792be6a32ab2fedacc84e01b52c51aa3e69"},
-]
-
-[[package]]
-name = "distro"
-version = "1.9.0"
-description = "Distro - an OS platform information API"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "distro-1.9.0-py3-none-any.whl", hash = "sha256:7bffd925d65168f85027d8da9af6bddab658135b840670a223589bc0c8ef02b2"},
-    {file = "distro-1.9.0.tar.gz", hash = "sha256:2fa77c6fd8940f116ee1d6b94a2f90b13b5ea8d019b98bc8bafdcabcdd9bdbed"},
 ]
 
 [[package]]
@@ -1713,20 +1646,6 @@ cssselect = ["cssselect (>=0.7)"]
 html-clean = ["lxml_html_clean"]
 html5 = ["html5lib"]
 htmlsoup = ["BeautifulSoup4"]
-
-[[package]]
-name = "macholib"
-version = "1.16.4"
-description = "Mach-O header analysis and editing"
-optional = false
-python-versions = "*"
-files = [
-    {file = "macholib-1.16.4-py2.py3-none-any.whl", hash = "sha256:da1a3fa8266e30f0ce7e97c6a54eefaae8edd1e5f86f3eb8b95457cae90265ea"},
-    {file = "macholib-1.16.4.tar.gz", hash = "sha256:f408c93ab2e995cd2c46e34fe328b130404be143469e41bc366c807448979362"},
-]
-
-[package.dependencies]
-altgraph = ">=0.17"
 
 [[package]]
 name = "markupsafe"
@@ -2595,20 +2514,6 @@ files = [
 requests = ">=1.0.0"
 
 [[package]]
-name = "rsa"
-version = "4.9.1"
-description = "Pure-Python RSA implementation"
-optional = false
-python-versions = "<4,>=3.6"
-files = [
-    {file = "rsa-4.9.1-py3-none-any.whl", hash = "sha256:68635866661c6836b8d39430f97a996acbd61bfa49406748ea243539fe239762"},
-    {file = "rsa-4.9.1.tar.gz", hash = "sha256:e7bdbfdb5497da4c07dfd35530e1a902659db6ff241e39d9953cad06ebd0ae75"},
-]
-
-[package.dependencies]
-pyasn1 = ">=0.1.3"
-
-[[package]]
 name = "ruamel-yaml"
 version = "0.19.1"
 description = "ruamel.yaml is a YAML parser/emitter that supports roundtrip preservation of comments, seq/map flow style, and map key order"
@@ -2642,16 +2547,6 @@ cryptography = ">=47"
 
 [package.extras]
 idna = ["idna"]
-
-[[package]]
-name = "shelljob"
-version = "0.6.3"
-description = "Run multiple subprocesses asynchronous/in parallel with streamed output/non-blocking reading. Also various tools to replace shell scripts."
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "shelljob-0.6.3-py3-none-any.whl", hash = "sha256:1a37d1c36631a4839be7424910c293b0163b06bd74eaf3daf6cfcb5eabd95286"},
-]
 
 [[package]]
 name = "simplejson"
@@ -2858,20 +2753,6 @@ tinycss2 = ">=0.6.0"
 
 [package.extras]
 bitmaps = ["rlpycairo (>=0.4.0)"]
-
-[[package]]
-name = "svgutils"
-version = "0.3.4"
-description = "Python SVG editor"
-optional = false
-python-versions = "*"
-files = [
-    {file = "svgutils-0.3.4-py3-none-any.whl", hash = "sha256:4d08524a08126553c1a9bf2639616cf31290adea6fd235a3eb67d77c748abc00"},
-    {file = "svgutils-0.3.4.tar.gz", hash = "sha256:9ef48f44cb1d460a7747dd02694200fda25eb9faf6dea392118def2695e0e053"},
-]
-
-[package.dependencies]
-lxml = "*"
 
 [[package]]
 name = "tinycss2"
@@ -3386,4 +3267,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "27e0a38144195a3322707692787e351006215a9c2b402591d8aa40801425fe2f"
+content-hash = "d9469de41e39582f497941a84a9696ee28d04494c95c68434b593aefe4bbeb2d"

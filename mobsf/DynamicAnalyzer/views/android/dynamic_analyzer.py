@@ -2,10 +2,9 @@
 """Android Dynamic Analysis."""
 import logging
 import os
+import subprocess
 from pathlib import Path
 from urllib.parse import quote
-
-from shelljob import proc
 
 
 from django.http import (
@@ -868,21 +867,28 @@ def logcat(request, api=False):
                     'Invalid package name',
                     api)
             adb = os.environ['MOBSF_ADB']
-            g = proc.Group()
-            g.run([
-                adb,
-                '-s',
-                get_device(request),
-                'logcat',
-                app_pkg + ':V',
-                '*:*',
-            ])
+            logcat_proc = subprocess.Popen(
+                [
+                    adb,
+                    '-s',
+                    get_device(request),
+                    'logcat',
+                    app_pkg + ':V',
+                    '*:*',
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                errors='replace',
+            )
 
             def read_process():
-                while g.is_pending():
-                    lines = g.readlines()
-                    for _, line in lines:
-                        yield 'data:{}\n\n'.format(line)
+                try:
+                    for line in logcat_proc.stdout:
+                        yield f'data:{line}\n\n'
+                finally:
+                    if logcat_proc.poll() is None:
+                        logcat_proc.terminate()
             return StreamingHttpResponse(read_process(),
                                          content_type='text/event-stream')
         return print_n_send_error_response(

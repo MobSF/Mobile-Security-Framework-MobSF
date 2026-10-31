@@ -28,8 +28,6 @@ from concurrent.futures import (
 
 from packaging.version import Version
 
-import distro
-
 import psutil
 
 import requests
@@ -137,11 +135,18 @@ def print_version():
         print(f'Default Credentials: {Color.BOLD}mobsf/mobsf{Color.END}')
     os = platform.system()
     pltfm = platform.platform()
-    dist = ' '.join(distro.linux_distribution(
-        full_distribution_name=False)).strip()
-    dst_str = ' '
-    if dist:
-        dst_str = f' ({dist}) '
+    dist = ''
+    if hasattr(platform, 'freedesktop_os_release'):
+        try:
+            os_rel = platform.freedesktop_os_release()
+            dist = ' '.join(filter(None, (
+                os_rel.get('ID', ''),
+                os_rel.get('VERSION_ID', ''),
+                os_rel.get('VERSION_CODENAME', ''),
+            ))).strip()
+        except OSError:
+            pass
+    dst_str = f' ({dist}) ' if dist else ' '
     env_str = f'OS Environment: {os}{dst_str}{pltfm}'
     logger.info(env_str)
     python_version = sys.version.split(' ')[0]

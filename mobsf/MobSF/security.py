@@ -736,40 +736,79 @@ def safe_request(method, url, *,
         return response
 
 
+def _local_xml_name(name):
+    """Strip XML namespace URI prefix from tag or attribute name."""
+    if name.startswith('{') and '}' in name:
+        return name.split('}', 1)[1]
+    return name
+
+
 def sanitize_svg(svg_content):
     """Sanitize SVG content to prevent XSS attacks."""
-    import bleach
-    # Allow standard SVG tags and attributes, but remove scripts and event handlers
-    safe_tags = [
+    from xml.etree import ElementTree as StdET
+    import defusedxml.ElementTree as DefusedET
+    safe_tags = {
         'svg', 'g', 'path', 'rect', 'circle', 'ellipse',
         'line', 'polyline', 'polygon', 'text', 'tspan',
         'defs', 'use', 'image', 'mask', 'clipPath',
         'filter', 'linearGradient', 'radialGradient', 'stop',
-    ]
-    safe_attrs = {
-        '*': ['id', 'class', 'transform', 'fill', 'stroke', 'stroke-width', 'opacity'],
-        'svg': ['width', 'height', 'viewBox', 'xmlns', 'version'],
-        'path': ['d'],
-        'rect': ['x', 'y', 'width', 'height', 'rx', 'ry'],
-        'circle': ['cx', 'cy', 'r'],
-        'ellipse': ['cx', 'cy', 'rx', 'ry'],
-        'line': ['x1', 'y1', 'x2', 'y2'],
-        'polyline': ['points'],
-        'polygon': ['points'],
-        'text': ['x', 'y', 'font-family', 'font-size'],
-        'image': ['x', 'y', 'width', 'height', 'href'],
-        'use': ['x', 'y', 'width', 'height', 'href'],
-        'filter': ['x', 'y', 'width', 'height', 'href'],
-        'linearGradient': ['gradientUnits', 'x1', 'y1', 'x2', 'y2'],
-        'radialGradient': ['cx', 'cy', 'r', 'fx', 'fy'],
-        'stop': ['offset', 'stop-color', 'stop-opacity'],
     }
-    return bleach.clean(
-        svg_content,
-        tags=safe_tags,
-        attributes=safe_attrs,
-        strip=True,
-    )
+    safe_attrs = {
+        '*': {
+            'id', 'class', 'transform', 'fill', 'stroke',
+            'stroke-width', 'opacity',
+        },
+        'svg': {'width', 'height', 'viewBox', 'xmlns', 'version'},
+        'path': {'d'},
+        'rect': {'x', 'y', 'width', 'height', 'rx', 'ry'},
+        'circle': {'cx', 'cy', 'r'},
+        'ellipse': {'cx', 'cy', 'rx', 'ry'},
+        'line': {'x1', 'y1', 'x2', 'y2'},
+        'polyline': {'points'},
+        'polygon': {'points'},
+        'text': {'x', 'y', 'font-family', 'font-size'},
+        'image': {'x', 'y', 'width', 'height', 'href'},
+        'use': {'x', 'y', 'width', 'height', 'href'},
+        'filter': {'x', 'y', 'width', 'height', 'href'},
+        'linearGradient': {'gradientUnits', 'x1', 'y1', 'x2', 'y2'},
+        'radialGradient': {'cx', 'cy', 'r', 'fx', 'fy'},
+        'stop': {'offset', 'stop-color', 'stop-opacity'},
+    }
+    try:
+        StdET.register_namespace('', 'http://www.w3.org/2000/svg')
+        root = DefusedET.fromstring(svg_content)
+    except Exception:
+        return ''
+    root_tag = _local_xml_name(root.tag)
+    if root_tag != 'svg':
+        return ''
+
+    def _clean_element(elem):
+        tag = _local_xml_name(elem.tag)
+        allowed = safe_attrs['*'] | safe_attrs.get(tag, set())
+        cleaned_attrib = {}
+        for attr_key, attr_val in elem.attrib.items():
+            attr_name = _local_xml_name(attr_key)
+            if attr_name not in allowed:
+                continue
+            val_norm = re.sub(r'[\x00-\x20]+', '', attr_val).lower()
+            if (val_norm.startswith(('javascript:', 'vbscript:', 'data:'))
+                    or 'javascript:' in val_norm
+                    or 'expression(' in val_norm):
+                continue
+            cleaned_attrib[attr_name] = attr_val
+        elem.tag = tag
+        elem.attrib = cleaned_attrib
+        for child in list(elem):
+            child_tag = _local_xml_name(child.tag)
+            if child_tag not in safe_tags:
+                elem.remove(child)
+            else:
+                _clean_element(child)
+
+    _clean_element(root)
+    root.attrib.setdefault('xmlns', 'http://www.w3.org/2000/svg')
+    return StdET.tostring(root, encoding='unicode')
 
 
 def is_path_traversal(user_input):

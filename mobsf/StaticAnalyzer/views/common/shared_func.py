@@ -17,8 +17,6 @@ import tempfile
 import zipfile
 from pathlib import Path
 
-import arpy
-
 from django.utils.html import escape
 from django.http import HttpResponseRedirect
 
@@ -503,15 +501,61 @@ def ar_os(src, dst):
     return out
 
 
+def _iter_ar_archive(src):
+    """Yield (name_bytes, data_bytes) from a standard Unix ar archive."""
+    with Path(src).open('rb') as f:
+        if f.read(8) != b'!<arch>\n':
+            raise ValueError('Not a standard Unix ar archive')
+        gnu_table = None
+        while True:
+            header = f.read(60)
+            if not header:
+                break
+            if len(header) < 60:
+                raise ValueError('Truncated ar header')
+            name, _, _, _, _, size_raw, magic = struct.unpack(
+                '16s12s6s6s8s10s2s', header)
+            if magic != b'\x60\x0a':
+                raise ValueError('Invalid ar header magic')
+            size = int(size_raw)
+            data = f.read(size)
+            if len(data) < size:
+                raise ValueError('Truncated ar member')
+            if size % 2 == 1:
+                f.read(1)
+            raw_name = name.rstrip(b' ')
+            if raw_name in (b'//', b'/SYM64/'):
+                gnu_table = data
+                continue
+            if raw_name == b'/':
+                continue
+            if raw_name.startswith(b'#1/'):
+                name_len = int(raw_name[3:])
+                entry_name = data[:name_len]
+                entry_data = data[name_len:]
+            elif raw_name.startswith(b'/') and gnu_table is not None:
+                offset = int(raw_name[1:])
+                sep = b'\x00' if b'\x00' in gnu_table else b'\n'
+                end = gnu_table.find(sep, offset)
+                if end == -1:
+                    end = len(gnu_table)
+                entry_name = gnu_table[offset:end].removesuffix(b'/')
+                entry_data = data
+            else:
+                entry_name = (
+                    raw_name.rstrip(b'/') if len(raw_name) > 1 else raw_name
+                )
+                entry_data = data
+            yield entry_name, entry_data
+
+
 def ar_extract(checksum, src, dst):
     """Extract AR archive."""
     msg = 'Extracting static library archive'
     logger.info(msg)
     append_scan_status(checksum, msg)
     try:
-        ar = arpy.Archive(src)
-        ar.read_all_headers()
-        for a, val in ar.archived_files.items():
+        for a, val in _iter_ar_archive(src):
             # Handle archive slip attacks
             filtered = a.decode('utf-8', 'ignore')
             if is_path_traversal(filtered):
@@ -525,7 +569,7 @@ def ar_extract(checksum, src, dst):
                 logger.warning(msg)
                 append_scan_status(checksum, msg)
                 continue
-            out.write_bytes(val.read())
+            out.write_bytes(val)
     except Exception:
         # Possibly dealing with Fat binary, needs Mac host
         msg = 'Failed to extract .a archive'

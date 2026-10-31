@@ -298,13 +298,27 @@ def get_icon_apk(app_dic):
 def transform_svg(fpath, bpath, output):
     """Transform SVG from foreground and background."""
     try:
-        import svgutils.transform as sg
-        background = sg.fromfile(bpath)
-        logo = sg.fromfile(fpath)
-        root = logo.getroot()
-        root.moveto(1, 1)
-        background.append([root])
-        background.save(output)
+        parser = etree.XMLParser(resolve_entities=False, no_network=True)
+        background = etree.parse(bpath, parser=parser)
+        logo = etree.parse(fpath, parser=parser)
+        bg_root = background.getroot()
+        logo_root = logo.getroot()
+        attrib = {'transform': 'translate(1, 1)'}
+        if 'class' in logo_root.attrib:
+            attrib['class'] = logo_root.attrib['class']
+        group = etree.SubElement(
+            bg_root,
+            '{http://www.w3.org/2000/svg}g',
+            attrib=attrib,
+        )
+        for child in logo_root:
+            group.append(child)
+        background.write(
+            output,
+            xml_declaration=True,
+            standalone=True,
+            pretty_print=True,
+        )
         return output.as_posix()
     except Exception:
         return None
