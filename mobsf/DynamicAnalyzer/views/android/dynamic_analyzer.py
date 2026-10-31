@@ -778,7 +778,7 @@ def dynamic_analyzer(request, checksum, api=False, stream=False):
 @require_http_methods(['GET', 'POST'])
 def httptools_start(request):
     """Render or stream captured HTTP(S) traffic in MobSF."""
-    logger.info('Opening HTTP(S) Traffic Viewer')
+    logger.info('Opening Web Traffic Viewer')
     try:
         project = (
             request.POST.get('project')
@@ -827,9 +827,9 @@ def httptools_start(request):
             context,
         )
     except Exception:
-        logger.exception('Opening HTTP(S) Traffic Viewer')
+        logger.exception('Opening Web Traffic Viewer')
         return print_n_send_error_response(
-            request, 'Error opening HTTP(S) Traffic Viewer')
+            request, 'Error opening Web Traffic Viewer')
 
 
 @login_required
