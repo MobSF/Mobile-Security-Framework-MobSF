@@ -7,6 +7,8 @@ import platform
 import stat
 import subprocess
 
+import lief
+
 from django.conf import settings
 
 from mobsf.MobSF.utils import (
@@ -16,6 +18,33 @@ from mobsf.MobSF.utils import (
 
 
 logger = logging.getLogger(__name__)
+OBJC_STRING_SECTIONS = (
+    '__objc_classname',
+    '__objc_methname',
+    '__swift5_reflstr',
+    '__swift5_typeref',
+)
+
+
+def classdump_lief(ipa_bin):
+    """Extract Objective-C and Swift class/selector names via LIEF."""
+    entries = []
+    seen = set()
+    try:
+        fat = lief.MachO.parse(ipa_bin)
+        if not fat:
+            return b''
+        for binary in fat:
+            for section in binary.sections:
+                if section.name not in OBJC_STRING_SECTIONS:
+                    continue
+                for token in bytes(section.content).split(b'\x00'):
+                    if len(token) > 1 and token.isascii() and token not in seen:
+                        seen.add(token)
+                        entries.append(token)
+    except Exception:
+        logger.warning('Failed to extract Objective-C/Swift metadata via LIEF')
+    return b'\n'.join(entries)
 
 
 def classdump_mac(checksum, clsdmp_bin, tools_dir, ipa_bin):
@@ -121,6 +150,9 @@ def get_class_dump(checksum, tools_dir, bin_path, app_dir, bin_type):
             msg = 'class-dump is not supported in this platform'
             logger.warning(msg)
             append_scan_status(checksum, msg)
+        lief_dump = classdump_lief(bin_path)
+        if lief_dump:
+            cdump = cdump + b'\n' + lief_dump if cdump else lief_dump
         with open(os.path.join(app_dir, 'classdump.txt'), 'wb') as flip:
             flip.write(cdump)
         return cdump

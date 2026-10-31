@@ -13,15 +13,15 @@ IPA_RULES = [
             'The binary may contain the following insecure API(s) {}'),
         'type': 'Regex',
         'pattern': (
-            rb'\b_alloca\n\b|\b_gets\n\b|\b_memcpy\n\b|\b_printf\n\b|'
-            rb'\b_scanf\n\b|\b_sprintf\n\b|\b_sscanf\n\b|\b_strcat\n\b|'
-            rb'\bStrCat\n\b|\b_strcpy\n\b|\bStrCpy\n\b|\b_strlen\n\b|'
-            rb'\bStrLen\n\b|\b_strncat\n\b|\bStrNCat\n\b|\b_strncpy\n\b|'
-            rb'\bStrNCpy\n\b|\b_strtok\n\b|\b_swprintf\n\b|\b_vsnprintf\n\b|'
+            rb'\b_alloca\b|\b_gets\b|\b_memcpy\b|\b_printf\b|'
+            rb'\b_scanf\b|\b_sprintf\b|\b_sscanf\b|\b_strcat\b|'
+            rb'\bStrCat\b|\b_strcpy\b|\bStrCpy\b|\b_strlen\b|'
+            rb'\bStrLen\b|\b_strncat\b|\bStrNCat\b|\b_strncpy\b|'
+            rb'\bStrNCpy\b|\b_strtok\b|\b_swprintf\b|\b_vsnprintf\b|'
             rb'\b_vsprintf\b|\b_vswprintf\b|\b_wcscat\b|\b_wcscpy\b|'
-            rb'\b_wcslen\n\b|\b_wcsncat\n\b|\b_wcsncpy\n\b|\b_wcstok\n\b|'
-            rb'\b_wmemcpy\n\b|\b_fopen\n\b|\b_chmod\n\b|\b_chown\n\b|'
-            rb'\b_stat\n\b|\b_mktemp\n\b'),
+            rb'\b_wcslen\b|\b_wcsncat\b|\b_wcsncpy\b|\b_wcstok\b|'
+            rb'\b_wmemcpy\b|\b_fopen\b|\b_chmod\b|\b_chown\b|'
+            rb'\b_stat\b|\b_mktemp\b'),
         'severity': WARNING,
         'input_case': 'exact',
         'cvss': 6,
@@ -155,7 +155,7 @@ IPA_RULES = [
             'The binary may use the following '
             'insecure Random function(s) {}'),
         'type': 'Regex',
-        'pattern': rb'\b_srand\n\b|\b_random\n\b',
+        'pattern': rb'\b_srand\b|\b_random\b|\b_rand\b|\b_drand48\b',
         'severity': WARNING,
         'input_case': 'exact',
         'cvss': 3,
@@ -168,7 +168,7 @@ IPA_RULES = [
         'detailed_desc': (
             'The binary may use {} function for logging.'),
         'type': 'Regex',
-        'pattern': rb'\b_NSLog\n\b',
+        'pattern': rb'\b_NSLog\b|\b_NSLogv\b',
         'severity': INFO,
         'input_case': 'exact',
         'cvss': 7.5,
@@ -181,7 +181,7 @@ IPA_RULES = [
         'detailed_desc': (
             'The binary may use {} function instead of calloc'),
         'type': 'Regex',
-        'pattern': rb'_malloc\n',
+        'pattern': rb'\b_malloc\b',
         'severity': WARNING,
         'input_case': 'exact',
         'cvss': 2,
@@ -207,15 +207,125 @@ IPA_RULES = [
         'masvs': STDS['masvs']['resilience-2'],
     },
     {
-        'description': 'Binary uses WebView Component.',
-        'detailed_desc': 'The binary may use UIWebView Component.',
+        'description': 'Binary uses deprecated UIWebView Component',
+        'detailed_desc': (
+            'The binary references UIWebView ({}), which is deprecated by '
+            'Apple and lacks modern out-of-process sandboxing and content '
+            'security controls. Migrate to WKWebView.'
+        ),
         'type': 'Regex',
-        'pattern': b'UIWebView',
+        'pattern': rb'\bUIWebView\b',
+        'severity': WARNING,
+        'input_case': 'exact',
+        'cvss': 4.3,
+        'cwe': STDS['cwe']['cwe-477'],
+        'owasp-mobile': STDS['owasp-mobile']['m1'],
+        'masvs': STDS['masvs']['platform-2'],
+    },
+    {
+        'description': (
+            'Binary references weak Keychain accessibility attribute(s)'
+        ),
+        'detailed_desc': (
+            'The binary references weak Keychain accessibility constant(s) '
+            '({}). Items stored with kSecAttrAccessibleAlways remain '
+            'decrypted even when the device is locked. Use '
+            'kSecAttrAccessibleWhenUnlockedThisDeviceOnly or '
+            'kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly.'
+        ),
+        'type': 'Regex',
+        'pattern': (
+            rb'\b_?kSecAttrAccessibleAlways\b|'
+            rb'\b_?kSecAttrAccessibleAlwaysThisDeviceOnly\b'
+        ),
+        'severity': WARNING,
+        'input_case': 'exact',
+        'cvss': 5.3,
+        'cwe': STDS['cwe']['cwe-522'],
+        'owasp-mobile': STDS['owasp-mobile']['m2'],
+        'masvs': STDS['masvs']['storage-1'],
+    },
+    {
+        'description': (
+            'Binary references insecure SSL/TLS certificate validation API(s)'
+        ),
+        'detailed_desc': (
+            'The binary references selector(s) or constant(s) that can '
+            'disable TLS certificate chain validation ({}), exposing '
+            'network connections to Man-in-the-Middle (MitM) attacks.'
+        ),
+        'type': 'Regex',
+        'pattern': (
+            rb'setAllowsAnyHTTPSCertificate|'
+            rb'allowsAnyHTTPSCertificateForHost|'
+            rb'continueWithoutCredentialForAuthenticationChallenge|'
+            rb'\b_?kCFStreamSSLValidatesCertificateChain\b|'
+            rb'\b_?kCFStreamSSLAllowsAnyRoot\b|'
+            rb'\b_?kCFStreamSSLAllowsExpiredCertificates\b|'
+            rb'\b_?kCFStreamSSLAllowsExpiredRoots\b'
+        ),
+        'severity': HIGH,
+        'input_case': 'exact',
+        'cvss': 7.4,
+        'cwe': STDS['cwe']['cwe-295'],
+        'owasp-mobile': STDS['owasp-mobile']['m3'],
+        'masvs': STDS['masvs']['network-1'],
+    },
+    {
+        'description': (
+            'Binary references dangerous WKWebView file access selector(s)'
+        ),
+        'detailed_desc': (
+            'The binary references WKWebView configuration selector(s) ({}) '
+            'that enable file:// or cross-origin universal access from local '
+            'files, which can allow local file disclosure if untrusted '
+            'content is loaded.'
+        ),
+        'type': 'Regex',
+        'pattern': (
+            rb'allowFileAccessFromFileURLs|'
+            rb'allowUniversalAccessFromFileURLs'
+        ),
+        'severity': WARNING,
+        'input_case': 'exact',
+        'cvss': 5.4,
+        'cwe': STDS['cwe']['cwe-749'],
+        'owasp-mobile': STDS['owasp-mobile']['m1'],
+        'masvs': STDS['masvs']['platform-2'],
+    },
+    {
+        'description': 'Binary makes use of UIPasteboard',
+        'detailed_desc': (
+            'The binary references UIPasteboard ({}). Copying sensitive data '
+            'to the system-wide generalPasteboard exposes it to other '
+            'installed applications.'
+        ),
+        'type': 'Regex',
+        'pattern': rb'\b_?OBJC_CLASS_\$_UIPasteboard\b|\bgeneralPasteboard\b',
         'severity': INFO,
         'input_case': 'exact',
         'cvss': 0,
-        'cwe': '',
-        'owasp-mobile': '',
-        'masvs': STDS['masvs']['code-9'],
+        'cwe': STDS['cwe']['cwe-200'],
+        'owasp-mobile': STDS['owasp-mobile']['m1'],
+        'masvs': STDS['masvs']['platform-1'],
+    },
+    {
+        'description': 'Binary makes use of SQLite API(s)',
+        'detailed_desc': (
+            'The binary uses raw SQLite C API(s) ({}). Ensure queries use '
+            'parameterized statements (sqlite3_bind_*) rather than string '
+            'concatenation and that sensitive databases are encrypted.'
+        ),
+        'type': 'Regex',
+        'pattern': (
+            rb'\b_sqlite3_exec\b|\b_sqlite3_prepare\b|'
+            rb'\b_sqlite3_prepare_v2\b|\b_sqlite3_prepare_v3\b'
+        ),
+        'severity': INFO,
+        'input_case': 'exact',
+        'cvss': 0,
+        'cwe': STDS['cwe']['cwe-89'],
+        'owasp-mobile': STDS['owasp-mobile']['m7'],
+        'masvs': STDS['masvs']['code-4'],
     },
 ]
