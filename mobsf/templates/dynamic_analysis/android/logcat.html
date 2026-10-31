@@ -8,8 +8,6 @@ var controller = new AbortController();
 
 function renderMessage(data) {
     if (stream) {
-        if (!data.includes('{{ package|escapejs }}'))
-            return;
         i = i + 1;
         // Display only last 500 lines
         if (i >= 500){

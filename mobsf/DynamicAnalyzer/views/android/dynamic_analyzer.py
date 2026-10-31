@@ -1,6 +1,7 @@
 # -*- coding: utf_8 -*-
 """Android Dynamic Analysis."""
 import logging
+import re
 import subprocess
 from pathlib import Path
 from urllib.parse import quote
@@ -839,6 +840,28 @@ def httptools_start(request):
             request, 'Error opening Web Traffic Viewer')
 
 
+def _get_package_uid(identifier, safe_pkg):
+    """Resolve the numeric Android UID for an installed package."""
+    try:
+        env = Environment(identifier)
+        out = env.adb_command(
+            ['dumpsys', 'package', safe_pkg],
+            shell=True,
+            silent=True,
+            timeout=5,
+        )
+        if out:
+            match = re.search(
+                r'\buserId=(\d+)\b',
+                out.decode('utf-8', 'ignore'),
+            )
+            if match:
+                return match.group(1)
+    except Exception:
+        pass
+    return None
+
+
 @login_required
 @permission_required(Permissions.SCAN)
 @require_http_methods(['GET', 'POST'])
@@ -885,27 +908,27 @@ def logcat(request, api=False):
                     request,
                     'Selected Android device is unavailable',
                     api)
+            uid = _get_package_uid(identifier, safe_pkg)
+            logcat_args = [get_adb(), '-s', identifier, 'logcat']
+            if uid:
+                logcat_args.append(f'--uid={uid}')
+            else:
+                logcat_args.extend([f'{safe_pkg}:V', '*:*'])
             logcat_proc = subprocess.Popen(
-                [
-                    get_adb(),
-                    '-s',
-                    identifier,
-                    'logcat',
-                    f'{safe_pkg}:V',
-                    '*:*',
-                ],
+                logcat_args,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
                 bufsize=1,
                 errors='replace',
             )
+            short_pkg = safe_pkg[-15:]
 
             def read_process():
                 try:
                     yield ':ok\n\n'
                     for line in iter(logcat_proc.stdout.readline, ''):
-                        if safe_pkg in line:
+                        if uid or safe_pkg in line or short_pkg in line:
                             yield f'data:{line.rstrip()}\n\n'
                 finally:
                     if logcat_proc.stdout:
