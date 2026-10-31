@@ -782,6 +782,13 @@ def _is_unsafe_svg_attr_value(attr_val):
     )
 
 
+_SVG_DROP_SUBTREE_TAGS = {
+    'script', 'style', 'foreignObject', 'iframe', 'object', 'embed',
+    'audio', 'video', 'canvas', 'animate', 'animateMotion',
+    'animateTransform', 'set', 'title', 'desc', 'metadata',
+}
+
+
 def _clean_svg_element(elem):
     """Recursively strip disallowed SVG tags and attributes in place."""
     tag = _local_xml_name(elem.tag)
@@ -793,14 +800,17 @@ def _clean_svg_element(elem):
             cleaned_attrib[attr_name] = attr_val
     elem.tag = tag
     elem.attrib = cleaned_attrib
-    remove_children = [
-        child for child in elem
-        if _local_xml_name(child.tag) not in _SVG_SAFE_TAGS
-    ]
-    for child in remove_children:
-        elem.remove(child)
+    new_children = []
     for child in elem:
+        child_tag = _local_xml_name(child.tag)
+        if child_tag in _SVG_DROP_SUBTREE_TAGS:
+            continue
         _clean_svg_element(child)
+        if child_tag in _SVG_SAFE_TAGS:
+            new_children.append(child)
+        else:
+            new_children.extend(child)
+    elem[:] = new_children
 
 
 def sanitize_svg(svg_content):

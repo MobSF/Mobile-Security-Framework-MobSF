@@ -841,7 +841,7 @@ def httptools_start(request):
 
 
 def _get_package_uid(identifier, safe_pkg):
-    """Resolve the numeric Android UID for an installed package."""
+    """Resolve the numeric Android UID(s) if logcat --uid is supported."""
     try:
         env = Environment(identifier)
         out = env.adb_command(
@@ -850,13 +850,25 @@ def _get_package_uid(identifier, safe_pkg):
             silent=True,
             timeout=5,
         )
-        if out:
-            match = re.search(
-                r'\buserId=(\d+)\b',
-                out.decode('utf-8', 'ignore'),
-            )
-            if match:
-                return match.group(1)
+        if not out:
+            return None
+        match = re.search(
+            r'\buserId=(\d+)\b',
+            out.decode('utf-8', 'ignore'),
+        )
+        if not match:
+            return None
+        app_id = int(match.group(1))
+        user_ids = env.android_user_ids() or (0,)
+        uids = ','.join(str(int(u) * 100000 + app_id) for u in user_ids)
+        probe = env.adb_command(
+            ['logcat', '-d', '-t', '1', f'--uid={uids}'],
+            shell=True,
+            silent=True,
+            timeout=5,
+        )
+        if probe is not None:
+            return uids
     except Exception:
         pass
     return None
@@ -909,13 +921,16 @@ def logcat(request, api=False):
                     'Selected Android device is unavailable',
                     api)
             uid = _get_package_uid(identifier, safe_pkg)
-            logcat_args = [get_adb(), '-s', identifier, 'logcat']
-            if uid:
-                logcat_args.append(f'--uid={uid}')
-            else:
-                logcat_args.extend([f'{safe_pkg}:V', '*:*'])
+            filter_arg = f'--uid={uid}' if uid else f'{safe_pkg}:V'
             logcat_proc = subprocess.Popen(
-                logcat_args,
+                [
+                    get_adb(),
+                    '-s',
+                    identifier,
+                    'logcat',
+                    filter_arg,
+                    '*:V',
+                ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
