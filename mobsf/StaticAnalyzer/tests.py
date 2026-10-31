@@ -24,6 +24,10 @@ from mobsf.StaticAnalyzer.views.common.pdf import (
     get_pdf_resource_policy,
     render_html_to_pdf,
 )
+from mobsf.StaticAnalyzer.views.ios.entitlements import (
+    evaluate_entitlements,
+    ipa_entitlements_analysis,
+)
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -765,3 +769,68 @@ class PdfGenerationSecurityTests(SimpleTestCase):
             'others' / 'css' / 'pdf_report.css'
         policy.check_path(css_path)
         policy.check_path(Path(settings.DWD_DIR))
+
+
+class IOSEntitlementsAnalysisTests(SimpleTestCase):
+    """Tests for iOS Entitlements and Provisioning Profile security checks."""
+
+    def test_evaluate_entitlements_flags_high_and_warning_conditions(self):
+        entitlements = {
+            'get-task-allow': True,
+            'com.apple.private.security.no-sandbox': True,
+            'keychain-access-groups': ['TEAM123.*'],
+            'com.apple.security.application-groups': ['group.com.example.shared'],
+            'com.apple.developer.associated-domains': [
+                'applinks:*.example.com?mode=developer',
+            ],
+        }
+        profile = {'provisions_all_devices': True, 'team_id': 'TEAM123'}
+        results = {
+            rule_id: (title, desc, meta)
+            for rule_id, title, desc, meta in evaluate_entitlements(
+                entitlements, profile)
+        }
+        self.assertEqual(
+            results['ios_entitlement_debuggable'][2]['severity'], 'high')
+        self.assertEqual(
+            results['ios_entitlement_dangerous'][2]['severity'], 'high')
+        self.assertEqual(
+            results['ios_enterprise_provisioning'][2]['severity'], 'warning')
+        self.assertEqual(
+            results['ios_keychain_wildcard'][2]['severity'], 'warning')
+        self.assertEqual(
+            results['ios_app_groups_shared'][2]['severity'], 'info')
+        self.assertEqual(
+            results['ios_associated_domains_wildcard'][2]['severity'],
+            'warning',
+        )
+
+    def test_ipa_entitlements_analysis_on_sample_ipa(self):
+        import tempfile
+        import zipfile
+        from unittest import mock
+        ipa_path = Path(settings.BASE_DIR) / 'StaticAnalyzer/test_files/ios.ipa'
+        with tempfile.TemporaryDirectory() as tmp:
+            with zipfile.ZipFile(ipa_path) as zf:
+                zf.extractall(tmp)
+            app_root = Path(tmp) / 'Payload' / 'helloworld.app'
+            bin_path = app_root / 'helloworld'
+            findings = {}
+            with mock.patch(
+                'mobsf.StaticAnalyzer.views.ios.entitlements.append_scan_status',
+            ):
+                ipa_entitlements_analysis(
+                    '0' * 32, findings, app_root, bin_path)
+            self.assertIn(
+                'Application is provisioned for Enterprise / '
+                'All-Devices distribution',
+                findings,
+            )
+            self.assertIn(
+                'Application Code Signing and Entitlements',
+                findings,
+            )
+            self.assertNotIn(
+                'Application uses a wildcard Keychain access group',
+                findings,
+            )
