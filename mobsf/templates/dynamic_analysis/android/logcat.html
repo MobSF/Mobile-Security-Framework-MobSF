@@ -12,12 +12,13 @@ function renderMessage(data) {
             return;
         i = i + 1;
         // Display only last 500 lines
-        if (i < 500){
-            div.insertAdjacentHTML('beforeend', html_safe(data) + "<br>");
-        } else {
-            div.innerHTML = html_safe(data) + "<br>";
-            i=0;
+        if (i >= 500){
+            div.replaceChildren();
+            i = 0;
         }
+        var line = document.createElement('div');
+        line.textContent = data;
+        div.appendChild(line);
         window.scrollTo(0,document.body.scrollHeight);
     }
 }
@@ -83,24 +84,4 @@ function toggle(){
         btn.textContent = "Stop Streaming";
     }
 }
-
-function html_safe(data){
-      data = data.replace('b\'', '').
-                  replace(/\\r\\n\'/g, '').
-                  replace('b"', '').
-                  replace(/\\r\\n"/g, '')
-      return data
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#x27;")
-          .replace(/`/g, "&#x60;")
-          .replace(/\(/g, "&#x28;")
-          .replace(/\)/g, "&#x29;")
-          .replace(/{/g, "&#x7B;")
-          .replace(/}/g, "&#x7D;")
-          .replace(/-/g, "&#x2D;")
-          .replace(/\+/g, "&#x2B;");
-}
-
 </script>
