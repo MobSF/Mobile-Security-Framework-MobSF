@@ -101,7 +101,7 @@ def _index_res_files(roots):
         for dirpath, _, filenames in os.walk(root):
             for fname in filenames:
                 index.setdefault(fname, []).append(
-                    os.path.join(dirpath, fname))
+                    Path(dirpath, fname).as_posix())
     return index
 
 
@@ -144,6 +144,34 @@ def _extract_drawable_refs_from_xml(xml_path):
     return refs
 
 
+def _is_launcher_component(node, ns='android'):
+    """Return True if an activity/alias declares MAIN or LAUNCHER intent."""
+    for sitem in node.getElementsByTagName('action'):
+        if sitem.getAttribute(f'{ns}:name') == 'android.intent.action.MAIN':
+            return True
+    for sitem in node.getElementsByTagName('category'):
+        val = sitem.getAttribute(f'{ns}:name')
+        if val in (
+            'android.intent.category.LAUNCHER',
+            'android.intent.category.INFO',
+        ):
+            return True
+    return False
+
+
+def _ordered_manifest_icon_nodes(parsed, ns='android'):
+    """Yield enabled application, launcher components, then other components."""
+    apps = parsed.getElementsByTagName('application')
+    comp_nodes = [
+        n for tag in ('activity-alias', 'activity')
+        for n in parsed.getElementsByTagName(tag)
+        if n.getAttribute(f'{ns}:enabled').strip().lower() != 'false'
+    ]
+    launchers = [n for n in comp_nodes if _is_launcher_component(n, ns)]
+    others = [n for n in comp_nodes if not _is_launcher_component(n, ns)]
+    return (*apps, *launchers, *others)
+
+
 def _extract_manifest_icon_names(app_dir):
     """Extract non-null icon resource names from AndroidManifest.xml."""
     names = []
@@ -153,20 +181,19 @@ def _extract_manifest_icon_names(app_dir):
             continue
         try:
             parsed = parseString(mfst.read_text('utf8', 'ignore'))
-            for tag in ('application', 'activity-alias', 'activity'):
-                for node in parsed.getElementsByTagName(tag):
-                    for attr in ('android:icon', 'android:roundIcon'):
-                        val = node.getAttribute(attr).strip()
-                        if not val or val == '@null' or '/' not in val:
-                            continue
-                        name = val.rsplit('/', 1)[1].strip()
-                        if (name
-                                and not is_path_traversal(name)
-                                and not any(
-                                    c in name
-                                    for c in ('*', '?', '[', '/', '\\'))
-                                and name not in names):
-                            names.append(name)
+            for node in _ordered_manifest_icon_nodes(parsed):
+                for attr in ('android:icon', 'android:roundIcon'):
+                    val = node.getAttribute(attr).strip()
+                    if not val or val == '@null' or '/' not in val:
+                        continue
+                    name = val.rsplit('/', 1)[1].strip()
+                    if (name
+                            and not is_path_traversal(name)
+                            and not any(
+                                c in name
+                                for c in ('*', '?', '[', '/', '\\'))
+                            and name not in names):
+                        names.append(name)
         except Exception:
             continue
         if names:
@@ -179,6 +206,14 @@ def guess_icon_path(res_dir):
     app_dir = res_path.parent
     apktool_res = app_dir / 'apktool_out' / 'res'
     search_roots = [r for r in (res_path, apktool_res) if r.exists()]
+
+    res_index = _index_res_files(search_roots)
+    manifest_icon_names = _extract_manifest_icon_names(app_dir)
+    for icon_stem in manifest_icon_names:
+        for ext in ('.png', '.webp', '.svg'):
+            for match in res_index.get(f'{icon_stem}{ext}', ()):
+                if _is_valid_icon_file(match):
+                    return match
 
     icon_folders = (
         'mipmap-xxxhdpi',
@@ -204,20 +239,12 @@ def guess_icon_path(res_dir):
                 if _is_valid_icon_file(guessed):
                     return guessed.as_posix()
 
-    res_index = _index_res_files(search_roots)
     for fname, paths in res_index.items():
         if (fname.startswith('ic_launcher')
                 and not fname.startswith('ic_launcher_background')):
             for candidate in paths:
                 if _is_valid_icon_file(candidate):
                     return candidate
-
-    manifest_icon_names = _extract_manifest_icon_names(app_dir)
-    for icon_stem in manifest_icon_names:
-        for ext in ('.png', '.webp', '.svg'):
-            for match in res_index.get(f'{icon_stem}{ext}', ()):
-                if _is_valid_icon_file(match):
-                    return match
 
     # XAPK bundles often include a rendered top-level icon.png / icon.webp
     for root_icon_name in ('icon.png', 'icon.webp'):
@@ -248,9 +275,9 @@ def guess_icon_path(res_dir):
                                 return match
 
     xml_fallbacks = [
+        *(f'{stem}.xml' for stem in manifest_icon_names),
         'ic_launcher.xml',
         'ic_launcher_round.xml',
-        *(f'{stem}.xml' for stem in manifest_icon_names),
     ]
     for fname in xml_fallbacks:
         for xml_path in res_index.get(fname, ()):

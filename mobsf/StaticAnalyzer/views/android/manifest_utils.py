@@ -195,7 +195,6 @@ def extract_manifest_data(app_dic):
         mainact = ''
         androidversioncode = ''
         androidversionname = ''
-        applications = mfxml.getElementsByTagName('application')
         permissions = mfxml.getElementsByTagName('uses-permission')
         permsdk23 = mfxml.getElementsByTagName('uses-permission-sdk-23')
         if permsdk23:
@@ -262,11 +261,10 @@ def extract_manifest_data(app_dic):
         for category in categories:
             cat.append(category.getAttribute(f'{ns}:name'))
 
-        for node in (
-            *applications,
-            *mfxml.getElementsByTagName('activity-alias'),
-            *activities,
-        ):
+        from mobsf.StaticAnalyzer.views.android.icon_analysis import (
+            _ordered_manifest_icon_nodes,
+        )
+        for node in _ordered_manifest_icon_nodes(mfxml, ns):
             for attr in ('icon', 'roundIcon'):
                 try:
                     icon_path = node.getAttribute(f'{ns}:{attr}').strip()

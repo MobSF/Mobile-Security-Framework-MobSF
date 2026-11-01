@@ -1180,10 +1180,20 @@ class AndroidIconFallbackTests(SimpleTestCase):
                 '<manifest xmlns:android='
                 '"http://schemas.android.com/apk/res/android">'
                 '<application android:icon="@null">'
-                '<activity android:icon="@drawable/dcloud_recent"/>'
+                '<activity android:enabled="false" '
+                'android:icon="@drawable/disabled_icon"/>'
+                '<activity android:icon="@drawable/secondary_icon"/>'
+                '<activity android:icon="@drawable/dcloud_recent">'
+                '<intent-filter>'
+                '<action android:name="android.intent.action.MAIN"/>'
+                '<category android:name="android.intent.category.LAUNCHER"/>'
+                '</intent-filter>'
+                '</activity>'
                 '</application></manifest>',
                 encoding='utf-8',
             )
+            (drawable / 'disabled_icon.png').write_bytes(self.PNG_SAMPLE)
+            (drawable / 'secondary_icon.png').write_bytes(self.PNG_SAMPLE)
             act_icon = drawable / 'dcloud_recent.png'
             act_icon.write_bytes(self.PNG_SAMPLE)
             resolved = guess_icon_path((app_dir / 'res').as_posix())
