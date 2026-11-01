@@ -672,6 +672,21 @@ def check_basic_env():
         os.kill(os.getpid(), signal.SIGTERM)
 
 
+def is_db_update_due(local_file):
+    """Allow a local DB update check at most once per interval."""
+    marker = Path(f'{local_file}.lastcheck')
+    try:
+        if Path(local_file).exists() and marker.exists():
+            age = time.time() - marker.stat().st_mtime
+            if 0 <= age < settings.DB_UPDATE_INTERVAL:
+                return False
+        # Claim the check before running it so concurrent scans skip it
+        marker.touch()
+    except OSError:
+        logger.warning('Failed to read or write %s', marker)
+    return True
+
+
 def update_local_db(db_name, url, local_file, timeout=60):
     """Update Local DBs."""
     update = None
