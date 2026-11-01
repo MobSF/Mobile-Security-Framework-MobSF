@@ -1015,11 +1015,15 @@ class OSUnzipHardeningTests(SimpleTestCase):
         zip_path.write_bytes(bytes(raw))
 
     def test_neutralize_handles_eocd_sig_in_comment_and_padding(self):
+        import platform
+        import shutil
         import tempfile
         from mobsf.StaticAnalyzer.views.common.shared_func import (
             unzip,
         )
         from unittest import mock
+        if platform.system() == 'Windows' or not shutil.which('unzip'):
+            self.skipTest('OS unzip not used on Windows or unavailable')
         cases = (
             {'comment': b'pad' + b'PK\x05\x06', 'corrupt_cd_size': True},
             {'pad_before_eocd': b'XYZ'},
@@ -1042,6 +1046,7 @@ class OSUnzipHardeningTests(SimpleTestCase):
                     self.assertFalse(item.is_symlink())
 
     def test_os_unzip_staging_blocks_symlinks_even_if_unpatched(self):
+        import platform
         import shutil
         import tempfile
         import zipfile
@@ -1049,8 +1054,8 @@ class OSUnzipHardeningTests(SimpleTestCase):
         from mobsf.StaticAnalyzer.views.common.shared_func import (
             os_unzip,
         )
-        if not shutil.which('unzip'):
-            self.skipTest('unzip binary not available')
+        if platform.system() == 'Windows' or not shutil.which('unzip'):
+            self.skipTest('OS unzip not used on Windows or unavailable')
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             zpath = tmp_path / 'unpatched.zip'
@@ -1084,14 +1089,15 @@ class OSUnzipHardeningTests(SimpleTestCase):
             self.assertFalse((ext / 'int_link.java').is_symlink())
 
     def test_os_unzip_fails_closed_when_neutralize_raises(self):
+        import platform
         import shutil
         import tempfile
         from unittest import mock
         from mobsf.StaticAnalyzer.views.common.shared_func import (
             os_unzip,
         )
-        if not shutil.which('unzip'):
-            self.skipTest('unzip binary not available')
+        if platform.system() == 'Windows' or not shutil.which('unzip'):
+            self.skipTest('OS unzip not used on Windows or unavailable')
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             zpath = tmp_path / 'fail.zip'
@@ -1127,7 +1133,10 @@ class OSUnzipHardeningTests(SimpleTestCase):
             src.mkdir()
             (src / 'Real.java').write_text(
                 'class Real { String s = "normal_code_string"; }')
-            os.symlink(secret_target, src / 'Linked.java')
+            try:
+                os.symlink(secret_target, src / 'Linked.java')
+            except (OSError, NotImplementedError):
+                self.skipTest('symlinks not supported in this environment')
             with mock.patch(
                 'mobsf.StaticAnalyzer.views.common.shared_func.append_scan_status',
             ):

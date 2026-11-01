@@ -221,6 +221,7 @@ def unzip(checksum, app_path, ext_path, size_budget=None):
     return files
 
 
+_EOCD_SIG = b'PK\x05\x06'
 _CD_SIG = b'PK\x01\x02'
 _CD_HEADER_SIZE = 46
 _SCAN_CHUNK_SIZE = 1024 * 1024
@@ -232,11 +233,42 @@ def _unix_mode_is_special(mode):
             or stat.S_ISCHR(mode) or stat.S_ISBLK(mode))
 
 
+def _outer_cd_start_offset(handle, size):
+    """Estimate earliest outer central-directory offset to skip member data."""
+    window = min(size, 65535 + 22)
+    if window < 22:
+        return 0
+    handle.seek(size - window)
+    tail = handle.read(window)
+    fallback_pos = None
+    pos = len(tail) - 22
+    while pos >= 0:
+        if tail[pos:pos + 4] == _EOCD_SIG:
+            if fallback_pos is None:
+                fallback_pos = pos
+            comment_len = struct.unpack_from('<H', tail, pos + 20)[0]
+            if pos + 22 + comment_len <= len(tail):
+                fallback_pos = pos
+                break
+        pos -= 1
+    if fallback_pos is None:
+        return 0
+    eocd_abs = size - window + fallback_pos
+    cd_size, cd_offset = struct.unpack_from('<II', tail, fallback_pos + 12)
+    if cd_offset == 0xFFFFFFFF or cd_size == 0xFFFFFFFF:
+        return 0
+    candidates = [
+        off for off in (cd_offset, eocd_abs - cd_size)
+        if 0 <= off < size
+    ]
+    return min(candidates) if candidates else 0
+
+
 def _rewrite_special_central_directory(handle):
-    r"""Rewrite symlink and device modes in all PK\x01\x02 headers."""
+    r"""Rewrite symlink and device modes in outer PK\x01\x02 headers."""
     handle.seek(0, os.SEEK_END)
     size = handle.tell()
-    offset = 0
+    offset = _outer_cd_start_offset(handle, size)
     while offset < size:
         handle.seek(offset)
         chunk = handle.read(_SCAN_CHUNK_SIZE + _CD_HEADER_SIZE)
@@ -248,13 +280,19 @@ def _rewrite_special_central_directory(handle):
             idx = chunk.find(_CD_SIG, pos)
             if idx < 0 or idx > limit:
                 break
-            external_attr = struct.unpack_from('<I', chunk, idx + 38)[0]
-            mode = (external_attr >> 16) & 0xFFFF
-            if _unix_mode_is_special(mode):
-                patched_attr = (
-                    (_REGULAR_FILE_MODE << 16) | (external_attr & 0xFFFF))
-                handle.seek(offset + idx + 38)
-                handle.write(struct.pack('<I', patched_attr))
+            name_len, extra_len, comment_len = struct.unpack_from(
+                '<HHH', chunk, idx + 28)
+            entry_end = offset + idx + _CD_HEADER_SIZE + (
+                name_len + extra_len + comment_len)
+            if entry_end <= size:
+                external_attr = struct.unpack_from('<I', chunk, idx + 38)[0]
+                mode = (external_attr >> 16) & 0xFFFF
+                if _unix_mode_is_special(mode):
+                    patched_attr = (
+                        (_REGULAR_FILE_MODE << 16)
+                        | (external_attr & 0xFFFF))
+                    handle.seek(offset + idx + 38)
+                    handle.write(struct.pack('<I', patched_attr))
             pos = idx + 4
         offset += _SCAN_CHUNK_SIZE
 
@@ -332,14 +370,14 @@ def remove_external_symlinks(root):
                     'Failed to remove %s', sanitize_for_logging(name))
 
 
-def _has_symlink_ancestor(target_root, dst_file):
-    """Return True if any path component under target_root is a link/pipe."""
+def _has_symlink_ancestor(ext_root, dst_file):
+    """Return True if any path component under ext_root is a link/pipe."""
     cur = dst_file.parent
-    while cur != target_root and target_root in cur.parents:
+    while cur != ext_root and ext_root in cur.parents:
         if is_pipe_or_link(cur):
             return True
         cur = cur.parent
-    return is_pipe_or_link(target_root)
+    return is_pipe_or_link(ext_root)
 
 
 def _import_staged_files(staging_dir, ext_path):
@@ -365,6 +403,7 @@ def _import_staged_files(staging_dir, ext_path):
                 target_root = ext_root
             dst_file = target_root / rel_path
             if (is_path_traversal(rel_path)
+                    or _has_symlink_ancestor(ext_root, dst_file)
                     or not is_safe_path(target_root, dst_file, rel_path)):
                 continue
             file_size = src_file.stat().st_size
@@ -374,11 +413,10 @@ def _import_staged_files(staging_dir, ext_path):
             if total_size > settings.ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE:
                 raise ValueError('Total uncompressed size exceeds limit')
             dst_file.parent.mkdir(parents=True, exist_ok=True)
-            if (_has_symlink_ancestor(target_root, dst_file)
+            if (_has_symlink_ancestor(ext_root, dst_file)
                     or is_pipe_or_link(dst_file)):
                 continue
-            os.replace(src_file, dst_file)
-            os.chmod(dst_file, 0o644)
+            shutil.move(src_file.as_posix(), dst_file.as_posix())
             imported.append(rel_path)
     return imported
 
