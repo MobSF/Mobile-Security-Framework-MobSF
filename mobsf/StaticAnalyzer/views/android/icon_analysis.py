@@ -68,13 +68,15 @@ def _is_valid_icon_file(file_path):
                 or path.stat().st_size == 0):
             return False
         suffix = path.suffix.lower()
-        if suffix == '.png':
-            with path.open('rb') as fp:
-                return fp.read(8) == PNG_MAGIC
-        if suffix == '.webp':
+        if suffix in ('.png', '.webp'):
             with path.open('rb') as fp:
                 header = fp.read(12)
-                return header[:4] == b'RIFF' and header[8:12] == b'WEBP'
+                return (
+                    header[:8] == PNG_MAGIC
+                    or (len(header) >= 12
+                        and header[:4] == b'RIFF'
+                        and header[8:12] == b'WEBP')
+                )
         if suffix == '.svg':
             with path.open('rb') as fp:
                 head = fp.read(512)
@@ -92,6 +94,24 @@ def _search_folder(src, file_pattern):
     return matches
 
 
+DENSITY_ORDER = (
+    'xxxhdpi',
+    'xxhdpi',
+    'xhdpi',
+    'hdpi',
+    'mdpi',
+)
+
+
+def _density_rank(path_str):
+    """Rank resource paths from highest density (0) to lowest."""
+    parent = Path(path_str).parent.name.lower()
+    for idx, token in enumerate(DENSITY_ORDER):
+        if token in parent:
+            return idx
+    return len(DENSITY_ORDER)
+
+
 def _index_res_files(roots):
     """Build a single-pass {filename: [paths]} index across resource roots."""
     index = {}
@@ -99,7 +119,9 @@ def _index_res_files(roots):
         for dirpath, _, filenames in os.walk(root):
             for fname in filenames:
                 index.setdefault(fname, []).append(
-                    os.path.join(dirpath, fname))
+                    Path(dirpath, fname).as_posix())
+    for paths in index.values():
+        paths.sort(key=_density_rank)
     return index
 
 
@@ -142,12 +164,81 @@ def _extract_drawable_refs_from_xml(xml_path):
     return refs
 
 
+def _is_launcher_component(node, ns='android'):
+    """Return True if an activity/alias declares MAIN or LAUNCHER intent."""
+    for sitem in node.getElementsByTagName('action'):
+        if sitem.getAttribute(f'{ns}:name') == 'android.intent.action.MAIN':
+            return True
+    for sitem in node.getElementsByTagName('category'):
+        val = sitem.getAttribute(f'{ns}:name')
+        if val in (
+            'android.intent.category.LAUNCHER',
+            'android.intent.category.INFO',
+        ):
+            return True
+    return False
+
+
+def _ordered_manifest_icon_nodes(parsed, ns='android'):
+    """Yield enabled application, launcher components, then other components."""
+    apps = parsed.getElementsByTagName('application')
+    comp_nodes = [
+        n for tag in ('activity-alias', 'activity')
+        for n in parsed.getElementsByTagName(tag)
+        if n.getAttribute(f'{ns}:enabled').strip().lower() != 'false'
+    ]
+    launchers = [n for n in comp_nodes if _is_launcher_component(n, ns)]
+    others = [n for n in comp_nodes if not _is_launcher_component(n, ns)]
+    return (*apps, *launchers, *others)
+
+
+def _extract_manifest_icon_names(app_dir):
+    """Extract non-null icon resource names from AndroidManifest.xml."""
+    names = []
+    for rel in ('apktool_out/AndroidManifest.xml', 'AndroidManifest.xml'):
+        mfst = Path(app_dir) / rel
+        if not mfst.is_file() or is_pipe_or_link(mfst):
+            continue
+        try:
+            parsed = parseString(mfst.read_text('utf8', 'ignore'))
+            for node in _ordered_manifest_icon_nodes(parsed):
+                for attr in ('android:icon', 'android:roundIcon'):
+                    val = node.getAttribute(attr).strip()
+                    if not val or val == '@null' or '/' not in val:
+                        continue
+                    name = val.rsplit('/', 1)[1].strip()
+                    if (name
+                            and not is_path_traversal(name)
+                            and not any(
+                                c in name
+                                for c in ('*', '?', '[', '/', '\\'))
+                            and name not in names):
+                        names.append(name)
+        except Exception:
+            continue
+        if names:
+            break
+    return names
+
+
 def guess_icon_path(res_dir):
     res_path = Path(res_dir)
-    apktool_res = res_path.parent / 'apktool_out' / 'res'
-    search_roots = [res_path]
-    if apktool_res.exists() and apktool_res != res_path:
-        search_roots.append(apktool_res)
+    app_dir = res_path.parent
+    apktool_res = app_dir / 'apktool_out' / 'res'
+    search_roots = [r for r in (res_path, apktool_res) if r.exists()]
+
+    res_index = _index_res_files(search_roots)
+    manifest_icon_names = _extract_manifest_icon_names(app_dir)
+    for icon_stem in manifest_icon_names:
+        stem_matches = [
+            match
+            for ext in ('.png', '.webp', '.svg')
+            for match in res_index.get(f'{icon_stem}{ext}', ())
+        ]
+        stem_matches.sort(key=_density_rank)
+        for match in stem_matches:
+            if _is_valid_icon_file(match):
+                return match
 
     icon_folders = (
         'mipmap-xxxhdpi',
@@ -162,7 +253,9 @@ def guess_icon_path(res_dir):
         'ic_launcher.png',
         'ic_launcher.webp',
         'ic_launcher_round.png',
+        'ic_launcher_round.webp',
         'ic_launcher_foreground.png',
+        'ic_launcher_foreground.webp',
     )
     for root in search_roots:
         for icon_folder in icon_folders:
@@ -171,7 +264,6 @@ def guess_icon_path(res_dir):
                 if _is_valid_icon_file(guessed):
                     return guessed.as_posix()
 
-    res_index = _index_res_files(search_roots)
     for fname, paths in res_index.items():
         if (fname.startswith('ic_launcher')
                 and not fname.startswith('ic_launcher_background')):
@@ -179,10 +271,19 @@ def guess_icon_path(res_dir):
                 if _is_valid_icon_file(candidate):
                     return candidate
 
+    # XAPK bundles often include a rendered top-level icon.png / icon.webp
+    for root_icon_name in ('icon.png', 'icon.webp'):
+        root_icon = app_dir / root_icon_name
+        if (_is_safe_icon_path(app_dir, root_icon)
+                and _is_valid_icon_file(root_icon)):
+            return root_icon.as_posix()
+
     # Follow adaptive-icon / layer-list XML references using the indexed map
     xml_candidates = [
         p for fname, paths in res_index.items()
-        if fname.startswith('ic_launcher') and fname.endswith('.xml')
+        if (fname.startswith('ic_launcher')
+            or fname[:-4] in manifest_icon_names)
+        and fname.endswith('.xml')
         for p in paths
     ]
     for xml_file in xml_candidates:
@@ -198,7 +299,12 @@ def guess_icon_path(res_dir):
                             if _is_valid_icon_file(match):
                                 return match
 
-    for fname in ('ic_launcher.xml', 'ic_launcher_round.xml'):
+    xml_fallbacks = [
+        *(f'{stem}.xml' for stem in manifest_icon_names),
+        'ic_launcher.xml',
+        'ic_launcher_round.xml',
+    ]
+    for fname in xml_fallbacks:
         for xml_path in res_index.get(fname, ()):
             path = Path(xml_path)
             if path.is_file() and not is_pipe_or_link(path):
@@ -223,10 +329,10 @@ def get_icon_from_src(app_dic, icon_from_mfst):
         res_path,
         icon_from_mfst)
     if (icon_file
-            and Path(icon_file).exists()
-            and _is_safe_icon_path(res_path, icon_file)):
+            and _is_valid_icon_file(icon_file)
+            and _is_safe_icon_path(app_dic['app_dir'], icon_file)):
         dwd = Path(settings.DWD_DIR)
-        out = dwd / (app_dic['md5'] + '-icon' + Path(icon_file).suffix)
+        out = dwd / (app_dic['md5'] + '-icon' + Path(icon_file).suffix.lower())
         copy2(icon_file, out)
         app_dic['icon_path'] = out.name
 
@@ -244,6 +350,8 @@ def find_icon_path_zip(checksum, res_dir, icon_paths_from_manifest):
         logger.info(msg)
         append_scan_status(checksum, msg)
         for icon_path in icon_paths_from_manifest:
+            if not icon_path or icon_path == '@null':
+                continue
             if is_path_traversal(icon_path):
                 logger.warning(
                     'Path traversal detected in icon path: %s',
@@ -254,12 +362,15 @@ def find_icon_path_zip(checksum, res_dir, icon_paths_from_manifest):
                 path_array = icon_path.strip('@').split(os.sep)
                 rel_path = os.sep.join(path_array[1:])
                 for size_str in KNOWN_MIPMAP_SIZES:
-                    tmp_path = os.path.join(
-                        res_dir, path_array[0] + size_str, rel_path + '.png')
-                    if not is_safe_path(res_dir, tmp_path, icon_path):
-                        continue
-                    if os.path.exists(tmp_path):
-                        return tmp_path
+                    for ext in ('.png', '.webp'):
+                        tmp_path = os.path.join(
+                            res_dir,
+                            path_array[0] + size_str,
+                            rel_path + ext)
+                        if not is_safe_path(res_dir, tmp_path, icon_path):
+                            continue
+                        if _is_valid_icon_file(tmp_path):
+                            return tmp_path
             elif icon_path.startswith(('res/', '/res/')):
                 # Use removeprefix-style stripping to remove only the res/ prefix,
                 # not a character set (str.strip('/res') strips chars {/,r,e,s}).
@@ -269,21 +380,25 @@ def find_icon_path_zip(checksum, res_dir, icon_paths_from_manifest):
                 full_path = os.path.join(res_dir, rel)
                 if not is_safe_path(res_dir, full_path, icon_path):
                     continue
-                if os.path.exists(full_path):
+                if _is_valid_icon_file(full_path):
                     return full_path
-                full_path += '.png'
-                if not is_safe_path(res_dir, full_path, icon_path):
-                    continue
-                if os.path.exists(full_path):
-                    return full_path
+                for ext in ('.png', '.webp'):
+                    ext_path = full_path + ext
+                    if not is_safe_path(res_dir, ext_path, icon_path):
+                        continue
+                    if _is_valid_icon_file(ext_path):
+                        return ext_path
 
             file_name = icon_path.split(os.sep)[-1]
-            if file_name.endswith('.png'):
-                file_name += '.png'
-
-            for guess in _search_folder(res_dir, file_name):
-                if os.path.exists(guess):
-                    return guess
+            search_names = (
+                (file_name,)
+                if file_name.endswith(('.png', '.webp'))
+                else (f'{file_name}.png', f'{file_name}.webp')
+            )
+            for sname in search_names:
+                for guess in _search_folder(res_dir, sname):
+                    if _is_valid_icon_file(guess):
+                        return guess
 
         # If didn't find, try the default name.. returns empty if not find
         return guess_icon_path(res_dir)
@@ -310,6 +425,8 @@ def get_icon_apk_res(app_dic):
         # If icon is found in androguard or aapt2
         icon_name = app_dic.get('androguard_apk_icon') or app_dic.get(
             'apk_features', {}).get('application_icon')
+        if icon_name == '@null':
+            icon_name = None
         if is_path_traversal(icon_name):
             logger.warning('Path traversal detected in icon path')
             icon_name = None
@@ -336,7 +453,7 @@ def get_icon_apk_res(app_dic):
                 )
             except Exception:
                 pass
-        if res_path.exists() and not icon_name:
+        if not icon_name:
             icon_name = ''
             logger.warning('androguard/aapt2 cannot find icon resource')
             guessed = guess_icon_path(str(res_path))
@@ -534,13 +651,19 @@ def convert_axml_to_xml(app_dir, icon_file):
     try:
         logger.info('Converting icon axml to xml')
         icon_bin_xml = app_dir / icon_file
-        if not is_safe_path(app_dir, icon_bin_xml, icon_file):
+        if (not is_safe_path(app_dir, icon_bin_xml, icon_file)
+                or is_pipe_or_link(icon_bin_xml)):
             return None
         out_xml = app_dir / icon_file
-        aobj = axml.AXMLPrinter(
-            icon_bin_xml.read_bytes()).get_xml_obj()
-        xml_txt = etree.tostring(
-            aobj, pretty_print=True, encoding='utf-8')
+        raw = icon_bin_xml.read_bytes()
+        if raw.lstrip().startswith(b'<'):
+            xml_txt = raw
+        else:
+            aobj = axml.AXMLPrinter(raw).get_xml_obj()
+            if aobj is None:
+                return False
+            xml_txt = etree.tostring(
+                aobj, pretty_print=True, encoding='utf-8')
         for sys_color, hex_color in ANDROID_SYSTEM_COLORS:
             xml_txt = xml_txt.replace(sys_color, hex_color)
         out_xml.write_bytes(xml_txt)
