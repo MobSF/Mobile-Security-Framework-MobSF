@@ -414,9 +414,14 @@ def _import_staged_files(staging_dir, ext_path):
                 raise ValueError('Total uncompressed size exceeds limit')
             dst_file.parent.mkdir(parents=True, exist_ok=True)
             if (_has_symlink_ancestor(ext_root, dst_file)
-                    or is_pipe_or_link(dst_file)):
+                    or is_pipe_or_link(dst_file)
+                    or dst_file.is_dir()):
                 continue
-            shutil.move(src_file.as_posix(), dst_file.as_posix())
+            try:
+                os.replace(src_file, dst_file)
+            except OSError:
+                shutil.copyfile(src_file, dst_file)
+                src_file.unlink()
             imported.append(rel_path)
     return imported
 
