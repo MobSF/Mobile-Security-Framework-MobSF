@@ -223,47 +223,9 @@ def unzip(checksum, app_path, ext_path, size_budget=None):
 
 _EOCD_SIG = b'PK\x05\x06'
 _CD_SIG = b'PK\x01\x02'
-_ZIP64_EOCD_SIG = b'PK\x06\x06'
-_ZIP64_LOC_SIG = b'PK\x06\x07'
+_CD_HEADER_SIZE = 46
+_SCAN_CHUNK_SIZE = 1024 * 1024
 _REGULAR_FILE_MODE = 0o100644
-
-
-def _read_at(handle, offset, size):
-    handle.seek(offset)
-    data = handle.read(size)
-    if len(data) != size:
-        raise ValueError('short read')
-    return data
-
-
-def _eocd_offset(handle, size):
-    """Return the end-of-central-directory offset."""
-    window = min(size, 65535 + 22)
-    data = _read_at(handle, size - window, window)
-    rel = data.rfind(_EOCD_SIG)
-    if rel < 0 or window - rel < 22:
-        raise ValueError('EOCD not found')
-    return size - window + rel
-
-
-def _central_directory_offset(handle, eocd, size):
-    """Return the central-directory offset, including ZIP64."""
-    cd_offset = struct.unpack('<I', _read_at(handle, eocd + 16, 4))[0]
-    if cd_offset != 0xFFFFFFFF:
-        return cd_offset
-    loc = eocd - 20
-    if loc < 0:
-        raise ValueError('ZIP64 locator missing')
-    locator = _read_at(handle, loc, 20)
-    if locator[:4] != _ZIP64_LOC_SIG:
-        raise ValueError('ZIP64 locator missing')
-    z64 = struct.unpack_from('<Q', locator, 8)[0]
-    if z64 + 56 > size:
-        raise ValueError('ZIP64 EOCD missing')
-    eocd64 = _read_at(handle, z64, 56)
-    if eocd64[:4] != _ZIP64_EOCD_SIG:
-        raise ValueError('ZIP64 EOCD missing')
-    return struct.unpack_from('<Q', eocd64, 48)[0]
 
 
 def _unix_mode_is_special(mode):
@@ -271,34 +233,68 @@ def _unix_mode_is_special(mode):
             or stat.S_ISCHR(mode) or stat.S_ISBLK(mode))
 
 
+def _outer_cd_start_offset(handle, size):
+    """Estimate earliest outer central-directory offset to skip member data."""
+    window = min(size, 65535 + 22)
+    if window < 22:
+        return 0
+    handle.seek(size - window)
+    tail = handle.read(window)
+    fallback_pos = None
+    pos = len(tail) - 22
+    while pos >= 0:
+        if tail[pos:pos + 4] == _EOCD_SIG:
+            if fallback_pos is None:
+                fallback_pos = pos
+            comment_len = struct.unpack_from('<H', tail, pos + 20)[0]
+            if pos + 22 + comment_len <= len(tail):
+                fallback_pos = pos
+                break
+        pos -= 1
+    if fallback_pos is None:
+        return 0
+    eocd_abs = size - window + fallback_pos
+    cd_size, cd_offset = struct.unpack_from('<II', tail, fallback_pos + 12)
+    if cd_offset == 0xFFFFFFFF or cd_size == 0xFFFFFFFF:
+        return 0
+    candidates = [
+        off for off in (cd_offset, eocd_abs - cd_size)
+        if 0 <= off < size
+    ]
+    return min(candidates) if candidates else 0
+
+
 def _rewrite_special_central_directory(handle):
-    """Rewrite symlink and device modes to a regular file."""
+    r"""Rewrite symlink and device modes in outer PK\x01\x02 headers."""
     handle.seek(0, os.SEEK_END)
     size = handle.tell()
-    eocd = _eocd_offset(handle, size)
-    pos = _central_directory_offset(handle, eocd, size)
-    if pos < 0 or pos > size:
-        raise ValueError('central directory offset out of range')
-    while pos + 46 <= size:
-        header = _read_at(handle, pos, 46)
-        if header[:4] != _CD_SIG:
+    offset = _outer_cd_start_offset(handle, size)
+    while offset < size:
+        handle.seek(offset)
+        chunk = handle.read(_SCAN_CHUNK_SIZE + _CD_HEADER_SIZE)
+        if len(chunk) < _CD_HEADER_SIZE:
             break
-        name_len, extra_len, comment_len = struct.unpack_from(
-            '<HHH', header, 28)
-        next_pos = pos + 46 + name_len + extra_len + comment_len
-        if next_pos < pos or next_pos > size:
-            raise ValueError('central directory entry exceeds archive')
-        external_attr = struct.unpack_from('<I', header, 38)[0]
-        mode = (external_attr >> 16) & 0xFFFF
-        if _unix_mode_is_special(mode):
-            patched_attr = (
-                (_REGULAR_FILE_MODE << 16) | (external_attr & 0xFFFF))
-            handle.seek(pos + 38)
-            handle.write(struct.pack('<I', patched_attr))
-        pos = next_pos
-    marker = _read_at(handle, pos, 4) if pos + 4 <= size else b''
-    if marker not in (_EOCD_SIG, _ZIP64_EOCD_SIG):
-        raise ValueError('central directory walk did not finish')
+        pos = 0
+        limit = len(chunk) - _CD_HEADER_SIZE
+        while pos <= limit:
+            idx = chunk.find(_CD_SIG, pos)
+            if idx < 0 or idx > limit:
+                break
+            name_len, extra_len, comment_len = struct.unpack_from(
+                '<HHH', chunk, idx + 28)
+            entry_end = offset + idx + _CD_HEADER_SIZE + (
+                name_len + extra_len + comment_len)
+            if entry_end <= size:
+                external_attr = struct.unpack_from('<I', chunk, idx + 38)[0]
+                mode = (external_attr >> 16) & 0xFFFF
+                if _unix_mode_is_special(mode):
+                    patched_attr = (
+                        (_REGULAR_FILE_MODE << 16)
+                        | (external_attr & 0xFFFF))
+                    handle.seek(offset + idx + 38)
+                    handle.write(struct.pack('<I', patched_attr))
+            pos = idx + 4
+        offset += _SCAN_CHUNK_SIZE
 
 
 def _patched_zip_dir(dest_parent):
@@ -374,6 +370,62 @@ def remove_external_symlinks(root):
                     'Failed to remove %s', sanitize_for_logging(name))
 
 
+def _has_symlink_ancestor(ext_root, dst_file):
+    """Return True if any path component under ext_root is a link/pipe."""
+    cur = dst_file.parent
+    while cur != ext_root and ext_root in cur.parents:
+        if is_pipe_or_link(cur):
+            return True
+        cur = cur.parent
+    return is_pipe_or_link(ext_root)
+
+
+def _import_staged_files(staging_dir, ext_path):
+    """Move only verified regular files from staging_dir into ext_path."""
+    ext_root = Path(ext_path)
+    total_size = 0
+    imported = []
+    set_permissions(staging_dir)
+    for dirpath, dirnames, filenames in os.walk(
+            staging_dir, followlinks=False):
+        dirnames[:] = [
+            d for d in dirnames
+            if not is_pipe_or_link(os.path.join(dirpath, d))
+        ]
+        for fname in filenames:
+            src_file = Path(dirpath) / fname
+            if is_pipe_or_link(src_file) or not src_file.is_file():
+                continue
+            rel_path = src_file.relative_to(staging_dir).as_posix()
+            if is_reserved_file_conflict(rel_path):
+                target_root = ext_root / '_conflict_'
+            else:
+                target_root = ext_root
+            dst_file = target_root / rel_path
+            if (is_path_traversal(rel_path)
+                    or _has_symlink_ancestor(ext_root, dst_file)
+                    or not is_safe_path(target_root, dst_file, rel_path)):
+                continue
+            file_size = src_file.stat().st_size
+            total_size += file_size
+            if file_size > settings.ZIP_MAX_UNCOMPRESSED_FILE_SIZE:
+                continue
+            if total_size > settings.ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE:
+                raise ValueError('Total uncompressed size exceeds limit')
+            dst_file.parent.mkdir(parents=True, exist_ok=True)
+            if (_has_symlink_ancestor(ext_root, dst_file)
+                    or is_pipe_or_link(dst_file)
+                    or dst_file.is_dir()):
+                continue
+            try:
+                os.replace(src_file, dst_file)
+            except OSError:
+                shutil.copyfile(src_file, dst_file)
+                src_file.unlink()
+            imported.append(rel_path)
+    return imported
+
+
 def os_unzip(checksum, app_path, ext_path):
     """Unzip using OS utility."""
     msg = 'Attempting to unzip with OS unzip utility'
@@ -397,19 +449,27 @@ def os_unzip(checksum, app_path, ext_path):
             logger.error(msg)
             append_scan_status(checksum, msg)
             return []
-        extract_from = app_path
         try:
             patched = neutralize_zip_special_modes(app_path, ext_path)
-            extract_from = patched
         except Exception:
-            logger.warning('Could not strip symlink modes before OS unzip')
-        # OS unzip strips absolute paths and '..' from member names.
-        # Symlink modes are rewritten above so it cannot create a link.
-        subprocess.call(
-            [unzip_b, '-o', '-q', extract_from, '-d', ext_path])
-        # chmod first. A directory mode such as 0500 has no write bit, so
-        # unlinking a symlink inside it fails and the link would survive.
-        # set_permissions skips links, so this does not chmod the target.
+            msg = (
+                'Refusing OS unzip because special modes '
+                'could not be stripped'
+            )
+            logger.error(msg)
+            append_scan_status(checksum, msg)
+            return []
+        # Extract into an isolated staging directory and only move verified
+        # regular files into ext_path so symlinks/FIFOs never enter ext_path.
+        with tempfile.TemporaryDirectory(
+                prefix='mobsf-unzip-stage-',
+                dir=_patched_zip_dir(ext_path)) as staging_dir:
+            subprocess.call(
+                [unzip_b, '-o', '-q', patched, '-d', staging_dir])
+            try:
+                imported = _import_staged_files(staging_dir, ext_path)
+            finally:
+                set_permissions(staging_dir)
         set_permissions(ext_path)
         remove_external_symlinks(ext_path)
         # Listing is best-effort. A truncated central-directory size makes
@@ -423,7 +483,7 @@ def os_unzip(checksum, app_path, ext_path):
             return ['Length   Date   Time   Name'] + listing
         except (OSError, subprocess.CalledProcessError):
             logger.warning('Could not list archive entries after OS unzip')
-            return []
+            return imported
     except Exception as exp:
         msg = 'Unzipping Error with OS unzip utility'
         logger.exception(msg)
@@ -734,7 +794,10 @@ def strings_and_entropies(checksum, src, exts):
         excludes = ('\\u0', 'com.google.')
         eslash = ('Ljava', 'Lkotlin', 'kotlin', 'android')
         for p in src.rglob('*'):
-            if p.suffix not in exts or not p.exists():
+            if (p.suffix not in exts
+                    or is_pipe_or_link(p)
+                    or not p.exists()
+                    or not p.is_file()):
                 continue
             matches = STRINGS_REGEX.finditer(
                 p.read_text(encoding='utf-8', errors='ignore'),
