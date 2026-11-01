@@ -473,7 +473,8 @@ def download(request):
             allowed_exts[ext])
 
     # Special Case for Certain Image Files
-    if filename.endswith(('screen/screen.png', '-icon.png')):
+    if filename.endswith((
+            'screen/screen.png', '-icon.png', '-icon.svg', '-icon.webp')):
         return HttpResponse('')
 
     return HttpResponse(status=HTTP_STATUS_404)

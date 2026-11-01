@@ -1143,3 +1143,82 @@ class OSUnzipHardeningTests(SimpleTestCase):
                 data = strings_and_entropies('0' * 32, src, ['.java'])
             self.assertIn('normal_code_string', data['strings'])
             self.assertNotIn('super_secret_linked_value', data['strings'])
+
+
+class AndroidIconFallbackTests(SimpleTestCase):
+    """Tests for XAPK root icon, activity icon fallback, and WebP/PNG magic."""
+
+    PNG_SAMPLE = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR'
+
+    def test_webp_extension_with_png_magic_is_accepted(self):
+        import tempfile
+        from mobsf.StaticAnalyzer.views.android.icon_analysis import (
+            guess_icon_path,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            app_dir = Path(tmp)
+            mipmap = app_dir / 'res' / 'mipmap-xxxhdpi'
+            mipmap.mkdir(parents=True)
+            webp_icon = mipmap / 'ic_launcher.webp'
+            webp_icon.write_bytes(self.PNG_SAMPLE)
+            resolved = guess_icon_path((app_dir / 'res').as_posix())
+            self.assertEqual(resolved, webp_icon.as_posix())
+
+    def test_activity_icon_fallback_when_application_icon_is_null(self):
+        import tempfile
+        from mobsf.StaticAnalyzer.views.android.icon_analysis import (
+            guess_icon_path,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            app_dir = Path(tmp)
+            (app_dir / 'res').mkdir()
+            apktool_out = app_dir / 'apktool_out'
+            drawable = apktool_out / 'res' / 'drawable-xhdpi'
+            drawable.mkdir(parents=True)
+            (apktool_out / 'AndroidManifest.xml').write_text(
+                '<?xml version="1.0" encoding="utf-8"?>'
+                '<manifest xmlns:android='
+                '"http://schemas.android.com/apk/res/android">'
+                '<application android:icon="@null">'
+                '<activity android:icon="@drawable/dcloud_recent"/>'
+                '</application></manifest>',
+                encoding='utf-8',
+            )
+            act_icon = drawable / 'dcloud_recent.png'
+            act_icon.write_bytes(self.PNG_SAMPLE)
+            resolved = guess_icon_path((app_dir / 'res').as_posix())
+            self.assertEqual(resolved, act_icon.as_posix())
+
+    def test_xapk_root_icon_fallback(self):
+        import tempfile
+        from mobsf.StaticAnalyzer.views.android.icon_analysis import (
+            guess_icon_path,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            app_dir = Path(tmp)
+            (app_dir / 'res').mkdir()
+            root_icon = app_dir / 'icon.png'
+            root_icon.write_bytes(self.PNG_SAMPLE)
+            resolved = guess_icon_path((app_dir / 'res').as_posix())
+            self.assertEqual(resolved, root_icon.as_posix())
+
+    def test_convert_axml_to_xml_accepts_plain_text_xml(self):
+        import tempfile
+        from mobsf.StaticAnalyzer.views.android.icon_analysis import (
+            convert_axml_to_xml,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            app_dir = Path(tmp)
+            xml_dir = app_dir / 'res' / 'mipmap-anydpi-v26'
+            xml_dir.mkdir(parents=True)
+            xml_file = xml_dir / 'ic_launcher.xml'
+            xml_file.write_bytes(
+                b'<adaptive-icon xmlns:android='
+                b'"http://schemas.android.com/apk/res/android">'
+                b'<background android:drawable="@android:color/white"/>'
+                b'</adaptive-icon>',
+            )
+            res = convert_axml_to_xml(
+                app_dir, 'res/mipmap-anydpi-v26/ic_launcher.xml')
+            self.assertIs(res, False)
+            self.assertIn(b'#FFFFFFFF', xml_file.read_bytes())

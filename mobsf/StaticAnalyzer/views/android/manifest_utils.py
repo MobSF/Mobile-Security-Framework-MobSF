@@ -262,12 +262,20 @@ def extract_manifest_data(app_dic):
         for category in categories:
             cat.append(category.getAttribute(f'{ns}:name'))
 
-        for application in applications:
-            try:
-                icon_path = application.getAttribute(f'{ns}:icon')
-                icons.append(icon_path)
-            except Exception:
-                continue  # No icon attribute?
+        for node in (
+            *applications,
+            *mfxml.getElementsByTagName('activity-alias'),
+            *activities,
+        ):
+            for attr in ('icon', 'roundIcon'):
+                try:
+                    icon_path = node.getAttribute(f'{ns}:{attr}').strip()
+                    if (icon_path
+                            and icon_path != '@null'
+                            and icon_path not in icons):
+                        icons.append(icon_path)
+                except Exception:
+                    continue
 
         android_permission_tags = ('com.google.', 'android.', 'com.google.')
         for permission in permissions:
