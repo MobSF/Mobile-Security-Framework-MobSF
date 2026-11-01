@@ -94,6 +94,24 @@ def _search_folder(src, file_pattern):
     return matches
 
 
+DENSITY_ORDER = (
+    'xxxhdpi',
+    'xxhdpi',
+    'xhdpi',
+    'hdpi',
+    'mdpi',
+)
+
+
+def _density_rank(path_str):
+    """Rank resource paths from highest density (0) to lowest."""
+    parent = Path(path_str).parent.name.lower()
+    for idx, token in enumerate(DENSITY_ORDER):
+        if token in parent:
+            return idx
+    return len(DENSITY_ORDER)
+
+
 def _index_res_files(roots):
     """Build a single-pass {filename: [paths]} index across resource roots."""
     index = {}
@@ -102,6 +120,8 @@ def _index_res_files(roots):
             for fname in filenames:
                 index.setdefault(fname, []).append(
                     Path(dirpath, fname).as_posix())
+    for paths in index.values():
+        paths.sort(key=_density_rank)
     return index
 
 
@@ -210,10 +230,15 @@ def guess_icon_path(res_dir):
     res_index = _index_res_files(search_roots)
     manifest_icon_names = _extract_manifest_icon_names(app_dir)
     for icon_stem in manifest_icon_names:
-        for ext in ('.png', '.webp', '.svg'):
-            for match in res_index.get(f'{icon_stem}{ext}', ()):
-                if _is_valid_icon_file(match):
-                    return match
+        stem_matches = [
+            match
+            for ext in ('.png', '.webp', '.svg')
+            for match in res_index.get(f'{icon_stem}{ext}', ())
+        ]
+        stem_matches.sort(key=_density_rank)
+        for match in stem_matches:
+            if _is_valid_icon_file(match):
+                return match
 
     icon_folders = (
         'mipmap-xxxhdpi',
