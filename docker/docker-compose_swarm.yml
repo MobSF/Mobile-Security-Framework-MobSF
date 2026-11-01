@@ -1,7 +1,7 @@
 services:
 
   postgres:
-    image: "postgres:${POSTGRES_VERSION:-latest}"
+    image: "postgres:${POSTGRES_VERSION:-18}"
     restart: always
     volumes:
       - $HOME/MobSF/postgresql_data:/var/lib/postgresql
