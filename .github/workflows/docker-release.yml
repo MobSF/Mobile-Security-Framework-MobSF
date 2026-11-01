@@ -2,7 +2,13 @@ name: 'Build and Publish Release to DockerHub'
 
 on:
   release:
-    types: [created]
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to build and publish (e.g. v4.6.2)'
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -15,6 +21,8 @@ jobs:
         -
             name: Checkout
             uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+            with:
+                ref: ${{ inputs.tag || github.ref }}
         -
             name: Set up QEMU
             uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
@@ -30,9 +38,14 @@ jobs:
         -
             name: Get Release Tag
             id: release
+            env:
+                INPUT_TAG: ${{ inputs.tag }}
             run: |
               DOCKER_IMAGE=opensecurity/mobile-security-framework-mobsf
-              if [[ $GITHUB_REF == refs/tags/* ]]; then
+              if [[ -n "$INPUT_TAG" ]]; then
+                VERSION=${INPUT_TAG#v}
+                TAG="${DOCKER_IMAGE}:v${VERSION}"
+              elif [[ $GITHUB_REF == refs/tags/* ]]; then
                 VERSION=${GITHUB_REF#refs/tags/v}
                 TAG="${DOCKER_IMAGE}:v${VERSION}"
               fi
