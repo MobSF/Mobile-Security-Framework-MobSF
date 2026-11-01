@@ -986,3 +986,151 @@ class IOSPlistAndFrameworkTrackerTests(SimpleTestCase):
             self.assertIn('Google Firebase Analytics', names)
             self.assertIn('Adjust', names)
             self.assertIn('Localytics', names)
+
+
+class OSUnzipHardeningTests(SimpleTestCase):
+    """Tests for hardened os_unzip staging and central-directory mode stripping."""
+
+    @staticmethod
+    def _build_malformed_symlink_zip(
+            zip_path, comment=b'', prepend=b'',
+            pad_before_eocd=b'', corrupt_cd_size=False):
+        import struct
+        import zipfile
+        with zipfile.ZipFile(zip_path, 'w') as zf:
+            zi = zipfile.ZipInfo('EvilLink.java')
+            zi.external_attr = (0o120777 << 16)
+            zi.create_system = 3
+            zf.writestr(zi, '/etc/passwd')
+            zf.writestr('Normal.java', 'class Normal {}')
+            zf.comment = comment
+        raw = bytearray(zip_path.read_bytes())
+        eocd_pos = len(raw) - 22 - len(comment)
+        if corrupt_cd_size:
+            raw[eocd_pos + 12:eocd_pos + 16] = struct.pack('<I', 5)
+        if pad_before_eocd:
+            raw = raw[:eocd_pos] + bytearray(pad_before_eocd) + raw[eocd_pos:]
+        if prepend:
+            raw = bytearray(prepend) + raw
+        zip_path.write_bytes(bytes(raw))
+
+    def test_neutralize_handles_eocd_sig_in_comment_and_padding(self):
+        import tempfile
+        from mobsf.StaticAnalyzer.views.common.shared_func import (
+            unzip,
+        )
+        from unittest import mock
+        cases = (
+            {'comment': b'pad' + b'PK\x05\x06', 'corrupt_cd_size': True},
+            {'pad_before_eocd': b'XYZ'},
+            {'prepend': b'JUNK' * 8, 'comment': b'trail' + b'PK\x05\x06'},
+        )
+        for kwargs in cases:
+            with tempfile.TemporaryDirectory() as tmp:
+                tmp_path = Path(tmp)
+                zpath = tmp_path / 'malformed.zip'
+                ext = tmp_path / 'ext'
+                ext.mkdir()
+                self._build_malformed_symlink_zip(zpath, **kwargs)
+                with mock.patch(
+                    'mobsf.StaticAnalyzer.views.common.shared_func.'
+                    'append_scan_status',
+                ):
+                    unzip('0' * 32, zpath.as_posix(), ext.as_posix())
+                self.assertTrue((ext / 'Normal.java').is_file())
+                for item in ext.rglob('*'):
+                    self.assertFalse(item.is_symlink())
+
+    def test_os_unzip_staging_blocks_symlinks_even_if_unpatched(self):
+        import shutil
+        import tempfile
+        import zipfile
+        from unittest import mock
+        from mobsf.StaticAnalyzer.views.common.shared_func import (
+            os_unzip,
+        )
+        if not shutil.which('unzip'):
+            self.skipTest('unzip binary not available')
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            zpath = tmp_path / 'unpatched.zip'
+            unpatched_copy = tmp_path / 'unpatched_copy.zip'
+            ext = tmp_path / 'ext'
+            ext.mkdir()
+            with zipfile.ZipFile(zpath, 'w') as zf:
+                ext_link = zipfile.ZipInfo('ext_link.java')
+                ext_link.external_attr = (0o120777 << 16)
+                ext_link.create_system = 3
+                zf.writestr(ext_link, '/etc/passwd')
+                int_link = zipfile.ZipInfo('int_link.java')
+                int_link.external_attr = (0o120777 << 16)
+                int_link.create_system = 3
+                zf.writestr(int_link, 'Safe.java')
+                zf.writestr('Safe.java', 'class Safe {}')
+            shutil.copyfile(zpath, unpatched_copy)
+            # Simulate neutralize_zip_special_modes returning an unpatched zip
+            with (mock.patch(
+                'mobsf.StaticAnalyzer.views.common.shared_func.'
+                'neutralize_zip_special_modes',
+                return_value=unpatched_copy.as_posix(),
+            ), mock.patch(
+                'mobsf.StaticAnalyzer.views.common.shared_func.append_scan_status',
+            )):
+                os_unzip('0' * 32, zpath.as_posix(), ext.as_posix())
+            self.assertTrue((ext / 'Safe.java').is_file())
+            self.assertFalse((ext / 'ext_link.java').exists())
+            self.assertFalse((ext / 'ext_link.java').is_symlink())
+            self.assertFalse((ext / 'int_link.java').exists())
+            self.assertFalse((ext / 'int_link.java').is_symlink())
+
+    def test_os_unzip_fails_closed_when_neutralize_raises(self):
+        import shutil
+        import tempfile
+        from unittest import mock
+        from mobsf.StaticAnalyzer.views.common.shared_func import (
+            os_unzip,
+        )
+        if not shutil.which('unzip'):
+            self.skipTest('unzip binary not available')
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            zpath = tmp_path / 'fail.zip'
+            zpath.write_bytes(b'not a zip')
+            ext = tmp_path / 'ext'
+            ext.mkdir()
+            with (mock.patch(
+                'mobsf.StaticAnalyzer.views.common.shared_func.'
+                'neutralize_zip_special_modes',
+                side_effect=OSError('disk full'),
+            ), mock.patch(
+                'mobsf.StaticAnalyzer.views.common.shared_func.subprocess.call',
+            ) as mock_call, mock.patch(
+                'mobsf.StaticAnalyzer.views.common.shared_func.append_scan_status',
+            )):
+                res = os_unzip('0' * 32, zpath.as_posix(), ext.as_posix())
+            self.assertEqual(res, [])
+            mock_call.assert_not_called()
+
+    def test_strings_and_entropies_skips_symlinks(self):
+        import os
+        import tempfile
+        from unittest import mock
+        from mobsf.StaticAnalyzer.views.common.shared_func import (
+            strings_and_entropies,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            secret_target = tmp_path / 'outside.txt'
+            secret_target.write_text(
+                'class Secret { String k = "super_secret_linked_value"; }')
+            src = tmp_path / 'src'
+            src.mkdir()
+            (src / 'Real.java').write_text(
+                'class Real { String s = "normal_code_string"; }')
+            os.symlink(secret_target, src / 'Linked.java')
+            with mock.patch(
+                'mobsf.StaticAnalyzer.views.common.shared_func.append_scan_status',
+            ):
+                data = strings_and_entropies('0' * 32, src, ['.java'])
+            self.assertIn('normal_code_string', data['strings'])
+            self.assertNotIn('super_secret_linked_value', data['strings'])
