@@ -132,6 +132,12 @@ API_ONLY = env_flag('MOBSF_API_ONLY', '0')
 # -----External URLS--------------------------
 MALTRAIL_DB_URL = ('https://github.com/stamparm/trails/'
                    'releases/latest/download/maltrail-malware-domains.txt')
+URLHAUS_DOMAINS_URL = (
+    'https://malware-filter.gitlab.io/malware-filter/'
+    'urlhaus-filter-dnscrypt-blocked-names.txt')
+URLHAUS_IPS_URL = (
+    'https://malware-filter.gitlab.io/malware-filter/'
+    'urlhaus-filter-dnscrypt-blocked-ips.txt')
 VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/api/v3/files'
 EXODUS_URL = 'https://reports.exodus-privacy.eu.org'
 APPMONSTA_URL = 'https://api.appmonsta.com/v1/stores/android/details/'
