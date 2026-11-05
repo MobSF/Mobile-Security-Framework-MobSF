@@ -118,9 +118,11 @@ def common_fields(findings, data):
     # Malicious Domains
     for domain, value in data['domains'].items():
         if value['bad'] == 'yes':
+            desc = value.get('desc', '')
+            geo = str(value.get('geolocation'))
             findings['high'].append({
                 'title': f'Malicious domain found - {domain}',
-                'description': str(value['geolocation']),
+                'description': f'{desc}\n{geo}' if desc else geo,
                 'section': 'domains',
             })
         if value.get('ofac') and value['ofac'] is True:
