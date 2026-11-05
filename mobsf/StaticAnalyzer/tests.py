@@ -24,6 +24,22 @@ from mobsf.StaticAnalyzer.views.common.pdf import (
     get_pdf_resource_policy,
     render_html_to_pdf,
 )
+from mobsf.StaticAnalyzer.views.ios.app_transport_security import (
+    check_transport_security,
+)
+from mobsf.StaticAnalyzer.views.ios.binary_rule_matcher import (
+    binary_rule_matcher,
+)
+from mobsf.StaticAnalyzer.views.ios.classdump import (
+    classdump_lief,
+)
+from mobsf.StaticAnalyzer.views.ios.entitlements import (
+    evaluate_entitlements,
+    ipa_entitlements_analysis,
+)
+from mobsf.StaticAnalyzer.views.ios.ipa import (
+    get_embedded_framework_deps,
+)
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -765,3 +781,454 @@ class PdfGenerationSecurityTests(SimpleTestCase):
             'others' / 'css' / 'pdf_report.css'
         policy.check_path(css_path)
         policy.check_path(Path(settings.DWD_DIR))
+
+
+class IOSEntitlementsAnalysisTests(SimpleTestCase):
+    """Tests for iOS Entitlements and Provisioning Profile security checks."""
+
+    def test_evaluate_entitlements_flags_high_and_warning_conditions(self):
+        entitlements = {
+            'get-task-allow': True,
+            'com.apple.private.security.no-sandbox': True,
+            'keychain-access-groups': ['TEAM123.*'],
+            'com.apple.security.application-groups': ['group.com.example.shared'],
+            'com.apple.developer.associated-domains': [
+                'applinks:*.example.com?mode=developer',
+            ],
+        }
+        profile = {'provisions_all_devices': True, 'team_id': 'TEAM123'}
+        results = {
+            rule_id: (title, desc, meta)
+            for rule_id, title, desc, meta in evaluate_entitlements(
+                entitlements, profile)
+        }
+        self.assertEqual(
+            results['ios_entitlement_debuggable'][2]['severity'], 'high')
+        self.assertEqual(
+            results['ios_entitlement_dangerous'][2]['severity'], 'high')
+        self.assertEqual(
+            results['ios_enterprise_provisioning'][2]['severity'], 'warning')
+        self.assertEqual(
+            results['ios_keychain_wildcard'][2]['severity'], 'warning')
+        self.assertEqual(
+            results['ios_app_groups_shared'][2]['severity'], 'info')
+        self.assertEqual(
+            results['ios_associated_domains_wildcard'][2]['severity'],
+            'warning',
+        )
+
+    def test_ipa_entitlements_analysis_on_sample_ipa(self):
+        import tempfile
+        import zipfile
+        from unittest import mock
+        ipa_path = Path(settings.BASE_DIR) / 'StaticAnalyzer/test_files/ios.ipa'
+        with tempfile.TemporaryDirectory() as tmp:
+            with zipfile.ZipFile(ipa_path) as zf:
+                zf.extractall(tmp)
+            app_root = Path(tmp) / 'Payload' / 'helloworld.app'
+            bin_path = app_root / 'helloworld'
+            findings = {}
+            with mock.patch(
+                'mobsf.StaticAnalyzer.views.ios.entitlements.append_scan_status',
+            ):
+                cs_info = ipa_entitlements_analysis(
+                    '0' * 32, findings, app_root, bin_path)
+            self.assertIn(
+                'Application is provisioned for Enterprise / '
+                'All-Devices distribution',
+                findings,
+            )
+            self.assertIn('Signer:', cs_info)
+            self.assertIn('application-identifier:', cs_info)
+            self.assertNotIn(
+                'Application uses a wildcard Keychain access group',
+                findings,
+            )
+
+
+class IOSBinaryRulesAndClassdumpTests(SimpleTestCase):
+    """Tests for iOS binary regex rules and LIEF Objective-C/Swift classdump."""
+
+    def test_binary_rule_matcher_matches_last_symbol_and_modern_ios_rules(self):
+        findings = {}
+        symbols = [
+            '_NSLog',
+            '_srand',
+            '_malloc',
+            '_kSecAttrAccessibleAlways',
+            '_sqlite3_exec',
+            '_OBJC_CLASS_$_UIWebView',
+            '_gets',
+        ]
+        classdump = (
+            b'setAllowsAnyHTTPSCertificate:forHost:\n'
+            b'setAllowFileAccessFromFileURLs:\n'
+            b'generalPasteboard\n'
+        )
+        binary_rule_matcher('0' * 32, findings, symbols, classdump)
+        self.assertIn('Binary makes use of insecure API(s)', findings)
+        self.assertIn(
+            '_gets',
+            findings['Binary makes use of insecure API(s)']['detailed_desc'],
+        )
+        self.assertIn(
+            'Binary makes use of the insecure Random function(s)', findings)
+        self.assertIn('Binary makes use of Logging function', findings)
+        self.assertIn('Binary makes use of malloc function', findings)
+        self.assertEqual(
+            findings[
+                'Binary references insecure SSL/TLS certificate '
+                'validation API(s)'
+            ]['severity'],
+            'high',
+        )
+        self.assertEqual(
+            findings[
+                'Binary references weak Keychain accessibility attribute(s)'
+            ]['severity'],
+            'warning',
+        )
+        self.assertEqual(
+            findings[
+                'Binary references dangerous WKWebView file access selector(s)'
+            ]['severity'],
+            'warning',
+        )
+        self.assertEqual(
+            findings['Binary uses deprecated UIWebView Component']['severity'],
+            'warning',
+        )
+        self.assertIn('Binary makes use of UIPasteboard', findings)
+        self.assertIn('Binary makes use of SQLite API(s)', findings)
+
+    def test_classdump_lief_extracts_objc_classes_and_selectors(self):
+        import tempfile
+        import zipfile
+        ipa_path = Path(settings.BASE_DIR) / 'StaticAnalyzer/test_files/ios.ipa'
+        with tempfile.TemporaryDirectory() as tmp:
+            with zipfile.ZipFile(ipa_path) as zf:
+                zf.extractall(tmp)
+            bin_path = Path(tmp) / 'Payload' / 'helloworld.app' / 'helloworld'
+            dump = classdump_lief(bin_path.as_posix())
+            self.assertIn(b'AppDelegate', dump)
+            self.assertIn(b'application:didFinishLaunchingWithOptions:', dump)
+
+
+class IOSPlistAndFrameworkTrackerTests(SimpleTestCase):
+    """Tests for iOS Info.plist file-sharing checks, TLSv1.2 ATS, and frameworks."""
+
+    def test_check_transport_security_tlsv12_is_info_and_file_sharing_flagged(self):
+        plist_data = {
+            'UIFileSharingEnabled': True,
+            'LSSupportsOpeningDocumentsInPlace': True,
+            'NSAppTransportSecurity': {
+                'NSExceptionDomains': {
+                    'api.example.com': {
+                        'NSExceptionMinimumTLSVersion': 'TLSv1.2',
+                        'NSRequiresCertificateTransparency': 'YES',
+                    },
+                },
+            },
+        }
+        findings = {
+            item['issue']: item
+            for item in check_transport_security(plist_data)
+        }
+        self.assertEqual(
+            findings[
+                'NSExceptionMinimumTLSVersion set to TLSv1.2 on api.example.com'
+            ]['severity'],
+            'info',
+        )
+        self.assertEqual(
+            findings[
+                'iTunes / Finder File Sharing is enabled '
+                '(UIFileSharingEnabled)'
+            ]['severity'],
+            'warning',
+        )
+        self.assertEqual(
+            findings[
+                'Opening documents in place is enabled '
+                '(LSSupportsOpeningDocumentsInPlace)'
+            ]['severity'],
+            'warning',
+        )
+
+    def test_get_embedded_framework_deps_extracts_bundle_identifiers(self):
+        import plistlib
+        import tempfile
+        from unittest import mock
+        from mobsf.MalwareAnalyzer.views.Trackers import Trackers
+        with tempfile.TemporaryDirectory() as tmp:
+            app_root = Path(tmp) / 'Payload' / 'App.app'
+            for fw_name, bid in (
+                ('AppsFlyerLib.framework', 'com.appsflyer.AppsFlyerLib'),
+                ('FirebaseAnalytics.framework', 'org.cocoapods.FirebaseAnalytics'),
+                ('Adjust.framework', 'com.adjust.sdk'),
+                ('Localytics.framework', 'com.localytics.ios'),
+            ):
+                fw_dir = app_root / 'Frameworks' / fw_name
+                fw_dir.mkdir(parents=True)
+                (fw_dir / 'Info.plist').write_bytes(
+                    plistlib.dumps({'CFBundleIdentifier': bid}))
+            deps = get_embedded_framework_deps({'app_root': app_root})
+            self.assertIn('com.appsflyer.AppsFlyerLib', deps)
+            self.assertIn('FirebaseAnalytics', deps)
+            with (mock.patch.object(Trackers, '_update_tracker_db'),
+                  mock.patch(
+                      'mobsf.MalwareAnalyzer.views.Trackers.append_scan_status',
+            )):
+                trk = Trackers('0' * 32, None, settings.TOOLS_DIR)
+                res = trk.get_trackers_domains_or_deps([], deps)
+            names = {t['name'] for t in res['trackers']}
+            self.assertIn('AppsFlyer', names)
+            self.assertIn('Google Firebase Analytics', names)
+            self.assertIn('Adjust', names)
+            self.assertIn('Localytics', names)
+
+
+class OSUnzipHardeningTests(SimpleTestCase):
+    """Tests for hardened os_unzip staging and central-directory mode stripping."""
+
+    @staticmethod
+    def _build_malformed_symlink_zip(
+            zip_path, comment=b'', prepend=b'',
+            pad_before_eocd=b'', corrupt_cd_size=False):
+        import struct
+        import zipfile
+        with zipfile.ZipFile(zip_path, 'w') as zf:
+            zi = zipfile.ZipInfo('EvilLink.java')
+            zi.external_attr = (0o120777 << 16)
+            zi.create_system = 3
+            zf.writestr(zi, '/etc/passwd')
+            zf.writestr('Normal.java', 'class Normal {}')
+            zf.comment = comment
+        raw = bytearray(zip_path.read_bytes())
+        eocd_pos = len(raw) - 22 - len(comment)
+        if corrupt_cd_size:
+            raw[eocd_pos + 12:eocd_pos + 16] = struct.pack('<I', 5)
+        if pad_before_eocd:
+            raw = raw[:eocd_pos] + bytearray(pad_before_eocd) + raw[eocd_pos:]
+        if prepend:
+            raw = bytearray(prepend) + raw
+        zip_path.write_bytes(bytes(raw))
+
+    def test_neutralize_handles_eocd_sig_in_comment_and_padding(self):
+        import platform
+        import shutil
+        import tempfile
+        from mobsf.StaticAnalyzer.views.common.shared_func import (
+            unzip,
+        )
+        from unittest import mock
+        if platform.system() == 'Windows' or not shutil.which('unzip'):
+            self.skipTest('OS unzip not used on Windows or unavailable')
+        cases = (
+            {'comment': b'pad' + b'PK\x05\x06', 'corrupt_cd_size': True},
+            {'pad_before_eocd': b'XYZ'},
+            {'prepend': b'JUNK' * 8, 'comment': b'trail' + b'PK\x05\x06'},
+        )
+        for kwargs in cases:
+            with tempfile.TemporaryDirectory() as tmp:
+                tmp_path = Path(tmp)
+                zpath = tmp_path / 'malformed.zip'
+                ext = tmp_path / 'ext'
+                ext.mkdir()
+                self._build_malformed_symlink_zip(zpath, **kwargs)
+                with mock.patch(
+                    'mobsf.StaticAnalyzer.views.common.shared_func.'
+                    'append_scan_status',
+                ):
+                    unzip('0' * 32, zpath.as_posix(), ext.as_posix())
+                self.assertTrue((ext / 'Normal.java').is_file())
+                for item in ext.rglob('*'):
+                    self.assertFalse(item.is_symlink())
+
+    def test_os_unzip_staging_blocks_symlinks_even_if_unpatched(self):
+        import platform
+        import shutil
+        import tempfile
+        import zipfile
+        from unittest import mock
+        from mobsf.StaticAnalyzer.views.common.shared_func import (
+            os_unzip,
+        )
+        if platform.system() == 'Windows' or not shutil.which('unzip'):
+            self.skipTest('OS unzip not used on Windows or unavailable')
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            zpath = tmp_path / 'unpatched.zip'
+            unpatched_copy = tmp_path / 'unpatched_copy.zip'
+            ext = tmp_path / 'ext'
+            ext.mkdir()
+            with zipfile.ZipFile(zpath, 'w') as zf:
+                ext_link = zipfile.ZipInfo('ext_link.java')
+                ext_link.external_attr = (0o120777 << 16)
+                ext_link.create_system = 3
+                zf.writestr(ext_link, '/etc/passwd')
+                int_link = zipfile.ZipInfo('int_link.java')
+                int_link.external_attr = (0o120777 << 16)
+                int_link.create_system = 3
+                zf.writestr(int_link, 'Safe.java')
+                zf.writestr('Safe.java', 'class Safe {}')
+            shutil.copyfile(zpath, unpatched_copy)
+            # Simulate neutralize_zip_special_modes returning an unpatched zip
+            with (mock.patch(
+                'mobsf.StaticAnalyzer.views.common.shared_func.'
+                'neutralize_zip_special_modes',
+                return_value=unpatched_copy.as_posix(),
+            ), mock.patch(
+                'mobsf.StaticAnalyzer.views.common.shared_func.append_scan_status',
+            )):
+                os_unzip('0' * 32, zpath.as_posix(), ext.as_posix())
+            self.assertTrue((ext / 'Safe.java').is_file())
+            self.assertFalse((ext / 'ext_link.java').exists())
+            self.assertFalse((ext / 'ext_link.java').is_symlink())
+            self.assertFalse((ext / 'int_link.java').exists())
+            self.assertFalse((ext / 'int_link.java').is_symlink())
+
+    def test_os_unzip_fails_closed_when_neutralize_raises(self):
+        import platform
+        import shutil
+        import tempfile
+        from unittest import mock
+        from mobsf.StaticAnalyzer.views.common.shared_func import (
+            os_unzip,
+        )
+        if platform.system() == 'Windows' or not shutil.which('unzip'):
+            self.skipTest('OS unzip not used on Windows or unavailable')
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            zpath = tmp_path / 'fail.zip'
+            zpath.write_bytes(b'not a zip')
+            ext = tmp_path / 'ext'
+            ext.mkdir()
+            with (mock.patch(
+                'mobsf.StaticAnalyzer.views.common.shared_func.'
+                'neutralize_zip_special_modes',
+                side_effect=OSError('disk full'),
+            ), mock.patch(
+                'mobsf.StaticAnalyzer.views.common.shared_func.subprocess.call',
+            ) as mock_call, mock.patch(
+                'mobsf.StaticAnalyzer.views.common.shared_func.append_scan_status',
+            )):
+                res = os_unzip('0' * 32, zpath.as_posix(), ext.as_posix())
+            self.assertEqual(res, [])
+            mock_call.assert_not_called()
+
+    def test_strings_and_entropies_skips_symlinks(self):
+        import os
+        import tempfile
+        from unittest import mock
+        from mobsf.StaticAnalyzer.views.common.shared_func import (
+            strings_and_entropies,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            secret_target = tmp_path / 'outside.txt'
+            secret_target.write_text(
+                'class Secret { String k = "super_secret_linked_value"; }')
+            src = tmp_path / 'src'
+            src.mkdir()
+            (src / 'Real.java').write_text(
+                'class Real { String s = "normal_code_string"; }')
+            try:
+                os.symlink(secret_target, src / 'Linked.java')
+            except (OSError, NotImplementedError):
+                self.skipTest('symlinks not supported in this environment')
+            with mock.patch(
+                'mobsf.StaticAnalyzer.views.common.shared_func.append_scan_status',
+            ):
+                data = strings_and_entropies('0' * 32, src, ['.java'])
+            self.assertIn('normal_code_string', data['strings'])
+            self.assertNotIn('super_secret_linked_value', data['strings'])
+
+
+class AndroidIconFallbackTests(SimpleTestCase):
+    """Tests for XAPK root icon, activity icon fallback, and WebP/PNG magic."""
+
+    PNG_SAMPLE = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR'
+
+    def test_webp_extension_with_png_magic_is_accepted(self):
+        import tempfile
+        from mobsf.StaticAnalyzer.views.android.icon_analysis import (
+            guess_icon_path,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            app_dir = Path(tmp)
+            mipmap = app_dir / 'res' / 'mipmap-xxxhdpi'
+            mipmap.mkdir(parents=True)
+            webp_icon = mipmap / 'ic_launcher.webp'
+            webp_icon.write_bytes(self.PNG_SAMPLE)
+            resolved = guess_icon_path((app_dir / 'res').as_posix())
+            self.assertEqual(resolved, webp_icon.as_posix())
+
+    def test_activity_icon_fallback_when_application_icon_is_null(self):
+        import tempfile
+        from mobsf.StaticAnalyzer.views.android.icon_analysis import (
+            guess_icon_path,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            app_dir = Path(tmp)
+            (app_dir / 'res').mkdir()
+            apktool_out = app_dir / 'apktool_out'
+            drawable = apktool_out / 'res' / 'drawable-xhdpi'
+            drawable.mkdir(parents=True)
+            (apktool_out / 'AndroidManifest.xml').write_text(
+                '<?xml version="1.0" encoding="utf-8"?>'
+                '<manifest xmlns:android='
+                '"http://schemas.android.com/apk/res/android">'
+                '<application android:icon="@null">'
+                '<activity android:enabled="false" '
+                'android:icon="@drawable/disabled_icon"/>'
+                '<activity android:icon="@drawable/secondary_icon"/>'
+                '<activity android:icon="@drawable/dcloud_recent">'
+                '<intent-filter>'
+                '<action android:name="android.intent.action.MAIN"/>'
+                '<category android:name="android.intent.category.LAUNCHER"/>'
+                '</intent-filter>'
+                '</activity>'
+                '</application></manifest>',
+                encoding='utf-8',
+            )
+            (drawable / 'disabled_icon.png').write_bytes(self.PNG_SAMPLE)
+            (drawable / 'secondary_icon.png').write_bytes(self.PNG_SAMPLE)
+            act_icon = drawable / 'dcloud_recent.png'
+            act_icon.write_bytes(self.PNG_SAMPLE)
+            resolved = guess_icon_path((app_dir / 'res').as_posix())
+            self.assertEqual(resolved, act_icon.as_posix())
+
+    def test_xapk_root_icon_fallback(self):
+        import tempfile
+        from mobsf.StaticAnalyzer.views.android.icon_analysis import (
+            guess_icon_path,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            app_dir = Path(tmp)
+            (app_dir / 'res').mkdir()
+            root_icon = app_dir / 'icon.png'
+            root_icon.write_bytes(self.PNG_SAMPLE)
+            resolved = guess_icon_path((app_dir / 'res').as_posix())
+            self.assertEqual(resolved, root_icon.as_posix())
+
+    def test_convert_axml_to_xml_accepts_plain_text_xml(self):
+        import tempfile
+        from mobsf.StaticAnalyzer.views.android.icon_analysis import (
+            convert_axml_to_xml,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            app_dir = Path(tmp)
+            xml_dir = app_dir / 'res' / 'mipmap-anydpi-v26'
+            xml_dir.mkdir(parents=True)
+            xml_file = xml_dir / 'ic_launcher.xml'
+            xml_file.write_bytes(
+                b'<adaptive-icon xmlns:android='
+                b'"http://schemas.android.com/apk/res/android">'
+                b'<background android:drawable="@android:color/white"/>'
+                b'</adaptive-icon>',
+            )
+            res = convert_axml_to_xml(
+                app_dir, 'res/mipmap-anydpi-v26/ic_launcher.xml')
+            self.assertIs(res, False)
+            self.assertIn(b'#FFFFFFFF', xml_file.read_bytes())

@@ -5,8 +5,6 @@ LABEL \
     name="MobSF" \
     author="Ajin Abraham <ajin25@gmail.com>" \
     maintainer="Ajin Abraham <ajin25@gmail.com>" \
-    contributor_1="OscarAkaElvis <oscar.alfonso.diaz@gmail.com>" \
-    contributor_2="Vincent Nadal <vincent.nadal@orange.fr>" \
     description="Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis."
 
 ENV DEBIAN_FRONTEND=noninteractive \

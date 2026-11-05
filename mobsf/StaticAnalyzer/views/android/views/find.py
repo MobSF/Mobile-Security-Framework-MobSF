@@ -9,6 +9,9 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.utils.html import escape
 
+from mobsf.MobSF.security import (
+    is_pipe_or_link,
+)
 from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
@@ -49,7 +52,10 @@ def run(request):
                 return print_n_send_error_response(request, msg, True)
 
         exts = ['.java', '.kt', '.smali']
-        files = [p for p in src.rglob('*') if p.suffix in exts]
+        files = [
+            p for p in src.rglob('*')
+            if p.suffix in exts and not is_pipe_or_link(p) and p.is_file()
+        ]
         for fname in files:
             file_path = fname.as_posix()
             rpath = file_path.replace(src.as_posix(), '')

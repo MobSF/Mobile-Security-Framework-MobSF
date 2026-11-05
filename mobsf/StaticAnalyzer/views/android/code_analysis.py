@@ -10,6 +10,9 @@ from django.conf import settings
 
 import yaml
 
+from mobsf.MobSF.security import (
+    is_pipe_or_link,
+)
 from mobsf.MobSF.utils import (
     append_scan_status,
     filename_from_path,
@@ -177,6 +180,7 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
                 (pfile.suffix in ('.java', '.kt')
                     and any(skip_path in pfile.as_posix()
                             for skip_path in skp) is False
+                    and not is_pipe_or_link(pfile)
                     and pfile.is_file())
             ):
                 content = None

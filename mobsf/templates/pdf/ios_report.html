@@ -181,6 +181,11 @@
       
      {% endif %}
 
+     {% if binary_info.code_signing %}
+      <h2><span class="fas">&#xf0a3;</span>  CODE SIGNING &amp; ENTITLEMENTS </h2>
+      <p class="wrapped-text">{{ binary_info.code_signing }}</p>
+     {% endif %}
+
        {% if bundle_url_types|length > 0 %}
        <h2><span class="fas">&#xf292;</span> CUSTOM URL SCHEMES</h2>
        <table class="basic">
@@ -756,7 +761,7 @@
                     {% if details.metadata|key:"owasp-mobile" %}<br/> <strong>OWASP Top 10: </strong>{{ details.metadata|key:"owasp-mobile" }}{% endif %}
                     {% if details.metadata.masvs %}<br/> <strong>OWASP MASVS: </strong>{{ details.metadata.masvs  }}{% endif %}
                   </td>
-                  <td style="word-break:break-all;">
+                  <td style="word-break:break-word;">
                   {% for file_path in details.files %}
                    <div>{{ file_path }}</div>
                   {% endfor %}
@@ -884,12 +889,12 @@
                   <tbody>
 									{% for urldict in urls %}
                     <tr>
-                       <td style="word-break:break-all;">
+                       <td style="word-break:break-word;">
                        {% for u in urldict|key:"urls" %}
                          <div>{{ u }}</div>
                        {% endfor %}
                         </td>
-                       <td width="35%" style="word-break:break-all;">
+                       <td width="35%" style="word-break:break-word;">
                          {{urldict|key:"path"}}
                        </td>
                     </tr>
@@ -910,13 +915,13 @@
                   <tbody>
 									{% for email_dict in emails %}
                     <tr>
-                       <td style="word-break:break-all;">
+                       <td style="word-break:break-word;">
                        {% for em in email_dict|key:"emails" %}
                          <div>{{ em }}</div>
                        {% endfor %}
                         </td>
 
-                       <td style="word-break:break-all;">
+                       <td style="word-break:break-word;">
                          {{email_dict|key:"path"}}
                        </td>
                     </tr>
@@ -965,7 +970,7 @@
                   <tbody>
                   {% for sec in secrets %}
                     <tr>
-                      <td style="word-break:break-all;">
+                      <td style="word-break:break-word;">
                       {{ sec }}
                         </td>
                     </tr>
@@ -981,7 +986,7 @@
                 <tbody>
                 {% for val in file_analysis %}
                   <tr>
-                    <td width="100%" style="word-break:break-all;">
+                    <td width="100%" style="word-break:break-word;">
                     {{ val }}
                       </td>
                   </tr>

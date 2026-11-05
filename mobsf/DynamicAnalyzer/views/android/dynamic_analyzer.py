@@ -1,12 +1,10 @@
 # -*- coding: utf_8 -*-
 """Android Dynamic Analysis."""
 import logging
-import os
-import time
+import re
+import subprocess
 from pathlib import Path
-from urllib.parse import quote, urlsplit
-
-from shelljob import proc
+from urllib.parse import quote
 
 
 from django.http import (
@@ -16,7 +14,6 @@ from django.http import (
 )
 from django.conf import settings
 from django.shortcuts import redirect, render
-from django.utils.http import url_has_allowed_host_and_scheme
 from django.db.models import ObjectDoesNotExist
 from django.views.decorators.http import require_http_methods
 
@@ -46,14 +43,18 @@ from mobsf.DynamicAnalyzer.views.android.progress import (
     progress_response,
 )
 from mobsf.DynamicAnalyzer.tools.webproxy import (
-    get_http_tools_url,
-    start_httptools_ui,
-    stop_httptools,
+    get_flow_file,
+    get_flow_meta,
+    get_sorted_flows,
+    list_flow_projects,
+    load_flows,
+    replay_flows,
 )
 from mobsf.MobSF.security import is_path_traversal
 from mobsf.MobSF.utils import (
     clear_analysis_state,
     docker_translate_localhost,
+    get_adb,
     get_android_devices,
     get_android_dm_exception_msg,
     get_config_loc,
@@ -79,6 +80,14 @@ from mobsf.MobSF.views.authorization import (
 )
 
 logger = logging.getLogger(__name__)
+_SAFE_PKG_CHARS = {
+    ch: ch
+    for ch in (
+        'abcdefghijklmnopqrstuvwxyz'
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        '0123456789_.-'
+    )
+}
 
 
 def _get_form_device(request, form):
@@ -774,34 +783,95 @@ def dynamic_analyzer(request, checksum, api=False, stream=False):
 
 @login_required
 @permission_required(Permissions.SCAN)
-@require_http_methods(['POST'])
+@require_http_methods(['GET', 'POST'])
 def httptools_start(request):
-    """Start httprools UI."""
-    logger.info('Starting httptools Web UI')
+    """Render or stream captured HTTP(S) traffic in MobSF."""
+    logger.info('Opening Web Traffic Viewer')
     try:
-        httptools_url = get_http_tools_url(request)
-        stop_httptools()
-        start_httptools_ui(settings.PROXY_PORT)
-        time.sleep(3)
-        logger.info('httptools UI started')
-        project = request.POST.get('project', '')
+        project = (
+            request.POST.get('project')
+            or request.GET.get('project')
+            or ''
+        ).strip()
         if (project
                 and (not strict_package_check(project)
                      or is_path_traversal(project))):
-            raise ValueError('Invalid HTTPTools project')
-        project = quote(project, safe='')
-        url = f'{httptools_url}/dashboard/{project}'
-        trusted_netloc = urlsplit(httptools_url).netloc
-        if not url_has_allowed_host_and_scheme(
-                url,
-                allowed_hosts={trusted_netloc},
-                require_https=request.is_secure()):
-            raise ValueError('Untrusted HTTPTools redirect')
-        return redirect(url)
+            return print_n_send_error_response(
+                request, 'Invalid project name')
+        if request.method == 'POST' and request.POST.get('action') == 'repeat':
+            proxy_url = request.POST.get('proxy', '')
+            ok, message = replay_flows(project, proxy_url)
+            return JsonResponse(
+                {'status': 'ok' if ok else 'failed', 'message': message},
+                status=200 if ok else 400,
+            )
+        flow_id = request.GET.get('flow_id', '').strip()
+        as_json = request.GET.get('json') == '1'
+        flow_file = get_flow_file(project) if project else None
+        flows = load_flows(flow_file) if flow_file else []
+        if as_json:
+            if flow_id:
+                for flow in flows:
+                    if flow.id == flow_id:
+                        return JsonResponse(get_flow_meta(flow))
+                return JsonResponse({'id': ''})
+            return JsonResponse({
+                'project': project,
+                'sorted_flows': get_sorted_flows(flows),
+            })
+        projects = list_flow_projects()
+        if not project and projects:
+            project = projects[0]
+        title = f'Web Traffic - {project}' if project else 'Web Traffic'
+        context = {
+            'title': title,
+            'project': project,
+            'projects': projects,
+            'version': settings.MOBSF_VER,
+        }
+        return render(
+            request,
+            'dynamic_analysis/android/httptools.html',
+            context,
+        )
     except Exception:
-        logger.exception('Starting httptools Web UI')
-        err = 'Error Starting httptools UI'
-        return print_n_send_error_response(request, err)
+        logger.exception('Opening Web Traffic Viewer')
+        return print_n_send_error_response(
+            request, 'Error opening Web Traffic Viewer')
+
+
+def _get_package_uid(identifier, safe_pkg):
+    """Resolve the numeric Android UID(s) if logcat --uid is supported."""
+    try:
+        env = Environment(identifier)
+        out = env.adb_command(
+            ['dumpsys', 'package', safe_pkg],
+            shell=True,
+            silent=True,
+            timeout=5,
+        )
+        if not out:
+            return None
+        match = re.search(
+            r'\buserId=(\d+)\b',
+            out.decode('utf-8', 'ignore'),
+        )
+        if not match:
+            return None
+        app_id = int(match.group(1))
+        user_ids = env.android_user_ids() or (0,)
+        uids = ','.join(str(int(u) * 100000 + app_id) for u in user_ids)
+        probe = env.adb_command(
+            ['logcat', '-d', '-t', '1', f'--uid={uids}'],
+            shell=True,
+            silent=True,
+            timeout=5,
+        )
+        if probe is not None:
+            return uids
+    except Exception:
+        pass
+    return None
 
 
 @login_required
@@ -839,22 +909,52 @@ def logcat(request, api=False):
                     request,
                     'Invalid package name',
                     api)
-            adb = os.environ['MOBSF_ADB']
-            g = proc.Group()
-            g.run([
-                adb,
-                '-s',
-                get_device(request),
-                'logcat',
-                app_pkg + ':V',
-                '*:*',
-            ])
+            safe_pkg = ''.join(
+                _SAFE_PKG_CHARS[ch]
+                for ch in app_pkg
+                if ch in _SAFE_PKG_CHARS
+            )
+            identifier = get_device(request)
+            if not identifier:
+                return print_n_send_error_response(
+                    request,
+                    'Selected Android device is unavailable',
+                    api)
+            uid = _get_package_uid(identifier, safe_pkg)
+            filter_arg = f'--uid={uid}' if uid else f'{safe_pkg}:V'
+            logcat_proc = subprocess.Popen(
+                [
+                    get_adb(),
+                    '-s',
+                    identifier,
+                    'logcat',
+                    filter_arg,
+                    '*:V',
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+                errors='replace',
+            )
+            short_pkg = safe_pkg[-15:]
 
             def read_process():
-                while g.is_pending():
-                    lines = g.readlines()
-                    for _, line in lines:
-                        yield 'data:{}\n\n'.format(line)
+                try:
+                    yield ':ok\n\n'
+                    for line in iter(logcat_proc.stdout.readline, ''):
+                        if uid or safe_pkg in line or short_pkg in line:
+                            yield f'data:{line.rstrip()}\n\n'
+                finally:
+                    if logcat_proc.stdout:
+                        logcat_proc.stdout.close()
+                    if logcat_proc.poll() is None:
+                        logcat_proc.terminate()
+                        try:
+                            logcat_proc.wait(timeout=2)
+                        except subprocess.TimeoutExpired:
+                            logcat_proc.kill()
+                            logcat_proc.wait()
             return StreamingHttpResponse(read_process(),
                                          content_type='text/event-stream')
         return print_n_send_error_response(

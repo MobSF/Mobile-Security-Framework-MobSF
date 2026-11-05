@@ -153,19 +153,53 @@ def common_analysis(scan_type, app_dic, checksum):
         location)
 
 
+def get_embedded_framework_deps(app_dic):
+    """Extract bundle IDs and names from embedded .framework bundles."""
+    from plistlib import load
+    deps = []
+    scan_dir = app_dic.get('app_root') or app_dic.get('app_dir')
+    if not scan_dir:
+        return deps
+    root = Path(scan_dir)
+    if not root.exists():
+        return deps
+    for plist_path in root.rglob('*.framework/**/Info.plist'):
+        try:
+            rel = plist_path.relative_to(root)
+            if (not is_safe_path(root, plist_path, rel)
+                    or not plist_path.is_file()
+                    or is_pipe_or_link(plist_path)):
+                continue
+            for part in rel.parts:
+                if part.endswith('.framework') and len(part) > 10:
+                    deps.append(part[:-10])
+            with open(plist_path, 'rb') as fp:
+                plist_obj = load(fp)
+            if not isinstance(plist_obj, dict):
+                continue
+            for key in ('CFBundleIdentifier', 'CFBundleName'):
+                val = plist_obj.get(key)
+                if isinstance(val, str) and val.strip():
+                    deps.append(val.strip())
+        except Exception:
+            continue
+    return deps
+
+
 def common_firebase_and_trackers(code_dict, app_dic, checksum):
     """Common Firebase and Trackers."""
     # Firebase Analysis
     code_dict['firebase'] = firebase_analysis(
         checksum,
         code_dict)
-    # Extract Trackers from Domains
+    # Extract Trackers from Domains and Embedded Framework Bundle IDs
     trk = Trackers.Trackers(
         checksum,
         None,
         app_dic['tools_dir'])
+    deps = get_embedded_framework_deps(app_dic)
     code_dict['trackers'] = trk.get_trackers_domains_or_deps(
-        code_dict['domains'], [])
+        code_dict['domains'], deps)
 
 
 def get_scan_subject(app_dic, bin_dict):

@@ -1,5 +1,5 @@
-<div id="messages"></div>
-<button id="tgl" onclick="toggle()">Stop Streaming</button>
+<div id="messages" style="padding-bottom: 48px;"></div>
+<button id="tgl" onclick="toggle()" style="position: fixed; bottom: 12px; left: 12px; z-index: 1000;">Stop Streaming</button>
 <script type="text/javascript">
 var i = 0;
 var stream = true;
@@ -8,16 +8,15 @@ var controller = new AbortController();
 
 function renderMessage(data) {
     if (stream) {
-        if (!data.includes('{{ package|escapejs }}'))
-            return;
         i = i + 1;
         // Display only last 500 lines
-        if (i < 500){
-            div.innerHTML = div.innerHTML + html_safe(data) + "<br>" ;
-        } else {
-            div.innerHTML = html_safe(data) + "<br>";
-            i=0;
+        if (i >= 500){
+            div.replaceChildren();
+            i = 0;
         }
+        var line = document.createElement('div');
+        line.textContent = data;
+        div.appendChild(line);
         window.scrollTo(0,document.body.scrollHeight);
     }
 }
@@ -54,6 +53,9 @@ async function startStream() {
                 if (message.startsWith('data:'))
                     renderMessage(message.substring(5));
             });
+            await new Promise(function(resolve) {
+                setTimeout(resolve, 0);
+            });
         }
         buffer += decoder.decode();
         if (buffer.startsWith('data:'))
@@ -80,24 +82,4 @@ function toggle(){
         btn.textContent = "Stop Streaming";
     }
 }
-
-function html_safe(data){
-      data = data.replace('b\'', '').
-                  replace(/\\r\\n\'/g, '').
-                  replace('b"', '').
-                  replace(/\\r\\n"/g, '')
-      return data
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#x27;")
-          .replace(/`/g, "&#x60;")
-          .replace(/\(/g, "&#x28;")
-          .replace(/\)/g, "&#x29;")
-          .replace(/{/g, "&#x7B;")
-          .replace(/}/g, "&#x7D;")
-          .replace(/-/g, "&#x2D;")
-          .replace(/\+/g, "&#x2B;");
-}
-
 </script>
