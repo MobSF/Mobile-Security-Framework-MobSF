@@ -80,6 +80,7 @@ ALLOWED_EXTENSIONS = {
     '.ipa': 'application/octet-stream',
     '.jar': 'application/java-archive',
     '.aar': 'application/octet-stream',
+    '.dex': 'application/octet-stream',
     '.so': 'application/octet-stream',
     '.dylib': 'application/octet-stream',
     '.a': 'application/octet-stream',
@@ -94,6 +95,7 @@ APK_MIME = [
     'binary/octet-stream',
     'application/java-archive',
     'application/x-authorware-bin',
+    'application/x-dex',
 ]
 IPA_MIME = [
     'application/iphone',
@@ -118,7 +120,7 @@ APPX_MIME = [
 # Supported File Extensions
 ANDROID_EXTS = (
     'apk', 'xapk', 'apks', 'zip',
-    'aab', 'so', 'jar', 'aar',
+    'aab', 'so', 'jar', 'aar', 'dex',
 )
 IOS_EXTS = ('ipa', 'dylib', 'a')
 WINDOWS_EXTS = ('appx',)
@@ -130,6 +132,12 @@ API_ONLY = env_flag('MOBSF_API_ONLY', '0')
 # -----External URLS--------------------------
 MALTRAIL_DB_URL = ('https://github.com/stamparm/trails/'
                    'releases/latest/download/maltrail-malware-domains.txt')
+URLHAUS_DOMAINS_URL = (
+    'https://malware-filter.gitlab.io/malware-filter/'
+    'urlhaus-filter-dnscrypt-blocked-names.txt')
+URLHAUS_IPS_URL = (
+    'https://malware-filter.gitlab.io/malware-filter/'
+    'urlhaus-filter-dnscrypt-blocked-ips.txt')
 VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/api/v3/files'
 EXODUS_URL = 'https://reports.exodus-privacy.eu.org'
 APPMONSTA_URL = 'https://api.appmonsta.com/v1/stores/android/details/'
@@ -289,7 +297,7 @@ LOGGING = {
             'datefmt': '%d/%b/%Y %H:%M:%S',
         },
         'color': {
-            '()': 'colorlog.ColoredFormatter',
+            '()': 'mobsf.MobSF.utils.ColorLogsWrapper',
             'format':
                 '%(log_color)s[%(levelname)s] %(asctime)-15s - %(message)s',
             'datefmt': '%d/%b/%Y %H:%M:%S',
@@ -342,6 +350,11 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
+        'mobsf.StaticAnalyzer.tools.androguard4': {
+            'handlers': ['console', 'logfile'],
+            'level': 'CRITICAL',
+            'propagate': False,
+        },
         'mobsf.MalwareAnalyzer': {
             'handlers': ['console', 'logfile'],
             'level': 'DEBUG',
@@ -382,6 +395,8 @@ MULTIPROCESSING = os.getenv('MOBSF_MULTIPROCESSING')
 JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1000))
 SAST_TIMEOUT = int(os.getenv('MOBSF_SAST_TIMEOUT', 1000))
 BINARY_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_BINARY_ANALYSIS_TIMEOUT', 600))
+# Minimum seconds between Maltrail/Trackers DB update checks
+DB_UPDATE_INTERVAL = int(os.getenv('MOBSF_DB_UPDATE_INTERVAL', 3600))
 DISABLE_AUTHENTICATION = env_flag('MOBSF_DISABLE_AUTHENTICATION', '0')
 RATELIMIT = os.getenv('MOBSF_RATELIMIT', '7/m')
 USE_X_FORWARDED_HOST = env_flag('MOBSF_USE_X_FORWARDED_HOST', '1')

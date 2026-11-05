@@ -28,7 +28,16 @@ def start_scan(directory, server_url, apikey, rescan='0'):
     uploaded = []
     mimes = {
         '.apk': 'application/octet-stream',
+        '.xapk': 'application/octet-stream',
+        '.apks': 'application/octet-stream',
+        '.aab': 'application/octet-stream',
+        '.jar': 'application/java-archive',
+        '.aar': 'application/octet-stream',
+        '.dex': 'application/octet-stream',
+        '.so': 'application/octet-stream',
         '.ipa': 'application/octet-stream',
+        '.dylib': 'application/octet-stream',
+        '.a': 'application/octet-stream',
         '.appx': 'application/octet-stream',
         '.zip': 'application/zip',
     }

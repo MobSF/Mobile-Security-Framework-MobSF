@@ -210,6 +210,7 @@
                   {% endif %}
                   <a href="#" id="ss" class="btn btn-primary" role="button"><i class="fa fa-camera"></i> Take a Screenshot</a>
                   <a href="#" id="logstream" class="btn btn-primary"><i class="fa fa-water"></i> Logcat Stream</a>
+                  <a href="{% url 'httptools' %}?project={{ package }}" target="_blank" class="btn btn-primary" role="button"><i class="fa fa-globe"></i> Live Web Traffic</a>
                   <a href="{% url 'live_api' %}?hash={{ hash }}&amp;package={{ package }}" id="apimon" target="_blank" class="btn btn-primary" style='display: none'><i class="fa fa-search"></i> Live API Monitor</a>
                   <a href="#" id="stop" class="btn btn-info" role="button" ><i class="fa fa-file-alt"></i> Generate Report</a>
                 </div>

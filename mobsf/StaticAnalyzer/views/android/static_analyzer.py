@@ -30,6 +30,7 @@ from mobsf.StaticAnalyzer.views.android.apk import (
 )
 from mobsf.StaticAnalyzer.views.android.jar_aar import (
     aar_analysis,
+    dex_analysis,
     jar_analysis,
 )
 from mobsf.StaticAnalyzer.views.android.so import (
@@ -115,12 +116,14 @@ def static_analyzer(request, checksum, api=False):
             return jar_analysis(request, app_dic, rescan, api)
         elif typ == 'aar':
             return aar_analysis(request, app_dic, rescan, api)
+        elif typ == 'dex':
+            return dex_analysis(request, app_dic, rescan, api)
         elif typ == 'so':
             return so_analysis(request, app_dic, rescan, api)
         elif typ == 'zip':
             return src_analysis(request, app_dic, rescan, api)
         else:
-            err = ('Only APK, JAR, AAR, SO and Zipped '
+            err = ('Only APK, JAR, AAR, DEX, SO and Zipped '
                    'Android/iOS Source code supported now!')
             logger.error(err)
             append_scan_status(checksum, err)

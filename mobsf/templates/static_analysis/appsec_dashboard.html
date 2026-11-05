@@ -130,6 +130,7 @@ sidebar-collapse
             {% if '.apk' == file_name|slice:"-4:"%}<i class="fab fa-android"></i>
             {% elif '.xapk' == file_name|slice:"-5:"%}<i class="fab fa-android"></i>
             {% elif '.apks' == file_name|slice:"-5:"%}<i class="fab fa-android"></i>
+            {% elif '.dex' == file_name|slice:"-4:"%}<i class="fas fa-file-code"></i>
             {% elif '.ipa' == file_name|slice:"-4:"%}<i class="fab fa-apple"></i>
             {% elif '.zip' == file_name|slice:"-4:"%}<i class="fas fa-file-archive"></i>
             {% elif '.appx' == file_name|slice:"-5:"%}<i class="fab fa-windows"></i>
@@ -479,6 +480,7 @@ sidebar-collapse
                      {% if '.apk' == file_name|slice:"-4:"%}<i class="fab fa-android"></i>
                      {% elif '.xapk' == file_name|slice:"-5:"%}<i class="fab fa-android"></i>
                      {% elif '.apks' == file_name|slice:"-5:"%}<i class="fab fa-android"></i>
+                     {% elif '.dex' == file_name|slice:"-4:"%}<i class="fas fa-file-code"></i>
                      {% elif '.ipa' == file_name|slice:"-4:"%}<i class="fab fa-apple"></i>
                      {% elif '.zip' == file_name|slice:"-4:"%}<i class="fas fa-file-archive"></i>
                      {% elif '.appx' == file_name|slice:"-5:"%}<i class="fab fa-windows"></i>

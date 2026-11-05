@@ -470,14 +470,14 @@ def manifest_analysis(app_dic, man_data_dic):
                         item = escape_manifest_attribute(item)
                         if node.getAttribute(f'{ns}:permission'):
                             # permission exists
-                            perm = ('<strong>Permission: </strong>'
+                            perm = ('Permission: '
                                     + node.getAttribute(f'{ns}:permission'))
                             is_perm_exist = True
                         if item != man_data_dic['mainactivity']:
                             if is_perm_exist:
                                 prot = ''
                                 if node.getAttribute(f'{ns}:permission') in permission_dict:
-                                    prot = ('</br><strong>protectionLevel: </strong>'
+                                    prot = (', protectionLevel: '
                                             + permission_dict[node.getAttribute(f'{ns}:permission')])
                                     # Esteve 23.07.2016 - begin - take into account protection level of the permission when claiming that a component is protected by it;
                                     # - the permission might not be defined in the application being analysed, if so, the protection level is not known;
@@ -533,10 +533,10 @@ def manifest_analysis(app_dic, man_data_dic):
                                 #        2) The permission is not defined at the manifest level, which means the protection level is unknown, as it is not
                                 # defined in the analysed application.
                                 else:
-                                    perm = '<strong>Permission: </strong>' + perm_appl_level
+                                    perm = 'Permission: ' + perm_appl_level
                                     prot = ''
                                     if perm_appl_level in permission_dict:
-                                        prot = ('</br><strong>protectionLevel: </strong>'
+                                        prot = (', protectionLevel: '
                                                 + permission_dict[perm_appl_level])
                                         prot_level_exist = True
                                         protlevel = permission_dict[
@@ -584,14 +584,14 @@ def manifest_analysis(app_dic, man_data_dic):
                             item = escape_manifest_attribute(item)
                             if node.getAttribute(f'{ns}:permission'):
                                 # permission exists
-                                perm = ('<strong>Permission: </strong>'
+                                perm = ('Permission: '
                                         + node.getAttribute(f'{ns}:permission'))
                                 is_perm_exist = True
                             if item != man_data_dic['mainactivity']:
                                 if is_perm_exist:
                                     prot = ''
                                     if node.getAttribute(f'{ns}:permission') in permission_dict:
-                                        prot = ('</br><strong>protectionLevel: </strong>'
+                                        prot = (', protectionLevel: '
                                                 + permission_dict[node.getAttribute(f'{ns}:permission')])
                                         # Esteve 24.07.2016 - begin - take into account protection level of the permission when claiming that a component is protected by it;
                                         # - the permission might not be defined in the application being analysed, if so, the protection level is not known;
@@ -649,10 +649,10 @@ def manifest_analysis(app_dic, man_data_dic):
                                     # 2) The permission is not defined at the manifest level, which means the protection level is unknown, as it is not
                                     #  defined in the analysed application.
                                     else:
-                                        perm = '<strong>Permission: </strong>' + perm_appl_level
+                                        perm = 'Permission: ' + perm_appl_level
                                         prot = ''
                                         if perm_appl_level in permission_dict:
-                                            prot = ('</br><strong>protectionLevel: </strong>'
+                                            prot = (', protectionLevel: '
                                                     + permission_dict[perm_appl_level])
                                             prot_level_exist = True
                                             protlevel = permission_dict[
@@ -700,13 +700,13 @@ def manifest_analysis(app_dic, man_data_dic):
                                     item = escape_manifest_attribute(item)
                                     if node.getAttribute(f'{ns}:permission'):
                                         # permission exists
-                                        perm = ('<strong>Permission: </strong>'
+                                        perm = ('Permission: '
                                                 + node.getAttribute(f'{ns}:permission'))
                                         is_perm_exist = True
                                     if is_perm_exist:
                                         prot = ''
                                         if node.getAttribute(f'{ns}:permission') in permission_dict:
-                                            prot = ('</br><strong>protectionLevel: </strong>'
+                                            prot = (', protectionLevel: '
                                                     + permission_dict[node.getAttribute(f'{ns}:permission')])
                                             prot_level_exist = True
                                             protlevel = permission_dict[
@@ -740,10 +740,10 @@ def manifest_analysis(app_dic, man_data_dic):
                                             exp_count[cnt_id] = exp_count[
                                                 cnt_id] + 1
                                         else:
-                                            perm = '<strong>Permission: </strong>' + perm_appl_level
+                                            perm = 'Permission: ' + perm_appl_level
                                             prot = ''
                                             if perm_appl_level in permission_dict:
-                                                prot = ('</br><strong>protectionLevel: </strong>'
+                                                prot = (', protectionLevel: '
                                                         + permission_dict[perm_appl_level])
                                                 prot_level_exist = True
                                                 protlevel = permission_dict[
@@ -782,13 +782,13 @@ def manifest_analysis(app_dic, man_data_dic):
                                         item = escape_manifest_attribute(item)
                                         if node.getAttribute(f'{ns}:permission'):
                                             # permission exists
-                                            perm = ('<strong>Permission: </strong>'
+                                            perm = ('Permission: '
                                                     + node.getAttribute(f'{ns}:permission'))
                                             is_perm_exist = True
                                         if is_perm_exist:
                                             prot = ''
                                             if node.getAttribute(f'{ns}:permission') in permission_dict:
-                                                prot = ('</br><strong>protectionLevel: </strong>'
+                                                prot = (', protectionLevel: '
                                                         + permission_dict[node.getAttribute(f'{ns}:permission')])
                                                 prot_level_exist = True
                                                 protlevel = permission_dict[
@@ -822,10 +822,10 @@ def manifest_analysis(app_dic, man_data_dic):
                                                 exp_count[cnt_id] = exp_count[
                                                     cnt_id] + 1
                                             else:
-                                                perm = '<strong>Permission: </strong>' + perm_appl_level
+                                                perm = 'Permission: ' + perm_appl_level
                                                 prot = ''
                                                 if perm_appl_level in permission_dict:
-                                                    prot = ('</br><strong>protectionLevel: </strong>'
+                                                    prot = (', protectionLevel: '
                                                             + permission_dict[perm_appl_level])
                                                     prot_level_exist = True
                                                     protlevel = permission_dict[

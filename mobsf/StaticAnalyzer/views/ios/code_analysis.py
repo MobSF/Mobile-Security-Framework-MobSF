@@ -10,6 +10,9 @@ from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     url_n_email_extract,
 )
+from mobsf.StaticAnalyzer.views.ios.entitlements import (
+    source_entitlements_analysis,
+)
 from mobsf.StaticAnalyzer.views.sast_engine import SastEngine
 from mobsf.MobSF.utils import (
     append_scan_status,
@@ -79,6 +82,7 @@ def ios_source_analysis(checksum, src):
         if swift_findings:
             source_types.add(_SourceType.swift)
         code_findings = merge_findings(swift_findings, objc_findings)
+        source_entitlements_analysis(src, code_findings)
         msg = 'iOS Source Code Analysis Completed'
         logger.info(msg)
         append_scan_status(checksum, msg)

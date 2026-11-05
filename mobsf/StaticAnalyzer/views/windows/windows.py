@@ -13,7 +13,8 @@ import subprocess
 import xmlrpc.client
 from os.path import expanduser
 
-import rsa
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding
 
 from lxml import etree
 
@@ -190,9 +191,13 @@ def staticanalyzer_windows(request, checksum, api=False):
 def _get_token():
     """Get the authentication token for windows vm xmlrpc client."""
     challenge = proxy.get_challenge()
-    priv_key = rsa.PrivateKey.load_pkcs1(
-        open(settings.WINDOWS_VM_SECRET).read())
-    signature = rsa.sign(challenge.encode('ascii'), priv_key, 'SHA-512')
+    with open(settings.WINDOWS_VM_SECRET, 'rb') as f:
+        priv_key = serialization.load_pem_private_key(f.read(), password=None)
+    signature = priv_key.sign(
+        challenge.encode('ascii'),
+        padding.PKCS1v15(),
+        hashes.SHA512(),
+    )
     sig_b64 = base64.b64encode(signature)
     return sig_b64
 

@@ -10,6 +10,7 @@ Please report all security issues [here](https://github.com/MobSF/Mobile-Securit
 
 | Vulnerability | Affected Versions |
 | ------- | ------------------ |
+| [Pre-extraction symlink mode stripping bypass in OS unzip fallback](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-j7g2-gm7j-mfvm) | `<=4.6.4` |
 | [Arbitrary file read via symlink entries in the OS unzip fallback](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-mc92-j6mp-x9cp) | `<4.6.1` |
 | [Cross-Site Request Forgery via GET-based dynamic analysis actions](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-hh7q-v28p-p55m) | `<=4.5.3` |
 | [SSRF via attacker-controlled Host header in HTTPTools shutdown](https://github.com/MobSF/Mobile-Security-Framework-MobSF/security/advisories/GHSA-3fr8-jfgg-fm3x) | `<=4.5.3` |

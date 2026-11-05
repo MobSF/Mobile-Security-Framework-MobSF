@@ -13,8 +13,6 @@ import subprocess
 import sys
 from os.path import expanduser
 
-from six.moves import input as sinput
-
 try:
     import urllib.request as urlrequest
 except ImportError:
@@ -119,11 +117,11 @@ def check_dependencies():
     missing_deps = []
 
     try:
-        import rsa  # noqa F401
-        print('[+] rsa is installed.')
+        import cryptography  # noqa F401
+        print('[+] cryptography is installed.')
     except ImportError:  # pylint: disable-msg=C0103
-        print('[!] rsa not installed!')
-        missing_deps.append('rsa')
+        print('[!] cryptography not installed!')
+        missing_deps.append('cryptography')
 
     if len(missing_deps) > 0:
         print('[!] Please install these missing dependencies:')
@@ -290,18 +288,29 @@ def tools_binscope():
 
 def generate_secret():
     """Generate rsa keys for authentication."""
-    import rsa
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa as crypto_rsa
     print('[*] Generating secret, please hang on.')
-    # Generate keys, taken from
-    # https://stuvel.eu/python-rsa-doc/usage.html#generating-keys
-    (pubkey, privkey) = rsa.newkeys(2048)
+    privkey = crypto_rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=2048,
+    )
+    priv_pem = privkey.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.TraditionalOpenSSL,
+        encryption_algorithm=serialization.NoEncryption(),
+    ).decode('utf-8')
+    pub_pem = privkey.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.PKCS1,
+    ).decode('utf-8')
 
     # Save private and pub key
     priv_key_file = open(CONFIG['MobSF']['priv_key'], 'w')
-    priv_key_file.write(privkey.save_pkcs1().decode('utf-8'))
+    priv_key_file.write(priv_pem)
     priv_key_file.close()
     pub_key_file = open(CONFIG['MobSF']['pub_key'], 'w')
-    pub_key_file.write(pubkey.save_pkcs1().decode('utf-8'))
+    pub_key_file.write(pub_pem)
     pub_key_file.close()
     config_path = os.path.join(
         expanduser('~'),
@@ -315,7 +324,7 @@ def generate_secret():
         'mobsf/MobSF/windows_vm_priv_key.asc)'
         .format(CONFIG['MobSF']['priv_key'], config_path)
     ))
-    sinput('Please press any key when done..')
+    input('Please press any key when done..')
 
 
 def autostart():

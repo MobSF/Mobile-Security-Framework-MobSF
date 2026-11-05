@@ -11,7 +11,9 @@ import subprocess
 from os.path import expanduser
 from xmlrpc.server import SimpleXMLRPCServer  # pylint: disable-msg=E0401
 
-import rsa
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding
 
 config = None
 challenge = None
@@ -20,17 +22,22 @@ pub_key = None
 
 def _init_key():
     global pub_key
-    pub_key = rsa.PublicKey.load_pkcs1(
-        open(config['MobSF']['pub_key']).read())
+    with open(config['MobSF']['pub_key'], 'rb') as f:
+        pub_key = serialization.load_pem_public_key(f.read())
 
 
 def _check_challenge(signature):
     signature = base64.b64decode(signature.data)
     try:
-        rsa.verify(challenge.encode('utf-8'), signature, pub_key)
+        pub_key.verify(
+            signature,
+            challenge.encode('utf-8'),
+            padding.PKCS1v15(),
+            hashes.SHA512(),
+        )
         print('[*] Challenge successfully verified.')
         _revoke_challenge()
-    except rsa.pkcs1.VerificationError:
+    except InvalidSignature:
         print('[!] Received wrong signature for challenge.')
         raise Exception('Access Denied.')
     except (TypeError, AttributeError):

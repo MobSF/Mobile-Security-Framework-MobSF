@@ -19,7 +19,7 @@ class AttackDetect(forms.Form):
             raise forms.ValidationError('Attack Detected')
         # Allowed File extensions
         supported_ext = (r'^\.(kt|java|smali|xml|'
-                         r'plist|m|swift|'
+                         r'plist|entitlements|m|swift|'
                          r'db|sqlitedb|sqlite|txt|json)$')
         if not re.search(supported_ext, Path(file).suffix):
             raise forms.ValidationError('File Extension not supported')
@@ -67,6 +67,7 @@ class AndroidChecks(forms.Form):
             ('apk', 'apk'),
             ('jar', 'jar'),
             ('aar', 'aar'),
+            ('dex', 'dex'),
             ('so', 'so'),
             ('a', 'a')))
 

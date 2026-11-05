@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 def get_desc(desc_str, match):
     """Generate formatted detailed description with matches."""
-    return desc_str.format(
-        b', '.join(sorted(set(match))).decode('utf-8', 'ignore'))
+    cleaned = sorted({m.strip() for m in match if m and m.strip()})
+    return desc_str.format(b', '.join(cleaned).decode('utf-8', 'ignore'))
 
 
 def _add_bfindings(findings, desc, detailed_desc, rule):
@@ -32,7 +32,8 @@ def _add_bfindings(findings, desc, detailed_desc, rule):
 def binary_rule_matcher(checksum, findings, symbols, classdump):
     """Static Analysis Rule Matcher."""
     try:
-        data = classdump + '\n'.join(symbols).encode('utf-8')
+        sym_bytes = '\n'.join(symbols).encode('utf-8')
+        data = classdump + b'\n' + sym_bytes if classdump else sym_bytes
         for rule in ipa_rules.IPA_RULES:
 
             # CASE CHECK
