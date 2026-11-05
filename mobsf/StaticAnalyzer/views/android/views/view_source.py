@@ -22,6 +22,7 @@ from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
+    android_source_root,
     find_java_source_folder,
 )
 from mobsf.StaticAnalyzer.forms import (
@@ -68,8 +69,8 @@ def get_xml_root(base, checksum):
         return base / 'apktool_out'
     if app_type == 'aar' and scan_type == 'aar':
         return base
-    if app_type == 'studio' and scan_type == 'zip':
-        return base / 'app' / 'src' / 'main'
+    if app_type in {'studio', 'flutter'} and scan_type == 'zip':
+        return android_source_root(base, checksum) / 'app' / 'src' / 'main'
     if app_type == 'eclipse' and scan_type == 'zip':
         return base
     return None
@@ -106,7 +107,8 @@ def run(request, api=False):
             syntax = 'xml'
         else:
             try:
-                src, syntax, _ = find_java_source_folder(base)
+                src, syntax, _ = find_java_source_folder(
+                    android_source_root(base, md5))
             except StopIteration:
                 msg = 'Invalid directory or file extension'
                 return send_error(request, msg, api_mode, json_resp)

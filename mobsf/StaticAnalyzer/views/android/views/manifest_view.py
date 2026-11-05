@@ -14,6 +14,9 @@ from mobsf.MobSF.utils import (
 from mobsf.StaticAnalyzer.views.android.manifest_utils import (
     get_manifest_file,
 )
+from mobsf.StaticAnalyzer.views.common.shared_func import (
+    android_source_root,
+)
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
@@ -25,10 +28,11 @@ logger = logging.getLogger(__name__)
 def run(request, checksum):
     """View the manifest."""
     try:
-        supported = ['eclipse', 'studio', 'apk', 'aar']
+        supported = ['eclipse', 'studio', 'flutter', 'apk', 'aar']
         typ = request.GET['type']  # APK or SOURCE
         if is_md5(checksum) and (typ in supported):
-            app_dir = Path(settings.UPLD_DIR) / checksum
+            app_dir = android_source_root(
+                Path(settings.UPLD_DIR) / checksum, checksum)
             app_dic = {
                 'md5': checksum,
                 'app_dir': app_dir,

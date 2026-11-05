@@ -61,6 +61,7 @@ class AndroidChecks(forms.Form):
         choices=(
             ('eclipse', 'eclipse'),
             ('studio', 'studio'),
+            ('flutter', 'flutter'),
             ('java', 'java'),
             ('smali', 'smali'),
             ('xml', 'xml'),
