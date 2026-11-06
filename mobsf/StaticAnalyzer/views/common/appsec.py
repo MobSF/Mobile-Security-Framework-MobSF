@@ -202,7 +202,7 @@ def common_fields(findings, data):
                     f'Vulnerability ID: {id_str}\n'
                     f'Installed Version: {ver}\n'
                     f'Fixed Version: {fixed}'),
-                'section': 'sbom',
+                'section': 'supply_chain',
             })
     # Possible Hardcoded Secrets
     secrets = data['secrets']
