@@ -62,13 +62,20 @@ class SBOMExtractionTests(SimpleTestCase):
                 'commons-logging:commons-logging:jar:1.2\n',
                 encoding='utf-8')
 
-            # 5. Multiline libs.versions.toml, gradle.lockfile, pubspec.lock
+            # 5. Multiline libs.versions.toml, build.gradle.kts, gradle.lockfile,
+            # pubspec.lock, and nested v1 package-lock.json
             gradle_dir = root / 'gradle'
             gradle_dir.mkdir()
             (gradle_dir / 'libs.versions.toml').write_text(
                 '[versions]\nretrofit = "2.9.0"\n\n'
                 '[libraries]\nretrofit = { module = '
-                '"com.squareup.retrofit2:retrofit", version.ref = "retrofit" }\n',
+                '"com.squareup.retrofit2:retrofit", version.ref = "retrofit" }\n'
+                'okhttp = "com.squareup.okhttp3:okhttp:4.12.0"\n',
+                encoding='utf-8')
+            (root / 'build.gradle.kts').write_text(
+                'dependencies {\n'
+                '    implementation("javax.inject:javax.inject:1")\n'
+                '}\n',
                 encoding='utf-8')
             (root / 'gradle.lockfile').write_text(
                 'com.google.code.gson:gson:2.8.6=compileClasspath\n',
@@ -77,6 +84,17 @@ class SBOMExtractionTests(SimpleTestCase):
                 'packages:\n  http:\n    dependency: "direct main"\n'
                 '    version: "0.13.3"\n',
                 encoding='utf-8')
+            (root / 'package-lock.json').write_text(json.dumps({
+                'lockfileVersion': 1,
+                'dependencies': {
+                    'react-native': {
+                        'version': '0.73.0',
+                        'dependencies': {
+                            'hermes-engine': {'version': '0.11.0'},
+                        },
+                    },
+                },
+            }), encoding='utf-8')
 
             versioned = extract_android_sbom(root)
             self.assertIn(
@@ -99,8 +117,12 @@ class SBOMExtractionTests(SimpleTestCase):
                 'commons-logging:commons-logging@1.2', versioned)
             self.assertIn(
                 'com.squareup.retrofit2:retrofit@2.9.0', versioned)
+            self.assertIn('com.squareup.okhttp3:okhttp@4.12.0', versioned)
+            self.assertIn('javax.inject:javax.inject@1', versioned)
             self.assertIn('com.google.code.gson:gson@2.8.6', versioned)
             self.assertIn('http@0.13.3', versioned)
+            self.assertIn('react-native@0.73.0', versioned)
+            self.assertIn('hermes-engine@0.11.0', versioned)
             # Corrupted lproj entry must not be present
             self.assertFalse(
                 any('0d2e225546bdb069e583c5af4d824d75' in v for v in versioned))
@@ -145,6 +167,7 @@ class SBOMExtractionTests(SimpleTestCase):
             }), encoding='utf-8')
             (root / 'Podfile.lock').write_text(
                 'PODS:\n  - SDWebImage/Core (5.21.7)\n'
+                '  - Socket.IO-Client-Swift/Core (16.1.0)\n'
                 'DEPENDENCIES:\n  - SDWebImage\n',
                 encoding='utf-8')
 
@@ -153,6 +176,7 @@ class SBOMExtractionTests(SimpleTestCase):
             self.assertIn('Alamofire@5.12.0', versioned)
             self.assertIn('vapor@4.50.0', versioned)
             self.assertIn('SDWebImage@5.21.7', versioned)
+            self.assertIn('Socket.IO-Client-Swift@16.1.0', versioned)
             self.assertFalse(any(v.startswith('Flutter@') for v in versioned))
 
     def test_android_and_ios_sbom_wrappers(self):

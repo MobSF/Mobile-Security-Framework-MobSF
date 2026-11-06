@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from plistlib import load as plist_load
 import re
+import tomllib
 
 from mobsf.MobSF.security import (
     is_pipe_or_link,
@@ -11,25 +12,16 @@ from mobsf.MobSF.security import (
 )
 
 _MAX_SBOM_FILE_SIZE = 2 * 1024 * 1024
+_MAX_LOCK_NODES = 5000
 _VALID_VERSION_RE = re.compile(r'^[0-9][0-9A-Za-z._+-]{0,63}$')
 _POM_DEP_LINE_RE = re.compile(
     r'([A-Za-z0-9_.-]+):([A-Za-z0-9_.-]+):(?:jar|aar):([0-9][0-9A-Za-z._+-]*)')
 _GRADLE_COORD_RE = re.compile(
-    r'["\']([A-Za-z0-9_.-]+):([A-Za-z0-9_.-]+):([0-9][0-9A-Za-z._+-]+)["\']')
+    r'["\']([A-Za-z0-9_.-]+):([A-Za-z0-9_.-]+):([0-9][0-9A-Za-z._+-]*)["\']')
 _GRADLE_LOCK_LINE_RE = re.compile(
     r'^\s*([A-Za-z0-9_.-]+):([A-Za-z0-9_.-]+):([0-9][0-9A-Za-z._+-]*)=')
-_TOML_VERSION_REF_RE = re.compile(
-    r'^\s*([A-Za-z0-9_.-]+)\s*=\s*["\']([0-9][0-9A-Za-z._+-]+)["\']',
-    re.MULTILINE)
-_TOML_MODULE_RE = re.compile(
-    r'module\s*=\s*["\']([A-Za-z0-9_.-]+):([A-Za-z0-9_.-]+)["\']'
-    r'[^}\n]*?version(?:\.ref)?\s*=\s*["\']([A-Za-z0-9_.-]+)["\']')
-_TOML_GROUP_NAME_RE = re.compile(
-    r'group\s*=\s*["\']([A-Za-z0-9_.-]+)["\'][^}\n]*?'
-    r'name\s*=\s*["\']([A-Za-z0-9_.-]+)["\'][^}\n]*?'
-    r'version(?:\.ref)?\s*=\s*["\']([A-Za-z0-9_.-]+)["\']')
 _PODFILE_LOCK_ITEM_RE = re.compile(
-    r'^  - ([A-Za-z0-9_+-]+)(?:/[A-Za-z0-9_+-]+)* \(([0-9][0-9A-Za-z._+-]*)\)')
+    r'^  - ([A-Za-z0-9_.+-]+)(?:/[A-Za-z0-9_.+-]+)* \(([0-9][0-9A-Za-z._+-]*)\)')
 _CARTFILE_RESOLVED_RE = re.compile(
     r'^\s*github\s+"([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)"\s+"v?([0-9][0-9A-Za-z._+-]*)"')
 _GITHUB_REPO_RE = re.compile(
@@ -75,6 +67,63 @@ def _parse_version_stem(stem):
     return '', ''
 
 
+def _parse_toml_catalog(text, add_fn):
+    """Parse a Gradle libs.versions.toml catalog using stdlib tomllib."""
+    try:
+        data = tomllib.loads(text)
+    except Exception:
+        return
+    if not isinstance(data, dict):
+        return
+
+    raw_versions = data.get('versions') or {}
+    versions_map = {}
+    if isinstance(raw_versions, dict):
+        for k, v in raw_versions.items():
+            if isinstance(v, str):
+                versions_map[k] = v
+            elif isinstance(v, dict) and isinstance(v.get('strictly'), str):
+                versions_map[k] = v['strictly']
+            elif isinstance(v, dict) and isinstance(v.get('require'), str):
+                versions_map[k] = v['require']
+
+    libraries = data.get('libraries') or {}
+    if not isinstance(libraries, dict):
+        return
+
+    for lib in libraries.values():
+        if isinstance(lib, str):
+            parts = lib.split(':')
+            if len(parts) == 3 and parts[0] and parts[1] and parts[2]:
+                add_fn(f'{parts[0]}:{parts[1]}', parts[2])
+            continue
+        if not isinstance(lib, dict):
+            continue
+        module = lib.get('module')
+        if isinstance(module, str) and ':' in module:
+            group, name = module.split(':', 1)
+        else:
+            group = str(lib.get('group') or '')
+            name = str(lib.get('name') or '')
+        if not (group and name):
+            continue
+
+        ver_obj = lib.get('version')
+        ver = ''
+        if isinstance(ver_obj, str):
+            ver = ver_obj
+        elif isinstance(ver_obj, dict):
+            ref = ver_obj.get('ref')
+            if isinstance(ref, str):
+                ver = versions_map.get(ref, '')
+            elif isinstance(ver_obj.get('strictly'), str):
+                ver = ver_obj['strictly']
+            elif isinstance(ver_obj.get('require'), str):
+                ver = ver_obj['require']
+        if ver:
+            add_fn(f'{group}:{name}', ver)
+
+
 def _extract_cross_platform_lockfiles(root, add_fn):
     """Extract standard Dart/Flutter (pubspec.lock) and npm (package-lock.json)."""
     for publock in root.rglob('pubspec.lock'):
@@ -92,19 +141,36 @@ def _extract_cross_platform_lockfiles(root, add_fn):
             continue
         try:
             obj = json.loads(text)
-            deps = obj.get('dependencies') or {}
-            for pkg, meta in deps.items():
-                if isinstance(meta, dict) and meta.get('version'):
-                    add_fn(pkg, str(meta['version']))
-            packages = obj.get('packages') or {}
-            for pkg_path, meta in packages.items():
-                if (not pkg_path.startswith('node_modules/')
-                        or not isinstance(meta, dict)
-                        or not meta.get('version')):
+            if not isinstance(obj, dict):
+                continue
+            # Traverse top-level and nested v1 dependencies maps iteratively
+            queue = [obj.get('dependencies')]
+            visited = 0
+            while queue and visited < _MAX_LOCK_NODES:
+                deps = queue.pop()
+                if not isinstance(deps, dict):
                     continue
-                pkg = pkg_path.split('node_modules/')[-1]
-                if pkg:
-                    add_fn(pkg, str(meta['version']))
+                for pkg, meta in deps.items():
+                    visited += 1
+                    if visited > _MAX_LOCK_NODES:
+                        break
+                    if not isinstance(meta, dict):
+                        continue
+                    if meta.get('version'):
+                        add_fn(pkg, str(meta['version']))
+                    if isinstance(meta.get('dependencies'), dict):
+                        queue.append(meta['dependencies'])
+
+            packages = obj.get('packages') or {}
+            if isinstance(packages, dict):
+                for pkg_path, meta in packages.items():
+                    if (not pkg_path.startswith('node_modules/')
+                            or not isinstance(meta, dict)
+                            or not meta.get('version')):
+                        continue
+                    pkg = pkg_path.split('node_modules/')[-1]
+                    if pkg:
+                        add_fn(pkg, str(meta['version']))
         except Exception:
             continue
 
@@ -188,15 +254,8 @@ def extract_android_sbom(app_dir):
     # 4. Source build manifests: *.versions.toml, build.gradle(.kts), gradle.lockfile
     for toml_file in root.rglob('*.versions.toml'):
         text = _safe_read_text(root, toml_file)
-        if not text:
-            continue
-        versions_map = dict(_TOML_VERSION_REF_RE.findall(text))
-        for g, a, vref in _TOML_MODULE_RE.findall(text):
-            ver = versions_map.get(vref, vref)
-            _add(f'{g}:{a}', ver)
-        for g, a, vref in _TOML_GROUP_NAME_RE.findall(text):
-            ver = versions_map.get(vref, vref)
-            _add(f'{g}:{a}', ver)
+        if text:
+            _parse_toml_catalog(text, _add)
 
     for gfile in (*root.rglob('build.gradle'), *root.rglob('build.gradle.kts')):
         text = _safe_read_text(root, gfile)
