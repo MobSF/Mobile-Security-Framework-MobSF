@@ -1,37 +1,17 @@
 # -*- coding: utf_8 -*-
-"""SBOM component extraction and OSV.dev vulnerability scanning."""
-import hashlib
+"""Offline SBOM component extraction for Android and iOS."""
 import json
-import logging
 from pathlib import Path
 from plistlib import load as plist_load
 import re
-import time
-
-from django.conf import settings
-
-import requests
 
 from mobsf.MobSF.security import (
     is_pipe_or_link,
     is_safe_path,
 )
-from mobsf.MobSF.utils import (
-    is_internet_available,
-    settings_enabled,
-    upstream_proxy,
-)
-
-logger = logging.getLogger(__name__)
 
 _MAX_SBOM_FILE_SIZE = 2 * 1024 * 1024
-_MAX_OSV_QUERIES = 1000
-_MAX_OSV_VULN_FETCH = 40
-_MAX_POD_CDN_RESOLUTIONS = 25
-_POD_CDN_DEADLINE_SECS = 15.0
 _VALID_VERSION_RE = re.compile(r'^[0-9][0-9A-Za-z._+-]{0,63}$')
-_VALID_OSV_ID_RE = re.compile(r'^[A-Za-z0-9._-]{3,64}$')
-_GIT_SHA_RE = re.compile(r'^[0-9a-fA-F]{20,64}$')
 _POM_DEP_LINE_RE = re.compile(
     r'([A-Za-z0-9_.-]+):([A-Za-z0-9_.-]+):(?:jar|aar):([0-9][0-9A-Za-z._+-]*)')
 _GRADLE_COORD_RE = re.compile(
@@ -57,10 +37,6 @@ _GITHUB_REPO_RE = re.compile(
 _PUBSPEC_LOCK_PKG_RE = re.compile(
     r'^  ([a-zA-Z0-9_]+):\n(?:    [^\n]+\n)*?    version: "([0-9][0-9A-Za-z._+-]*)"',
     re.MULTILINE)
-
-# Cache only confirmed pod -> repo (or explicit 404/no-git False) discovered
-# via the official CocoaPods Specs index; transient errors are not cached.
-_POD_REPO_CACHE = {}
 
 
 def _safe_read_text(root, path):
@@ -106,7 +82,7 @@ def _extract_cross_platform_lockfiles(root, add_fn):
         if not text:
             continue
         for pkg, ver in _PUBSPEC_LOCK_PKG_RE.findall(text):
-            add_fn('Pub', pkg, ver)
+            add_fn(pkg, ver)
 
     for pkglock in root.rglob('package-lock.json'):
         if 'node_modules' in pkglock.parts:
@@ -119,7 +95,7 @@ def _extract_cross_platform_lockfiles(root, add_fn):
             deps = obj.get('dependencies') or {}
             for pkg, meta in deps.items():
                 if isinstance(meta, dict) and meta.get('version'):
-                    add_fn('npm', pkg, str(meta['version']))
+                    add_fn(pkg, str(meta['version']))
             packages = obj.get('packages') or {}
             for pkg_path, meta in packages.items():
                 if (not pkg_path.startswith('node_modules/')
@@ -128,40 +104,29 @@ def _extract_cross_platform_lockfiles(root, add_fn):
                     continue
                 pkg = pkg_path.split('node_modules/')[-1]
                 if pkg:
-                    add_fn('npm', pkg, str(meta['version']))
+                    add_fn(pkg, str(meta['version']))
         except Exception:
             continue
 
 
-def extract_android_components(app_dir):
-    """Extract Android SBOM strings and structured OSV components."""
+def extract_android_sbom(app_dir):
+    """Extract sorted list of versioned Android SBOM packages."""
     root = Path(app_dir)
     versioned = set()
-    components = {}
 
-    def _add(ecosystem, pkg, version, display=None):
+    def _add(pkg, version):
         version = version.strip()
         if not pkg:
             return
-        if version == 'dynamic':
-            versioned.add(f'{display or pkg}@dynamic')
-            return
-        if not _valid_version(version):
-            return
-        versioned.add(f'{display or pkg}@{version}')
-        components[(ecosystem, pkg, version)] = {
-            'ecosystem': ecosystem,
-            'name': pkg,
-            'version': version,
-            'display': display or pkg,
-        }
+        if version == 'dynamic' or _valid_version(version):
+            versioned.add(f'{pkg}@{version}')
 
     if not root.exists():
-        return [], []
+        return []
 
     # 1. META-INF/*.version (standard Gradle/Jetpack/KotlinX version files)
     for vfile in root.rglob('*.version'):
-        if 'META-INF' not in vfile.parts:
+        if 'META-INF' not in vfile.parts or 'apktool_out' in vfile.parts:
             continue
         text = _safe_read_text(root, vfile)
         if not text:
@@ -170,7 +135,7 @@ def extract_android_components(app_dir):
         version = 'dynamic' if raw_ver.startswith('task') else raw_ver
         group, name = _parse_version_stem(vfile.stem)
         if group and name:
-            _add('Maven', f'{group}:{name}', version)
+            _add(f'{group}:{name}', version)
 
     # 2. Standard pom.properties and client .properties
     for pfile in root.rglob('*.properties'):
@@ -191,7 +156,7 @@ def extract_android_components(app_dir):
             a = kv.get('artifactId', '')
             v = kv.get('version', '')
             if g and a and v:
-                _add('Maven', f'{g}:{a}', v)
+                _add(f'{g}:{a}', v)
         elif 'client' in kv and 'version' in kv:
             client = kv['client']
             ver = kv['version']
@@ -207,7 +172,7 @@ def extract_android_components(app_dir):
                 group = 'com.google.android.datatransport'
             else:
                 continue
-            _add('Maven', f'{group}:{client}', ver)
+            _add(f'{group}:{client}', ver)
 
     # 3. META-INF/DEPENDENCIES (standard Maven Shade/Assembly manifest)
     for dep_file in root.rglob('DEPENDENCIES'):
@@ -218,7 +183,7 @@ def extract_android_components(app_dir):
             continue
         for match in _POM_DEP_LINE_RE.finditer(text):
             g, a, v = match.group(1), match.group(2), match.group(3)
-            _add('Maven', f'{g}:{a}', v)
+            _add(f'{g}:{a}', v)
 
     # 4. Source build manifests: *.versions.toml, build.gradle(.kts), gradle.lockfile
     for toml_file in root.rglob('*.versions.toml'):
@@ -228,17 +193,17 @@ def extract_android_components(app_dir):
         versions_map = dict(_TOML_VERSION_REF_RE.findall(text))
         for g, a, vref in _TOML_MODULE_RE.findall(text):
             ver = versions_map.get(vref, vref)
-            _add('Maven', f'{g}:{a}', ver)
+            _add(f'{g}:{a}', ver)
         for g, a, vref in _TOML_GROUP_NAME_RE.findall(text):
             ver = versions_map.get(vref, vref)
-            _add('Maven', f'{g}:{a}', ver)
+            _add(f'{g}:{a}', ver)
 
     for gfile in (*root.rglob('build.gradle'), *root.rglob('build.gradle.kts')):
         text = _safe_read_text(root, gfile)
         if not text:
             continue
         for g, a, v in _GRADLE_COORD_RE.findall(text):
-            _add('Maven', f'{g}:{a}', v)
+            _add(f'{g}:{a}', v)
 
     for lockfile in root.rglob('*gradle.lockfile'):
         text = _safe_read_text(root, lockfile)
@@ -248,112 +213,27 @@ def extract_android_components(app_dir):
             match = _GRADLE_LOCK_LINE_RE.match(line)
             if match:
                 g, a, v = match.group(1), match.group(2), match.group(3)
-                _add('Maven', f'{g}:{a}', v)
+                _add(f'{g}:{a}', v)
 
     # 5. Cross-platform lockfiles (pubspec.lock, package-lock.json)
     _extract_cross_platform_lockfiles(root, _add)
 
-    return sorted(versioned), list(components.values())
+    return sorted(versioned)
 
 
-def _resolve_pod_github_repo(pod_name, online=True):
-    """Resolve a CocoaPod name to 'org/repo' via the official CocoaPods CDN."""
-    if pod_name in _POD_REPO_CACHE:
-        return _POD_REPO_CACHE[pod_name] or None
-    if (not online
-            or not re.match(r'^[A-Za-z0-9_+-]{2,64}$', pod_name)):
-        return None
-    try:
-        proxies, verify = upstream_proxy('https')
-        md5_prefix = hashlib.md5(
-            pod_name.encode('utf-8'),
-            usedforsecurity=False).hexdigest()
-        p1, p2, p3 = md5_prefix[0], md5_prefix[1], md5_prefix[2]
-        shard_url = (
-            f'{settings.COCOAPODS_CDN_URL}/'
-            f'all_pods_versions_{p1}_{p2}_{p3}.txt')
-        resp = requests.get(
-            shard_url,
-            timeout=5,
-            proxies=proxies,
-            verify=verify)
-        if resp.status_code == 404:
-            _POD_REPO_CACHE[pod_name] = False
-            return None
-        if resp.status_code != 200:
-            return None
-        prefix = f'{pod_name}/'
-        line = next(
-            (ln for ln in resp.text.splitlines() if ln.startswith(prefix)),
-            None)
-        if not line:
-            _POD_REPO_CACHE[pod_name] = False
-            return None
-        latest_ver = line.rsplit('/', 1)[-1].strip()
-        spec_url = (
-            f'{settings.COCOAPODS_CDN_URL}/Specs/'
-            f'{p1}/{p2}/{p3}/{pod_name}/{latest_ver}/{pod_name}.podspec.json')
-        spec_resp = requests.get(
-            spec_url,
-            timeout=5,
-            proxies=proxies,
-            verify=verify)
-        if spec_resp.status_code == 404:
-            _POD_REPO_CACHE[pod_name] = False
-            return None
-        if spec_resp.status_code != 200:
-            return None
-        spec = spec_resp.json()
-        git_url = (spec.get('source') or {}).get('git') or spec.get('homepage', '')
-        match = _GITHUB_REPO_RE.search(str(git_url))
-        repo = match.group(1) if match else None
-        _POD_REPO_CACHE[pod_name] = repo or False
-        return repo
-    except Exception:
-        return None
-
-
-def extract_ios_components(app_dic):
-    """Extract iOS SBOM strings and structured OSV components."""
+def extract_ios_sbom(app_dic):
+    """Extract sorted list of versioned iOS SBOM packages."""
     scan_dir = app_dic.get('app_root') or app_dic.get('app_dir')
     if not scan_dir:
-        return [], []
+        return []
     root = Path(scan_dir)
     app_dir = Path(app_dic.get('app_dir', scan_dir))
     versioned = set()
-    components = {}
-    pods_to_resolve = set()
 
-    def _add(ecosystem, pkg, version, display=None):
-        version = version.strip()
-        if not pkg or not _valid_version(version):
-            return
-        versioned.add(f'{display or pkg}@{version}')
-        components[(ecosystem, pkg, version)] = {
-            'ecosystem': ecosystem,
-            'name': pkg,
-            'version': version,
-            'display': display or pkg,
-        }
-
-    def _add_repo(repo, version, display_name=None):
+    def _add(pkg, version):
         version = version.strip().lstrip('v')
-        if not repo or not _valid_version(version):
-            return
-        disp = display_name or repo
-        versioned.add(f'{disp}@{version}')
-        for eco, qname, qver in (
-            ('SwiftURL', f'github.com/{repo}', version),
-            ('GIT', f'https://github.com/{repo}', version),
-            ('GIT', f'https://github.com/{repo}', f'v{version}'),
-        ):
-            components[(eco, qname, qver)] = {
-                'ecosystem': eco,
-                'name': qname,
-                'version': qver,
-                'display': disp,
-                'installed_version': version,
-            }
+        if pkg and _valid_version(version):
+            versioned.add(f'{pkg}@{version}')
 
     # 1. Embedded .framework/Info.plist inside IPA
     if root.exists():
@@ -381,12 +261,8 @@ def extract_ios_components(app_dic):
                     plist_obj.get('CFBundleShortVersionString')
                     or plist_obj.get('CFBundleVersion')
                     or '').strip()
-                if (not fw_name
-                        or fw_name in {'App', 'Flutter'}
-                        or not _valid_version(ver)):
-                    continue
-                versioned.add(f'{fw_name}@{ver}')
-                pods_to_resolve.add((fw_name, ver))
+                if fw_name and fw_name not in {'App', 'Flutter'}:
+                    _add(fw_name, ver)
             except Exception:
                 continue
 
@@ -403,10 +279,7 @@ def extract_ios_components(app_dic):
                     break
                 match = _PODFILE_LOCK_ITEM_RE.match(line)
                 if match:
-                    pod_name, ver = match.group(1), match.group(2)
-                    if _valid_version(ver):
-                        versioned.add(f'{pod_name}@{ver}')
-                        pods_to_resolve.add((pod_name, ver))
+                    _add(match.group(1), match.group(2))
 
         for pkg_res in search_root.rglob('Package.resolved'):
             text = _safe_read_text(search_root, pkg_res)
@@ -424,17 +297,15 @@ def extract_ios_components(app_dic):
                         or pin.get('repositoryURL')
                         or '')
                     state = pin.get('state') or {}
-                    ver = state.get('version') or ''
+                    ver = str(state.get('version') or '')
                     ident = (
                         pin.get('identity')
                         or pin.get('package')
                         or '')
                     match = _GITHUB_REPO_RE.search(str(loc))
-                    if match and ver:
-                        _add_repo(
-                            match.group(1),
-                            str(ver),
-                            display_name=ident or match.group(1))
+                    name = ident or (match.group(1) if match else '')
+                    if name and ver:
+                        _add(name, ver)
             except Exception:
                 continue
 
@@ -445,193 +316,16 @@ def extract_ios_components(app_dic):
             for line in text.splitlines():
                 match = _CARTFILE_RESOLVED_RE.match(line)
                 if match:
-                    _add_repo(match.group(1), match.group(2))
+                    _add(match.group(1), match.group(2))
 
         _extract_cross_platform_lockfiles(search_root, _add)
 
-    # Check connectivity at most once per scan and cap uncached CDN lookups
-    uncached = [p for p, _ in pods_to_resolve if p not in _POD_REPO_CACHE]
-    online = bool(
-        uncached
-        and settings_enabled('SBOM_VULN_SCAN')
-        and is_internet_available())
-    cdn_calls = 0
-    deadline = time.monotonic() + _POD_CDN_DEADLINE_SECS
-
-    for pod_name, ver in sorted(pods_to_resolve):
-        was_cached = pod_name in _POD_REPO_CACHE
-        can_query_cdn = (
-            online
-            and cdn_calls < _MAX_POD_CDN_RESOLUTIONS
-            and time.monotonic() < deadline)
-        repo = _resolve_pod_github_repo(
-            pod_name,
-            online=was_cached or can_query_cdn)
-        if not was_cached and can_query_cdn:
-            cdn_calls += 1
-        if repo:
-            _add_repo(repo, ver, display_name=pod_name)
-
-    return sorted(versioned), list(components.values())
-
-
-def _extract_severity_and_fixed(vuln_detail, comp=None):
-    """Extract normalized MobSF severity and fixed version from OSV detail."""
-    db_spec = vuln_detail.get('database_specific') or {}
-    raw_sev = str(db_spec.get('severity') or '').upper()
-    comp_name = (comp or {}).get('name', '').lower()
-
-    matched_affected = []
-    all_affected = vuln_detail.get('affected') or ()
-    for aff in all_affected:
-        pkg_name = str((aff.get('package') or {}).get('name') or '').lower()
-        repos = [
-            str(r.get('repo') or '').lower().removesuffix('.git')
-            for r in (aff.get('ranges') or ())
-        ]
-        if (not comp_name
-                or pkg_name == comp_name
-                or comp_name in repos
-                or f'https://{comp_name}' in repos):
-            matched_affected.append(aff)
-    target_affected = matched_affected or all_affected
-
-    if not raw_sev:
-        for aff in target_affected:
-            eco_spec = aff.get('ecosystem_specific') or {}
-            if eco_spec.get('severity'):
-                raw_sev = str(eco_spec['severity']).upper()
-                break
-    if raw_sev in {'CRITICAL', 'HIGH'}:
-        severity = 'high'
-    elif raw_sev in {'MODERATE', 'MEDIUM'}:
-        severity = 'warning'
-    elif raw_sev == 'LOW':
-        severity = 'info'
-    else:
-        severity = 'warning'
-
-    fixed_versions = []
-    for aff in target_affected:
-        for rng in aff.get('ranges') or ():
-            if rng.get('type') == 'GIT':
-                continue
-            for ev in rng.get('events') or ():
-                fx = str(ev.get('fixed') or '').strip()
-                if fx and not _GIT_SHA_RE.match(fx) and fx not in fixed_versions:
-                    fixed_versions.append(fx)
-    fixed = ', '.join(fixed_versions[:3]) if fixed_versions else 'N/A'
-    return severity, fixed
-
-
-def check_osv_vulnerabilities(components):
-    """Query OSV.dev querybatch for vulnerable SBOM components."""
-    if (not components
-            or not settings_enabled('SBOM_VULN_SCAN')
-            or not is_internet_available()):
-        return []
-
-    batch = components[:_MAX_OSV_QUERIES]
-    payload = {
-        'queries': [
-            {
-                'package': {
-                    'ecosystem': c['ecosystem'],
-                    'name': c['name'],
-                },
-                'version': c['version'],
-            }
-            for c in batch
-        ],
-    }
-
-    try:
-        proxies, verify = upstream_proxy('https')
-        resp = requests.post(
-            settings.OSV_BATCH_URL,
-            json=payload,
-            timeout=15,
-            proxies=proxies,
-            verify=verify)
-        if resp.status_code != 200:
-            logger.warning(
-                'OSV querybatch returned HTTP %s', resp.status_code)
-            return []
-        results = (resp.json() or {}).get('results') or []
-    except Exception:
-        logger.exception('Failed to query OSV.dev batch API')
-        return []
-
-    vuln_details_cache = {}
-    findings = []
-    seen_pkg_vulns = set()
-
-    for comp, res in zip(batch, results):
-        for vuln_stub in res.get('vulns') or ():
-            vid = str(vuln_stub.get('id') or '').strip()
-            if not _VALID_OSV_ID_RE.match(vid):
-                continue
-            disp_pkg = comp.get('display') or comp['name']
-            inst_ver = comp.get('installed_version') or comp['version']
-            if (disp_pkg, inst_ver, vid) in seen_pkg_vulns:
-                continue
-
-            if (vid not in vuln_details_cache
-                    and len(vuln_details_cache) < _MAX_OSV_VULN_FETCH):
-                try:
-                    vresp = requests.get(
-                        f'{settings.OSV_VULN_URL}{vid}',
-                        timeout=10,
-                        proxies=proxies,
-                        verify=verify)
-                    if vresp.status_code == 200:
-                        vuln_details_cache[vid] = vresp.json()
-                    else:
-                        vuln_details_cache[vid] = {}
-                except Exception:
-                    vuln_details_cache[vid] = {}
-
-            detail = vuln_details_cache.get(vid) or {}
-            aliases = [
-                str(a) for a in (detail.get('aliases') or ())
-                if isinstance(a, str)
-            ]
-            # Deduplicate if the same CVE/GHSA was already reported via alias
-            canonical_ids = {vid, *aliases}
-            if any(
-                (disp_pkg, inst_ver, cid) in seen_pkg_vulns
-                for cid in canonical_ids
-            ):
-                continue
-            for cid in canonical_ids:
-                seen_pkg_vulns.add((disp_pkg, inst_ver, cid))
-
-            severity, fixed = _extract_severity_and_fixed(detail, comp)
-            summary = (
-                detail.get('summary')
-                or (detail.get('details') or '')[:200]
-                or 'Known vulnerability reported in OSV database.')
-
-            findings.append({
-                'package': disp_pkg,
-                'version': inst_ver,
-                'ecosystem': comp['ecosystem'],
-                'id': vid,
-                'aliases': aliases,
-                'severity': severity,
-                'summary': summary,
-                'fixed': fixed,
-            })
-
-    return findings
+    return sorted(versioned)
 
 
 def ios_sbom(app_dic):
-    """Extract iOS SBOM and run OSV vulnerability scan."""
-    versioned, components = extract_ios_components(app_dic)
-    vulns = check_osv_vulnerabilities(components)
+    """Extract iOS SBOM dictionary."""
     return {
-        'sbom_versioned': versioned,
+        'sbom_versioned': extract_ios_sbom(app_dic),
         'sbom_packages': [],
-        'sbom_vulnerabilities': vulns,
     }

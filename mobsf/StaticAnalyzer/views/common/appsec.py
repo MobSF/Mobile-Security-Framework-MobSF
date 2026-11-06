@@ -181,29 +181,6 @@ def common_fields(findings, data):
                     'during static analysis.'),
                 'section': 'trackers',
             })
-    # SBOM Supply Chain Vulnerabilities
-    sbom_data = data.get('sbom') or {}
-    if isinstance(sbom_data, dict):
-        for vuln in sbom_data.get('sbom_vulnerabilities') or ():
-            sev = vuln.get('severity', 'warning')
-            if sev not in {'high', 'warning', 'info'}:
-                sev = 'warning'
-            pkg = vuln.get('package', '')
-            ver = vuln.get('version', '')
-            vid = vuln.get('id', '')
-            aliases = ', '.join(vuln.get('aliases') or ())
-            fixed = vuln.get('fixed', 'N/A')
-            summary = vuln.get('summary', '')
-            id_str = f'{vid} ({aliases})' if aliases else vid
-            findings[sev].append({
-                'title': f'Vulnerable dependency: {pkg}@{ver} ({vid})',
-                'description': (
-                    f'{summary}\n'
-                    f'Vulnerability ID: {id_str}\n'
-                    f'Installed Version: {ver}\n'
-                    f'Fixed Version: {fixed}'),
-                'section': 'supply_chain',
-            })
     # Possible Hardcoded Secrets
     secrets = data['secrets']
     if len(secrets) > 1:

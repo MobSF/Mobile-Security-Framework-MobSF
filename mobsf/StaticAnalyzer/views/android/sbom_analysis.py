@@ -6,8 +6,7 @@ from mobsf.MobSF.utils import (
     PKG_REGEX,
 )
 from mobsf.StaticAnalyzer.views.common.sbom import (
-    check_osv_vulnerabilities,
-    extract_android_components,
+    extract_android_sbom,
 )
 
 
@@ -44,15 +43,12 @@ def extract_packages(file_data):
 
 def android_sbom(app_dir):
     """Extract SBOM from files."""
-    versioned, _ = extract_android_components(app_dir)
-    return versioned
+    return extract_android_sbom(app_dir)
 
 
 def sbom(app_dir, file_data):
-    """Extract SBOM from version files, build manifests, and OSV database."""
-    versioned, components = extract_android_components(app_dir)
+    """Extract SBOM from version files, build manifests, and source code."""
     return {
-        'sbom_versioned': versioned,
+        'sbom_versioned': extract_android_sbom(app_dir),
         'sbom_packages': extract_packages(file_data),
-        'sbom_vulnerabilities': check_osv_vulnerabilities(components),
     }

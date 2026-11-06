@@ -138,9 +138,6 @@ URLHAUS_DOMAINS_URL = (
 URLHAUS_IPS_URL = (
     'https://malware-filter.gitlab.io/malware-filter/'
     'urlhaus-filter-dnscrypt-blocked-ips.txt')
-OSV_BATCH_URL = 'https://api.osv.dev/v1/querybatch'
-OSV_VULN_URL = 'https://api.osv.dev/v1/vulns/'
-COCOAPODS_CDN_URL = 'https://cdn.cocoapods.org'
 VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/api/v3/files'
 EXODUS_URL = 'https://reports.exodus-privacy.eu.org'
 APPMONSTA_URL = 'https://api.appmonsta.com/v1/stores/android/details/'
@@ -476,7 +473,6 @@ else:
     # --------------------------
 
     DOMAIN_MALWARE_SCAN = os.getenv('MOBSF_DOMAIN_MALWARE_SCAN', '1') == '1'
-    SBOM_VULN_SCAN = os.getenv('MOBSF_SBOM_VULN_SCAN', '1') == '1'
     APKID_ENABLED = os.getenv('MOBSF_APKID_ENABLED', '1') == '1'
     # ==================================================
     # ======WINDOWS STATIC ANALYSIS SETTINGS ===========
