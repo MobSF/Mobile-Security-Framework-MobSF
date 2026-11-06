@@ -16,6 +16,7 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
+from mobsf.MobSF.security import is_pipe_or_link
 from mobsf.MobSF.utils import (
     append_scan_status,
     file_size,
@@ -414,7 +415,10 @@ def src_analysis(request, app_dic, rescan, api):
                 request,
                 'Permission Denied',
                 False)
-        if valid and (pro_type in ['eclipse', 'studio']):
+        if valid and (pro_type in ['eclipse', 'studio', 'flutter']):
+            if pro_type == 'flutter':
+                # Scan the standard android/ module in place
+                app_dic['app_dir'] = Path(app_dic['app_dir']) / 'android'
             if settings.ASYNC_ANALYSIS:
                 return async_analysis(
                     checksum,
@@ -465,6 +469,18 @@ def move_to_parent(inside_path, app_path):
     shutil.rmtree(inside_path)
 
 
+def is_flutter_source(app_path):
+    """Detect a Flutter project by its standard layout.
+
+    A pubspec.yaml at the root and the Android app as a Gradle/Studio
+    project in android/.
+    """
+    android = app_path / 'android'
+    return ((app_path / 'pubspec.yaml').is_file()
+            and not is_pipe_or_link(android)
+            and is_android_source(android)[0] == 'studio')
+
+
 def valid_source_code(checksum, app_dir):
     """Test if this is a valid source code zip."""
     try:
@@ -478,6 +494,10 @@ def valid_source_code(checksum, app_dir):
         if ide:
             return ide, is_and
 
+        # Flutter Source
+        if is_flutter_source(app_path):
+            return 'flutter', True
+
         # Relaxed Android Source check, one level down
         for subdir in app_path.iterdir():
             if subdir.is_dir() and subdir.exists():
@@ -485,6 +505,10 @@ def valid_source_code(checksum, app_dir):
                 if ide:
                     move_to_parent(subdir, app_path)
                     return ide, is_and
+                # Flutter project in a wrapper folder
+                if is_flutter_source(subdir):
+                    move_to_parent(subdir, app_path)
+                    return 'flutter', True
 
         # iOS Source
         xcode = [f for f in app_path.iterdir() if f.suffix == '.xcodeproj']
@@ -502,3 +526,4 @@ def valid_source_code(checksum, app_dir):
         msg = 'Error identifying source code type from zip'
         logger.exception(msg)
         append_scan_status(checksum, msg, repr(exp))
+        return '', False

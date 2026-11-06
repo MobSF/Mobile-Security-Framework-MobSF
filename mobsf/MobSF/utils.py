@@ -1103,7 +1103,7 @@ def get_android_src_dir(app_dir, typ):
     src = None
     if typ in ('apk', 'jar', 'aar', 'dex'):
         src = app_dir / 'java_source'
-    elif typ == 'studio':
+    elif typ in {'studio', 'flutter'}:
         src = app_dir / 'app' / 'src' / 'main' / 'java'
         kt = app_dir / 'app' / 'src' / 'main' / 'kotlin'
         if not src.exists() and kt.exists():
