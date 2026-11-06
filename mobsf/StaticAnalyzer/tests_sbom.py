@@ -66,7 +66,7 @@ class SBOMAndOSVTests(SimpleTestCase):
                 'commons-logging:commons-logging:jar:1.2\n',
                 encoding='utf-8')
 
-            # 5. Multiline libs.versions.toml catalog
+            # 5. Multiline libs.versions.toml, gradle.lockfile, pubspec.lock
             gradle_dir = root / 'gradle'
             gradle_dir.mkdir()
             (gradle_dir / 'libs.versions.toml').write_text(
@@ -74,20 +74,15 @@ class SBOMAndOSVTests(SimpleTestCase):
                 '[libraries]\nretrofit = { module = '
                 '"com.squareup.retrofit2:retrofit", version.ref = "retrofit" }\n',
                 encoding='utf-8')
-
-            # 6. SDK files under java_source (bypassed by SKIP_CLASS_PATH)
-            okhttp_dir = root / 'java_source' / 'okhttp3' / 'internal'
-            okhttp_dir.mkdir(parents=True)
-            (okhttp_dir / 'Util.java').write_text(
-                'package okhttp3.internal;\nString ua = "okhttp/3.14.9";\n',
+            (root / 'gradle.lockfile').write_text(
+                'com.google.code.gson:gson:2.8.6=compileClasspath\n',
                 encoding='utf-8')
-            gson_dir = root / 'java_source' / 'com' / 'google' / 'gson'
-            gson_dir.mkdir(parents=True)
-            (gson_dir / 'Gson.java').write_text(
-                'package com.google.gson;\nString v = "GSON 2.8.6";\n',
+            (root / 'pubspec.lock').write_text(
+                'packages:\n  http:\n    dependency: "direct main"\n'
+                '    version: "0.13.3"\n',
                 encoding='utf-8')
 
-            versioned, components = extract_android_components(root, [])
+            versioned, components = extract_android_components(root)
             self.assertIn(
                 'androidx.activity:activity-ktx@1.8.0', versioned)
             self.assertIn(
@@ -108,8 +103,8 @@ class SBOMAndOSVTests(SimpleTestCase):
                 'commons-logging:commons-logging@1.2', versioned)
             self.assertIn(
                 'com.squareup.retrofit2:retrofit@2.9.0', versioned)
-            self.assertIn('com.squareup.okhttp3:okhttp@3.14.9', versioned)
             self.assertIn('com.google.code.gson:gson@2.8.6', versioned)
+            self.assertIn('http@0.13.3', versioned)
             # Corrupted lproj entry must not be present
             self.assertFalse(
                 any('0d2e225546bdb069e583c5af4d824d75' in v for v in versioned))
@@ -156,8 +151,14 @@ class SBOMAndOSVTests(SimpleTestCase):
                 }],
             }), encoding='utf-8')
 
-            versioned, components = extract_ios_components(
-                {'app_root': root.as_posix(), 'app_dir': tmp})
+            with mock.patch(
+                'mobsf.StaticAnalyzer.views.common.sbom.'
+                '_resolve_pod_github_repo',
+                side_effect=lambda name, online=True: (
+                    'Alamofire/Alamofire' if name == 'Alamofire' else None),
+            ):
+                versioned, components = extract_ios_components(
+                    {'app_root': root.as_posix(), 'app_dir': tmp})
             self.assertIn('Alamofire@5.12.0', versioned)
             self.assertIn('vapor@4.50.0', versioned)
             self.assertFalse(any(v.startswith('Flutter@') for v in versioned))

@@ -42,15 +42,15 @@ def extract_packages(file_data):
     return sorted(packages)
 
 
-def android_sbom(app_dir, file_data=None):
+def android_sbom(app_dir):
     """Extract SBOM from files."""
-    versioned, _ = extract_android_components(app_dir, file_data)
+    versioned, _ = extract_android_components(app_dir)
     return versioned
 
 
 def sbom(app_dir, file_data):
-    """Extract SBOM from version files, source code, and OSV database."""
-    versioned, components = extract_android_components(app_dir, file_data)
+    """Extract SBOM from version files, build manifests, and OSV database."""
+    versioned, components = extract_android_components(app_dir)
     return {
         'sbom_versioned': versioned,
         'sbom_packages': extract_packages(file_data),

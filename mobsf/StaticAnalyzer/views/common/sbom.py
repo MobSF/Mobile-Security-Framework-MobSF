@@ -29,14 +29,6 @@ _MAX_OSV_QUERIES = 1000
 _MAX_OSV_VULN_FETCH = 40
 _MAX_POD_CDN_RESOLUTIONS = 25
 _POD_CDN_DEADLINE_SECS = 15.0
-_SDK_FINGERPRINT_FILENAMES = {
-    'util.java', 'util.smali', '_utilcommonkt.smali',
-    'bridgeinterceptor.java', 'bridgeinterceptor.smali',
-    'realconnection.java', 'realconnection.smali',
-    'version.java', 'version.smali',
-    'gson.java', 'gson.smali',
-    'reflectionhelper.java', 'reflectionhelper.smali',
-}
 _VALID_VERSION_RE = re.compile(r'^[0-9][0-9A-Za-z._+-]{0,63}$')
 _VALID_OSV_ID_RE = re.compile(r'^[A-Za-z0-9._-]{3,64}$')
 _GIT_SHA_RE = re.compile(r'^[0-9a-fA-F]{20,64}$')
@@ -44,6 +36,8 @@ _POM_DEP_LINE_RE = re.compile(
     r'([A-Za-z0-9_.-]+):([A-Za-z0-9_.-]+):(?:jar|aar):([0-9][0-9A-Za-z._+-]*)')
 _GRADLE_COORD_RE = re.compile(
     r'["\']([A-Za-z0-9_.-]+):([A-Za-z0-9_.-]+):([0-9][0-9A-Za-z._+-]+)["\']')
+_GRADLE_LOCK_LINE_RE = re.compile(
+    r'^\s*([A-Za-z0-9_.-]+):([A-Za-z0-9_.-]+):([0-9][0-9A-Za-z._+-]*)=')
 _TOML_VERSION_REF_RE = re.compile(
     r'^\s*([A-Za-z0-9_.-]+)\s*=\s*["\']([0-9][0-9A-Za-z._+-]+)["\']',
     re.MULTILINE)
@@ -54,76 +48,19 @@ _TOML_GROUP_NAME_RE = re.compile(
     r'group\s*=\s*["\']([A-Za-z0-9_.-]+)["\'][^}\n]*?'
     r'name\s*=\s*["\']([A-Za-z0-9_.-]+)["\'][^}\n]*?'
     r'version(?:\.ref)?\s*=\s*["\']([A-Za-z0-9_.-]+)["\']')
-_OKHTTP_VER_RE = re.compile(r'\bokhttp/([0-9]+\.[0-9]+\.[0-9]+)\b')
-_GSON_VER_RE = re.compile(r'\bGSON\s+([0-9]+\.[0-9]+\.[0-9]+)\b')
 _PODFILE_LOCK_ITEM_RE = re.compile(
     r'^  - ([A-Za-z0-9_+-]+)(?:/[A-Za-z0-9_+-]+)* \(([0-9][0-9A-Za-z._+-]*)\)')
 _CARTFILE_RESOLVED_RE = re.compile(
     r'^\s*github\s+"([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)"\s+"v?([0-9][0-9A-Za-z._+-]*)"')
 _GITHUB_REPO_RE = re.compile(
     r'github\.com[:/]([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?)(?:\.git)?/?$')
+_PUBSPEC_LOCK_PKG_RE = re.compile(
+    r'^  ([a-zA-Z0-9_]+):\n(?:    [^\n]+\n)*?    version: "([0-9][0-9A-Za-z._+-]*)"',
+    re.MULTILINE)
 
-# Common iOS/CocoaPods frameworks to GitHub repositories for offline/fast OSV
-_KNOWN_IOS_REPOS = {
-    'AFNetworking': 'AFNetworking/AFNetworking',
-    'Alamofire': 'Alamofire/Alamofire',
-    'CocoaLumberjack': 'CocoaLumberjack/CocoaLumberjack',
-    'DTPagerController': 'tungvoduc/DTPagerController',
-    'FSCalendar': 'WenchaoD/FSCalendar',
-    'FirebaseAnalytics': 'firebase/firebase-ios-sdk',
-    'FirebaseAuth': 'firebase/firebase-ios-sdk',
-    'FirebaseCore': 'firebase/firebase-ios-sdk',
-    'FirebaseCoreExtension': 'firebase/firebase-ios-sdk',
-    'FirebaseCoreInternal': 'firebase/firebase-ios-sdk',
-    'FirebaseCrashlytics': 'firebase/firebase-ios-sdk',
-    'FirebaseFirestore': 'firebase/firebase-ios-sdk',
-    'FirebaseInstallations': 'firebase/firebase-ios-sdk',
-    'FirebaseMessaging': 'firebase/firebase-ios-sdk',
-    'FirebaseRemoteConfig': 'firebase/firebase-ios-sdk',
-    'FirebaseRemoteConfigInterop': 'firebase/firebase-ios-sdk',
-    'FirebaseSessions': 'firebase/firebase-ios-sdk',
-    'FirebaseStorage': 'firebase/firebase-ios-sdk',
-    'GoogleDataTransport': 'google/GoogleDataTransport',
-    'GoogleSignIn': 'google/GoogleSignIn-iOS',
-    'GoogleUtilities': 'google/GoogleUtilities',
-    'HMSegmentedControl': 'HeshamMegid/HMSegmentedControl',
-    'IQKeyboardManager': 'hackiftekhar/IQKeyboardManager',
-    'IQKeyboardManagerSwift': 'hackiftekhar/IQKeyboardManager',
-    'JWTDecode': 'auth0/JWTDecode.swift',
-    'KeychainAccess': 'kishikawakatsumi/KeychainAccess',
-    'Kingfisher': 'onevcat/Kingfisher',
-    'Lottie': 'airbnb/lottie-ios',
-    'MBProgressHUD': 'jdg/MBProgressHUD',
-    'MSAL': 'AzureAD/microsoft-authentication-library-for-objc',
-    'Moya': 'Moya/Moya',
-    'ObjectMapper': 'tristanhimmelman/ObjectMapper',
-    'OneSignal': 'OneSignal/OneSignal-iOS-SDK',
-    'Promises': 'google/promises',
-    'FBLPromises': 'google/promises',
-    'Reachability': 'ashleymills/Reachability.swift',
-    'Realm': 'realm/realm-swift',
-    'RealmSwift': 'realm/realm-swift',
-    'RxCocoa': 'ReactiveX/RxSwift',
-    'RxSwift': 'ReactiveX/RxSwift',
-    'SDWebImage': 'SDWebImage/SDWebImage',
-    'SDWebImageSwiftUI': 'SDWebImage/SDWebImageSwiftUI',
-    'SVProgressHUD': 'SVProgressHUD/SVProgressHUD',
-    'SnapKit': 'SnapKit/SnapKit',
-    'SocketIO': 'socketio/socket.io-client-swift',
-    'Starscream': 'daltoniam/Starscream',
-    'SwiftProtobuf': 'apple/swift-protobuf',
-    'SwiftSoup': 'scinfu/SwiftSoup',
-    'SwiftyJSON': 'SwiftyJSON/SwiftyJSON',
-    'SwiftyRSA': 'TakeScoop/SwiftyRSA',
-    'TrustKit': 'datatheorem/TrustKit',
-    'Vapor': 'vapor/vapor',
-    'XMLCoder': 'CoreOffice/XMLCoder',
-    'nanopb': 'nanopb/nanopb',
-    'netfox': 'kasketis/netfox',
-}
-# Cache only confirmed pod -> repo (or explicit 404/no-git False); transient
-# network errors are not cached so subsequent scans retry when online.
-_POD_REPO_CACHE = dict(_KNOWN_IOS_REPOS)
+# Cache only confirmed pod -> repo (or explicit 404/no-git False) discovered
+# via the official CocoaPods Specs index; transient errors are not cached.
+_POD_REPO_CACHE = {}
 
 
 def _safe_read_text(root, path):
@@ -162,19 +99,41 @@ def _parse_version_stem(stem):
     return '', ''
 
 
-def _scan_sdk_fingerprint_text(lower_path, content, add_fn):
-    """Scan a single file's content for OkHttp and Gson version strings."""
-    if ('okhttp' in lower_path or 'bridgeinterceptor' in lower_path
-            or 'realconnection' in lower_path or 'util' in lower_path
-            or 'version' in lower_path):
-        for match in _OKHTTP_VER_RE.finditer(content):
-            add_fn('Maven', 'com.squareup.okhttp3:okhttp', match.group(1))
-    if 'gson' in lower_path or 'reflectionhelper' in lower_path:
-        for match in _GSON_VER_RE.finditer(content):
-            add_fn('Maven', 'com.google.code.gson:gson', match.group(1))
+def _extract_cross_platform_lockfiles(root, add_fn):
+    """Extract standard Dart/Flutter (pubspec.lock) and npm (package-lock.json)."""
+    for publock in root.rglob('pubspec.lock'):
+        text = _safe_read_text(root, publock)
+        if not text:
+            continue
+        for pkg, ver in _PUBSPEC_LOCK_PKG_RE.findall(text):
+            add_fn('Pub', pkg, ver)
+
+    for pkglock in root.rglob('package-lock.json'):
+        if 'node_modules' in pkglock.parts:
+            continue
+        text = _safe_read_text(root, pkglock)
+        if not text:
+            continue
+        try:
+            obj = json.loads(text)
+            deps = obj.get('dependencies') or {}
+            for pkg, meta in deps.items():
+                if isinstance(meta, dict) and meta.get('version'):
+                    add_fn('npm', pkg, str(meta['version']))
+            packages = obj.get('packages') or {}
+            for pkg_path, meta in packages.items():
+                if (not pkg_path.startswith('node_modules/')
+                        or not isinstance(meta, dict)
+                        or not meta.get('version')):
+                    continue
+                pkg = pkg_path.split('node_modules/')[-1]
+                if pkg:
+                    add_fn('npm', pkg, str(meta['version']))
+        except Exception:
+            continue
 
 
-def extract_android_components(app_dir, file_data=None):
+def extract_android_components(app_dir):
     """Extract Android SBOM strings and structured OSV components."""
     root = Path(app_dir)
     versioned = set()
@@ -200,7 +159,7 @@ def extract_android_components(app_dir, file_data=None):
     if not root.exists():
         return [], []
 
-    # 1. META-INF/*.version
+    # 1. META-INF/*.version (standard Gradle/Jetpack/KotlinX version files)
     for vfile in root.rglob('*.version'):
         if 'META-INF' not in vfile.parts:
             continue
@@ -213,7 +172,7 @@ def extract_android_components(app_dir, file_data=None):
         if group and name:
             _add('Maven', f'{group}:{name}', version)
 
-    # 2. pom.properties and Google Play / Firebase client .properties
+    # 2. Standard pom.properties and client .properties
     for pfile in root.rglob('*.properties'):
         if 'apktool_out' in pfile.parts or 'java_source' in pfile.parts:
             continue
@@ -250,7 +209,7 @@ def extract_android_components(app_dir, file_data=None):
                 continue
             _add('Maven', f'{group}:{client}', ver)
 
-    # 3. META-INF/DEPENDENCIES
+    # 3. META-INF/DEPENDENCIES (standard Maven Shade/Assembly manifest)
     for dep_file in root.rglob('DEPENDENCIES'):
         if 'META-INF' not in dep_file.parts or 'apktool_out' in dep_file.parts:
             continue
@@ -261,7 +220,7 @@ def extract_android_components(app_dir, file_data=None):
             g, a, v = match.group(1), match.group(2), match.group(3)
             _add('Maven', f'{g}:{a}', v)
 
-    # 4. Gradle version catalogs and build.gradle(.kts) for source ZIPs
+    # 4. Source build manifests: *.versions.toml, build.gradle(.kts), gradle.lockfile
     for toml_file in root.rglob('*.versions.toml'):
         text = _safe_read_text(root, toml_file)
         if not text:
@@ -281,35 +240,24 @@ def extract_android_components(app_dir, file_data=None):
         for g, a, v in _GRADLE_COORD_RE.findall(text):
             _add('Maven', f'{g}:{a}', v)
 
-    # 5. Embedded SDK version constants in decompiled code (OkHttp & Gson)
-    for item in file_data or ():
-        if not isinstance(item, (tuple, list)) or len(item) < 2:
+    for lockfile in root.rglob('*gradle.lockfile'):
+        text = _safe_read_text(root, lockfile)
+        if not text:
             continue
-        fpath, content = item[0], item[1]
-        if isinstance(content, str):
-            _scan_sdk_fingerprint_text(fpath.lower(), content, _add)
+        for line in text.splitlines():
+            match = _GRADLE_LOCK_LINE_RE.match(line)
+            if match:
+                g, a, v = match.group(1), match.group(2), match.group(3)
+                _add('Maven', f'{g}:{a}', v)
 
-    # Also scan targeted SDK files in java_source / smali_source directly
-    # because SKIP_CLASS_PATH excludes okhttp3/ and com/google/ from file_data.
-    for sub in ('java_source', 'smali_source'):
-        src_sub = root / sub
-        if not src_sub.exists():
-            continue
-        for sdk_file in src_sub.rglob('*'):
-            if sdk_file.name.lower() not in _SDK_FINGERPRINT_FILENAMES:
-                continue
-            lower_rel = sdk_file.as_posix().lower()
-            if not ('okhttp' in lower_rel or 'gson' in lower_rel):
-                continue
-            text = _safe_read_text(root, sdk_file)
-            if text:
-                _scan_sdk_fingerprint_text(lower_rel, text, _add)
+    # 5. Cross-platform lockfiles (pubspec.lock, package-lock.json)
+    _extract_cross_platform_lockfiles(root, _add)
 
     return sorted(versioned), list(components.values())
 
 
 def _resolve_pod_github_repo(pod_name, online=True):
-    """Resolve a CocoaPod name to 'org/repo' on GitHub using cache or CDN."""
+    """Resolve a CocoaPod name to 'org/repo' via the official CocoaPods CDN."""
     if pod_name in _POD_REPO_CACHE:
         return _POD_REPO_CACHE[pod_name] or None
     if (not online
@@ -376,6 +324,18 @@ def extract_ios_components(app_dic):
     components = {}
     pods_to_resolve = set()
 
+    def _add(ecosystem, pkg, version, display=None):
+        version = version.strip()
+        if not pkg or not _valid_version(version):
+            return
+        versioned.add(f'{display or pkg}@{version}')
+        components[(ecosystem, pkg, version)] = {
+            'ecosystem': ecosystem,
+            'name': pkg,
+            'version': version,
+            'display': display or pkg,
+        }
+
     def _add_repo(repo, version, display_name=None):
         version = version.strip().lstrip('v')
         if not repo or not _valid_version(version):
@@ -430,7 +390,7 @@ def extract_ios_components(app_dic):
             except Exception:
                 continue
 
-    # 2. Podfile.lock, Package.resolved, Cartfile.resolved in source ZIPs
+    # 2. Podfile.lock, Package.resolved, Cartfile.resolved, and cross-platform locks
     for search_root in {root, app_dir}:
         if not search_root.exists():
             continue
@@ -486,6 +446,8 @@ def extract_ios_components(app_dic):
                 match = _CARTFILE_RESOLVED_RE.match(line)
                 if match:
                     _add_repo(match.group(1), match.group(2))
+
+        _extract_cross_platform_lockfiles(search_root, _add)
 
     # Check connectivity at most once per scan and cap uncached CDN lookups
     uncached = [p for p, _ in pods_to_resolve if p not in _POD_REPO_CACHE]
