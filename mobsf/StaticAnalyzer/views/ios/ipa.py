@@ -57,6 +57,9 @@ from mobsf.StaticAnalyzer.views.common.firebase import (
 from mobsf.StaticAnalyzer.views.common.appsec import (
     get_ios_dashboard,
 )
+from mobsf.StaticAnalyzer.views.common.sbom import (
+    ios_sbom,
+)
 from mobsf.StaticAnalyzer.views.common.async_task import (
     async_analysis,
     mark_task_completed,
@@ -200,6 +203,7 @@ def common_firebase_and_trackers(code_dict, app_dic, checksum):
     deps = get_embedded_framework_deps(app_dic)
     code_dict['trackers'] = trk.get_trackers_domains_or_deps(
         code_dict['domains'], deps)
+    code_dict['sbom'] = ios_sbom(app_dic)
 
 
 def get_scan_subject(app_dic, bin_dict):

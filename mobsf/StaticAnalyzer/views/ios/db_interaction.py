@@ -77,6 +77,7 @@ def get_context_from_db_entry(db_entry):
             'secrets': sort_secrets(
                 python_list(entry.SECRETS)),
             'trackers': python_dict(entry.TRACKERS),
+            'sbom': python_dict(entry.SBOM),
             'logs': get_scan_logs(entry.MD5),
         }
         return context
@@ -141,6 +142,7 @@ def get_context_from_analysis(app_dict,
             'appstore_details': app_dict['appstore'],
             'secrets': sort_secrets(app_dict['secrets']),
             'trackers': code_dict['trackers'],
+            'sbom': code_dict.get('sbom', {}),
             'logs': get_scan_logs(app_dict['md5_hash']),
         }
         return context
@@ -197,6 +199,7 @@ def save_or_update(update_type,
             'APPSTORE_DETAILS': app_dict['appstore'],
             'SECRETS': app_dict['secrets'],
             'TRACKERS': code_dict['trackers'],
+            'SBOM': code_dict.get('sbom', {}),
         }
         if update_type == 'save':
             db_entry = StaticAnalyzerIOS.objects.filter(
