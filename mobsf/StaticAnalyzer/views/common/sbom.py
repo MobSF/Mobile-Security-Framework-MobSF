@@ -23,12 +23,12 @@ _GRADLE_LOCK_LINE_RE = re.compile(
 _PODFILE_LOCK_ITEM_RE = re.compile(
     r'^ {2}- ([\w.+-]+)(?:/[\w.+-]+)* \((\d[\w.+-]*)\)', re.ASCII)
 _CARTFILE_RESOLVED_RE = re.compile(
-    r'^\s*github\s+"([\w.-]+/[\w.-]+)"\s+"v?(\d[\w.+-]*)"', re.ASCII)
+    r'^\s*(github|git)\s+"([^"\n]{1,256})"\s+"v?(\d[\w.+-]*)"', re.ASCII)
 _GITHUB_REPO_RE = re.compile(
     r'github\.com[:/]([\w.-]+/[\w.-]+?)(?:\.git)?/?$', re.ASCII)
-_PUBSPEC_LOCK_PKG_RE = re.compile(
-    r'^ {2}(\w+):\n(?: {4}[^\n]+\n)*? {4}version: "(\d[\w.+-]*)"',
-    re.ASCII | re.MULTILINE)
+_PUBSPEC_PKG_HEADER_RE = re.compile(r'^ {2}(\w+):$', re.ASCII)
+_PUBSPEC_PKG_VERSION_RE = re.compile(
+    r'^ {4}version:\s*["\']?(\d[\w.+-]*)["\']?$', re.ASCII)
 _CLIENT_PROP_GROUPS = {
     'integrity': 'com.google.android.play',
     'billing': 'com.android.billingclient',
@@ -56,10 +56,14 @@ def _safe_read_text(root, path):
 
 def _valid_version(version):
     """Return True if version is a valid concrete version string."""
+    if not isinstance(version, str):
+        return False
+    ver = version.strip()
     return bool(
-        isinstance(version, str)
-        and version != 'dynamic'
-        and _VALID_VERSION_RE.match(version.strip()))
+        ver
+        and ver != 'dynamic'
+        and not ver.endswith('+')
+        and _VALID_VERSION_RE.match(ver))
 
 
 def _parse_version_stem(stem):
@@ -139,6 +143,24 @@ def _parse_toml_catalog(text, add_fn):
         _parse_toml_library(lib, versions_map, add_fn)
 
 
+def _parse_pubspec_lock(text, add_fn):
+    """Parse Dart/Flutter pubspec.lock line by line without multiline regex."""
+    current_pkg = None
+    for line in text.splitlines():
+        if not line.startswith(' '):
+            current_pkg = None
+            continue
+        hdr = _PUBSPEC_PKG_HEADER_RE.match(line)
+        if hdr:
+            current_pkg = hdr.group(1)
+            continue
+        if current_pkg:
+            ver_match = _PUBSPEC_PKG_VERSION_RE.match(line)
+            if ver_match:
+                add_fn(current_pkg, ver_match.group(1))
+                current_pkg = None
+
+
 def _walk_npm_v1_deps(root_deps, add_fn):
     """Traverse top-level and nested v1 dependencies maps iteratively."""
     queue = [root_deps]
@@ -164,11 +186,19 @@ def _walk_npm_v2_packages(packages, add_fn):
     if not isinstance(packages, dict):
         return
     for pkg_path, meta in packages.items():
-        if (not pkg_path.startswith('node_modules/')
+        if (not isinstance(pkg_path, str)
                 or not isinstance(meta, dict)
                 or not meta.get('version')):
             continue
-        pkg = pkg_path.split('node_modules/')[-1]
+        if (not pkg_path.startswith('node_modules/')
+                and '/node_modules/' not in pkg_path):
+            continue
+        name = meta.get('name')
+        pkg = (
+            name.strip()
+            if isinstance(name, str) and name.strip()
+            else pkg_path.split('node_modules/')[-1]
+        )
         if pkg:
             add_fn(pkg, str(meta['version']))
 
@@ -177,10 +207,8 @@ def _extract_cross_platform_lockfiles(root, add_fn):
     """Extract standard Dart/Flutter (pubspec.lock) and npm (package-lock.json)."""
     for publock in root.rglob('pubspec.lock'):
         text = _safe_read_text(root, publock)
-        if not text:
-            continue
-        for pkg, ver in _PUBSPEC_LOCK_PKG_RE.findall(text):
-            add_fn(pkg, ver)
+        if text:
+            _parse_pubspec_lock(text, add_fn)
 
     for pkglock in root.rglob('package-lock.json'):
         if 'node_modules' in pkglock.parts:
@@ -341,17 +369,38 @@ def _parse_package_resolved(text, add_fn):
         return
     if not isinstance(obj, dict):
         return
-    pins = obj.get('pins') or (obj.get('object') or {}).get('pins') or ()
+    legacy_obj = obj.get('object')
+    pins = obj.get('pins')
+    if not isinstance(pins, list) and isinstance(legacy_obj, dict):
+        pins = legacy_obj.get('pins')
+    if not isinstance(pins, list):
+        return
     for pin in pins:
         if not isinstance(pin, dict):
             continue
+        state = pin.get('state')
+        if not isinstance(state, dict):
+            continue
         loc = str(pin.get('location') or pin.get('repositoryURL') or '')
-        ver = str((pin.get('state') or {}).get('version') or '')
+        ver = str(state.get('version') or '')
         ident = str(pin.get('identity') or pin.get('package') or '')
         match = _GITHUB_REPO_RE.search(loc)
         name = ident or (match.group(1) if match else '')
         if name and ver:
             add_fn(name, ver)
+
+
+def _normalize_cartfile_spec(kind, spec):
+    """Normalize a Cartfile.resolved dependency specifier."""
+    if kind == 'github':
+        return spec.strip().strip('/')
+    match = _GITHUB_REPO_RE.search(spec)
+    if match:
+        return match.group(1)
+    cleaned = spec.strip().removesuffix('.git').rstrip('/')
+    if '://' in cleaned:
+        cleaned = cleaned.split('://', 1)[1]
+    return cleaned
 
 
 def _extract_ios_lockfiles_in_dir(search_root, add_fn):
@@ -379,7 +428,8 @@ def _extract_ios_lockfiles_in_dir(search_root, add_fn):
         for line in text.splitlines():
             match = _CARTFILE_RESOLVED_RE.match(line)
             if match:
-                add_fn(match.group(1), match.group(2))
+                pkg = _normalize_cartfile_spec(match.group(1), match.group(2))
+                add_fn(pkg, match.group(3))
 
     _extract_cross_platform_lockfiles(search_root, add_fn)
 

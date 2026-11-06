@@ -75,6 +75,7 @@ class SBOMExtractionTests(SimpleTestCase):
             (root / 'build.gradle.kts').write_text(
                 'dependencies {\n'
                 '    implementation("javax.inject:javax.inject:1")\n'
+                '    implementation("com.example:dynamic-range:1.+")\n'
                 '}\n',
                 encoding='utf-8')
             (root / 'gradle.lockfile').write_text(
@@ -85,13 +86,23 @@ class SBOMExtractionTests(SimpleTestCase):
                 '    version: "0.13.3"\n',
                 encoding='utf-8')
             (root / 'package-lock.json').write_text(json.dumps({
-                'lockfileVersion': 1,
+                'lockfileVersion': 2,
                 'dependencies': {
                     'react-native': {
                         'version': '0.73.0',
                         'dependencies': {
                             'hermes-engine': {'version': '0.11.0'},
                         },
+                    },
+                },
+                'packages': {
+                    'node_modules/string-width-cjs': {
+                        'name': 'string-width',
+                        'version': '4.2.3',
+                    },
+                    'packages/mobile/node_modules/ metro': {
+                        'name': 'metro',
+                        'version': '0.80.0',
                     },
                 },
             }), encoding='utf-8')
@@ -119,10 +130,13 @@ class SBOMExtractionTests(SimpleTestCase):
                 'com.squareup.retrofit2:retrofit@2.9.0', versioned)
             self.assertIn('com.squareup.okhttp3:okhttp@4.12.0', versioned)
             self.assertIn('javax.inject:javax.inject@1', versioned)
+            self.assertNotIn('com.example:dynamic-range@1.+', versioned)
             self.assertIn('com.google.code.gson:gson@2.8.6', versioned)
             self.assertIn('http@0.13.3', versioned)
             self.assertIn('react-native@0.73.0', versioned)
             self.assertIn('hermes-engine@0.11.0', versioned)
+            self.assertIn('string-width@4.2.3', versioned)
+            self.assertIn('metro@0.80.0', versioned)
             # Corrupted lproj entry must not be present
             self.assertFalse(
                 any('0d2e225546bdb069e583c5af4d824d75' in v for v in versioned))
@@ -157,14 +171,20 @@ class SBOMExtractionTests(SimpleTestCase):
                     'CFBundleShortVersionString': '1.0',
                 }, fp)
 
-            # Package.resolved and Podfile.lock in source dir
+            # Package.resolved, Cartfile.resolved, and Podfile.lock in source dir
             (root / 'Package.resolved').write_text(json.dumps({
-                'pins': [{
-                    'identity': 'vapor',
-                    'location': 'https://github.com/vapor/vapor.git',
-                    'state': {'version': '4.50.0'},
-                }],
+                'pins': [
+                    {
+                        'identity': 'vapor',
+                        'location': 'https://github.com/vapor/vapor.git',
+                        'state': {'version': '4.50.0'},
+                    },
+                    {'state': 'invalid'},
+                ],
             }), encoding='utf-8')
+            (root / 'Cartfile.resolved').write_text(
+                'git "https://github.com/SnapKit/SnapKit.git" "5.7.1"\n',
+                encoding='utf-8')
             (root / 'Podfile.lock').write_text(
                 'PODS:\n  - SDWebImage/Core (5.21.7)\n'
                 '  - Socket.IO-Client-Swift/Core (16.1.0)\n'
@@ -175,6 +195,7 @@ class SBOMExtractionTests(SimpleTestCase):
                 {'app_root': root.as_posix(), 'app_dir': tmp})
             self.assertIn('Alamofire@5.12.0', versioned)
             self.assertIn('vapor@4.50.0', versioned)
+            self.assertIn('SnapKit/SnapKit@5.7.1', versioned)
             self.assertIn('SDWebImage@5.21.7', versioned)
             self.assertIn('Socket.IO-Client-Swift@16.1.0', versioned)
             self.assertFalse(any(v.startswith('Flutter@') for v in versioned))
