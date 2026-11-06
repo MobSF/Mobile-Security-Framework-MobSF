@@ -141,7 +141,6 @@ URLHAUS_IPS_URL = (
 OSV_BATCH_URL = 'https://api.osv.dev/v1/querybatch'
 OSV_VULN_URL = 'https://api.osv.dev/v1/vulns/'
 COCOAPODS_CDN_URL = 'https://cdn.cocoapods.org'
-SBOM_VULN_SCAN = env_flag('MOBSF_SBOM_VULN_SCAN', '1')
 VIRUS_TOTAL_BASE_URL = 'https://www.virustotal.com/api/v3/files'
 EXODUS_URL = 'https://reports.exodus-privacy.eu.org'
 APPMONSTA_URL = 'https://api.appmonsta.com/v1/stores/android/details/'

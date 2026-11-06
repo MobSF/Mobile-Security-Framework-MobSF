@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 from plistlib import load as plist_load
 import re
+import time
 
 from django.conf import settings
 
@@ -26,14 +27,26 @@ logger = logging.getLogger(__name__)
 _MAX_SBOM_FILE_SIZE = 2 * 1024 * 1024
 _MAX_OSV_QUERIES = 1000
 _MAX_OSV_VULN_FETCH = 40
+_MAX_POD_CDN_RESOLUTIONS = 25
+_POD_CDN_DEADLINE_SECS = 15.0
+_SDK_FINGERPRINT_FILENAMES = {
+    'util.java', 'util.smali', '_utilcommonkt.smali',
+    'bridgeinterceptor.java', 'bridgeinterceptor.smali',
+    'realconnection.java', 'realconnection.smali',
+    'version.java', 'version.smali',
+    'gson.java', 'gson.smali',
+    'reflectionhelper.java', 'reflectionhelper.smali',
+}
 _VALID_VERSION_RE = re.compile(r'^[0-9][0-9A-Za-z._+-]{0,63}$')
 _VALID_OSV_ID_RE = re.compile(r'^[A-Za-z0-9._-]{3,64}$')
+_GIT_SHA_RE = re.compile(r'^[0-9a-fA-F]{20,64}$')
 _POM_DEP_LINE_RE = re.compile(
     r'([A-Za-z0-9_.-]+):([A-Za-z0-9_.-]+):(?:jar|aar):([0-9][0-9A-Za-z._+-]*)')
 _GRADLE_COORD_RE = re.compile(
     r'["\']([A-Za-z0-9_.-]+):([A-Za-z0-9_.-]+):([0-9][0-9A-Za-z._+-]+)["\']')
 _TOML_VERSION_REF_RE = re.compile(
-    r'^\s*([A-Za-z0-9_.-]+)\s*=\s*["\']([0-9][0-9A-Za-z._+-]+)["\']')
+    r'^\s*([A-Za-z0-9_.-]+)\s*=\s*["\']([0-9][0-9A-Za-z._+-]+)["\']',
+    re.MULTILINE)
 _TOML_MODULE_RE = re.compile(
     r'module\s*=\s*["\']([A-Za-z0-9_.-]+):([A-Za-z0-9_.-]+)["\']'
     r'[^}\n]*?version(?:\.ref)?\s*=\s*["\']([A-Za-z0-9_.-]+)["\']')
@@ -108,6 +121,8 @@ _KNOWN_IOS_REPOS = {
     'nanopb': 'nanopb/nanopb',
     'netfox': 'kasketis/netfox',
 }
+# Cache only confirmed pod -> repo (or explicit 404/no-git False); transient
+# network errors are not cached so subsequent scans retry when online.
 _POD_REPO_CACHE = dict(_KNOWN_IOS_REPOS)
 
 
@@ -145,6 +160,18 @@ def _parse_version_stem(stem):
     if name.startswith('kotlinx-'):
         return 'org.jetbrains.kotlinx', name
     return '', ''
+
+
+def _scan_sdk_fingerprint_text(lower_path, content, add_fn):
+    """Scan a single file's content for OkHttp and Gson version strings."""
+    if ('okhttp' in lower_path or 'bridgeinterceptor' in lower_path
+            or 'realconnection' in lower_path or 'util' in lower_path
+            or 'version' in lower_path):
+        for match in _OKHTTP_VER_RE.finditer(content):
+            add_fn('Maven', 'com.squareup.okhttp3:okhttp', match.group(1))
+    if 'gson' in lower_path or 'reflectionhelper' in lower_path:
+        for match in _GSON_VER_RE.finditer(content):
+            add_fn('Maven', 'com.google.code.gson:gson', match.group(1))
 
 
 def extract_android_components(app_dir, file_data=None):
@@ -211,9 +238,12 @@ def extract_android_components(app_dir, file_data=None):
             ver = kv['version']
             if client.startswith('firebase-'):
                 group = 'com.google.firebase'
-            elif (client.startswith('play-services-')
-                    or client in {'integrity', 'billing'}):
+            elif client.startswith('play-services-'):
                 group = 'com.google.android.gms'
+            elif client == 'integrity':
+                group = 'com.google.android.play'
+            elif client == 'billing':
+                group = 'com.android.billingclient'
             elif client.startswith('transport-'):
                 group = 'com.google.android.datatransport'
             else:
@@ -256,28 +286,34 @@ def extract_android_components(app_dir, file_data=None):
         if not isinstance(item, (tuple, list)) or len(item) < 2:
             continue
         fpath, content = item[0], item[1]
-        if not isinstance(content, str):
+        if isinstance(content, str):
+            _scan_sdk_fingerprint_text(fpath.lower(), content, _add)
+
+    # Also scan targeted SDK files in java_source / smali_source directly
+    # because SKIP_CLASS_PATH excludes okhttp3/ and com/google/ from file_data.
+    for sub in ('java_source', 'smali_source'):
+        src_sub = root / sub
+        if not src_sub.exists():
             continue
-        lower_path = fpath.lower()
-        if ('okhttp' in lower_path or 'bridgeinterceptor' in lower_path
-                or 'realconnection' in lower_path or 'util' in lower_path):
-            for match in _OKHTTP_VER_RE.finditer(content):
-                _add('Maven', 'com.squareup.okhttp3:okhttp', match.group(1))
-        if 'gson' in lower_path or 'reflectionhelper' in lower_path:
-            for match in _GSON_VER_RE.finditer(content):
-                _add('Maven', 'com.google.code.gson:gson', match.group(1))
+        for sdk_file in src_sub.rglob('*'):
+            if sdk_file.name.lower() not in _SDK_FINGERPRINT_FILENAMES:
+                continue
+            lower_rel = sdk_file.as_posix().lower()
+            if not ('okhttp' in lower_rel or 'gson' in lower_rel):
+                continue
+            text = _safe_read_text(root, sdk_file)
+            if text:
+                _scan_sdk_fingerprint_text(lower_rel, text, _add)
 
     return sorted(versioned), list(components.values())
 
 
-def _resolve_pod_github_repo(pod_name):
+def _resolve_pod_github_repo(pod_name, online=True):
     """Resolve a CocoaPod name to 'org/repo' on GitHub using cache or CDN."""
     if pod_name in _POD_REPO_CACHE:
-        return _POD_REPO_CACHE[pod_name]
-    if (not settings_enabled('SBOM_VULN_SCAN')
-            or not is_internet_available()
+        return _POD_REPO_CACHE[pod_name] or None
+    if (not online
             or not re.match(r'^[A-Za-z0-9_+-]{2,64}$', pod_name)):
-        _POD_REPO_CACHE[pod_name] = None
         return None
     try:
         proxies, verify = upstream_proxy('https')
@@ -293,15 +329,17 @@ def _resolve_pod_github_repo(pod_name):
             timeout=5,
             proxies=proxies,
             verify=verify)
+        if resp.status_code == 404:
+            _POD_REPO_CACHE[pod_name] = False
+            return None
         if resp.status_code != 200:
-            _POD_REPO_CACHE[pod_name] = None
             return None
         prefix = f'{pod_name}/'
         line = next(
             (ln for ln in resp.text.splitlines() if ln.startswith(prefix)),
             None)
         if not line:
-            _POD_REPO_CACHE[pod_name] = None
+            _POD_REPO_CACHE[pod_name] = False
             return None
         latest_ver = line.rsplit('/', 1)[-1].strip()
         spec_url = (
@@ -312,17 +350,18 @@ def _resolve_pod_github_repo(pod_name):
             timeout=5,
             proxies=proxies,
             verify=verify)
+        if spec_resp.status_code == 404:
+            _POD_REPO_CACHE[pod_name] = False
+            return None
         if spec_resp.status_code != 200:
-            _POD_REPO_CACHE[pod_name] = None
             return None
         spec = spec_resp.json()
         git_url = (spec.get('source') or {}).get('git') or spec.get('homepage', '')
         match = _GITHUB_REPO_RE.search(str(git_url))
         repo = match.group(1) if match else None
-        _POD_REPO_CACHE[pod_name] = repo
+        _POD_REPO_CACHE[pod_name] = repo or False
         return repo
     except Exception:
-        _POD_REPO_CACHE[pod_name] = None
         return None
 
 
@@ -448,20 +487,55 @@ def extract_ios_components(app_dic):
                 if match:
                     _add_repo(match.group(1), match.group(2))
 
+    # Check connectivity at most once per scan and cap uncached CDN lookups
+    uncached = [p for p, _ in pods_to_resolve if p not in _POD_REPO_CACHE]
+    online = bool(
+        uncached
+        and settings_enabled('SBOM_VULN_SCAN')
+        and is_internet_available())
+    cdn_calls = 0
+    deadline = time.monotonic() + _POD_CDN_DEADLINE_SECS
+
     for pod_name, ver in sorted(pods_to_resolve):
-        repo = _resolve_pod_github_repo(pod_name)
+        was_cached = pod_name in _POD_REPO_CACHE
+        can_query_cdn = (
+            online
+            and cdn_calls < _MAX_POD_CDN_RESOLUTIONS
+            and time.monotonic() < deadline)
+        repo = _resolve_pod_github_repo(
+            pod_name,
+            online=was_cached or can_query_cdn)
+        if not was_cached and can_query_cdn:
+            cdn_calls += 1
         if repo:
             _add_repo(repo, ver, display_name=pod_name)
 
     return sorted(versioned), list(components.values())
 
 
-def _extract_severity_and_fixed(vuln_detail, pkg_version=None):
+def _extract_severity_and_fixed(vuln_detail, comp=None):
     """Extract normalized MobSF severity and fixed version from OSV detail."""
     db_spec = vuln_detail.get('database_specific') or {}
     raw_sev = str(db_spec.get('severity') or '').upper()
+    comp_name = (comp or {}).get('name', '').lower()
+
+    matched_affected = []
+    all_affected = vuln_detail.get('affected') or ()
+    for aff in all_affected:
+        pkg_name = str((aff.get('package') or {}).get('name') or '').lower()
+        repos = [
+            str(r.get('repo') or '').lower().removesuffix('.git')
+            for r in (aff.get('ranges') or ())
+        ]
+        if (not comp_name
+                or pkg_name == comp_name
+                or comp_name in repos
+                or f'https://{comp_name}' in repos):
+            matched_affected.append(aff)
+    target_affected = matched_affected or all_affected
+
     if not raw_sev:
-        for aff in vuln_detail.get('affected') or ():
+        for aff in target_affected:
             eco_spec = aff.get('ecosystem_specific') or {}
             if eco_spec.get('severity'):
                 raw_sev = str(eco_spec['severity']).upper()
@@ -476,12 +550,14 @@ def _extract_severity_and_fixed(vuln_detail, pkg_version=None):
         severity = 'warning'
 
     fixed_versions = []
-    for aff in vuln_detail.get('affected') or ():
+    for aff in target_affected:
         for rng in aff.get('ranges') or ():
+            if rng.get('type') == 'GIT':
+                continue
             for ev in rng.get('events') or ():
-                fx = ev.get('fixed')
-                if fx and fx not in fixed_versions:
-                    fixed_versions.append(str(fx))
+                fx = str(ev.get('fixed') or '').strip()
+                if fx and not _GIT_SHA_RE.match(fx) and fx not in fixed_versions:
+                    fixed_versions.append(fx)
     fixed = ', '.join(fixed_versions[:3]) if fixed_versions else 'N/A'
     return severity, fixed
 
@@ -568,7 +644,7 @@ def check_osv_vulnerabilities(components):
             for cid in canonical_ids:
                 seen_pkg_vulns.add((disp_pkg, inst_ver, cid))
 
-            severity, fixed = _extract_severity_and_fixed(detail, inst_ver)
+            severity, fixed = _extract_severity_and_fixed(detail, comp)
             summary = (
                 detail.get('summary')
                 or (detail.get('details') or '')[:200]

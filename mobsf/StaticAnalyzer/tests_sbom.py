@@ -45,6 +45,12 @@ class SBOMAndOSVTests(SimpleTestCase):
             (root / 'play-services-auth.properties').write_text(
                 'version=21.5.0\nclient=play-services-auth\n',
                 encoding='utf-8')
+            (root / 'integrity.properties').write_text(
+                'version=1.4.0\nclient=integrity\n',
+                encoding='utf-8')
+            (root / 'billing.properties').write_text(
+                'version=7.0.0\nclient=billing\n',
+                encoding='utf-8')
             (root / 'firebase-messaging.properties').write_text(
                 'version=24.0.0\nclient=firebase-messaging\n',
                 encoding='utf-8')
@@ -60,15 +66,28 @@ class SBOMAndOSVTests(SimpleTestCase):
                 'commons-logging:commons-logging:jar:1.2\n',
                 encoding='utf-8')
 
-            # 5. Embedded SDK constants in decompiled code
-            file_data = [
-                ('okhttp3/internal/Util.java',
-                 'package okhttp3.internal;\nString ua = "okhttp/3.14.9";'),
-                ('com/google/gson/Gson.java',
-                 'package com.google.gson;\nString v = "GSON 2.8.6";'),
-            ]
+            # 5. Multiline libs.versions.toml catalog
+            gradle_dir = root / 'gradle'
+            gradle_dir.mkdir()
+            (gradle_dir / 'libs.versions.toml').write_text(
+                '[versions]\nretrofit = "2.9.0"\n\n'
+                '[libraries]\nretrofit = { module = '
+                '"com.squareup.retrofit2:retrofit", version.ref = "retrofit" }\n',
+                encoding='utf-8')
 
-            versioned, components = extract_android_components(root, file_data)
+            # 6. SDK files under java_source (bypassed by SKIP_CLASS_PATH)
+            okhttp_dir = root / 'java_source' / 'okhttp3' / 'internal'
+            okhttp_dir.mkdir(parents=True)
+            (okhttp_dir / 'Util.java').write_text(
+                'package okhttp3.internal;\nString ua = "okhttp/3.14.9";\n',
+                encoding='utf-8')
+            gson_dir = root / 'java_source' / 'com' / 'google' / 'gson'
+            gson_dir.mkdir(parents=True)
+            (gson_dir / 'Gson.java').write_text(
+                'package com.google.gson;\nString v = "GSON 2.8.6";\n',
+                encoding='utf-8')
+
+            versioned, components = extract_android_components(root, [])
             self.assertIn(
                 'androidx.activity:activity-ktx@1.8.0', versioned)
             self.assertIn(
@@ -79,10 +98,16 @@ class SBOMAndOSVTests(SimpleTestCase):
             self.assertIn(
                 'com.google.android.gms:play-services-auth@21.5.0', versioned)
             self.assertIn(
+                'com.google.android.play:integrity@1.4.0', versioned)
+            self.assertIn(
+                'com.android.billingclient:billing@7.0.0', versioned)
+            self.assertIn(
                 'com.google.firebase:firebase-messaging@24.0.0', versioned)
             self.assertIn('com.squareup.okio:okio@3.4.0', versioned)
             self.assertIn(
                 'commons-logging:commons-logging@1.2', versioned)
+            self.assertIn(
+                'com.squareup.retrofit2:retrofit@2.9.0', versioned)
             self.assertIn('com.squareup.okhttp3:okhttp@3.14.9', versioned)
             self.assertIn('com.google.code.gson:gson@2.8.6', versioned)
             # Corrupted lproj entry must not be present
