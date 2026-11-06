@@ -217,7 +217,7 @@ def api_view_source(request):
     if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
-    if request.POST['type'] in {'eclipse', 'studio',
+    if request.POST['type'] in {'eclipse', 'studio', 'flutter',
                                 'apk', 'java', 'smali', 'xml'}:
         resp = view_source.run(request, api=True)
     else:

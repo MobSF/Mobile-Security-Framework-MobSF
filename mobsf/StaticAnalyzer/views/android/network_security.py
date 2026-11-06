@@ -24,7 +24,7 @@ def read_netsec_config(checksum, app_dir, config, src_type):
         config_file = None
         config = config.replace('@xml/', '', 1)
         base = Path(app_dir)
-        if src_type == 'studio':
+        if src_type in {'studio', 'flutter'}:
             # Support only android studio source files
             xml_dir = base / 'app' / 'src' / 'main' / 'res' / 'xml'
         else:

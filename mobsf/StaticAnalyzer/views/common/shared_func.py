@@ -42,6 +42,7 @@ from mobsf.MobSF.views.scanning import (
     add_to_recent_scan,
     handle_uploaded_file,
 )
+from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.views.comparer import (
     generic_compare,
 )
@@ -729,6 +730,18 @@ def get_avg_cvss(findings):
     if not getattr(settings, 'CVSS_SCORE_ENABLED', False):
         avg_cvss = None
     return avg_cvss
+
+
+def android_source_root(base, checksum):
+    """Return the Android project root inside a scan's upload directory.
+
+    Flutter source ZIPs keep it in android/, all other scans in base.
+    """
+    scan = StaticAnalyzerAndroid.objects.filter(
+        MD5=checksum).only('APP_TYPE').first()
+    if scan and scan.APP_TYPE == 'flutter':
+        return base / 'android'
+    return base
 
 
 def find_java_source_folder(base_folder: Path):

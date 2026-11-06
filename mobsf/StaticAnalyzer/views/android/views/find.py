@@ -17,6 +17,7 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
+    android_source_root,
     find_java_source_folder,
 )
 from mobsf.MobSF.views.authentication import (
@@ -46,7 +47,8 @@ def run(request):
             src = base / 'smali_source'
         else:
             try:
-                src = find_java_source_folder(base)[0]
+                src = find_java_source_folder(
+                    android_source_root(base, md5))[0]
             except StopIteration:
                 msg = 'Invalid Directory Structure'
                 return print_n_send_error_response(request, msg, True)

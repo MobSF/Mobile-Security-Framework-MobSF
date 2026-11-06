@@ -68,7 +68,7 @@ def get_manifest_file(app_dic):
             logger.info('Getting AndroidManifest.xml'
                         ' from Eclipse project source code')
             manifest = app_dir / ANDROID_MANIFEST_FILE
-        elif typ == 'studio':
+        elif typ in {'studio', 'flutter'}:
             logger.info('Getting AndroidManifest.xml'
                         ' from Android Studio project source code')
             manifest = app_dir / 'app' / 'src' / \
