@@ -128,6 +128,7 @@ class StaticAnalyzerIOS(models.Model):
     APPSTORE_DETAILS = models.TextField(default={})
     SECRETS = models.TextField(default=[])
     TRACKERS = models.TextField(default={})
+    SBOM = models.TextField(default={})
 
 
 class StaticAnalyzerWindows(models.Model):

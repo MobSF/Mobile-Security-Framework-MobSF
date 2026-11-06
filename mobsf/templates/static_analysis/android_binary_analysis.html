@@ -2348,6 +2348,46 @@
              </p>
                <div class="list-group">
                 {% if sbom %}
+                 {% if sbom.sbom_vulnerabilities %}
+                 <p><strong>Known Supply Chain Vulnerabilities (OSV)</strong></p>
+                 <div class="table-responsive">
+                   <table class="table table-bordered table-hover table-striped">
+                     <thead>
+                       <tr>
+                         <th>PACKAGE</th>
+                         <th>VERSION</th>
+                         <th>FIXED IN</th>
+                         <th>SEVERITY</th>
+                         <th>VULNERABILITY</th>
+                         <th>SUMMARY</th>
+                       </tr>
+                     </thead>
+                     <tbody>
+                       {% for v in sbom.sbom_vulnerabilities %}
+                       <tr>
+                         <td><code>{{ v.package }}</code></td>
+                         <td>{{ v.version }}</td>
+                         <td>{{ v.fixed }}</td>
+                         <td>
+                           {% if v.severity == 'high' %}
+                             <span class="badge bg-danger">high</span>
+                           {% elif v.severity == 'warning' %}
+                             <span class="badge bg-warning">medium</span>
+                           {% else %}
+                             <span class="badge bg-info">{{ v.severity }}</span>
+                           {% endif %}
+                         </td>
+                         <td>
+                           <a href="https://osv.dev/vulnerability/{{ v.id }}" target="_blank" rel="noopener">{{ v.id }}</a>
+                           {% if v.aliases %}<br/><small>{{ v.aliases|join:", " }}</small>{% endif %}
+                         </td>
+                         <td>{{ v.summary }}</td>
+                       </tr>
+                       {% endfor %}
+                     </tbody>
+                   </table>
+                 </div>
+                 {% endif %}
                  {% include 'base/list.html' with list=sbom.sbom_versioned type="Versioned Packages" limit=100 %}
                  {% include 'base/list.html' with list=sbom.sbom_packages type="Packages" limit=100 %}
                 {% endif %}

@@ -5,6 +5,10 @@ import logging
 from mobsf.MobSF.utils import (
     PKG_REGEX,
 )
+from mobsf.StaticAnalyzer.views.common.sbom import (
+    check_osv_vulnerabilities,
+    extract_android_components,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -38,41 +42,17 @@ def extract_packages(file_data):
     return sorted(packages)
 
 
-def get_group_name(file_name, group):
-    """Get group and name from file name."""
-    parts = file_name.split('_')
-
-    if parts and len(parts) == 2:
-        group, name = parts[0], parts[1]
-    else:
-        name = file_name.replace('_', '-')
-        if name.startswith('kotlinx-'):
-            group = 'org.jetbrains.kotlinx'
-
-    return group, name
-
-
-def android_sbom(app_dir):
+def android_sbom(app_dir, file_data=None):
     """Extract SBOM from files."""
-    sbom = set()
-    for vfile in app_dir.rglob('*.version'):
-        try:
-            dependency = vfile.stem
-            group, name = '', ''
-            version = vfile.read_text().strip() or ''
-            version = 'dynamic' if version.startswith('task') else version
-
-            if '_' in dependency:
-                group, name = get_group_name(dependency, group)
-            sbom.add(f'{group}:{name}@{version}')
-        except Exception:
-            pass
-    return sorted(sbom)
+    versioned, _ = extract_android_components(app_dir, file_data)
+    return versioned
 
 
 def sbom(app_dir, file_data):
-    """Extract SBOM from version files and decompiled source code."""
+    """Extract SBOM from version files, source code, and OSV database."""
+    versioned, components = extract_android_components(app_dir, file_data)
     return {
-        'sbom_versioned': android_sbom(app_dir),
+        'sbom_versioned': versioned,
         'sbom_packages': extract_packages(file_data),
+        'sbom_vulnerabilities': check_osv_vulnerabilities(components),
     }

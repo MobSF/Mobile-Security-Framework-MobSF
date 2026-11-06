@@ -252,6 +252,12 @@
                 <p>Libraries</p>
             </a>
           </li>
+          <li class="nav-item">
+            <a href="#sbom" class="nav-link">
+              <i class="fa fa-archive nav-icon"></i>
+              <p>SBOM</p>
+            </a>
+          </li>
            <li class="nav-item">
             <a href="#files" class="nav-link">
               <i class="nav-icon far fa-copy"></i>
@@ -1757,6 +1763,69 @@
       </div>
 </section>
  <!-- ===========================end libraries ================================== -->
+ <a id="sbom" class="anchor"></a>
+ <section class="content">
+   <div class="container-fluid">
+   <div class="row">
+       <div class="col-lg-12">
+       <div class="card">
+         <div class="card-body">
+             <p>
+             <strong><i class="fa fa-archive"></i> SBOM</strong>
+             </p>
+               <div class="list-group">
+                {% if sbom %}
+                 {% if sbom.sbom_vulnerabilities %}
+                 <p><strong>Known Supply Chain Vulnerabilities (OSV)</strong></p>
+                 <div class="table-responsive">
+                   <table class="table table-bordered table-hover table-striped">
+                     <thead>
+                       <tr>
+                         <th>PACKAGE</th>
+                         <th>VERSION</th>
+                         <th>FIXED IN</th>
+                         <th>SEVERITY</th>
+                         <th>VULNERABILITY</th>
+                         <th>SUMMARY</th>
+                       </tr>
+                     </thead>
+                     <tbody>
+                       {% for v in sbom.sbom_vulnerabilities %}
+                       <tr>
+                         <td><code>{{ v.package }}</code></td>
+                         <td>{{ v.version }}</td>
+                         <td>{{ v.fixed }}</td>
+                         <td>
+                           {% if v.severity == 'high' %}
+                             <span class="badge bg-danger">high</span>
+                           {% elif v.severity == 'warning' %}
+                             <span class="badge bg-warning">medium</span>
+                           {% else %}
+                             <span class="badge bg-info">{{ v.severity }}</span>
+                           {% endif %}
+                         </td>
+                         <td>
+                           <a href="https://osv.dev/vulnerability/{{ v.id }}" target="_blank" rel="noopener">{{ v.id }}</a>
+                           {% if v.aliases %}<br/><small>{{ v.aliases|join:", " }}</small>{% endif %}
+                         </td>
+                         <td>{{ v.summary }}</td>
+                       </tr>
+                       {% endfor %}
+                     </tbody>
+                   </table>
+                 </div>
+                 {% endif %}
+                 {% include 'base/list.html' with list=sbom.sbom_versioned type="Versioned Packages" limit=100 %}
+                {% endif %}
+              </div>
+           </div>
+         </div>
+       </div><!-- /.card -->
+       </div>
+       <!-- end row -->
+       </div>
+ </section>
+ <!-- ===========================end sbom ================================== -->
  <a id="files" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
