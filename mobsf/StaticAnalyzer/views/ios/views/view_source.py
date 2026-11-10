@@ -14,7 +14,10 @@ from django.shortcuts import render
 from django.utils.html import escape
 
 from mobsf.MobSF.forms import FormUtil
-from mobsf.MobSF.security import is_safe_path
+from mobsf.MobSF.security import (
+    is_pipe_or_link,
+    is_safe_path,
+)
 from mobsf.MobSF.utils import (
     is_file_exists,
     print_n_send_error_response,
@@ -23,6 +26,9 @@ from mobsf.MobSF.utils import (
 from mobsf.StaticAnalyzer.forms import (
     ViewSourceIOSApiForm,
     ViewSourceIOSForm,
+)
+from mobsf.StaticAnalyzer.views.common.js_analysis import (
+    read_js_source_window,
 )
 from mobsf.MobSF.views.authentication import (
     login_required,
@@ -42,6 +48,9 @@ def set_ext_api(file_path):
         return 'db'
     elif ext == 'm':
         return 'm'
+    elif ext in ('js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs',
+                 'bundle', 'jsbundle', 'html', 'htm', 'vue', 'svelte'):
+        return 'js'
     else:
         return 'txt'
 
@@ -83,12 +92,19 @@ def run(request, api=False):
             src = base
         sfile = src / fil
         sfile = sfile.as_posix()
-        if not is_safe_path(src, sfile, fil):
+        if not is_safe_path(src, sfile, fil) or is_pipe_or_link(sfile):
             msg = 'Path Traversal Detected!'
             if api:
                 return {'error': 'Path Traversal Detected!'}
             return print_n_send_error_response(request, msg, False, exp)
         dat = ''
+        win = {
+            'start_line': 1,
+            'end_line': 1,
+            'total_lines': 1,
+            'window_lines': 2000,
+            'is_paged': False,
+        }
         sql_dump = {}
         if typ == 'm':
             file_format = 'cpp'
@@ -97,6 +113,15 @@ def run(request, api=False):
                          encoding='utf8',
                          errors='ignore') as flip:
                 dat = flip.read()
+        elif typ == 'js':
+            file_format = 'javascript'
+            win = read_js_source_window(
+                Path(sfile),
+                lines_param=request.GET.get('lines'),
+                line_start=request.GET.get('line_start'),
+                search_term=request.GET.get('q'),
+            )
+            dat = win['data']
         elif typ == 'xml':
             file_format = 'xml'
             with io.open(sfile,
@@ -147,8 +172,16 @@ def run(request, api=False):
         context = {
             'title': escape(ntpath.basename(fil)),
             'file': escape(ntpath.basename(fil)),
+            'file_path': escape(fil),
+            'app_type': escape(mode),
+            'md5': md5_hash,
             'type': file_format,
             'data': dat,
+            'start_line': win['start_line'],
+            'end_line': win['end_line'],
+            'total_lines': win['total_lines'],
+            'window_lines': win['window_lines'],
+            'is_paged': win['is_paged'],
             'sqlite': sql_dump,
             'version': settings.MOBSF_VER,
         }

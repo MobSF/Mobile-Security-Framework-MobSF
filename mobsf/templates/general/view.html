@@ -1,25 +1,15 @@
-
 {% extends "base/base_layout.html" %}
 {% load static %}
 {% block sidebar_option %}
       sidebar-collapse
 {% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static "enlighterjs/enlighterjs.min.css" %}" />
+<link rel="stylesheet" href="{% static "prismjs/prism.min.css" %}" />
 <style>
 pre {
-  white-space: pre-wrap;       /* css-3 */
-  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-  white-space: -pre-wrap;      /* Opera 4-6 */
-  white-space: -o-pre-wrap;    /* Opera 7 */
-  word-wrap: break-word;       /* Internet Explorer 5.5+ */
-  }
-
-  /* custom yellow line highlight */
-  .enlighter-t-enlighter div.enlighter>div.enlighter-special {
-    background-color: #fff8bb;
-  }
-
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
 </style>
 {% endblock %}
 {% block content %}
@@ -65,7 +55,22 @@ pre {
                         </div>
                       {% endfor %}
                       {% else %}
-                        <pre id="code_block">{{ data }}</pre>
+                        {% if is_paged %}
+                        <div class="d-flex align-items-center justify-content-between mb-2 p-2 border rounded">
+                          <div>
+                            <strong>Showing lines {{ start_line }} &ndash; {{ end_line }} of {{ total_lines }}</strong>
+                          </div>
+                          <div class="d-flex align-items-center" style="gap: 6px;">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="goToLine(1)">&laquo; First</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="goToLine({{ start_line|add:'-2000' }})">&lsaquo; Prev {{ window_lines }}</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="goToLine({{ start_line|add:'2000' }})">Next {{ window_lines }} &rsaquo;</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="goToLine({{ total_lines }})">Last &raquo;</button>
+                            <input type="number" id="goto_line_input" class="form-control form-control-sm" style="width: 110px;" min="1" max="{{ total_lines }}" placeholder="Line #" value="{{ start_line }}">
+                            <button type="button" class="btn btn-sm btn-primary" onclick="goToLine(document.getElementById('goto_line_input').value)">Go</button>
+                          </div>
+                        </div>
+                        {% endif %}
+                        <pre id="code_block" class="line-numbers"><code class="language-{{ type }}">{{ data }}</code></pre>
                       {% endif %}
                         </div>
                         <!-- /.box-body -->
@@ -79,7 +84,7 @@ pre {
 {% endblock %}
 
 {% block extra_scripts %}
-<script type="text/javascript" src="{% static "enlighterjs/enlighterjs.min.js" %}"></script>
+<script type="text/javascript" src="{% static "prismjs/prism.min.js" %}"></script>
 
 <!-- Init Code -->
 <script type="text/javascript">
@@ -93,32 +98,25 @@ pre {
         } else {
           const parts = lines.split(",");
           for (i = 0; i < parts.length; i++) {
-             if (parseInt(parts[i]) > 50000)
+             if (parseInt(parts[i]) > 10000000)
                return 0;
           }
           return lines;
         }
     }
+    function goToLine(lineNo) {
+        var n = Math.max(1, parseInt(lineNo, 10) || 1);
+        var url = new URL(window.location.href);
+        url.searchParams.set('line_start', String(n));
+        window.location.href = url.toString();
+    }
     code_blk = document.getElementById('code_block');
     if (code_blk){
-        EnlighterJS.enlight(code_blk, {
-          theme: mobsfEnlighterTheme(),
-          linehover: false,
-          textOverflow: 'scroll',
+        mobsfHighlight(code_blk, {
           highlight: get_lines(),
+          startLine: {{ start_line|default:1 }},
           language: '{{ type }}',
         });
     }
-    const toolbar = document.getElementsByClassName("enlighter-toolbar")[0];
-    if (toolbar)
-      toolbar.style.display = 'none';
-    const hcls = document.getElementsByClassName("enlighter-special")[0];
-    if (hcls){
-      if (hcls.scrollIntoViewIfNeeded)
-        hcls.scrollIntoViewIfNeeded();
-      else
-        hcls.scrollIntoView();
-    }
-    
 </script>
 {% endblock %}

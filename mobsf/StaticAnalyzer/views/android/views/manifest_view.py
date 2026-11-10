@@ -51,6 +51,8 @@ def run(request, checksum):
                 'data': manifest,
                 'type': 'xml',
                 'sqlite': {},
+                'is_paged': False,
+                'start_line': 1,
                 'version': settings.MOBSF_VER,
             }
             template = 'general/view.html'

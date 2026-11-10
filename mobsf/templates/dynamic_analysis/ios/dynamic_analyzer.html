@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="{% static "others/css/terminal.css" %}" type="text/css">
 <link rel="stylesheet" href="{% static "others/css/devices.min.css" %}" type="text/css">
 <link rel="stylesheet" href="{% static "codemirror/codemirror.css" %}" type="text/css">
-<link rel="stylesheet" href="{% static "enlighterjs/enlighterjs.min.css" %}" />
+<link rel="stylesheet" href="{% static "prismjs/prism.min.css" %}" />
 <link rel="stylesheet" href="{% static "codemirror/lint.css" %}" type="text/css">
 <link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
 <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
@@ -484,7 +484,7 @@
 <script src="{% static "codemirror/javascript-lint.js" %}"></script>
 <script src="{% static "others/js/swipe.js" %}"></script>
 <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
-<script src="{% static "enlighterjs/enlighterjs.min.js" %}"></script>
+<script src="{% static "prismjs/prism.min.js" %}"></script>
 <script>
 
 var appContainerPath;
@@ -1180,10 +1180,7 @@ function frida_instrument(frida_action, pid=null, new_bundle_id=null){
           var injected = document.getElementById("injected_content");
           injected.innerHTML = '<pre id="injected-pre"></pre>';
           document.getElementById("injected-pre").textContent = json.message;
-          EnlighterJS.enlight( document.getElementById('injected-pre'), {
-            theme: mobsfEnlighterTheme(),
-            linehover: false,
-            textOverflow: 'scroll',
+          mobsfHighlight(document.getElementById('injected-pre'), {
             language: 'javascript',
           });
           $('#get_code_modal').modal('toggle');

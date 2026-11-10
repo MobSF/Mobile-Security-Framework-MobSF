@@ -1,0 +1,499 @@
+- id: js_webview_javascript_enabled
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    WebView has JavaScript execution enabled. Ensure untrusted web content is
+    not loaded into a JavaScript-enabled WebView, and restrict any native
+    bridge interfaces exposed to web content.
+  severity: warning
+  pattern:
+    - >-
+      (jsx_attribute
+        (property_identifier) @_prop (#eq? @_prop "javaScriptEnabled")
+        (jsx_expression (true))) @match
+    - >-
+      (jsx_opening_element
+        name: (identifier) @_tag (#eq? @_tag "WebView")
+        attribute: (jsx_attribute
+          (property_identifier) @_prop (#eq? @_prop "javaScriptEnabled")
+          !value)) @match
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?javaScriptEnabled['\"]?$")
+        value: (true)) @match
+    - >-
+      (assignment_expression
+        left: [
+          (member_expression
+            property: (property_identifier) @_p (#eq? @_p "javaScriptEnabled"))
+          (subscript_expression
+            index: (string) @_s (#match? @_s "^['\"]javaScriptEnabled['\"]$"))
+        ]
+        right: (true)) @match
+  metadata:
+    cvss: 5.3
+    cwe: cwe-79
+    owasp-mobile: m7
+    masvs: platform-2
+
+- id: js_webview_file_access
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    WebView enables file:// URL access (allowFileAccess,
+    allowFileAccessFromFileURLs, or allowUniversalAccessFromFileURLs). An
+    attacker who can control WebView content or navigation may read arbitrary
+    local application files.
+  severity: high
+  pattern:
+    - >-
+      (jsx_attribute
+        (property_identifier) @_prop
+        (#match? @_prop "^(allowFileAccess|allowFileAccessFromFileURLs|allowUniversalAccessFromFileURLs)$")
+        (jsx_expression (true))) @match
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?(allowFileAccess|allowFileAccessFromFileURLs|allowUniversalAccessFromFileURLs)['\"]?$")
+        value: (true)) @match
+    - >-
+      (assignment_expression
+        left: [
+          (member_expression
+            property: (property_identifier) @_p
+            (#match? @_p "^(allowFileAccess|allowFileAccessFromFileURLs|allowUniversalAccessFromFileURLs)$"))
+          (subscript_expression
+            index: (string) @_s
+            (#match? @_s "^['\"](allowFileAccess|allowFileAccessFromFileURLs|allowUniversalAccessFromFileURLs)['\"]$"))
+        ]
+        right: (true)) @match
+  metadata:
+    cvss: 7.5
+    cwe: cwe-200
+    owasp-mobile: m1
+    masvs: platform-2
+
+- id: js_webview_mixed_content
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    WebView allows mixed HTTP/HTTPS content (mixedContentMode set to 'always'
+    or 'compatibility'), exposing HTTPS pages to active network tampering.
+  severity: warning
+  pattern:
+    - >-
+      (jsx_attribute
+        (property_identifier) @_prop (#eq? @_prop "mixedContentMode")
+        [
+          (string) @_val
+          (jsx_expression (string) @_val)
+        ]
+        (#match? @_val "^['\"](always|compatibility)['\"]$")) @match
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?mixedContentMode['\"]?$")
+        value: (string) @_val
+        (#match? @_val "^['\"](always|compatibility)['\"]$")) @match
+    - >-
+      (assignment_expression
+        left: [
+          (member_expression
+            property: (property_identifier) @_p (#eq? @_p "mixedContentMode"))
+          (subscript_expression
+            index: (string) @_s (#match? @_s "^['\"]mixedContentMode['\"]$"))
+        ]
+        right: (string) @_val
+        (#match? @_val "^['\"](always|compatibility)['\"]$")) @match
+  metadata:
+    cvss: 6.1
+    cwe: cwe-319
+    owasp-mobile: m3
+    masvs: network-1
+
+- id: js_webview_origin_wildcard
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    WebView originWhitelist includes a wildcard ('*'), allowing navigation to
+    any URL scheme or external origin.
+  severity: warning
+  pattern:
+    - >-
+      (jsx_attribute
+        (property_identifier) @_prop (#eq? @_prop "originWhitelist")
+        (jsx_expression
+          (array (string) @_v (#match? @_v "^['\"](\\*|http://\\*)['\"]$")))) @match
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?originWhitelist['\"]?$")
+        value: (array (string) @_v (#match? @_v "^['\"](\\*|http://\\*)['\"]$"))) @match
+    - >-
+      (assignment_expression
+        left: [
+          (member_expression
+            property: (property_identifier) @_p (#eq? @_p "originWhitelist"))
+          (subscript_expression
+            index: (string) @_s (#match? @_s "^['\"]originWhitelist['\"]$"))
+        ]
+        right: (array (string) @_v (#match? @_v "^['\"](\\*|http://\\*)['\"]$"))) @match
+  metadata:
+    cvss: 6.1
+    cwe: cwe-942
+    owasp-mobile: m1
+    masvs: platform-2
+
+- id: js_tls_verification_disabled
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    TLS/SSL certificate verification is disabled or bypassed
+    (rejectUnauthorized: false or NODE_TLS_REJECT_UNAUTHORIZED = '0'). This
+    allows Man-in-the-Middle attacks.
+  severity: high
+  pattern:
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?rejectUnauthorized['\"]?$")
+        value: (false)) @match
+    - >-
+      (assignment_expression
+        left: [
+          (member_expression
+            property: (property_identifier) @_p
+            (#match? @_p "^(rejectUnauthorized|NODE_TLS_REJECT_UNAUTHORIZED)$"))
+          (subscript_expression
+            index: (string) @_s
+            (#match? @_s "^['\"](rejectUnauthorized|NODE_TLS_REJECT_UNAUTHORIZED)['\"]$"))
+        ]
+        right: [(false) (string) @_v (#match? @_v "^['\"]0['\"]$")]) @match
+  metadata:
+    cvss: 7.4
+    cwe: cwe-295
+    owasp-mobile: m3
+    masvs: network-3
+
+- id: js_dom_xss_sink
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    Raw HTML injection sink detected (dangerouslySetInnerHTML, innerHTML,
+    outerHTML, document.write, or insertAdjacentHTML). In hybrid mobile apps
+    and WebViews, DOM XSS can escalate to native bridge access.
+  severity: warning
+  pattern:
+    - >-
+      (jsx_attribute
+        (property_identifier) @_prop (#eq? @_prop "dangerouslySetInnerHTML")) @match
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?dangerouslySetInnerHTML['\"]?$")) @match
+    - >-
+      (assignment_expression
+        left: [
+          (member_expression
+            property: (property_identifier) @_p (#match? @_p "^(innerHTML|outerHTML)$"))
+          (subscript_expression
+            index: (string) @_s (#match? @_s "^['\"](innerHTML|outerHTML)['\"]$"))
+        ]) @match
+    - >-
+      (call_expression
+        function: [
+          (member_expression
+            property: (property_identifier) @_fn
+            (#eq? @_fn "insertAdjacentHTML"))
+          (member_expression
+            object: (_) @_doc (#match? @_doc "(^|\\.)document$")
+            property: (property_identifier) @_fn
+            (#match? @_fn "^(write|writeln)$"))
+        ]
+        arguments: (arguments)) @match
+  metadata:
+    cvss: 6.1
+    cwe: cwe-79
+    owasp-mobile: m7
+    masvs: platform-2
+
+- id: js_dynamic_code_execution
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    Dynamic JavaScript code execution via eval() or new Function() was
+    detected. Executing dynamically constructed strings can lead to arbitrary
+    code execution inside the application context.
+  severity: high
+  pattern:
+    - >-
+      (call_expression
+        function: (identifier) @_fn (#eq? @_fn "eval")
+        arguments: (arguments)) @match
+    - >-
+      (new_expression
+        constructor: (identifier) @_cls (#eq? @_cls "Function")
+        arguments: (arguments)) @match
+  metadata:
+    cvss: 7.5
+    cwe: cwe-95
+    owasp-mobile: m7
+    masvs: code-4
+
+- id: js_postmessage_wildcard_origin
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    postMessage() is called with a wildcard target origin ('*'). Any frame or
+    window can receive the message payload, potentially leaking sensitive data.
+  severity: warning
+  pattern:
+    - >-
+      (call_expression
+        function: (member_expression
+          property: (property_identifier) @_fn (#eq? @_fn "postMessage"))
+        arguments: (arguments
+          (_)
+          (string) @_origin (#match? @_origin "^['\"]\\*['\"]$"))) @match
+  metadata:
+    cvss: 6.1
+    cwe: cwe-345
+    owasp-mobile: m3
+    masvs: platform-2
+
+- id: js_insecure_async_storage
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    Sensitive data (token, password, secret, key, session, or credential) is
+    written to unencrypted storage (AsyncStorage, localStorage, or
+    sessionStorage). Use hardware-backed storage such as Keychain / Keystore
+    (e.g., react-native-keychain or expo-secure-store) instead.
+  severity: warning
+  pattern:
+    - >-
+      (call_expression
+        function: (member_expression
+          object: (_) @_obj
+          (#match? @_obj "(AsyncStorage|localStorage|sessionStorage)")
+          property: (property_identifier) @_fn
+          (#match? @_fn "^(setItem|multiSet)$"))
+        arguments: (arguments
+          (string) @_key
+          (#match? @_key "(?i)(token|password|passwd|secret|api[_-]?key|private[_-]?key|jwt|session|credential|pin|ssn)"))) @match
+  metadata:
+    cvss: 6.5
+    cwe: cwe-312
+    owasp-mobile: m2
+    masvs: storage-1
+
+- id: js_mmkv_without_encryption
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    MMKV storage instance is initialized without an encryptionKey. Data stored
+    in this instance is persisted in plaintext on disk.
+  severity: warning
+  pattern:
+    - >-
+      (new_expression
+        constructor: (identifier) @_cls (#eq? @_cls "MMKV")
+        arguments: (arguments) @_args
+        (#not-match? @_args "encryptionKey")) @match
+    - >-
+      (new_expression
+        constructor: (member_expression
+          property: (property_identifier) @_cls (#eq? @_cls "MMKV"))
+        arguments: (arguments) @_args
+        (#not-match? @_args "encryptionKey")) @match
+  metadata:
+    cvss: 5.3
+    cwe: cwe-312
+    owasp-mobile: m2
+    masvs: storage-1
+
+- id: js_hardcoded_secret
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    A hardcoded secret, API key, or token appears to be assigned in JavaScript
+    code. All values bundled into mobile JavaScript assets can be trivially
+    extracted from the application package.
+  severity: high
+  pattern:
+    - >-
+      (variable_declarator
+        name: (identifier) @_name
+        (#match? @_name "(?i)(^|_)(api[_-]?key|secret[_-]?key|client[_-]?secret|private[_-]?key|access[_-]?token|auth[_-]?token|jwt[_-]?secret|stripe[_-]?secret|aws[_-]?secret)$")
+        value: (string) @_val
+        (#match? @_val "^['\"][^'\"\\s]{12,}['\"]$")) @match
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "(?i)^['\"]?([a-z0-9_]*_)?(api[_-]?key|secret[_-]?key|client[_-]?secret|private[_-]?key|access[_-]?token|auth[_-]?token|jwt[_-]?secret|stripe[_-]?secret|aws[_-]?secret)['\"]?$")
+        value: (string) @_val
+        (#match? @_val "^['\"][^'\"\\s]{12,}['\"]$")) @match
+    - >-
+      (assignment_expression
+        left: [
+          (member_expression
+            property: (property_identifier) @_p
+            (#match? @_p "(?i)(^|_)(api[_-]?key|secret[_-]?key|client[_-]?key|client[_-]?secret|private[_-]?key|access[_-]?token|auth[_-]?token|jwt[_-]?secret)$"))
+          (subscript_expression
+            index: (string) @_s
+            (#match? @_s "(?i)^['\"]([a-z0-9_]*_)?(api[_-]?key|secret[_-]?key|client[_-]?secret|private[_-]?key|access[_-]?token|auth[_-]?token|jwt[_-]?secret)['\"]$"))
+        ]
+        right: (string) @_val
+        (#match? @_val "^['\"][^'\"\\s]{12,}['\"]$")) @match
+    - >-
+      ((string) @_tok
+        (#match? @_tok "^['\"](sk_live_[0-9a-zA-Z_]{10,}|rk_live_[0-9a-zA-Z_]{10,}|ghp_[0-9a-zA-Z]{30,}|AKIA[0-9A-Z]{16}|eyJ[A-Za-z0-9_-]{10,}\\.eyJ[A-Za-z0-9_-]{10,}\\.[A-Za-z0-9_-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|(Secret|API[_ -]?Key|Auth[_ -]?Token|Access[_ -]?Token)\\s*[:=]\\s*\\S{8,})")) @match
+  metadata:
+    cvss: 7.5
+    cwe: cwe-798
+    owasp-mobile: m9
+    masvs: storage-14
+
+- id: js_cleartext_http_traffic
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    Cleartext HTTP URL detected in JavaScript code. Network traffic over HTTP
+    is vulnerable to eavesdropping and tampering; use HTTPS instead.
+  severity: warning
+  pattern:
+    - >-
+      ((string) @_url
+        (#match? @_url "^['\"]http://[a-zA-Z0-9._-]+")
+        (#not-match? @_url "^['\"]http://(localhost|127\\.0\\.0\\.1|10\\.0\\.2\\.2|0\\.0\\.0\\.0|schemas\\.android\\.com|www\\.w3\\.org|ns\\.adobe\\.com|apache\\.org)")) @match
+  metadata:
+    cvss: 5.3
+    cwe: cwe-319
+    owasp-mobile: m3
+    masvs: network-1
+
+- id: js_deeplink_open_url
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    Dynamic URL passed to Linking.openURL() or InAppBrowser.open(). Ensure the
+    URL scheme and host are strictly allowlisted before opening external or
+    deep-linked URLs.
+  severity: warning
+  pattern:
+    - >-
+      (call_expression
+        function: (member_expression
+          object: (_) @_obj (#match? @_obj "(Linking|InAppBrowser|WebBrowser)")
+          property: (property_identifier) @_fn
+          (#match? @_fn "^(openURL|open|openBrowserAsync|openAuthSessionAsync)$"))
+        arguments: (arguments
+          [
+            (identifier)
+            (member_expression)
+            (template_string)
+            (binary_expression)
+            (call_expression)
+          ])) @match
+  metadata:
+    cvss: 5.3
+    cwe: cwe-601
+    owasp-mobile: m1
+    masvs: platform-2
+
+- id: js_biometric_weak_fallback
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    Biometric authentication allows device passcode/credential fallback without
+    cryptographic key binding (disableDeviceFallback: false or
+    allowDeviceCredentials: true). This can be bypassed on rooted/jailbroken
+    devices via Frida hooking if not backed by Keystore/Keychain crypto objects.
+  severity: info
+  pattern:
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?(allowDeviceCredentials)['\"]?$")
+        value: (true)) @match
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?(disableDeviceFallback)['\"]?$")
+        value: (false)) @match
+  metadata:
+    cvss: 0
+    cwe: cwe-287
+    owasp-mobile: m4
+    masvs: auth-8
+
+- id: js_console_sensitive_log
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    console.log / console.debug statement appears to log sensitive data
+    (token, password, secret, or key) outside of a __DEV__ guard. On Android
+    and iOS, console output is written to system logs (logcat / os_log) in
+    release builds unless stripped.
+  severity: info
+  pattern:
+    - >-
+      (call_expression
+        function: (member_expression
+          object: (_) @_obj (#match? @_obj "(^|\\.)console$")
+          property: (property_identifier) @_fn
+          (#match? @_fn "^(log|debug|info|warn|error)$"))
+        arguments: (arguments) @_args
+        (#match? @_args "(?i)(password|passwd|secret|access[_-]?token|auth[_-]?token|refresh[_-]?token|private[_-]?key|api[_-]?key|bearer)")) @match
+  exclude_ancestor: >-
+    (if_statement
+      condition: (parenthesized_expression
+        (identifier) @_c (#eq? @_c "__DEV__")))
+  metadata:
+    cvss: 0
+    cwe: cwe-532
+    owasp-mobile: m2
+    masvs: storage-3
+
+- id: js_webview_unverified_onmessage
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    WebView onMessage bridge handler processes incoming nativeEvent.data
+    without verifying event.nativeEvent.url or origin. Any web page or frame
+    loaded into the WebView can invoke native bridge actions with arbitrary
+    payloads.
+  severity: warning
+  pattern:
+    - >-
+      (member_expression
+        object: (member_expression
+          property: (property_identifier) @_ne (#eq? @_ne "nativeEvent"))
+        property: (property_identifier) @_d (#eq? @_d "data")) @match
+  metadata:
+    cvss: 6.5
+    cwe: cwe-345
+    owasp-mobile: m1
+    masvs: platform-2
+
+- id: js_client_side_auth_gate
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    Client-side entitlement or role check (isPremium, isAdmin, isSubscribed,
+    isPro, or isAuthorized) detected in JavaScript control flow. Ensure
+    authorization and entitlement checks are enforced server-side on every API
+    request, as JavaScript and Hermes bytecode conditions can be patched or
+    hooked on the device.
+  severity: info
+  pattern:
+    - >-
+      (if_statement
+        condition: (parenthesized_expression) @_cond
+        (#match? @_cond "(^|[^a-zA-Z0-9_])(isPremium|isAdmin|isSubscribed|isPro|isSuperUser|isAuthorized)([^a-zA-Z0-9_]|$)")) @match
+  metadata:
+    cvss: 0
+    cwe: cwe-602
+    owasp-mobile: m4
+    masvs: auth-1

@@ -17,6 +17,7 @@ from mobsf.StaticAnalyzer.views.common.secret_detection import (
 )
 from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression,
+    process_suppression_js,
 )
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,9 @@ def get_context_from_db_entry(db_entry):
             bundle_id)
         binary = process_suppression(
             python_dict(entry.BINARY_ANALYSIS),
+            bundle_id)
+        js_analysis = process_suppression_js(
+            python_dict(entry.JS_ANALYSIS),
             bundle_id)
         context = {
             'version': settings.MOBSF_VER,
@@ -78,6 +82,7 @@ def get_context_from_db_entry(db_entry):
                 python_list(entry.SECRETS)),
             'trackers': python_dict(entry.TRACKERS),
             'sbom': python_dict(entry.SBOM),
+            'js_analysis': js_analysis,
             'logs': get_scan_logs(entry.MD5),
         }
         return context
@@ -100,6 +105,9 @@ def get_context_from_analysis(app_dict,
             bundle_id)
         binary = process_suppression(
             bin_dict['bin_code_analysis'],
+            bundle_id)
+        js_analysis = process_suppression_js(
+            code_dict.get('js_analysis', {}),
             bundle_id)
         context = {
             'version': settings.MOBSF_VER,
@@ -143,6 +151,7 @@ def get_context_from_analysis(app_dict,
             'secrets': sort_secrets(app_dict['secrets']),
             'trackers': code_dict['trackers'],
             'sbom': code_dict.get('sbom', {}),
+            'js_analysis': js_analysis,
             'logs': get_scan_logs(app_dict['md5_hash']),
         }
         return context
@@ -200,6 +209,7 @@ def save_or_update(update_type,
             'SECRETS': app_dict['secrets'],
             'TRACKERS': code_dict['trackers'],
             'SBOM': code_dict.get('sbom', {}),
+            'JS_ANALYSIS': code_dict.get('js_analysis', {}),
         }
         if update_type == 'save':
             db_entry = StaticAnalyzerIOS.objects.filter(

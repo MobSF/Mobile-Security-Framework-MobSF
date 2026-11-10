@@ -6,22 +6,12 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static "jsTree/themes/default/style.min.css" %}" />
 <link rel="stylesheet" href="{% static "jsTree/custom.css" %}" />
-<link rel="stylesheet" href="{% static "others/css/xcode.min.css" %}">
-<link rel="stylesheet" href="{% static "enlighterjs/enlighterjs.min.css" %}" />
+<link rel="stylesheet" href="{% static "prismjs/prism.min.css" %}" />
 <style>
 pre {
-  white-space: pre-wrap;       /* css-3 */
-  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-  white-space: -pre-wrap;      /* Opera 4-6 */
-  white-space: -o-pre-wrap;    /* Opera 7 */
-  word-wrap: break-word;       /* Internet Explorer 5.5+ */
-  }
-
-  /* custom yellow line highlight */
-  .enlighter-t-enlighter div.enlighter>div.enlighter-special {
-    background-color: #fff8bb;
-  }
-
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
 </style>
 {% endblock %}
 {% block content %}
@@ -37,6 +27,8 @@ pre {
                                         <i class="fab fa-java"></i> Java Source</h3>
                                       {% elif source_type == 'smali' %}
                                         <i class="fa fa-code"></i> Smali Source</h3>
+                                      {% elif source_type == 'js' %}
+                                        <i class="fab fa-js-square"></i> JavaScript / Hybrid Source</h3>
                                       {% endif %}
                 <div class="row">
                 <div class="float-right col-4 search-container">
@@ -70,6 +62,19 @@ pre {
                             <h2>
                                 File: <span id="filename"></span>
                             </h2>
+                            <div id="js_pager" style="display:none; font-size: 13px;" class="align-items-center justify-content-between mb-2 p-2 border rounded">
+                                <div>
+                                    <strong id="js_pager_info"></strong>
+                                </div>
+                                <div class="d-flex align-items-center" style="gap: 6px;">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="js_btn_first">&laquo; First</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="js_btn_prev">&lsaquo; Prev</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="js_btn_next">Next &rsaquo;</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="js_btn_last">Last &raquo;</button>
+                                    <input type="number" id="js_goto_input" class="form-control form-control-sm" style="width: 110px;" min="1" placeholder="Line #">
+                                    <button type="button" class="btn btn-sm btn-primary" id="js_btn_go">Go</button>
+                                </div>
+                            </div>
                             <pre id="fileoutput">
                                 <!--<code class="{{ source_type }}" id="fileoutput"></code>-->
                             </pre>
@@ -92,7 +97,7 @@ pre {
 {% endblock %}
 {% block extra_scripts %}
 
-<script type="text/javascript" src="{% static "enlighterjs/enlighterjs.min.js" %}"></script>
+<script type="text/javascript" src="{% static "prismjs/prism.min.js" %}"></script>
 <script src="{% static "jsTree/jstree.min.js" %}"></script>
 
 <script>
@@ -266,30 +271,74 @@ const get_lines = function() {
 	} else {
 		const parts = lines.split(",");
 		for(i = 0; i < parts.length; i++) {
-			if(parseInt(parts[i]) > 50000) return 0;
+			if(parseInt(parts[i]) > 10000000) return 0;
 		}
 		return lines;
 	}
 	return 0;
 }
 
-function show_file(strPath) {
+var current_file_path = "";
+
+function update_pager(strFileData) {
+    var pager = document.getElementById('js_pager');
+    if (!pager) return;
+    if (!strFileData.is_paged) {
+        pager.style.display = 'none';
+        return;
+    }
+    pager.style.display = 'flex';
+    var start = strFileData.start_line || 1;
+    var end = strFileData.end_line || 1;
+    var total = strFileData.total_lines || 1;
+    var win = strFileData.window_lines || 2000;
+    document.getElementById('js_pager_info').textContent = (
+        'Showing lines ' + start + ' – ' + end + ' of ' + total
+    );
+    document.getElementById('js_goto_input').value = start;
+    document.getElementById('js_goto_input').max = total;
+    document.getElementById('js_btn_first').onclick = function() {
+        show_file(current_file_path, 1);
+    };
+    document.getElementById('js_btn_prev').onclick = function() {
+        show_file(current_file_path, Math.max(1, start - win));
+    };
+    document.getElementById('js_btn_next').onclick = function() {
+        show_file(current_file_path, Math.min(total, start + win));
+    };
+    document.getElementById('js_btn_last').onclick = function() {
+        show_file(current_file_path, Math.max(1, total - win + 1));
+    };
+    document.getElementById('js_btn_go').onclick = function() {
+        var target = parseInt(document.getElementById('js_goto_input').value, 10) || 1;
+        show_file(current_file_path, Math.max(1, Math.min(total, target)));
+    };
+}
+
+function show_file(strPath, lineStart) {
+    current_file_path = strPath;
+    var reqUrl = "{% url "view_source" %}?json=1&md5={{ hash }}&type={{ source_type }}&file=" + encodeURIComponent(strPath);
+    if (lineStart) {
+        reqUrl += "&line_start=" + encodeURIComponent(lineStart);
+    } else {
+        var q = $('#content_search').val();
+        if (q && q.length >= 2) {
+            reqUrl += "&q=" + encodeURIComponent(q);
+        }
+    }
     $.ajax({
         type: "GET",
-        url: "{% url "view_source" %}?json=1&md5={{ hash }}&type={{ source_type }}&file=" + strPath,
+        url: reqUrl,
         dataType: 'json',
         success: function(strFileData) {
-            var code_block = $("pre#fileoutput")
-            code_block.text(strFileData.data);
-            code_blk = document.getElementById('fileoutput');
+            update_pager(strFileData);
+            var code_blk = document.getElementById('fileoutput');
             if(code_blk) {
-                EnlighterJS.enlight(code_blk, false);
-                EnlighterJS.enlight(code_blk, {
-                    theme: mobsfEnlighterTheme(),
-                    linehover: false,
-                    textOverflow: 'scroll',
+                code_blk.textContent = strFileData.data;
+                mobsfHighlight(code_blk, {
                     highlight: get_lines(),
-                    language: 'java',
+                    startLine: strFileData.start_line || 1,
+                    language: strFileData.type || 'java',
                 });
             }
             // Jump back to top.
@@ -307,8 +356,9 @@ function clear_search() {
 	hide_no_results();
 	reset_tree();
 	$(".search-box").find("input").val('');
-	$("code#fileoutput").text('');
+	$("#fileoutput").text('');
 	$("span#filename").text('');
+	$("#js_pager").hide();
 }
 $("#clear-button").click(function() {
 	clear_search();

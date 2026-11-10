@@ -16,6 +16,9 @@ from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
 )
+from mobsf.StaticAnalyzer.views.common.js_analysis import (
+    list_js_source_files,
+)
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     android_source_root,
     find_java_source_folder,
@@ -43,31 +46,39 @@ def run(request):
                                                True)
         matches = set()
         base = Path(settings.UPLD_DIR) / md5
-        if code == 'smali':
-            src = base / 'smali_source'
+        if code == 'js':
+            src = base
+            files = [
+                base / rel for rel in list_js_source_files(base)
+            ]
         else:
-            try:
-                src = find_java_source_folder(
-                    android_source_root(base, md5))[0]
-            except StopIteration:
-                msg = 'Invalid Directory Structure'
-                return print_n_send_error_response(request, msg, True)
+            if code == 'smali':
+                src = base / 'smali_source'
+            else:
+                try:
+                    src = find_java_source_folder(
+                        android_source_root(base, md5))[0]
+                except StopIteration:
+                    msg = 'Invalid Directory Structure'
+                    return print_n_send_error_response(request, msg, True)
 
-        exts = ['.java', '.kt', '.smali']
-        files = [
-            p for p in src.rglob('*')
-            if p.suffix in exts and not is_pipe_or_link(p) and p.is_file()
-        ]
+            exts = ['.java', '.kt', '.smali']
+            files = [
+                p for p in src.rglob('*')
+                if p.suffix in exts and not is_pipe_or_link(p) and p.is_file()
+            ]
+        q_lower = query.lower()
         for fname in files:
             file_path = fname.as_posix()
             rpath = file_path.replace(src.as_posix(), '')
             rpath = rpath[1:]
             if search_type == 'content':
-                dat = fname.read_text('utf-8', 'ignore')
-                if query.lower() in dat.lower():
-                    matches.add(escape(rpath))
+                with open(
+                        fname, 'r', encoding='utf-8', errors='ignore') as fp:
+                    if any(q_lower in line.lower() for line in fp):
+                        matches.add(escape(rpath))
             elif search_type == 'filename' and \
-                    query.lower() in fname.name.lower():
+                    q_lower in fname.name.lower():
                 matches.add(escape(rpath))
 
         flz = len(matches)
