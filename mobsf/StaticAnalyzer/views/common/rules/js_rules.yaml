@@ -145,37 +145,6 @@
     owasp-mobile: m1
     masvs: platform-2
 
-- id: js_tls_verification_disabled
-  type: TreeSitter
-  languages: [javascript, typescript, tsx]
-  message: >-
-    TLS/SSL certificate verification is disabled or bypassed
-    (rejectUnauthorized: false or NODE_TLS_REJECT_UNAUTHORIZED = '0'). This
-    allows Man-in-the-Middle attacks.
-  severity: high
-  pattern:
-    - >-
-      (pair
-        key: [(property_identifier) (string)] @_k
-        (#match? @_k "^['\"]?rejectUnauthorized['\"]?$")
-        value: (false)) @match
-    - >-
-      (assignment_expression
-        left: [
-          (member_expression
-            property: (property_identifier) @_p
-            (#match? @_p "^(rejectUnauthorized|NODE_TLS_REJECT_UNAUTHORIZED)$"))
-          (subscript_expression
-            index: (string) @_s
-            (#match? @_s "^['\"](rejectUnauthorized|NODE_TLS_REJECT_UNAUTHORIZED)['\"]$"))
-        ]
-        right: [(false) (string) @_v (#match? @_v "^['\"]0['\"]$")]) @match
-  metadata:
-    cvss: 7.4
-    cwe: cwe-295
-    owasp-mobile: m3
-    masvs: network-3
-
 - id: js_dom_xss_sink
   type: TreeSitter
   languages: [javascript, typescript, tsx]
