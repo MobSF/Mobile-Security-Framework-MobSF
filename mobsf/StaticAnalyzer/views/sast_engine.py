@@ -62,6 +62,8 @@ class SastEngine:
 
     def run_rules(self, file_contents, rule_path):
         """Run the rules."""
+        # format_findings mutates results in place; start each run clean.
+        self.pattern_matcher.findings = {}
         finds = run_with_timeout(
             self.pattern_matcher.regex_scan,
             settings.SAST_TIMEOUT,

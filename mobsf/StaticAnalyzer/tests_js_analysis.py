@@ -16,6 +16,7 @@ from hermes_dec.parsers.hbc_file_parser import (
 )
 
 from mobsf.StaticAnalyzer.views.android.views import find
+from mobsf.StaticAnalyzer.views.common.js_analysis import sast as js_sast
 from mobsf.StaticAnalyzer.views.common.js_analysis import (
     analyze_js,
     beautify_minified_js,
@@ -181,7 +182,7 @@ class JSAnalysisTests(TestCase):
                 '  const keyName = "auth_token";\n'
                 '  AsyncStorage.setItem(keyName, API_KEY);\n'
                 '  Linking.openURL(deepLink);\n'
-                '  window.postMessage(API_KEY, "*");\n'
+                '  frame.contentWindow.postMessage(API_KEY, "*");\n'
                 '  if (__DEV__) { console.log("dev secret:", API_KEY); }\n'
                 '  console.log("prod secret_token:", API_KEY);\n'
                 '  return (\n'
@@ -457,10 +458,13 @@ class JSAnalysisTests(TestCase):
                 'whitelist: ["auth"] };\n'
                 'const cfg2 = { key: "root", storage: AsyncStorage, '
                 'whitelist: ["settings"] };\n'
-                'const w = <WebView javaScriptEnabled={false} />;\n',
+                'const w = <WebView javaScriptEnabled={false} />;\n'
+                'const chai = { includeStack: false, useProxy: true };\n',
                 encoding='utf-8')
             assets = root / 'assets'
             assets.mkdir()
+            (assets / 'expo_dev_launcher_android.bundle').write_text(
+                'var dev = 1;\n', encoding='utf-8')
             (assets / 'app.config').write_text(json.dumps({
                 'name': 'demo',
                 'extra': {
@@ -481,7 +485,6 @@ class JSAnalysisTests(TestCase):
                 'js_unencrypted_database': '8,9',
                 'js_persist_sensitive_state': '10',
                 'js_debug_tooling_in_release': '11',
-                'js_expo_dev_client_bundled': '12',
             }
             for rule, lines in expected.items():
                 self.assertIn(rule, findings, rule)
@@ -494,6 +497,9 @@ class JSAnalysisTests(TestCase):
                 'src/safe.tsx',
                 findings.get('js_webview_javascript_enabled', {}).get(
                     'files', {}))
+            self.assertEqual(
+                findings['js_expo_dev_client_bundled']['files'],
+                {'assets/expo_dev_launcher_android.bundle': '1'})
             for rule in ('expo_config_extra_secrets',
                          'expo_updates_cleartext',
                          'expo_updates_unsigned'):
@@ -504,6 +510,111 @@ class JSAnalysisTests(TestCase):
                 res['secrets'])
             self.assertNotIn('projectId', findings[
                 'expo_config_extra_secrets']['metadata']['description'])
+
+    def test_webview_native_config_table_not_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / 'src'
+            src.mkdir()
+            (src / 'webview_lib.js').write_text(
+                'var c={validAttributes:Object.assign({allowFileAccess:!0,'
+                'allowingReadAccessToURL:!0,messagingModuleName:!0})};\n'
+                'r7 = {\n'
+                "    'allowFileAccess': true,\n"
+                "    'javaScriptEnabled': true,\n"
+                "    'webviewDebuggingEnabled': true,\n"
+                "    'allowingReadAccessToURL': true,\n"
+                "    'messagingEnabled': true\n"
+                '};\n',
+                encoding='utf-8')
+            (src / 'Screen.js').write_text(
+                'r1 = {source: r2, allowFileAccess: true};\n',
+                encoding='utf-8')
+            findings = analyze_js('0' * 32, root, 'zip')['findings']
+            self.assertNotIn('js_webview_javascript_enabled', findings)
+            self.assertNotIn('js_webview_debugging_enabled', findings)
+            self.assertEqual(
+                findings['js_webview_file_access']['files'],
+                {'src/Screen.js': '1'})
+
+    def test_library_definitions_not_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / 'pos.js').write_text(
+                'x.innerHTML = userHtml;\n'
+                "frame.contentWindow.postMessage(token, '*');\n"
+                "var cfg = {secret_key: 'abcdefghijklmnop'};\n"
+                "console.log('token:', r3);\n"
+                'console.log(`password ${p}`);\n'
+                'console.log(user.accessToken);\n'
+                'Keychain.setGenericPassword(u, p, '
+                '{accessible: Keychain.ACCESSIBLE.ALWAYS});\n'
+                "r1 = {accessible: 'AccessibleAlways'};\n"
+                "RNFS.writeFile(RNFS.DownloadDirectoryPath + '/a.txt', d);\n"
+                'const dl = RNFetchBlob.fs.dirs.DownloadDir;\n'
+                "ReactNativeBiometrics.simplePrompt({promptMessage: 'x'});\n"
+                'const w = <WebView source={{ uri: props.url }} />;\n',
+                encoding='utf-8')
+            (root / 'neg.js').write_text(
+                "x.innerHTML = '<i class=\"fa\"></i>';\n"
+                'x.innerHTML = goog.html.SafeHtml.unwrapTrustedHTML(h);\n'
+                "global.postMessage(prefix + handle, '*');\n"
+                "r3.window.postMessage(r3, '*');\n"
+                "var keys = {'AUTH_TOKEN': 'fd.authToken'};\n"
+                "console.error('[ResetPasswordPage] Failed to load:', e);\n"
+                "console.log('resetPassword error:', r7);\n"
+                "r1['ALWAYS'] = 'AccessibleAlways';\n"
+                "ACCESSIBLE.ALWAYS = 'AccessibleAlways';\n"
+                'r7 = r1.DownloadDir;\n'
+                "r4['DownloadDir'] = r1.DownloadDir;\n"
+                'r0 = function(a0) { // Original name: simplePrompt\n'
+                '  r0 = r2.simplePrompt(r0);\n'
+                '  return r0;\n'
+                '};\n'
+                'class B { simplePrompt(o) { return n.simplePrompt(o); } }\n'
+                'const w = <WebView source={{ uri: '
+                '`${r(d[3]).API_BASE_URL}/help` }} />;\n',
+                encoding='utf-8')
+            findings = analyze_js('0' * 32, root, 'zip')['findings']
+            expected = {
+                'js_dom_xss_sink': '1',
+                'js_postmessage_wildcard_origin': '2',
+                'js_hardcoded_secret': '3',
+                'js_console_sensitive_log': '4,5,6',
+                'js_keychain_weak_accessibility': '7,8',
+                'js_external_storage_path': '9,10',
+                'js_biometric_without_crypto': '11',
+                'js_webview_dynamic_uri': '12',
+            }
+            for rule, lines in expected.items():
+                self.assertEqual(
+                    findings[rule]['files'], {'pos.js': lines}, rule)
+
+    def test_large_file_chunked_batches_map_lines(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            assets = root / 'assets'
+            assets.mkdir()
+            lines = [f'var v{i} = {i};' for i in range(1, 13)]
+            lines[1] = 'eval(a);'
+            lines[7] = 'eval(b);'
+            lines[11] = 'eval(c);'
+            (assets / 'big.bundle.dec.js').write_text(
+                '\n'.join(lines) + '\n', encoding='utf-8')
+            (assets / 'huge.js').write_text('eval(d);\n', encoding='utf-8')
+            files = [assets / 'big.bundle.dec.js', assets / 'huge.js']
+            with patch.multiple(
+                    js_sast,
+                    MAX_CHUNK_THRESHOLD_BYTES=10,
+                    CHUNK_LINES=3,
+                    SAST_BATCH_BYTES=20,
+                    MAX_SAST_JS_BYTES=250):
+                (assets / 'huge.js').write_text(
+                    'eval(d);\n' * 40, encoding='utf-8')
+                findings = js_sast.scan_js_files_with_sast(files, root)
+            self.assertEqual(
+                findings['js_dynamic_code_execution']['files'],
+                {'assets/big.bundle.dec.js': '2,8,12'})
 
     def test_source_content_search(self):
         with tempfile.TemporaryDirectory() as tmp:

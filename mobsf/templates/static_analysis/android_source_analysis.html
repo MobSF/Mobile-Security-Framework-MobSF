@@ -1113,7 +1113,7 @@
                 {% if js_analysis.hermes.decompiled %}
                   <span class="badge bg-success">Decompiled (hermes-dec)</span>
                   {% for b in js_analysis.hermes.bundles %}
-                    <a class="btn btn-outline-primary btn-xs ml-1" href="{% url "view_source" %}?file={{ b }}.dec.js&amp;md5={{ md5 }}&amp;type=js"><i class="fa fa-file-code"></i> View {{ b }}.dec.js</a>
+                    <a class="btn btn-outline-primary btn-xs ml-1" href="{% url "view_source" %}?file={{ b|urlencode }}.dec.js&amp;md5={{ md5 }}&amp;type=js"><i class="fa fa-file-code"></i> View {{ b }}.dec.js</a>
                   {% endfor %}
                 {% endif %}
               {% endif %}
@@ -1199,7 +1199,7 @@
                     <td>
                       {% for file_path, lines in details.files.items %}
                         <small>
-                          <a href="{% url "view_source" %}?file={{ file_path }}&amp;md5={{ md5 }}&amp;type=js&amp;lines={{ lines }}">{{ file_path }}</a>
+                          <a href="{% url "view_source" %}?file={{ file_path|urlencode }}&amp;md5={{ md5 }}&amp;type=js&amp;lines={{ lines }}">{{ file_path }}</a>
                         </small></br>
                       {% endfor %}
                     </td>

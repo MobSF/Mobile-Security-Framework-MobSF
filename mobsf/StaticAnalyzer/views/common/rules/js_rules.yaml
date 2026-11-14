@@ -29,6 +29,11 @@
             index: (string) @_s (#match? @_s "^['\"]javaScriptEnabled['\"]$"))
         ]
         right: (true)) @match
+  exclude_ancestor: >-
+    (object
+      (pair
+        key: [(property_identifier) (string)] @_nk
+        (#match? @_nk "^['\"]?(messagingModuleName|messagingEnabled)['\"]?$"))) @match
   metadata:
     cvss: 5.3
     cwe: cwe-79
@@ -74,6 +79,11 @@
       (pair
         key: [(property_identifier) (string)] @_k
         (#match? @_k "^['\"]?allowingReadAccessToURL['\"]?$")) @match
+  exclude_ancestor: >-
+    (object
+      (pair
+        key: [(property_identifier) (string)] @_nk
+        (#match? @_nk "^['\"]?(messagingModuleName|messagingEnabled)['\"]?$"))) @match
   metadata:
     cvss: 7.5
     cwe: cwe-200
@@ -174,7 +184,10 @@
             property: (property_identifier) @_p (#match? @_p "^(innerHTML|outerHTML)$"))
           (subscript_expression
             index: (string) @_s (#match? @_s "^['\"](innerHTML|outerHTML)['\"]$"))
-        ]) @match
+        ]
+        right: (_) @_rhs
+        (#not-match? @_rhs "^('[^']*'|\"[^\"]*\"|`[^`$]*`)$")
+        (#not-match? @_rhs "(?i)(sanitize|dompurify|unwrapTrustedHTML|escapeHtml)")) @match
     - >-
       (call_expression
         function: [
@@ -252,6 +265,8 @@
     - >-
       (call_expression
         function: (member_expression
+          object: (_) @_o
+          (#not-match? @_o "(^|\\.)(window|self|global|globalThis)$")
           property: (property_identifier) @_fn (#eq? @_fn "postMessage"))
         arguments: (arguments
           (_)
@@ -327,13 +342,15 @@
         name: (identifier) @_name
         (#match? @_name "(?i)(^|_)(api[_-]?key|secret[_-]?key|client[_-]?secret|private[_-]?key|access[_-]?token|auth[_-]?token|jwt[_-]?secret|stripe[_-]?secret|aws[_-]?secret)$")
         value: (string) @_val
-        (#match? @_val "^['\"][^'\"\\s]{12,}['\"]$")) @match
+        (#match? @_val "^['\"][^'\"\\s]{12,}['\"]$")
+        (#not-match? @_val "(?i)(token|secret|password|credential|api_?key)")) @match
     - >-
       (pair
         key: [(property_identifier) (string)] @_k
         (#match? @_k "(?i)^['\"]?([a-z0-9_]*_)?(api[_-]?key|secret[_-]?key|client[_-]?secret|private[_-]?key|access[_-]?token|auth[_-]?token|jwt[_-]?secret|stripe[_-]?secret|aws[_-]?secret)['\"]?$")
         value: (string) @_val
-        (#match? @_val "^['\"][^'\"\\s]{12,}['\"]$")) @match
+        (#match? @_val "^['\"][^'\"\\s]{12,}['\"]$")
+        (#not-match? @_val "(?i)(token|secret|password|credential|api_?key)")) @match
     - >-
       (assignment_expression
         left: [
@@ -345,7 +362,8 @@
             (#match? @_s "(?i)^['\"]([a-z0-9_]*_)?(api[_-]?key|secret[_-]?key|client[_-]?secret|private[_-]?key|access[_-]?token|auth[_-]?token|jwt[_-]?secret)['\"]$"))
         ]
         right: (string) @_val
-        (#match? @_val "^['\"][^'\"\\s]{12,}['\"]$")) @match
+        (#match? @_val "^['\"][^'\"\\s]{12,}['\"]$")
+        (#not-match? @_val "(?i)(token|secret|password|credential|api_?key)")) @match
     - >-
       ((string) @_tok
         (#match? @_tok "^['\"](sk_live_[0-9a-zA-Z_]{10,}|rk_live_[0-9a-zA-Z_]{10,}|ghp_[0-9a-zA-Z]{30,}|AKIA[0-9A-Z]{16}|eyJ[A-Za-z0-9_-]{10,}\\.eyJ[A-Za-z0-9_-]{10,}\\.[A-Za-z0-9_-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|(Secret|API[_ -]?Key|Auth[_ -]?Token|Access[_ -]?Token)\\s*[:=]\\s*\\S{8,})")) @match
@@ -444,8 +462,54 @@
           object: (_) @_obj (#match? @_obj "(^|\\.)console$")
           property: (property_identifier) @_fn
           (#match? @_fn "^(log|debug|info|warn|error)$"))
-        arguments: (arguments) @_args
-        (#match? @_args "(?i)(password|passwd|secret|access[_-]?token|auth[_-]?token|refresh[_-]?token|private[_-]?key|api[_-]?key|bearer)")) @match
+        arguments: (arguments
+          (identifier) @_v
+          (#match? @_v "(?i)^(password|passwd|secret|token|access_?token|auth_?token|refresh_?token|id_?token|private_?key|api_?key|credentials?)$"))) @match
+    - >-
+      (call_expression
+        function: (member_expression
+          object: (_) @_obj (#match? @_obj "(^|\\.)console$")
+          property: (property_identifier) @_fn
+          (#match? @_fn "^(log|debug|info|warn|error)$"))
+        arguments: (arguments
+          (member_expression
+            property: (property_identifier) @_v
+            (#match? @_v "(?i)^(password|passwd|secret|token|access_?token|auth_?token|refresh_?token|id_?token|private_?key|api_?key|credentials?)$")))) @match
+    - >-
+      (call_expression
+        function: (member_expression
+          object: (_) @_obj (#match? @_obj "(^|\\.)console$")
+          property: (property_identifier) @_fn
+          (#match? @_fn "^(log|debug|info|warn|error)$"))
+        arguments: (arguments
+          .
+          (string) @_label
+          .
+          (_)
+          (#match? @_label "(?i)(^['\"]|[^a-z])(password|passwd|secret|token|access[_-]?token|auth[_-]?token|refresh[_-]?token|private[_-]?key|api[_-]?key|bearer)([^a-z]|$)")
+          (#not-match? @_label "(?i)(error|fail|invalid|missing|unable|could not|expired|no )"))) @match
+    - >-
+      (call_expression
+        function: (member_expression
+          object: (_) @_obj (#match? @_obj "(^|\\.)console$")
+          property: (property_identifier) @_fn
+          (#match? @_fn "^(log|debug|info|warn|error)$"))
+        arguments: (arguments
+          .
+          (template_string (template_substitution)) @_label
+          (#match? @_label "(?i)(^`|[^a-z])(password|passwd|secret|token|access[_-]?token|auth[_-]?token|refresh[_-]?token|private[_-]?key|api[_-]?key|bearer)([^a-z]|$)")
+          (#not-match? @_label "(?i)(error|fail|invalid|missing|unable|could not|expired|no )"))) @match
+    - >-
+      (call_expression
+        function: (member_expression
+          object: (_) @_obj (#match? @_obj "(^|\\.)console$")
+          property: (property_identifier) @_fn
+          (#match? @_fn "^(log|debug|info|warn|error)$"))
+        arguments: (arguments
+          .
+          (binary_expression left: (string) @_label)
+          (#match? @_label "(?i)(^['\"]|[^a-z])(password|passwd|secret|token|access[_-]?token|auth[_-]?token|refresh[_-]?token|private[_-]?key|api[_-]?key|bearer)([^a-z]|$)")
+          (#not-match? @_label "(?i)(error|fail|invalid|missing|unable|could not|expired|no )"))) @match
   exclude_ancestor: >-
     (if_statement
       condition: (parenthesized_expression
@@ -726,7 +790,8 @@
                   (call_expression)
                   (binary_expression)
                   (template_string (template_substitution))
-                ]))))) @match
+                ] @_v
+                (#not-match? @_v "(?i)^(`\\$\\{[\\w.()\\[\\]]*(base_?url|api_?url|base_?host)\\}[^$`]*`|[\\w.()\\[\\]]*(base_?url|api_?url|base_?host)\\s*\\+\\s*['\"][^'\"]*['\"])$"))))) @match)
     - >-
       (jsx_opening_element
         name: (_) @_tag (#match? @_tag "WebView$")
@@ -743,7 +808,8 @@
                   (call_expression)
                   (binary_expression)
                   (template_string (template_substitution))
-                ]))))) @match
+                ] @_v
+                (#not-match? @_v "(?i)^(`\\$\\{[\\w.()\\[\\]]*(base_?url|api_?url|base_?host)\\}[^$`]*`|[\\w.()\\[\\]]*(base_?url|api_?url|base_?host)\\s*\\+\\s*['\"][^'\"]*['\"])$"))))) @match)
     - >-
       (call_expression
         arguments: (arguments
@@ -765,7 +831,8 @@
                     (call_expression)
                     (binary_expression)
                     (template_string (template_substitution))
-                  ])))))) @match
+                  ] @_v
+                  (#not-match? @_v "(?i)^(`\\$\\{[\\w.()\\[\\]]*(base_?url|api_?url|base_?host)\\}[^$`]*`|[\\w.()\\[\\]]*(base_?url|api_?url|base_?host)\\s*\\+\\s*['\"][^'\"]*['\"])$")))) @match)))
   metadata:
     cvss: 6.1
     cwe: cwe-829
@@ -789,8 +856,16 @@
         property: (property_identifier) @_p
         (#match? @_p "^ALWAYS(_THIS_DEVICE_ONLY)?$")) @match
     - >-
-      ((string) @_s
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?(accessible|keychainAccessible)['\"]?$")
+        value: (string) @_s
         (#match? @_s "^['\"](AccessibleAlways|AccessibleAlwaysThisDeviceOnly|kSecAttrAccessibleAlways|kSecAttrAccessibleAlwaysThisDeviceOnly)['\"]$")) @match
+  exclude_ancestor: >-
+    (assignment_expression
+      left: (member_expression
+        property: (property_identifier) @_l
+        (#match? @_l "^ALWAYS(_THIS_DEVICE_ONLY)?$")) @match)
   metadata:
     cvss: 5.5
     cwe: cwe-922
@@ -842,6 +917,11 @@
         key: [(property_identifier) (string)] @_k
         (#match? @_k "^['\"]?webviewDebuggingEnabled['\"]?$")
         value: (true)) @match
+  exclude_ancestor: >-
+    (object
+      (pair
+        key: [(property_identifier) (string)] @_nk
+        (#match? @_nk "^['\"]?(messagingModuleName|messagingEnabled)['\"]?$"))) @match
   metadata:
     cvss: 4.6
     cwe: cwe-489
@@ -949,6 +1029,13 @@
         function: (member_expression
           object: (_) @_o (#match? @_o "AuthSession$")
           property: (property_identifier) @_fn (#eq? @_fn "startAsync"))) @match
+  within_ancestor: >-
+    (call_expression
+      function: [(identifier) (member_expression)] @_f
+      (#match? @_f "(^|\\.)(promptAsync|makeRedirectUri|startAsync|useAuthRequest|loadAsync|exchangeCodeAsync)$")) @match
+    (new_expression
+      constructor: [(identifier) (member_expression)] @_c
+      (#match? @_c "(^|\\.)AuthRequest$")) @match
   metadata:
     cvss: 6.5
     cwe: cwe-287
@@ -977,6 +1064,18 @@
         function: (member_expression
           object: (_) @_o (#match? @_o "(TouchID|FingerprintScanner)$")
           property: (property_identifier) @_fn (#eq? @_fn "authenticate"))) @match
+  exclude_ancestor: >-
+    (function_declaration
+      name: (identifier) @_n
+      (#match? @_n "^(authenticateAsync|simplePrompt|authenticate)$")) @match
+    (method_definition
+      name: (property_identifier) @_n
+      (#match? @_n "^(authenticateAsync|simplePrompt|authenticate)$")) @match
+    (function_expression
+      body: (statement_block
+        .
+        (comment) @_c
+        (#match? @_c "Original name: (authenticateAsync|simplePrompt|authenticate)\\b"))) @match
   metadata:
     cvss: 0
     cwe: cwe-287
@@ -995,9 +1094,25 @@
   severity: warning
   pattern:
     - >-
-      (member_expression
-        property: (property_identifier) @_p
-        (#match? @_p "^(ExternalStorageDirectoryPath|ExternalDirectoryPath|ExternalCachesDirectoryPath|DownloadDirectoryPath|PicturesDirectoryPath|SDCardDir|SDCardApplicationDir|DownloadDir)$")) @match
+      (binary_expression
+        (member_expression
+          property: (property_identifier) @_p
+          (#match? @_p "^(ExternalStorageDirectoryPath|ExternalDirectoryPath|ExternalCachesDirectoryPath|DownloadDirectoryPath|PicturesDirectoryPath|SDCardDir|SDCardApplicationDir|DownloadDir)$")) @match)
+    - >-
+      (template_substitution
+        (member_expression
+          property: (property_identifier) @_p
+          (#match? @_p "^(ExternalStorageDirectoryPath|ExternalDirectoryPath|ExternalCachesDirectoryPath|DownloadDirectoryPath|PicturesDirectoryPath|SDCardDir|SDCardApplicationDir|DownloadDir)$")) @match)
+    - >-
+      (arguments
+        (member_expression
+          property: (property_identifier) @_p
+          (#match? @_p "^(ExternalStorageDirectoryPath|ExternalDirectoryPath|ExternalCachesDirectoryPath|DownloadDirectoryPath|PicturesDirectoryPath|SDCardDir|SDCardApplicationDir|DownloadDir)$")) @match)
+    - >-
+      (variable_declarator
+        value: (member_expression
+          property: (property_identifier) @_p
+          (#match? @_p "^(ExternalStorageDirectoryPath|ExternalDirectoryPath|ExternalCachesDirectoryPath|DownloadDirectoryPath|PicturesDirectoryPath|SDCardDir|SDCardApplicationDir|DownloadDir)$")) @match)
   metadata:
     cvss: 5.5
     cwe: cwe-276
@@ -1050,29 +1165,18 @@
   severity: warning
   pattern:
     - >-
-      (object
-        (pair
-          key: [(property_identifier) (string)] @_s
-          (#match? @_s "^['\"]?storage['\"]?$")
-          value: (_) @_v
-          (#not-match? @_v "(?i)(secure|encrypt|keychain|sensitive)"))
-        (pair
-          key: [(property_identifier) (string)] @_w
-          (#match? @_w "^['\"]?whitelist['\"]?$")
-          value: (array) @_list
-          (#match? @_list "(?i)['\"][a-z_]*(auth|token|session|credential|user|login)[a-z_]*['\"]"))) @match
-    - >-
-      (object
-        (pair
-          key: [(property_identifier) (string)] @_w
-          (#match? @_w "^['\"]?whitelist['\"]?$")
-          value: (array) @_list
-          (#match? @_list "(?i)['\"][a-z_]*(auth|token|session|credential|user|login)[a-z_]*['\"]"))
-        (pair
-          key: [(property_identifier) (string)] @_s
-          (#match? @_s "^['\"]?storage['\"]?$")
-          value: (_) @_v
-          (#not-match? @_v "(?i)(secure|encrypt|keychain|sensitive)"))) @match
+      (pair
+        key: [(property_identifier) (string)] @_w
+        (#match? @_w "^['\"]?whitelist['\"]?$")
+        value: (array) @_list
+        (#match? @_list "(?i)['\"][a-z_]*(auth|token|session|credential|user|login)[a-z_]*['\"]")) @match
+  within_ancestor: >-
+    (object
+      (pair
+        key: [(property_identifier) (string)] @_s
+        (#match? @_s "^['\"]?storage['\"]?$")
+        value: (_) @_v
+        (#not-match? @_v "(?i)(secure|encrypt|keychain|sensitive)"))) @match
   metadata:
     cvss: 5.5
     cwe: cwe-312
@@ -1098,29 +1202,6 @@
         property: (property_identifier) @_p (#match? @_p "^(Flipper|FlipperModule)$")) @match
   metadata:
     cvss: 4.3
-    cwe: cwe-489
-    owasp-mobile: m7
-    masvs: resilience-2
-
-- id: js_expo_dev_client_bundled
-  type: TreeSitter
-  languages: [javascript, typescript, tsx]
-  message: >-
-    expo-dev-client / expo-dev-launcher / expo-dev-menu native modules are
-    referenced in the bundle. Development client builds can load JavaScript
-    from arbitrary development servers; confirm this is not a distributed
-    release build.
-  severity: info
-  pattern:
-    - >-
-      ((string) @_s
-        (#match? @_s "^['\"](EXDevLauncher|ExpoDevLauncher|EXDevMenu|ExpoDevMenu|ExpoDevLauncherInternal|EXDevLauncherInternal)['\"]$")) @match
-    - >-
-      (member_expression
-        property: (property_identifier) @_p
-        (#match? @_p "^(EXDevLauncher|ExpoDevLauncher|EXDevMenu|ExpoDevMenu|EXDevLauncherInternal)$")) @match
-  metadata:
-    cvss: 0
     cwe: cwe-489
     owasp-mobile: m7
     masvs: resilience-2
