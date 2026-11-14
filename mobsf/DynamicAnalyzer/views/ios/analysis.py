@@ -86,7 +86,12 @@ def ios_api_analysis(app_dir):
             encoding='utf-8',
             errors='ignore').splitlines()
         for line in data:
-            parsed = json.loads(line)
+            try:
+                parsed = json.loads(line)
+            except ValueError:
+                continue
+            if not isinstance(parsed, dict):
+                continue
             if parsed.get('cookies'):
                 dump['cookies'] = parsed['cookies']
             elif parsed.get('crypto'):
@@ -114,11 +119,14 @@ def ios_api_analysis(app_dir):
                 dump['sql'].append(parsed['sql'])
             elif parsed.get('json'):
                 dump['json'].append(parsed['json'])
-            dump['files'] = list(set(dump['files']))
-            dump['logs'] = list(set(dump['logs']))
-            if len(dump['network']) > 0:
-                dump['network'] = list(
-                    {v['url']: v for v in dump['network']}.values())
+        dump['files'] = list(
+            {f for f in dump['files'] if isinstance(f, str)})
+        dump['logs'] = list(
+            {log for log in dump['logs'] if isinstance(log, str)})
+        dump['network'] = list({
+            v['url']: v for v in dump['network']
+            if isinstance(v, dict) and isinstance(v.get('url'), str)
+        }.values())
     except Exception:
         logger.exception('Analyzing dump data failed')
     return dump

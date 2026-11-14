@@ -225,8 +225,13 @@ def list_apps(request, api=False):
         r = ca.list_apps()
         app_list = []
         bundle_ids = []
+        apps = []
         if r and r.get('apps'):
-            for i in r.get('apps'):
+            # Bundle IDs come from the installed app; every action on them
+            # requires strict_package_check, so drop the rest here.
+            apps = [i for i in r.get('apps')
+                    if strict_package_check(str(i.get('bundleID', '')))]
+            for i in apps:
                 bundle = i['bundleID']
                 bundle_ids.append(f'bundleID={bundle}')
         elif r and r.get('error'):
@@ -241,7 +246,7 @@ def list_apps(request, api=False):
         # Get app icons
         logger.info('Getting all application icons')
         ic = ca.get_icons('&'.join(bundle_ids))
-        for i in r.get('apps'):
+        for i in apps:
             bundleid = i['bundleID']
             checksum = get_md5(bundleid.encode('utf-8'))
             dump_file = Path(

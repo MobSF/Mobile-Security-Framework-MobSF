@@ -674,6 +674,7 @@
 <script src="{% static "codemirror/lint.js" %}"></script>
 <script src="{% static "codemirror/javascript-lint.js" %}"></script>
 <script src="{% static "prismjs/prism.min.js" %}"></script>
+<script src="{% static "others/js/safe_text.js" %}"></script>
 <script>
 // Loading Spinner
 function dynamic_loader(){
@@ -1051,13 +1052,11 @@ if (loc.includes('&install=0')){
 
 //Print Status
 function print_status(message){
-  $('#stat').append(message + '\n');
-  $('#stat').scrollTop($('#stat')[0].scrollHeight);
+  appendText('#stat', message + '\n');
 }
 //Print TLS/SSL test progress inside modal
 function print_tls_progress(message){
-  $('#tls_text').append(message + '\n');
-  $('#tls_text').scrollTop($('#tls_text')[0].scrollHeight);
+  appendText('#tls_text', message + '\n');
 }
 
 print_status("Setting up MobSF Dynamic Analysis environment...");

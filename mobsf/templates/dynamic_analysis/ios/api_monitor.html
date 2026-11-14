@@ -124,7 +124,7 @@ $(document).ready( function () {
         processing:     true,
         serverSide:     false,
         columns: [
-            { data: "api" },
+            { data: "api", render: $.fn.dataTable.render.text() },
             { data: "data" },
         ],
         columnDefs: [ {

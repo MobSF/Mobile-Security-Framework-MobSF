@@ -253,6 +253,8 @@ def ios_api_monitor(request, api=False):
                     try:
                         # Parse each line as JSON
                         json_obj = json.loads(line)
+                        if not isinstance(json_obj, dict):
+                            continue
 
                         # Determine the API type based on the keys in the JSON object
                         api_type = None

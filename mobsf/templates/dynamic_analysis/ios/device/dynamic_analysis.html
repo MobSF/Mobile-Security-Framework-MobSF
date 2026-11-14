@@ -274,7 +274,7 @@ function list_apps(){
                                         <input type="hidden" name="device_id" value="${deviceId}">
                                         <button type="submit" class="btn btn-success disable"><i class="fab fa-apple"></i> Start Dynamic Analysis</button>
                                       </form>
-                                      <a class="btn btn-info ${buttonState}" onclick="dynamic_loader()" href="../../ios/view_report_device/${escapeHtml(bundle)}"><i class="fa fa-mobile"></i> View Report </a>
+                                      <a class="btn btn-info ${buttonState}" onclick="dynamic_loader()" href="../../ios/view_report_device/${escapeHtml(encodeURIComponent(bundle))}"><i class="fa fa-mobile"></i> View Report </a>
                                       </div>
                                   </td></tr>`);
                         }
