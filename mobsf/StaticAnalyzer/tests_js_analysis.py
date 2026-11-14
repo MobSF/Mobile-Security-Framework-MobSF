@@ -372,6 +372,51 @@ class JSAnalysisTests(TestCase):
                     sorted(lines.split(',')), rule)
                 self.assertNotIn('src/safe.js', files, rule)
 
+    def test_webview_uri_keychain_clipboard_rules(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / 'src'
+            src.mkdir()
+            (src / 'vuln.tsx').write_text(
+                'const a = <WebView source={{ uri: deepLinkUrl }} />;\n'
+                'const b = <WebView source={{ uri: `${host}/pay` }}></WebView>;\n'
+                'React.createElement(n.WebView, '
+                '{ source: { uri: props.url } });\n'
+                'Keychain.setGenericPassword(u, p, '
+                '{ accessible: Keychain.ACCESSIBLE.ALWAYS });\n'
+                'SecureStore.setItemAsync("k", v, '
+                '{ keychainAccessible: SecureStore.ALWAYS });\n'
+                'Clipboard.setString(user.password);\n'
+                'navigator.clipboard.writeText(authToken);\n'
+                'const c = <WebView allowingReadAccessToURL={docsDir} />;\n'
+                'setTimeout("refresh(" + id + ")", 100);\n'
+                'window.setInterval("poll()", 500);\n',
+                encoding='utf-8')
+            (src / 'safe.tsx').write_text(
+                'const a = <Image source={{ uri: avatarUrl }} />;\n'
+                'const b = <WebView source={{ uri: "https://example.com" }} />;\n'
+                'Keychain.setGenericPassword(u, p, { accessible: '
+                'Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY });\n'
+                'Clipboard.setString(orderId);\n'
+                'setTimeout(() => refresh(id), 100);\n'
+                'setTimeout(cb || noop, 100);\n',
+                encoding='utf-8')
+            findings = analyze_js('0' * 32, root, 'zip')['findings']
+            expected = {
+                'js_webview_dynamic_uri': '1,2,3',
+                'js_keychain_weak_accessibility': '4,5',
+                'js_clipboard_sensitive_data': '6,7',
+                'js_webview_file_access': '8',
+                'js_dynamic_code_execution': '9,10',
+            }
+            for rule, lines in expected.items():
+                self.assertIn(rule, findings, rule)
+                files = findings[rule]['files']
+                self.assertEqual(
+                    sorted(files['src/vuln.tsx'].split(',')),
+                    sorted(lines.split(',')), rule)
+                self.assertNotIn('src/safe.tsx', files, rule)
+
     def test_js_source_listing_prunes_and_caches(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

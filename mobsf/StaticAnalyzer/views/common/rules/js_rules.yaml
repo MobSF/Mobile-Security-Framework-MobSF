@@ -42,9 +42,9 @@
   languages: [javascript, typescript, tsx]
   message: >-
     WebView enables file:// URL access (allowFileAccess,
-    allowFileAccessFromFileURLs, or allowUniversalAccessFromFileURLs). An
-    attacker who can control WebView content or navigation may read arbitrary
-    local application files.
+    allowFileAccessFromFileURLs, allowUniversalAccessFromFileURLs, or iOS
+    allowingReadAccessToURL). An attacker who can control WebView content or
+    navigation may read arbitrary local application files.
   severity: warning
   pattern:
     - >-
@@ -68,6 +68,14 @@
             (#match? @_s "^['\"](allowFileAccess|allowFileAccessFromFileURLs|allowUniversalAccessFromFileURLs)['\"]$"))
         ]
         right: (true)) @match
+    - >-
+      (jsx_attribute
+        (property_identifier) @_prop
+        (#eq? @_prop "allowingReadAccessToURL")) @match
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?allowingReadAccessToURL['\"]?$")) @match
   metadata:
     cvss: 7.5
     cwe: cwe-200
@@ -191,9 +199,10 @@
   type: TreeSitter
   languages: [javascript, typescript, tsx]
   message: >-
-    Dynamic JavaScript code execution via eval() or new Function() was
-    detected. Executing dynamically constructed strings can lead to arbitrary
-    code execution inside the application context.
+    Dynamic JavaScript code execution via eval(), new Function(), or
+    setTimeout/setInterval with a string argument was detected. Executing
+    dynamically constructed strings can lead to arbitrary code execution
+    inside the application context.
   severity: warning
   pattern:
     - >-
@@ -204,6 +213,30 @@
       (new_expression
         constructor: (identifier) @_cls (#eq? @_cls "Function")
         arguments: (arguments)) @match
+    - >-
+      (call_expression
+        function: (identifier) @_fn (#match? @_fn "^(setTimeout|setInterval)$")
+        arguments: (arguments
+          .
+          [
+            (string)
+            (template_string)
+            (binary_expression left: (string))
+            (binary_expression right: (string))
+          ])) @match
+    - >-
+      (call_expression
+        function: (member_expression
+          property: (property_identifier) @_fn
+          (#match? @_fn "^(setTimeout|setInterval)$"))
+        arguments: (arguments
+          .
+          [
+            (string)
+            (template_string)
+            (binary_expression left: (string))
+            (binary_expression right: (string))
+          ])) @match
   metadata:
     cvss: 7.5
     cwe: cwe-95
@@ -667,3 +700,124 @@
     cwe: cwe-321
     owasp-mobile: m5
     masvs: crypto-1
+
+- id: js_webview_dynamic_uri
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    WebView source URI is loaded from a variable or dynamically built string.
+    If the URL can be influenced by deep links, push payloads, or server
+    responses, an attacker can load their own content into the WebView and
+    reach any exposed JavaScript bridge. Allowlist the scheme and host before
+    loading.
+  severity: warning
+  pattern:
+    - >-
+      (jsx_self_closing_element
+        name: (_) @_tag (#match? @_tag "WebView$")
+        attribute: (jsx_attribute
+          (property_identifier) @_p (#eq? @_p "source")
+          (jsx_expression
+            (object
+              (pair
+                key: (property_identifier) @_k (#eq? @_k "uri")
+                value: [
+                  (identifier)
+                  (member_expression)
+                  (subscript_expression)
+                  (call_expression)
+                  (binary_expression)
+                  (template_string (template_substitution))
+                ]))))) @match
+    - >-
+      (jsx_opening_element
+        name: (_) @_tag (#match? @_tag "WebView$")
+        attribute: (jsx_attribute
+          (property_identifier) @_p (#eq? @_p "source")
+          (jsx_expression
+            (object
+              (pair
+                key: (property_identifier) @_k (#eq? @_k "uri")
+                value: [
+                  (identifier)
+                  (member_expression)
+                  (subscript_expression)
+                  (call_expression)
+                  (binary_expression)
+                  (template_string (template_substitution))
+                ]))))) @match
+    - >-
+      (call_expression
+        arguments: (arguments
+          .
+          (_) @_tag (#match? @_tag "WebView$")
+          .
+          (object
+            (pair
+              key: [(property_identifier) (string)] @_p
+              (#match? @_p "^['\"]?source['\"]?$")
+              value: (object
+                (pair
+                  key: [(property_identifier) (string)] @_k
+                  (#match? @_k "^['\"]?uri['\"]?$")
+                  value: [
+                    (identifier)
+                    (member_expression)
+                    (subscript_expression)
+                    (call_expression)
+                    (binary_expression)
+                    (template_string (template_substitution))
+                  ])))))) @match
+  metadata:
+    cvss: 6.1
+    cwe: cwe-829
+    owasp-mobile: m1
+    masvs: platform-2
+
+- id: js_keychain_weak_accessibility
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    Keychain / SecureStore item uses the ALWAYS accessibility class
+    (react-native-keychain ACCESSIBLE.ALWAYS, expo-secure-store
+    SecureStore.ALWAYS, or kSecAttrAccessibleAlways). The secret is readable
+    while the device is locked and, without ThisDeviceOnly, can migrate to
+    backups. Use WHEN_UNLOCKED_THIS_DEVICE_ONLY or stricter.
+  severity: warning
+  pattern:
+    - >-
+      (member_expression
+        object: (_) @_o (#match? @_o "(ACCESSIBLE|SecureStore|Keychain)$")
+        property: (property_identifier) @_p
+        (#match? @_p "^ALWAYS(_THIS_DEVICE_ONLY)?$")) @match
+    - >-
+      ((string) @_s
+        (#match? @_s "^['\"](AccessibleAlways|AccessibleAlwaysThisDeviceOnly|kSecAttrAccessibleAlways|kSecAttrAccessibleAlwaysThisDeviceOnly)['\"]$")) @match
+  metadata:
+    cvss: 5.5
+    cwe: cwe-922
+    owasp-mobile: m2
+    masvs: storage-1
+
+- id: js_clipboard_sensitive_data
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    Sensitive data (password, token, secret, key, OTP, or recovery phrase)
+    appears to be copied to the system clipboard. Other apps, keyboards, and
+    cloud clipboard sync can read clipboard contents.
+  severity: warning
+  pattern:
+    - >-
+      (call_expression
+        function: (member_expression
+          object: (_) @_o (#match? @_o "(?i)clipboard$")
+          property: (property_identifier) @_fn
+          (#match? @_fn "^(setString|setStringAsync|setUrlAsync|write|writeText|copy)$"))
+        arguments: (arguments) @_args
+        (#match? @_args "(?i)(password|passwd|secret|token|api[_-]?key|private[_-]?key|otp|mnemonic|seed[_-]?phrase|recovery[_-]?phrase|credential|\\bpin\\b)")) @match
+  metadata:
+    cvss: 4.3
+    cwe: cwe-200
+    owasp-mobile: m2
+    masvs: storage-10
