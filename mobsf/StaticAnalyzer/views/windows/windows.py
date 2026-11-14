@@ -1,6 +1,7 @@
 # -*- coding: utf_8 -*-
 """Windows APPX/MSIX Static Analysis."""
 import logging
+import shutil
 from pathlib import Path
 
 from django.conf import settings
@@ -137,6 +138,14 @@ def _safe_child(root, rel):
     return path
 
 
+def _reset_dir(path):
+    """Remove anything at path, e.g. entries planted by the outer bundle."""
+    if path.is_symlink() or path.is_file():
+        path.unlink()
+    elif path.exists():
+        shutil.rmtree(path)
+
+
 def _select_bundle_package(app_dir):
     """Pick the application package to analyze from a bundle."""
     root = read_xml(app_dir / BUNDLE_MANIFEST)
@@ -149,6 +158,8 @@ def _select_bundle_package(app_dir):
         if (elem.get('Type') or 'application').lower() != 'application':
             continue
         name = elem.get('FileName', '')
+        if name.replace('\\', '/').split('/')[0].lower() == BUNDLE_DIR:
+            continue
         arch = (elem.get('Architecture') or 'neutral').lower()
         rank = ARCH_ORDER.index(arch) if arch in ARCH_ORDER else len(
             ARCH_ORDER)
@@ -264,6 +275,7 @@ def analyze_package(checksum, app_path, app_dir, typ, file_name):
             'Extracting %s from bundle', sanitize_for_logging(inner.name))
         append_scan_status(checksum, f'Extracting {inner.name} from bundle')
         root = app_dir / BUNDLE_DIR
+        _reset_dir(root)
         files = unzip(checksum, inner.as_posix(), root.as_posix(), budget)
     analysis['files'] = sorted(
         f for f in files if f and not f.endswith(('/', '\\')))

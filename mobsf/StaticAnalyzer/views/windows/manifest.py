@@ -316,7 +316,8 @@ def _parse_applications(root, info):
         entry = (app.get('EntryPoint') or '').lower()
         trust = (_attr(app, 'TrustLevel') or '').lower()
         behavior = (_attr(app, 'RuntimeBehavior') or '').lower()
-        if (entry == FULL_TRUST_ENTRY or trust == 'mediumil'
+        if trust != 'appcontainer' and (
+                entry == FULL_TRUST_ENTRY or trust == 'mediumil'
                 or behavior in ('win32app', 'packagedclassicapp')):
             findings.append(_finding(
                 'full_trust_application',

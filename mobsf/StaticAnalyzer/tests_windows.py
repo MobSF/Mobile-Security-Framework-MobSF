@@ -15,6 +15,8 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.serialization import pkcs7
 from cryptography.x509.oid import NameOID
 
+import lief
+
 from django.conf import settings
 from django.test import SimpleTestCase, TestCase
 
@@ -27,7 +29,11 @@ from mobsf.StaticAnalyzer.views.windows.manifest import (
     analyze_signature,
     parse_manifest,
 )
-from mobsf.StaticAnalyzer.views.windows.pe import NA, PEChecksec
+from mobsf.StaticAnalyzer.views.windows.pe import (
+    DLL_FLAGS,
+    NA,
+    PEChecksec,
+)
 from mobsf.StaticAnalyzer.views.windows.strings import extract_strings
 
 SAMPLE = Path(settings.BASE_DIR) / 'StaticAnalyzer' / 'test_files' / (
@@ -150,6 +156,17 @@ class ManifestTests(SimpleTestCase):
         self.assertEqual(rules['windows_service']['severity'], 'high')
         self.assertIn('LocalSystem', rules['windows_service']['description'])
         self.assertIn('debug_dependency', rules)
+
+    def test_appcontainer_trust_level_not_full_trust(self):
+        manifest = MANIFEST.format(publisher=PUBLISHER).replace(
+            'EntryPoint="Windows.FullTrustApplication">',
+            'uap10:RuntimeBehavior="win32App" '
+            'uap10:TrustLevel="appContainer">', 1).replace(
+            'xmlns:uap="',
+            'xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/'
+            'windows10/10" xmlns:uap="', 1)
+        rules = _rules(self._parse(manifest)['findings'])
+        self.assertNotIn('full_trust_application', rules)
 
     def test_capabilities(self):
         info = self._parse(MANIFEST.format(publisher=PUBLISHER))
@@ -415,6 +432,29 @@ class PEChecksecTests(SimpleTestCase):
         self.assertEqual(result['cfg']['value'], NA)
         self.assertEqual(result['banned_imports']['value'], NA)
 
+    def _fake(self, flags, stripped=False, relocations=True, dll=True):
+        pe = PEChecksec.__new__(PEChecksec)
+        pe.binary = mock.MagicMock()
+        pe.binary.optional_header.has.side_effect = lambda f: f in flags
+        pe.binary.header.has_characteristic.side_effect = lambda c: (
+            (c == lief.PE.Header.CHARACTERISTICS.RELOCS_STRIPPED and stripped)
+            or (c == lief.PE.Header.CHARACTERISTICS.DLL and dll))
+        pe.binary.has_relocations = relocations
+        pe.is_64 = True
+        return pe
+
+    def test_aslr_relocs_stripped_dll(self):
+        pe = self._fake({DLL_FLAGS.DYNAMIC_BASE}, stripped=True)
+        self.assertIs(pe.aslr()['value'], False)
+        self.assertIs(self._fake({DLL_FLAGS.DYNAMIC_BASE}).aslr()['value'],
+                      True)
+
+    def test_high_entropy_requires_aslr(self):
+        pe = self._fake({DLL_FLAGS.HIGH_ENTROPY_VA})
+        self.assertIs(pe.high_entropy_va()['value'], False)
+        pe = self._fake({DLL_FLAGS.HIGH_ENTROPY_VA, DLL_FLAGS.DYNAMIC_BASE})
+        self.assertIs(pe.high_entropy_va()['value'], True)
+
     def test_non_pe_returns_empty(self):
         path = self.tmp / 'notpe.dll'
         path.write_bytes(b'MZ' + b'\x00' * 64)
@@ -448,3 +488,32 @@ class AnalyzePackageTests(TestCase):
         self.assertEqual(context['package_type'], 'appx')
         self.assertEqual(context['md5'], checksum)
         self.assertTrue(context['pe_analysis'])
+
+    @mock.patch(
+        'mobsf.StaticAnalyzer.views.windows.windows.MalwareDomainCheck')
+    def test_bundle_ignores_planted_outer_files(self, mdc):
+        mdc.return_value.scan.return_value = {}
+        checksum = 'b' * 32
+        app_dir = self.tmp / checksum
+        app_dir.mkdir()
+        app_path = app_dir / f'{checksum}.msixbundle'
+        with zipfile.ZipFile(app_path, 'w') as zf:
+            zf.writestr(
+                'AppxMetadata/AppxBundleManifest.xml',
+                '<Bundle xmlns="http://schemas.microsoft.com/appx/2013/'
+                'bundle"><Packages><Package Type="application" '
+                'FileName="App.appx" Architecture="x64"/></Packages>'
+                '</Bundle>')
+            zf.write(SAMPLE, 'App.appx')
+            zf.writestr(
+                f'{windows.BUNDLE_DIR}/AppxManifest.xml',
+                MANIFEST.format(publisher=PUBLISHER))
+            zf.writestr(f'{windows.BUNDLE_DIR}/planted.dll', b'MZ' * 64)
+        analysis = windows.analyze_package(
+            checksum, app_path, app_dir, 'msixbundle', 'b.msixbundle')
+        self.assertNotIn('planted.dll', analysis['files'])
+        self.assertNotEqual(
+            analysis['manifest']['package_name'], 'Contoso.App')
+        self.assertTrue(analysis['manifest']['package_name'])
+        names = {pe['name'] for pe in analysis['pe_analysis']}
+        self.assertNotIn('planted.dll', names)

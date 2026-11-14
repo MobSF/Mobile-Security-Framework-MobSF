@@ -117,7 +117,11 @@ class PEChecksec:
                 'at a predictable address, making memory corruption '
                 'exploits such as Return Oriented Programming (ROP) '
                 'reliable. Link with /DYNAMICBASE.')
-        if not self.binary.has_relocations and self.image_type() == 'EXE':
+        stripped = self.binary.header.has_characteristic(
+            lief.PE.Header.CHARACTERISTICS.RELOCS_STRIPPED)
+        if stripped or (
+                not self.binary.has_relocations
+                and self.image_type() == 'EXE'):
             return _check(
                 False, WARNING,
                 'The binary sets /DYNAMICBASE but has no relocation '
@@ -134,6 +138,12 @@ class PEChecksec:
                 NA, INFO,
                 'High entropy ASLR only applies to 64-bit images.')
         if self._has_dll_flag(DLL_FLAGS.HIGH_ENTROPY_VA):
+            if self.aslr()['value'] is not True:
+                return _check(
+                    False, WARNING,
+                    'The binary sets /HIGHENTROPYVA but ASLR is not '
+                    'effective, so high entropy ASLR is not applied. Link '
+                    'with /DYNAMICBASE and keep relocations.')
             return _check(
                 True, SECURE,
                 'The binary is built with /HIGHENTROPYVA and uses the '
