@@ -856,3 +856,176 @@ class JSAnalysisTests(TestCase):
             self.assertEqual(
                 findings['js_dynamic_code_execution']['files'],
                 {'long.js': '2'})
+
+    def test_refined_ast_rules_and_hybrid_config_lines(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / 'src'
+            src.mkdir()
+            (src / 'vuln.tsx').write_text(
+                'const w1 = <WebView allowFileAccess />;\n'
+                'const w2 = <WebView originWhitelist={["https://*"]} />;\n'
+                'el.innerHTML = unsanitizedHtml;\n'
+                'el.innerHTML = DOMPurify.sanitize(prefix) + untrustedHtml;\n'
+                'popup.window.postMessage(secret, "*");\n'
+                'AsyncStorage.multiSet([["theme", "dark"], ["auth_token", t]]);\n'
+                'fetch("http://localhost.attacker.example/api");\n'
+                'WebBrowser.openAuthSessionAsync(dynamicUrl, redirectUri);\n'
+                'if (__DEV__) {\n'
+                '  console.log(secret);\n'
+                '  Reactotron.configure({}).useReactNative().connect();\n'
+                '} else {\n'
+                '  console.log(token);\n'
+                '  Reactotron.configure({}).useReactNative().connect();\n'
+                '}\n'
+                'const h1 = (ev) => {\n'
+                '  if (ev.nativeEvent.url) { run(ev.nativeEvent.data); }\n'
+                '};\n'
+                'const h2 = (ev) => {\n'
+                '  if (ev.nativeEvent.url.includes("trusted.example.com")) {\n'
+                '    run(ev.nativeEvent.data);\n'
+                '  }\n'
+                '};\n'
+                'const h3 = (ev) => {\n'
+                '  if (!ev.nativeEvent.url.startsWith('
+                '"https://trusted.example.com")) {\n'
+                '    return;\n'
+                '  }\n'
+                '  run(ev.nativeEvent.data);\n'
+                '};\n',
+                encoding='utf-8')
+            (src / 'safe.tsx').write_text(
+                'el.innerHTML = DOMPurify.sanitize(untrustedHtml);\n'
+                'el.innerHTML = sanitizeHtml(untrustedHtml);\n'
+                'global.postMessage(msg, "*");\n'
+                'r3.window.postMessage(r3, "*");\n'
+                'AsyncStorage.setItem("theme", "secret_dark_mode");\n'
+                'AsyncStorage.multiSet([["theme", "auth_token_value_only"]]);\n'
+                'fetch("http://localhost:8080/api");\n'
+                'WebBrowser.openAuthSessionAsync('
+                '"https://trusted.example.com/auth", redirectUri);\n'
+                'if (__DEV__) {\n'
+                '  Reactotron.configure({}).useReactNative().connect();\n'
+                '}\n'
+                'const g1 = (ev) => {\n'
+                '  if (ev.nativeEvent.url !== "https://trusted.example.com") return;\n'
+                '  run(ev.nativeEvent.data);\n'
+                '};\n'
+                'const g2 = (ev) => {\n'
+                '  if (!ev.nativeEvent.url.startsWith('
+                '"https://trusted.example.com/")) {\n'
+                '    return;\n'
+                '  }\n'
+                '  run(ev.nativeEvent.data);\n'
+                '};\n'
+                'const g3 = (ev) => {\n'
+                '  if (!ALLOWED.has(new URL(ev.nativeEvent.url).origin)) return;\n'
+                '  run(ev.nativeEvent.data);\n'
+                '};\n',
+                encoding='utf-8')
+
+            (root / 'config.xml').write_text(
+                '<?xml version="1.0"?>\n'
+                '<widget id="com.example.app">\n'
+                '  <access origin="https://api.example.com" />\n'
+                '  <access origin="*" />\n'
+                '  <allow-navigation href="https://trusted.example.com/*" />\n'
+                '  <allow-navigation href="http://*" />\n'
+                '  <allow-navigation href="https://*/login" />\n'
+                '</widget>\n',
+                encoding='utf-8')
+            (root / 'capacitor.config.json').write_text(
+                '{\n'
+                '  "plugins": {\n'
+                '    "Other": {\n'
+                '      "cleartext": false,\n'
+                '      "url": "https://safe.example.com",\n'
+                '      "allowNavigation": []\n'
+                '    }\n'
+                '  },\n'
+                '  "server": {\n'
+                '    "cleartext": false,\n'
+                '    "url": "http://dev.example.com",\n'
+                '    "allowNavigation": ["*.example.com"]\n'
+                '  }\n'
+                '}\n',
+                encoding='utf-8')
+            (root / 'app.json').write_text(
+                '{\n'
+                '  "name": "root-expo",\n'
+                '  "slug": "root-expo",\n'
+                '  "extra": {\n'
+                '    "firebaseApiKey": "root_secret_value_1"\n'
+                '  },\n'
+                '  "updates": {\n'
+                '    "url": "http://ota.example.com/manifest"\n'
+                '  }\n'
+                '}\n',
+                encoding='utf-8')
+            sub = root / 'sub'
+            sub.mkdir()
+            (sub / 'app.config.json').write_text(
+                json.dumps({
+                    'expo': {
+                        'extra': {'stripeSecretKey': 'sub_secret_value_2'},
+                    },
+                }),
+                encoding='utf-8')
+            backend = root / 'backend'
+            backend.mkdir()
+            (backend / 'config.xml').write_text('<settings><x/></settings>\n')
+            (backend / 'app.json').write_text(
+                '{"name": "heroku-app", "stack": "heroku-22"}\n')
+
+            res = analyze_js('0' * 32, root, 'zip')
+            findings = res['findings']
+
+            expected_js = {
+                'js_webview_file_access': '1',
+                'js_webview_origin_wildcard': '2',
+                'js_dom_xss_sink': '3,4',
+                'js_postmessage_wildcard_origin': '5',
+                'js_insecure_async_storage': '6',
+                'js_cleartext_http_traffic': '7',
+                'js_deeplink_open_url': '8',
+                'js_console_sensitive_log': '13',
+                'js_debug_tooling_in_release': '14',
+                'js_webview_unverified_onmessage': '17,21,28',
+            }
+            for rule, lines in expected_js.items():
+                self.assertIn(rule, findings, rule)
+                files = findings[rule]['files']
+                self.assertEqual(
+                    sorted(set(files['src/vuln.tsx'].split(','))),
+                    sorted(lines.split(',')),
+                    rule,
+                )
+                self.assertNotIn('src/safe.tsx', files, rule)
+
+            self.assertEqual(
+                findings['cordova_config_wildcard_access']['files'],
+                {'config.xml': '4'})
+            self.assertEqual(
+                findings['cordova_config_wildcard_navigation']['files'],
+                {'config.xml': '6,7'})
+            self.assertEqual(
+                findings['capacitor_cleartext_traffic']['files'],
+                {'capacitor.config.json': '11'})
+            self.assertEqual(
+                findings['capacitor_wildcard_navigation']['files'],
+                {'capacitor.config.json': '12'})
+            self.assertEqual(
+                findings['expo_config_extra_secrets']['files'],
+                {'app.json': '4', 'sub/app.config.json': '1'})
+            desc = findings['expo_config_extra_secrets']['metadata'][
+                'description']
+            self.assertIn('firebaseApiKey', desc)
+            self.assertIn('stripeSecretKey', desc)
+            self.assertNotIn('_secret_keys', findings[
+                'expo_config_extra_secrets'])
+            self.assertEqual(
+                findings['expo_updates_cleartext']['files'],
+                {'app.json': '8'})
+            self.assertEqual(
+                findings['expo_updates_unsigned']['files'],
+                {'app.json': '7'})
