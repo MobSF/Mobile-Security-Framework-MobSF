@@ -1,6 +1,7 @@
 # -*- coding: utf_8 -*-
 """Dynamic Analyzer Reporting for iOS devices."""
 import logging
+import posixpath
 import shlex
 import shutil
 from pathlib import Path
@@ -25,6 +26,11 @@ from mobsf.DynamicAnalyzer.views.ios.device.dynamic_analyzer import (
 )
 from mobsf.DynamicAnalyzer.tools.webproxy import (
     stop_httptools,
+)
+from mobsf.MobSF.security import (
+    is_safe_ios_container_path,
+    sanitize_filename,
+    sanitize_for_logging,
 )
 from mobsf.MobSF.utils import (
     IOS_DEVICE_ID_REGEX,
@@ -62,8 +68,14 @@ def download_app_data_device(ios_device, checksum):
     app_dir = Path(settings.UPLD_DIR) / checksum
     container_file = app_dir / 'mobsf_app_container_path.txt'
     if container_file.exists():
-        app_container = container_file.read_text(
-            'utf-8').splitlines()[0].strip()
+        lines = container_file.read_text('utf-8').splitlines()
+        app_container = lines[0].strip() if lines else ''
+        if not is_safe_ios_container_path(app_container):
+            logger.warning(
+                'Refusing to archive unsafe iOS container path: %s',
+                sanitize_for_logging(app_container))
+            return
+        app_container = posixpath.normpath(app_container)
         tarfile = f'/tmp/{checksum}-app-container.tar'
         localtar = app_dir / f'{checksum}-app-container.tar'
         ios_device.execute_command(
@@ -194,17 +206,22 @@ def download_file_device(request, api=False):
         'message': err_msg,
     }
     try:
-        remote_path = request.POST['file']
-        device_id = request.POST['device_id']
+        remote_path = request.POST.get('file', '')
+        device_id = request.POST.get('device_id', '')
+        if not remote_path:
+            data['message'] = 'Missing file path'
+            return send_response(data, api)
         ios_device, error = validate_and_connect_device(device_id)
         if error:
             data['message'] = error
             return send_response(data, api)
         file_obj = ios_device.download_file_object(remote_path)
         if file_obj:
-            response = HttpResponse(file_obj, content_type='application/octet-stream')
+            safe_name = sanitize_filename(Path(remote_path).name)
+            response = HttpResponse(
+                file_obj, content_type='application/octet-stream')
             response['Content-Disposition'] = (
-                f'inline; filename={Path(remote_path).name}')
+                f'attachment; filename="{safe_name}"')
             return response
         else:
             data['message'] = 'Failed to download file'

@@ -1,5 +1,6 @@
 import json
 import logging
+import posixpath
 import sys
 import time
 from pathlib import Path
@@ -24,6 +25,10 @@ from mobsf.DynamicAnalyzer.views.ios.frida_auxiliary_scripts import (
     get_methods,
     string_capture,
     string_compare,
+)
+from mobsf.MobSF.security import (
+    is_safe_ios_container_path,
+    sanitize_for_logging,
 )
 
 SCREENSHOT_CAPTURED_MSG = '✅ Screenshot Captured'
@@ -313,8 +318,15 @@ class Frida:
         implementations = []
         try:
             try:
-                self.app_container = api.get_container()
-                self.container_file.write_text(self.app_container)
+                container = api.get_container()
+                if is_safe_ios_container_path(container):
+                    self.app_container = posixpath.normpath(container.strip())
+                    self.container_file.write_text(
+                        self.app_container, encoding='utf-8')
+                elif container:
+                    logger.warning(
+                        'Rejected unsafe iOS container path: %s',
+                        sanitize_for_logging(str(container)))
             except frida.InvalidOperationError:
                 pass
             # Migrating defaults to rpc functions

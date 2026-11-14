@@ -940,6 +940,36 @@ def is_safe_android_path(check_path, safe_root='/data/app'):
         return False
 
 
+_IOS_CONTAINER_ROOTS = (
+    '/var/mobile/Containers/Data/Application',
+    '/private/var/mobile/Containers/Data/Application',
+)
+_IOS_CONTAINER_UUID_RE = re.compile(
+    r'^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-'
+    r'[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$')
+
+
+def is_safe_ios_container_path(check_path):
+    """Validate an iOS sandbox data container path reported via Frida."""
+    if not isinstance(check_path, str) or not check_path:
+        return False
+    cleaned = check_path.strip()
+    if '\x00' in cleaned or '\n' in cleaned or '\r' in cleaned:
+        return False
+    for safe_root in _IOS_CONTAINER_ROOTS:
+        prefix = f'{safe_root}/'
+        if cleaned.startswith(prefix):
+            relative = cleaned[len(prefix):].rstrip('/')
+            if (not relative
+                    or '/' in relative
+                    or is_path_traversal(relative)
+                    or not _IOS_CONTAINER_UUID_RE.fullmatch(relative)):
+                return False
+            normalized = posixpath.normpath(cleaned)
+            return normalized == f'{safe_root}/{relative}'
+    return False
+
+
 def clean_filename(filename, replace=' '):
     """Sanitize filename for Windows compatibility."""
     if system() == 'Windows':

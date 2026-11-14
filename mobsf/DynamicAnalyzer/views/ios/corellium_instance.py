@@ -1,6 +1,7 @@
 # -*- coding: utf_8 -*-
 """Instance Operation APIs."""
 import logging
+import posixpath
 import re
 import shlex
 import shutil
@@ -19,6 +20,11 @@ from django.shortcuts import (
     render,
 )
 
+from mobsf.MobSF.security import (
+    is_safe_ios_container_path,
+    sanitize_filename,
+    sanitize_for_logging,
+)
 from mobsf.MobSF.utils import (
     common_check,
     get_md5,
@@ -610,9 +616,15 @@ def get_container_path(request, api=False):
         cfile = 'mobsf_app_container_path.txt'
         acfile = Path(settings.UPLD_DIR) / checksum / cfile
         if acfile.exists():
-            data['status'] = OK
-            data['message'] = acfile.read_text(
-                'utf-8').splitlines()[0].strip()
+            lines = acfile.read_text('utf-8').splitlines()
+            raw_container = lines[0].strip() if lines else ''
+            if is_safe_ios_container_path(raw_container):
+                data['status'] = OK
+                data['message'] = posixpath.normpath(raw_container)
+            else:
+                logger.warning(
+                    'Rejected unsafe iOS container path: %s',
+                    sanitize_for_logging(raw_container))
     except Exception as exp:
         logger.exception(err_msg)
         data['message'] = str(exp)
@@ -676,11 +688,12 @@ def live_pcap_download(request, api=False):
         ci = CorelliumInstanceAPI(instance_id)
         pcap = ci.download_network_capture()
         if pcap:
+            safe_name = sanitize_filename(f'{instance_id}-network.pcap')
             res = HttpResponse(
                 pcap,
                 content_type='application/vnd.tcpdump.pcap')
             res['Content-Disposition'] = (
-                f'inline; filename={instance_id}-network.pcap')
+                f'attachment; filename="{safe_name}"')
             return res
         else:
             data['message'] = 'Failed to download pcap'
@@ -735,8 +748,14 @@ def download_app_data(ci, checksum):
     app_dir = Path(settings.UPLD_DIR) / checksum
     container_file = app_dir / 'mobsf_app_container_path.txt'
     if container_file.exists():
-        app_container = container_file.read_text(
-            'utf-8').splitlines()[0].strip()
+        lines = container_file.read_text('utf-8').splitlines()
+        app_container = lines[0].strip() if lines else ''
+        if not is_safe_ios_container_path(app_container):
+            logger.warning(
+                'Refusing to archive unsafe iOS container path: %s',
+                sanitize_for_logging(app_container))
+            return
+        app_container = posixpath.normpath(app_container)
         target, jumpbox = ssh_jump_host(
             ci.get_ssh_connection_string())
         tarfile = f'/tmp/{checksum}-app-container.tar'
@@ -920,10 +939,18 @@ def upload_file(request, api=False):
 @require_http_methods(['POST'])
 def download_file(request, api=False):
     """Download file from device."""
+    err_msg = 'Failed to download file'
+    data = {
+        'status': 'failed',
+        'message': err_msg,
+    }
     try:
         global SSH_TARGET
-        instance_id = request.POST['instance_id']
-        rfile = request.POST['file']
+        instance_id = request.POST.get('instance_id', '')
+        rfile = request.POST.get('file', '')
+        if not rfile:
+            data['message'] = 'Missing file path'
+            return send_response(data, api)
         failed = common_check(instance_id)
         if failed:
             return send_response(failed, api)
@@ -939,10 +966,15 @@ def download_file(request, api=False):
             SSH_TARGET, _jmp = ssh_jump_host(
                 ci.get_ssh_connection_string())
             fl = ssh_file_download(SSH_TARGET, rfile)
-        if not fl:
-            fl = b'File not found'
-    except Exception:
-        logger.exception('Failed to download file')
-    response = HttpResponse(fl, content_type='application/octet-stream')
-    response['Content-Disposition'] = f'inline; filename={Path(rfile).name}'
-    return response
+        if fl is not None:
+            safe_name = sanitize_filename(Path(rfile).name)
+            response = HttpResponse(
+                fl, content_type='application/octet-stream')
+            response['Content-Disposition'] = (
+                f'attachment; filename="{safe_name}"')
+            return response
+        data['message'] = 'File not found'
+    except Exception as exp:
+        logger.exception(err_msg)
+        data['message'] = str(exp)
+    return send_response(data, api)

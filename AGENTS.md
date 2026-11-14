@@ -78,6 +78,12 @@ one code path but not its siblings. Before closing any security fix:
 2. Verify the fix is applied consistently across **all** of them.
 3. Check both the APK binary flow and the source-ZIP flow — they are separate code paths
    with separate callsites and have diverged in the past.
+4. Check the 3-way dynamic analysis split: Android (`DynamicAnalyzer/views/android/`),
+   iOS Corellium (`DynamicAnalyzer/views/ios/`), and iOS jailbroken device
+   (`DynamicAnalyzer/views/ios/device/`), along with their matching templates under
+   `templates/dynamic_analysis/`. They were forked from one another; any fix to
+   `frida_core`, `report`, `device`, `dynamic_analysis.html`, or `dynamic_analyzer.html`
+   must be checked across all three.
 
 ---
 
@@ -93,6 +99,17 @@ one code path but not its siblings. Before closing any security fix:
 - `md5` / `hash` URL parameters: semi-trusted only after validation. Always validate
   with `is_md5()` before using them in paths.
 - Device identifiers: untrusted. Use command-injection checks plus format validation.
+- Frida `send()` payloads, RPC return values, and hooked API args/returns: untrusted.
+  They originate inside the analyzed app's process (which can swizzle Objective-C/Java
+  APIs before or during attach). Never multiplex control/dump channels by substring
+  (`if marker in msg:`); require a strict JSON envelope, re-serialize as single-line
+  JSON (`json.dumps`), and parse dump files per-line so one malformed line cannot blank
+  out a report.
+- Paths and files on connected Android/iOS devices (ADB / SSH / SFTP): untrusted.
+  Validate device-reported container/APK paths (`is_safe_android_path` or an iOS
+  equivalent) before `tar`/`pull`, pass `-type f` to remote `find`, and check
+  `sftp.lstat()` so symlinks inside `.app` or data directories cannot read arbitrary
+  root-owned device files.
 
 ---
 
@@ -143,14 +160,31 @@ def my_view(request, api=False):
 - `@require_http_methods` rejects wrong HTTP verbs before any logic runs,
   preventing CSRF-via-GET and other method-confusion issues.
 
-### Template Auto-Escaping
+### Template Auto-Escaping and Client-Side DOM Sinks
 
 Django's template engine escapes variables by default. Do **not** use `{% autoescape off %}`
 or the `|safe` filter on any value derived from scan data, manifests, or user input.
 When rendering user-controlled strings outside of templates (e.g., in a JSON response
-built by hand), use `django.utils.html.escape()` explicitly. Template auto-escaping
-does not protect JavaScript DOM sinks: never assign scan, task, or user-derived
-strings to `innerHTML`; use `textContent` (see `templates/general/tasks.html`).
+built by hand), use `django.utils.html.escape()` explicitly.
+
+Template auto-escaping does **not** protect JavaScript DOM sinks:
+
+- Never assign scan, manifest, task, device, or error-derived strings to `innerHTML`,
+  `outerHTML`, or `insertAdjacentHTML`; use `textContent` (see `templates/general/tasks.html`).
+- **jQuery HTML-parsing methods are `innerHTML` equivalents:** never pass untrusted
+  strings to `$(el).append(str)`, `.prepend()`, `.html()`, `.after()`, `.before()`, or
+  `.replaceWith()` — even when targeting a `<textarea>`. Use `appendText()`
+  (`static/others/js/safe_text.js`), `.text()`, or `.val()`.
+- **Second-order DOM reads undo Django escaping:** reading `{{ escaped_var }}` back out
+  of the DOM via `.val()`, `.attr()`, `.text()`, or `.dataset` returns the decoded raw
+  string. Treat DOM-read values as untrusted again.
+- **DataTables columns default to HTML:** every DataTables column fed by AJAX/JSON must
+  set `render: $.fn.dataTable.render.text()`, or HTML-escape inside a custom `render`
+  function (`JSON.stringify()` does **not** escape `<`, `>`, or `&`).
+- **No JS string interpolation inside inline `on*` attributes:**
+  `onclick="fn('${escapeHtml(x)}')"` is exploitable because the browser HTML-decodes the
+  attribute before executing JS (`&#039;` becomes `'` again). Store values in `data-*`
+  attributes and read via `this.dataset.*` or `addEventListener`.
 
 ### ORM — No Raw SQL
 
@@ -171,13 +205,25 @@ RecentScansDB.objects.raw(f'SELECT * FROM ... WHERE MD5 = "{checksum}"')
 Django's `CsrfViewMiddleware` is enabled globally. Do not use `@csrf_exempt` on any
 view that modifies state. API endpoints that accept an `X-Csrftoken` header or use
 token-based auth are the only legitimate exception, and that pattern is already
-established in the existing API views. Mutating actions (including dynamic-analysis
-start/stop/stream) must be POST with a CSRF token, not GET. Split GET-render from
-POST-stream when a page both renders and then streams (e.g. logcat).
+established in the existing API views. Mutating or expensive actions (including
+dynamic-analysis start/stop/stream, scanning embedded libraries, re-zipping sources,
+and logout) must be `POST` with `@require_http_methods(['POST'])` and a CSRF token,
+never `GET`. Split GET-render from POST-stream when a page both renders and then
+streams (e.g. logcat).
+
+### Outbound Requests and File Downloads
+
+- **URL-encode manifest/plist identifiers in outbound requests:** validate `package` /
+  `bundle_id` with `strict_package_check` and pass query parameters via `params=` or
+  `urllib.parse.quote(..., safe='')` — never raw string-format them into third-party API
+  URLs.
+- **File downloads:** always set
+  `Content-Disposition: attachment; filename="{sanitize_filename(name)}"` — never use
+  `inline` or raw `Path(x).name` on device- or archive-sourced filenames.
 
 ---
 
-## Archive Extraction Safety
+## Archive Extraction and Binary Parsing Safety
 
 ### TAR
 
@@ -216,6 +262,16 @@ Python's `zipfile` module does not create real filesystem symlinks from Unix sym
 entries — it writes the link target as plain file bytes. The TAR symlink attack does
 not apply to ZIP extraction. Use `is_path_traversal` + `is_safe_path` for member name
 validation and validate per-member before calling `zip_ref.extract(member, dest)`.
+
+### Binary Headers, `ar` Archives, and Subprocess Working Directories
+
+- **Bound header-declared sizes before `read(n)`:** formats like Unix `ar` (`.a`),
+  Mach-O, DEX, or custom binary headers carry attacker-controlled length fields. In
+  Python, `BufferedReader.read(size)` pre-allocates `size` bytes immediately — enforce
+  `0 <= size <= min(remaining_file_bytes, settings.ZIP_MAX_UNCOMPRESSED_FILE_SIZE)` and
+  a cumulative archive budget, not just on ZIP/TAR.
+- **Never call `os.chdir()` in server or worker code:** `os.chdir()` mutates
+  process-wide state across threads; always pass `cwd=` to `subprocess.run` / `Popen`.
 
 ---
 

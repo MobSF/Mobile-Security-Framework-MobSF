@@ -36,7 +36,6 @@ from mobsf.MobSF.views.api import api_static_analysis as api_sz
 from mobsf.MobSF.views.api import api_android_dynamic_analysis as api_dz
 from mobsf.MobSF.views.api import api_ios_dynamic_analysis as api_idz
 from mobsf.MobSF.views.api import api_ios_device_analysis as api_iddz
-from mobsf.StaticAnalyzer import tests
 from mobsf.StaticAnalyzer.views.common import (
     appsec,
     async_task,
@@ -493,8 +492,6 @@ if not settings.API_ONLY:
         re_path(fr'^ios/view_report_device/{bundle_id_regex}',
                 device_report.view_report_device,
                 name='view_report_device'),
-        # Test
-        re_path(r'^tests/$', tests.start_test),
     ])
 
 utils.print_version()

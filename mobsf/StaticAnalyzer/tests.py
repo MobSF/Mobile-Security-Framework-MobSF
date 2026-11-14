@@ -42,7 +42,6 @@ from mobsf.StaticAnalyzer.views.ios.ipa import (
 )
 
 from django.conf import settings
-from django.http import HttpResponse
 from django.test import Client, SimpleTestCase, TestCase
 
 logger = logging.getLogger(__name__)
@@ -598,45 +597,14 @@ def api_test():
     return False
 
 
-def start_test(request):
-    """Static Analyzer Unit test."""
-    item = request.GET.get('module', 'static')
-    if item == 'static':
-        comp = 'static_analyzer'
-        failed_stat = static_analysis_test()
-    else:
-        comp = 'static_analyzer_api'
-        failed_stat = api_test()
-    try:
-        if failed_stat:
-            message = 'some tests failed'
-            resp_code = 403
-        else:
-            message = 'all tests completed'
-            resp_code = 200
-    except Exception:
-        resp_code = 403
-        message = 'error'
-    logger.info('\n\nALL TESTS COMPLETED!')
-    logger.info('Test Status: %s', message)
-    return HttpResponse(json.dumps({comp: message}),
-                        content_type='application/json; charset=utf-8',
-                        status=resp_code)
-
-
 class StaticAnalyzerAndAPI(TestCase):
     """Unit Tests."""
 
-    def setUp(self):
-        self.http_client = Client()
-
     def test_static_analyzer(self):
-        resp = self.http_client.post('/tests/?module=static')
-        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(static_analysis_test())
 
     def test_rest_api(self):
-        resp = self.http_client.post('/tests/?module=api')
-        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(api_test())
 
 
 def _symbols(*entries):

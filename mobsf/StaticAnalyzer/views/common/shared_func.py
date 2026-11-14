@@ -534,31 +534,47 @@ def lipo_thin(checksum, src, dst):
     return new_src
 
 
+class _ArLimitExceededError(ValueError):
+    """Raised when an ar archive exceeds configured size budgets."""
+
+
 def ar_os(src, dst):
     """Extract AR using OS utility."""
     out = b''
-    cur = os.getcwd()
+    ar_bin = shutil.which('ar')
+    if not ar_bin:
+        return out
+    src_abs = os.path.abspath(src)
     try:
-        os.chdir(dst)
+        if Path(src_abs).stat().st_size > settings.ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE:
+            msg = f'AR archive exceeds maximum allowed size: {src}'
+            logger.error(msg)
+            raise _ArLimitExceededError(msg)
         files = subprocess.check_output(
-            [shutil.which('ar'), 't', src],
+            [ar_bin, 't', src_abs],
+            cwd=dst,
             stderr=subprocess.STDOUT)
-        for raw_file in files.decode('utf-8').split('\n'):
-            out = Path(dst) / raw_file
+        for raw_file in files.decode('utf-8', errors='replace').splitlines():
+            if not raw_file:
+                continue
+            out_path = Path(dst) / raw_file
             if (is_path_traversal(raw_file)
-                    or not is_safe_path(dst, out, raw_file)):
-                msg = f'AR slip detected in AR file {src} at {raw_file}'
+                    or not is_safe_path(dst, out_path, raw_file)):
+                msg = (
+                    f'AR slip detected in AR file {src} at '
+                    f'{sanitize_for_logging(raw_file)}')
                 logger.error(msg)
                 raise ValueError(msg)
         out = subprocess.check_output(
-            [shutil.which('ar'), 'x', src],
+            [ar_bin, 'x', src_abs],
+            cwd=dst,
             stderr=subprocess.STDOUT)
     except ValueError:
         out = b''
-    except Exception as exp:
+    except subprocess.CalledProcessError as exp:
         out = exp.output
-    finally:
-        os.chdir(cur)
+    except Exception:
+        out = b''
     return out
 
 
@@ -566,9 +582,13 @@ def _resolve_ar_entry(raw_name, data, gnu_table):
     """Resolve member name and payload for BSD, GNU, or normal ar headers."""
     if raw_name.startswith(b'#1/'):
         name_len = int(raw_name[3:])
+        if name_len < 0 or name_len > len(data):
+            raise ValueError('Invalid BSD ar extended name length')
         return data[:name_len].rstrip(b'\x00'), data[name_len:]
     if raw_name.startswith(b'/') and gnu_table is not None:
         offset = int(raw_name[1:])
+        if offset < 0 or offset > len(gnu_table):
+            raise ValueError('Invalid GNU ar string table offset')
         sep = b'\x00' if b'\x00' in gnu_table else b'\n'
         end = gnu_table.find(sep, offset)
         if end == -1:
@@ -578,7 +598,7 @@ def _resolve_ar_entry(raw_name, data, gnu_table):
     return entry_name, data
 
 
-def _read_ar_member(f):
+def _read_ar_member(f, file_size, max_member_size):
     """Read one 60-byte ar member header and its payload bytes."""
     header = f.read(60)
     if not header:
@@ -590,6 +610,12 @@ def _read_ar_member(f):
     if magic != b'\x60\x0a':
         raise ValueError('Invalid ar header magic')
     size = int(size_raw)
+    remaining = file_size - f.tell()
+    if size < 0 or size > remaining:
+        raise ValueError('Truncated or invalid ar member size')
+    if size > max_member_size:
+        raise _ArLimitExceededError(
+            f'AR member size ({size} bytes) exceeds limit')
     data = f.read(size)
     if len(data) < size:
         raise ValueError('Truncated ar member')
@@ -600,14 +626,23 @@ def _read_ar_member(f):
 
 def _iter_ar_archive(src):
     """Yield (name_bytes, data_bytes) from a standard Unix ar archive."""
-    with Path(src).open('rb') as f:
+    src_path = Path(src)
+    file_size = src_path.stat().st_size
+    max_file = settings.ZIP_MAX_UNCOMPRESSED_FILE_SIZE
+    max_total = settings.ZIP_MAX_UNCOMPRESSED_TOTAL_SIZE
+    total_size = 0
+    with src_path.open('rb') as f:
         if f.read(8) != b'!<arch>\n':
             raise ValueError('Not a standard Unix ar archive')
         gnu_table = None
         while True:
-            raw_name, data = _read_ar_member(f)
+            raw_name, data = _read_ar_member(f, file_size, max_file)
             if raw_name is None:
                 break
+            total_size += len(data)
+            if total_size > max_total:
+                raise _ArLimitExceededError(
+                    'Total AR archive size exceeds limit')
             if raw_name in (b'//', b'/SYM64/'):
                 gnu_table = data
             elif raw_name != b'/':
@@ -619,23 +654,37 @@ def ar_extract(checksum, src, dst):
     msg = 'Extracting static library archive'
     logger.info(msg)
     append_scan_status(checksum, msg)
+    stop_fallback = False
     try:
         for a, val in _iter_ar_archive(src):
             # Handle archive slip attacks
             filtered = a.decode('utf-8', 'ignore')
             if is_path_traversal(filtered):
-                msg = f'Zip slip detected. skipped extracting {filtered}'
+                msg = (
+                    'Zip slip detected. skipped extracting '
+                    f'{sanitize_for_logging(filtered)}')
                 logger.warning(msg)
                 append_scan_status(checksum, msg)
+                stop_fallback = True
                 continue
             out = Path(dst) / filtered
             if not is_safe_path(dst, out, filtered):
-                msg = f'AR slip detected. skipped extracting {filtered}'
+                msg = (
+                    'AR slip detected. skipped extracting '
+                    f'{sanitize_for_logging(filtered)}')
                 logger.warning(msg)
                 append_scan_status(checksum, msg)
+                stop_fallback = True
                 continue
             out.write_bytes(val)
+    except _ArLimitExceededError as exp:
+        msg = f'AR archive exceeded size limit: {exp}'
+        logger.error(msg)
+        append_scan_status(checksum, msg)
+        return
     except Exception:
+        if stop_fallback:
+            return
         # Possibly dealing with Fat binary, needs Mac host
         msg = 'Failed to extract .a archive'
         logger.warning(msg)
