@@ -5,7 +5,9 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
-from cryptography.hazmat.primitives.serialization import pkcs7
+from asn1crypto import cms
+
+from cryptography import x509
 
 from defusedxml.ElementTree import fromstring
 
@@ -416,18 +418,88 @@ def parse_manifest(manifest_path):
     return info
 
 
-def _dn_parts(dn):
-    """Normalize a distinguished name into a set of (key, value) pairs."""
+DN_ALIASES = {
+    'S': 'ST',
+    'E': '1.2.840.113549.1.9.1',
+    'EMAIL': '1.2.840.113549.1.9.1',
+    'EMAILADDRESS': '1.2.840.113549.1.9.1',
+}
+HEX_ESCAPE = re.compile(r'[0-9A-Fa-f]{2}')
+
+
+def _add_dn_part(parts, key, value):
+    key = ''.join(key).strip().upper()
+    if key:
+        parts.add((DN_ALIASES.get(key, key), ''.join(value).strip()))
+
+
+def _manifest_dn_parts(dn):
+    """Parse a manifest Publisher DN, honouring quotes and escapes."""
     parts = set()
-    for part in re.split(r',(?=(?:[^"]*"[^"]*")*[^"]*$)', dn or ''):
-        if '=' not in part:
+    key, value = [], []
+    in_value = quoted = False
+    dn = dn or ''
+    i = 0
+    while i < len(dn):
+        ch = dn[i]
+        target = value if in_value else key
+        if ch == '\\' and i + 1 < len(dn):
+            if HEX_ESCAPE.fullmatch(dn[i + 1:i + 3]):
+                target.append(chr(int(dn[i + 1:i + 3], 16)))
+                i += 3
+            else:
+                target.append(dn[i + 1])
+                i += 2
             continue
-        key, value = part.split('=', 1)
-        key = key.strip().upper()
-        if key == 'S':
-            key = 'ST'
-        parts.add((key, value.strip().strip('"')))
+        if ch == '"' and in_value:
+            quoted = not quoted
+        elif ch == '=' and not in_value:
+            in_value = True
+        elif ch in ',;+' and not quoted:
+            _add_dn_part(parts, key, value)
+            key, value = [], []
+            in_value = False
+        else:
+            target.append(ch)
+        i += 1
+    _add_dn_part(parts, key, value)
     return parts
+
+
+def _cert_dn_parts(name):
+    """Attribute set of a certificate subject, matching _manifest_dn_parts."""
+    parts = set()
+    for attr in name:
+        key = attr.rfc4514_attribute_name.upper()
+        parts.add((DN_ALIASES.get(key, key), str(attr.value).strip()))
+    return parts
+
+
+def _signer_certificate(raw):
+    """Return (certificate, digest algorithm) of the PKCS#7 SignerInfo."""
+    info = cms.ContentInfo.load(raw)
+    if info['content_type'].native != 'signed_data':
+        return None, ''
+    signed = info['content']
+    signer_infos = signed['signer_infos']
+    if not len(signer_infos):
+        return None, ''
+    signer = signer_infos[0]
+    sid = signer['sid']
+    for choice in signed['certificates'] or []:
+        if choice.name != 'certificate':
+            continue
+        cert = choice.chosen
+        if sid.name == 'issuer_and_serial_number':
+            match = (
+                cert.issuer == sid.chosen['issuer']
+                and cert.serial_number == sid.chosen['serial_number'].native)
+        else:
+            match = cert.key_identifier == sid.chosen.native
+        if match:
+            digest = signer['digest_algorithm']['algorithm'].native
+            return x509.load_der_x509_certificate(cert.dump()), digest
+    return None, ''
 
 
 def analyze_signature(root_dir, publisher):
@@ -456,29 +528,25 @@ def analyze_signature(root_dir, publisher):
     if raw.startswith(P7X_MAGIC):
         raw = raw[len(P7X_MAGIC):]
     try:
-        certs = pkcs7.load_der_pkcs7_certificates(raw)
+        leaf, digest = _signer_certificate(raw)
     except Exception:
-        certs = []
-    if not certs:
+        leaf, digest = None, ''
+    if not leaf:
         findings.append(_finding(
             'package_signature_invalid',
             'Package signature could not be parsed',
             HIGH,
-            'AppxSignature.p7x is present but is not a valid PKCS#7 '
-            'signature. The package may have been tampered with.'))
+            'AppxSignature.p7x is present but is not a PKCS#7 signature '
+            'with a signer certificate. The package may have been '
+            'tampered with.'))
         return result
-    issuers = {c.issuer.rfc4514_string() for c in certs}
-    leaf = next(
-        (c for c in certs if c.subject.rfc4514_string() not in issuers
-         or len(certs) == 1),
-        certs[0])
     result['signed'] = True
     result['signer'] = leaf.subject.rfc4514_string()
     result['issuer'] = leaf.issuer.rfc4514_string()
     result['valid_to'] = leaf.not_valid_after_utc.isoformat()
-    algo = leaf.signature_hash_algorithm
-    result['hash_algorithm'] = algo.name if algo else ''
-    if publisher and _dn_parts(result['signer']) != _dn_parts(publisher):
+    result['hash_algorithm'] = digest or ''
+    if (publisher
+            and _cert_dn_parts(leaf.subject) != _manifest_dn_parts(publisher)):
         findings.append(_finding(
             'package_publisher_mismatch',
             'Signer does not match the manifest publisher',
@@ -500,7 +568,7 @@ def analyze_signature(root_dir, publisher):
             'package_weak_signature',
             'Package signature uses a weak hash algorithm',
             WARNING,
-            f'The signing certificate uses {result["hash_algorithm"]}, '
+            f'The package signature uses {result["hash_algorithm"]}, '
             'which is vulnerable to collision attacks. Use SHA-256.'))
     if leaf.not_valid_after_utc < datetime.now(timezone.utc):
         findings.append(_finding(

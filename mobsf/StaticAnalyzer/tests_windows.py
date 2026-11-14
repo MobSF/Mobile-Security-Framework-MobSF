@@ -7,6 +7,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest import mock
 
+from asn1crypto import cms
+
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -82,7 +84,7 @@ def _rules(findings):
     return {f['rule']: f for f in findings}
 
 
-def _write_p7x(root, subject, issuer=None, expired=False):
+def _make_cert(subject, expired=False):
     key = ec.generate_private_key(ec.SECP256R1())
     now = datetime.now(timezone.utc)
     not_after = now - timedelta(days=1) if expired else now + timedelta(
@@ -90,13 +92,22 @@ def _write_p7x(root, subject, issuer=None, expired=False):
     cert = (
         x509.CertificateBuilder()
         .subject_name(subject)
-        .issuer_name(issuer or subject)
+        .issuer_name(subject)
         .public_key(key.public_key())
         .serial_number(x509.random_serial_number())
         .not_valid_before(now - timedelta(days=60))
         .not_valid_after(not_after)
         .sign(key, hashes.SHA256()))
-    der = pkcs7.serialize_certificates([cert], serialization.Encoding.DER)
+    return cert, key
+
+
+def _write_p7x(root, subject, expired=False, digest=None):
+    cert, key = _make_cert(subject, expired)
+    der = (
+        pkcs7.PKCS7SignatureBuilder()
+        .set_data(b'AppxBlockMap')
+        .add_signer(cert, key, digest or hashes.SHA256())
+        .sign(serialization.Encoding.DER, [pkcs7.PKCS7Options.Binary]))
     (Path(root) / 'AppxSignature.p7x').write_bytes(P7X_MAGIC + der)
 
 
@@ -149,11 +160,11 @@ class ManifestTests(SimpleTestCase):
         self.assertEqual(caps['webcam']['type'], 'Device')
 
     def test_xxe_rejected(self):
-        secret = self.tmp / 'secret.txt'
-        secret.write_text('TOPSECRET')
+        external = self.tmp / 'external.txt'
+        external.write_text('external entity content')
         xxe = (
             '<?xml version="1.0"?>'
-            f'<!DOCTYPE p [<!ENTITY x SYSTEM "file://{secret}">]>'
+            f'<!DOCTYPE p [<!ENTITY x SYSTEM "file://{external}">]>'
             '<Package><Properties><DisplayName>&x;</DisplayName>'
             '</Properties></Package>')
         info = self._parse(xxe)
@@ -201,6 +212,45 @@ class SignatureTests(SimpleTestCase):
         self.assertNotIn('package_publisher_mismatch', rules)
         self.assertIn('package_self_signed', rules)
 
+    def test_certificate_only_is_not_signed(self):
+        cert, _ = _make_cert(_contoso_name())
+        der = pkcs7.serialize_certificates(
+            [cert], serialization.Encoding.DER)
+        (self.tmp / 'AppxSignature.p7x').write_bytes(P7X_MAGIC + der)
+        result = analyze_signature(self.tmp, PUBLISHER)
+        self.assertFalse(result['signed'])
+        self.assertIn('package_signature_invalid', _rules(result['findings']))
+
+    def test_signer_digest_used_for_hash_algorithm(self):
+        _write_p7x(self.tmp, _contoso_name(), digest=hashes.SHA512())
+        result = analyze_signature(self.tmp, PUBLISHER)
+        self.assertEqual(result['hash_algorithm'], 'sha512')
+
+    def test_weak_signer_digest(self):
+        _write_p7x(self.tmp, _contoso_name())
+        sig = self.tmp / 'AppxSignature.p7x'
+        info = cms.ContentInfo.load(sig.read_bytes()[len(P7X_MAGIC):])
+        info['content']['signer_infos'][0]['digest_algorithm'] = {
+            'algorithm': 'sha1'}
+        sig.write_bytes(P7X_MAGIC + info.dump(force=True))
+        result = analyze_signature(self.tmp, PUBLISHER)
+        self.assertEqual(result['hash_algorithm'], 'sha1')
+        self.assertIn('package_weak_signature', _rules(result['findings']))
+
+    def test_publisher_with_escaped_comma(self):
+        name = x509.Name([
+            x509.NameAttribute(NameOID.COMMON_NAME, 'Contoso, Inc.'),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, 'US'),
+        ])
+        _write_p7x(self.tmp, name)
+        for publisher in ('CN="Contoso, Inc.", C=US',
+                          'CN=Contoso\\, Inc., C=US'):
+            rules = _rules(analyze_signature(self.tmp, publisher)['findings'])
+            self.assertNotIn('package_publisher_mismatch', rules, publisher)
+        rules = _rules(
+            analyze_signature(self.tmp, 'CN=Contoso, C=US')['findings'])
+        self.assertIn('package_publisher_mismatch', rules)
+
     def test_publisher_mismatch_and_expired(self):
         other = x509.Name([
             x509.NameAttribute(NameOID.COMMON_NAME, 'Attacker')])
@@ -240,6 +290,34 @@ class StringsTests(SimpleTestCase):
             path.write_bytes(b'\x00' * pad + token + b'\x00' * 100)
             strings = extract_strings(path, 100)
         self.assertEqual(strings, [token.decode()])
+
+    def test_utf16_split_at_chunk_boundary(self):
+        path = self.tmp / 'wide.dll'
+        url = 'https://wide.example/path/to/resource'
+        chunk = 64 * 1024
+        data = bytearray(chunk * 2)
+        offset = chunk - 21
+        encoded = url.encode('utf-16-le')
+        data[offset:offset + len(encoded)] = encoded
+        path.write_bytes(bytes(data))
+        with mock.patch(
+                'mobsf.StaticAnalyzer.views.windows.strings.CHUNK_SIZE',
+                chunk):
+            self.assertEqual(extract_strings(path, 100), [url])
+
+    def test_long_run_across_boundary_keeps_prefix(self):
+        path = self.tmp / 'long.dll'
+        chunk = 64 * 1024
+        url = b'https://long.example/'
+        start = chunk - 10000
+        data = (b'\x00' * start + url + b'A' * 20000 + b'\x00')
+        path.write_bytes(data)
+        with mock.patch(
+                'mobsf.StaticAnalyzer.views.windows.strings.CHUNK_SIZE',
+                chunk):
+            strings = extract_strings(path, 100)
+        self.assertEqual(len(strings), 1)
+        self.assertTrue(strings[0].startswith(url.decode()))
 
     def test_limits(self):
         path = self.tmp / 'many.dll'

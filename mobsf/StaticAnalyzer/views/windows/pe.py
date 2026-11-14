@@ -264,17 +264,18 @@ class PEChecksec:
                 'Native banned API checks do not apply to IL-only .NET '
                 'assemblies.')
         found = set()
-        try:
-            for lib in self.binary.imports:
-                for entry in lib.entries:
-                    if entry.is_ordinal or not entry.name:
-                        continue
-                    name = entry.name.lower()
-                    if (name in BANNED_APIS
-                            or name.rstrip('aw') in BANNED_APIS):
-                        found.add(entry.name)
-        except Exception:
-            pass
+        for table in ('imports', 'delay_imports'):
+            try:
+                for lib in getattr(self.binary, table):
+                    for entry in lib.entries:
+                        if entry.is_ordinal or not entry.name:
+                            continue
+                        name = entry.name.lower()
+                        if (name in BANNED_APIS
+                                or name.rstrip('aw') in BANNED_APIS):
+                            found.add(entry.name)
+            except Exception:
+                continue
         if found:
             return _check(
                 ', '.join(sorted(found)), WARNING,

@@ -12,7 +12,8 @@ _PATTERNS = (
     (re.compile(rb'(?:[\x20-\x7e]\x00){%d,}' % MIN_LEN), 'utf-16-le'),
 )
 # Bytes kept from the previous chunk so strings crossing a chunk
-# boundary are matched whole in the next pass.
+# boundary are matched whole in the next pass. Runs at least this long
+# already hold a full MAX_STRING_LEN prefix and are emitted immediately.
 _OVERLAP = MAX_STRING_LEN * 2
 
 
@@ -40,9 +41,13 @@ def extract_strings(path, max_strings, max_bytes=MAX_READ_BYTES):
                 for match in regex.finditer(buf):
                     start, end = base + match.start(), base + match.end()
                     if start < done_until[idx]:
+                        # Rest of a run that was already emitted
+                        done_until[idx] = max(done_until[idx], end)
                         continue
-                    if not final and match.end() == len(buf):
-                        # May continue in the next chunk
+                    # A UTF-16LE character can be split across chunks, so a
+                    # match ending one byte early may still continue.
+                    if (not final and match.end() >= len(buf) - 1
+                            and len(match.group()) < _OVERLAP):
                         break
                     done_until[idx] = end
                     text = _decode(match.group(), encoding)
