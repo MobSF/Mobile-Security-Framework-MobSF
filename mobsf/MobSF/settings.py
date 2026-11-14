@@ -85,7 +85,10 @@ ALLOWED_EXTENSIONS = {
     '.dylib': 'application/octet-stream',
     '.a': 'application/octet-stream',
     '.pcap': 'application/vnd.tcpdump.pcap',
-    '.appx': 'application/vns.ms-appx',
+    '.appx': 'application/vnd.ms-appx',
+    '.msix': 'application/msix',
+    '.appxbundle': 'application/vnd.ms-appx',
+    '.msixbundle': 'application/msixbundle',
 }
 # =============ALLOWED MIMETYPES=================
 APK_MIME = [
@@ -115,7 +118,14 @@ ZIP_MIME = [
 APPX_MIME = [
     'application/octet-stream',
     'application/vns.ms-appx',
+    'application/vnd.ms-appx',
+    'application/appx',
+    'application/appxbundle',
+    'application/msix',
+    'application/msixbundle',
     'application/x-zip-compressed',
+    'application/zip',
+    'binary/octet-stream',
 ]
 # Supported File Extensions
 ANDROID_EXTS = (
@@ -123,7 +133,7 @@ ANDROID_EXTS = (
     'aab', 'so', 'jar', 'aar', 'dex',
 )
 IOS_EXTS = ('ipa', 'dylib', 'a')
-WINDOWS_EXTS = ('appx',)
+WINDOWS_EXTS = ('appx', 'msix', 'appxbundle', 'msixbundle')
 # REST API only mode
 # Set MOBSF_API_ONLY to 1 to enable REST API only mode
 # In this mode, web UI related urls are disabled.
@@ -475,16 +485,6 @@ else:
     DOMAIN_MALWARE_SCAN = os.getenv('MOBSF_DOMAIN_MALWARE_SCAN', '1') == '1'
     APKID_ENABLED = os.getenv('MOBSF_APKID_ENABLED', '1') == '1'
     # ==================================================
-    # ======WINDOWS STATIC ANALYSIS SETTINGS ===========
-    # Private key
-    WINDOWS_VM_SECRET = os.getenv(
-        'MOBSF_WINDOWS_VM_SECRET', 'mobsf/MobSF/windows_vm_priv_key.asc')
-    # IP and Port of the MobSF Windows VM
-    # example: WINDOWS_VM_IP = '127.0.0.1'   ;noqa E800
-    WINDOWS_VM_IP = os.getenv('MOBSF_WINDOWS_VM_IP')
-    WINDOWS_VM_PORT = os.getenv('MOBSF_WINDOWS_VM_PORT', '8000')
-    # ==================================================
-
     # ==============3rd Party Tools=====================
     """
     If you want to use a different version of 3rd party tools used by MobSF.

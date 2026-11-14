@@ -62,7 +62,7 @@
                                   <br/><strong>{{ e.APP_NAME }} {% if e.VERSION_NAME %} - {{ e.VERSION_NAME }} {% endif %}</strong>
                                   </br>{{ e.PACKAGE_NAME }}
                                   {% if e.FILE_NAME|slice:"-6:" != '.dylib' %}
-                                  {% if e.FILE_NAME|slice:"-5:" != '.appx' %}
+                                  {% if e.ANALYZER != 'static_analyzer_windows' %}
                                     {% if e.FILE_NAME|slice:"-3:" != '.so' %}
                                       {% if e.FILE_NAME|slice:"-2:" != '.a' %}
                                     <p> <a href="{% url "appsec_dashboard" checksum=e.MD5 %}" class="btn btn-sm btn-outline-primary" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
@@ -98,7 +98,7 @@
                                 {% elif '.dylib' == e.FILE_NAME|slice:"-6:"%}<i class="fa fa-th-large fa-3x"></i>
                                 {% elif '.a' == e.FILE_NAME|slice:"-2:"%}<i class="fa fa-th-large fa-3x"></i>
                                 {% elif '.zip' == e.FILE_NAME|slice:"-4:"%}<i class="fas fa-file-archive fa-3x"></i>
-                                {% elif '.appx' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-windows fa-3x"></i>
+                                {% elif e.ANALYZER == 'static_analyzer_windows' %}<i class="fab fa-windows fa-3x"></i>
                                 {% endif %}
                             </td>
                             <td>{{ e.MD5 }}</td>

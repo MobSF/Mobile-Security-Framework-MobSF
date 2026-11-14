@@ -190,7 +190,7 @@ class Upload(object):
         elif self.file_type.is_a():
             return scanning.scan_a()
         elif self.file_type.is_appx():
-            return scanning.scan_appx()
+            return scanning.scan_appx(self.file_type.windows_ext())
 
 
 @login_required

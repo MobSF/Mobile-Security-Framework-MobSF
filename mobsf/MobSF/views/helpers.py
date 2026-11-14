@@ -102,9 +102,17 @@ class FileType(object):
         return (self.file_type in settings.IPA_MIME
                 and self.file_name_lower.endswith('.ipa'))
 
+    def windows_ext(self):
+        """Return the APPX/MSIX package extension, or None."""
+        if self.file_type not in settings.APPX_MIME:
+            return None
+        for ext in settings.WINDOWS_EXTS:
+            if self.file_name_lower.endswith(f'.{ext}'):
+                return ext
+        return None
+
     def is_appx(self):
-        return (self.file_type in settings.APPX_MIME
-                and self.file_name_lower.endswith('.appx'))
+        return self.windows_ext() is not None
 
 
 def request_method(methods):

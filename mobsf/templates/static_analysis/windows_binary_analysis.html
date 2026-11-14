@@ -15,447 +15,708 @@
         }
     </style>
     <style>
-          #app_icon{
-            width: 64px;
-            height: 64px;
-          }
+      .pe-cell {
+        min-width: 160px;
+      }
+      .wrap-text {
+        word-break: break-all;
+      }
     </style>
     {% endblock %}
     {% block sidebar %}
-    <!-- Main Sidebar Container -->
-    <!-- Sidebar -->
     <div class="sidebar">
-        <!-- Sidebar user panel (optional) -->
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
         <div class="info">
           <a href="#" class="d-block">Static Analyzer</a>
         </div>
       </div>
-
-      <!-- Sidebar Menu -->
       <nav class="mt-2">
         <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu" data-accordion="false">
-          
           <li class="nav-item">
             <a href="#information" class="nav-link">
               <i class="nav-icon fas fa-info-circle"></i>
-              <p>
-                Information
-              </p>
+              <p>Information</p>
             </a>
           </li>
-           <li class="nav-item">
+          <li class="nav-item">
             <a href="#scan_options" class="nav-link">
               <i class="nav-icon fas fa-cog"></i>
-              <p>
-                Scan Options
-              </p>
+              <p>Scan Options</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#signature" class="nav-link">
+              <i class="nav-icon fas fa-certificate"></i>
+              <p>Package Signature</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#manifest_analysis" class="nav-link">
+              <i class="nav-icon fas fa-search"></i>
+              <p>Manifest Analysis</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#capabilities" class="nav-link">
+              <i class="nav-icon fas fa-list"></i>
+              <p>Capabilities</p>
             </a>
           </li>
           <li class="nav-item">
             <a href="#binary_analysis" class="nav-link">
               <i class="nav-icon fas fa-flag"></i>
-              <p>
-                Binary Analysis
-              </p>
+              <p>Binary Analysis</p>
             </a>
           </li>
           <li class="nav-item">
             <a href="#malware_lookup" class="nav-link">
               <i class="fa fa-ban nav-icon"></i>
-              <p>
-                Malware Lookup
-              </p>
+              <p>Malware Lookup</p>
             </a>
           </li>
-           {% if virus_total %}
-              <li class="nav-item">
-                <a href="#virus_total" class="nav-link">
-                  <i class="fas fa-spider nav-icon"></i>
-                  <p>VirusTotal</p>
-                </a>
-              </li>
-            {% endif %}
-           <li class="nav-item">
+          {% if virus_total %}
+          <li class="nav-item">
+            <a href="#virus_total" class="nav-link">
+              <i class="fas fa-spider nav-icon"></i>
+              <p>VirusTotal</p>
+            </a>
+          </li>
+          {% endif %}
+          <li class="nav-item">
+            <a href="#malware_check" class="nav-link">
+              <i class="fab fa-searchengin nav-icon"></i>
+              <p>Domain Malware Check</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#urls" class="nav-link">
+              <i class="fas fa-globe nav-icon"></i>
+              <p>URLs</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#emails" class="nav-link">
+              <i class="fas fa-envelope nav-icon"></i>
+              <p>Emails</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#trackers" class="nav-link">
+              <i class="fas fa-user-secret nav-icon"></i>
+              <p>Trackers</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#secrets" class="nav-link">
+              <i class="fas fa-key nav-icon"></i>
+              <p>Hardcoded Secrets</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#strings" class="nav-link">
+              <i class="fas fa-font nav-icon"></i>
+              <p>Strings</p>
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="#files" class="nav-link">
               <i class="nav-icon far fa-copy"></i>
-              <p>
-                Files
-              </p>
+              <p>Files</p>
             </a>
           </li>
-            <li class="nav-item">
-              <a href="{% url "pdf" checksum=md5 %}" class="nav-link">
+          <li class="nav-item">
+            <a href="{% url "pdf" checksum=md5 %}" class="nav-link">
               <i class="nav-icon fas fa-file-pdf"></i>
-              <p>
-                PDF Report
-              </p>
-             </a>
-            </li>
-            <li class="nav-item">
-              <a href="javascript:window.print()" class="nav-link">
+              <p>PDF Report</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="javascript:window.print()" class="nav-link">
               <i class="nav-icon fa fa-print"></i>
-              <p>
-                Print Report
-              </p>
-             </a>
-            </li>
+              <p>Print Report</p>
+            </a>
+          </li>
         </ul>
       </nav>
-      <!-- /.sidebar-menu -->
     </div>
-    <!-- /.sidebar -->
 {% endblock %}
 {% block content %}
-  <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
-  <!-- Content Header (Page header) -->
   <div class="content-header">
-  <!--
-    <div class="container-fluid">
-      <div class="row mb-2">
-        <div id="mobsf_header" align="center">
-        </div>
-      </div>
-    </div>-->
   </div>
-  <!-- /.content-header -->
 
-
- <!-- Main content -->
 <a id="information" class="anchor"></a>
 <section class="content">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-lg-12">
-        
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title"></h5>
-                <div class="row">
-                <div class="col-12 col-md-2">
-                  <p><strong><i class="fas fa-info"></i> APP INFORMATION </strong></p>
-                    <span class="badge bg-primary">App Name</span>
-                    {{ app_name }} <br/>
-                    <span class="badge bg-primary">Publisher</span>
-                    {{ publisher_name }} <br/>
-                    <span class="badge bg-primary">Version</span>
-                    {{ app_version }} <br/>
-                    <span class="badge bg-primary">Arch</span>
-                    {{ architecture }}
-                    {% if virus_total and virus_total.items|length > 9 %}
-                      {% if virus_total.positives > 0 %} 
-                        <span class="badge bg-danger">VirusTotal Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
-                      {% else %}
-                        <span class="badge bg-success">VirusTotal Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
-                      {% endif %}
-                    {% endif %}
-                </div>
-                <div class="col-12 col-md-5">
-                  <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION </strong></p>                         
-                      <span class="badge bg-primary">File Name</span>
-                      {{ file_name }} <br/>
-                      <span class="badge bg-primary">Size</span>
-                      {{ size }} <br/>
-                      <span class="badge bg-primary">MD5</span>
-                      {{ md5 }} <br/>
-                     <span class="badge bg-primary">SHA1</span>
-                      {{ sha1 }} <br/>
-                     <span class="badge bg-primary">SHA256</span>
-                      {{ sha256 }}
-                </p>
-                </div>
-                <div class="col-12 col-md-5">
-                  <p><strong><i class="fas fa-file-code"></i> XML INFORMATION </strong></p>                                       
-                    <span class="badge bg-primary">Compiler Version</span>
-                    {{ compiler_version }}
-                  <span class="badge bg-primary">Visual Studio Version</span>
-                    {{ visual_studio_version }}  <br/>
-                    <span class="badge bg-primary">Visual Studio Edition</span>
-                    {{ visual_studio_edition }}  <br/>
-                    <span class="badge bg-primary">Target OS</span>
-                    {{ target_os }}  <br/>
-                    <span class="badge bg-primary">APPX DLL Version</span>
-                    {{ appx_dll_version }}  <br/>
-                  <span class="badge bg-primary">Proj GUID</span>
-                    {{ proj_guid }}  <br/>
-                  <span class="badge bg-primary">Opti Tool</span>
-                    {{ opti_tool }} <br/>
-                  <span class="badge bg-primary">Target Run</span>
-                    {{ target_run }}
-                </div> 
-          
-
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-12 col-md-4">
+                <p><strong><i class="fas fa-info"></i> APP INFORMATION</strong></p>
+                <span class="badge bg-primary">App Name</span> {{ app_name }}<br/>
+                <span class="badge bg-primary">Package Name</span> {{ package_name }}<br/>
+                <span class="badge bg-primary">Publisher</span> {{ publisher_name }}<br/>
+                <span class="badge bg-primary">Version</span> {{ app_version }}<br/>
+                <span class="badge bg-primary">Architecture</span> {{ architecture }}<br/>
+                <span class="badge bg-primary">Min OS Version</span> {{ min_os_version }}<br/>
+                {% if virus_total and virus_total.items|length > 9 %}
+                  {% if virus_total.positives > 0 %}
+                    <span class="badge bg-danger">VirusTotal Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
+                  {% else %}
+                    <span class="badge bg-success">VirusTotal Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
+                  {% endif %}
+                {% endif %}
               </div>
-
+              <div class="col-12 col-md-4">
+                <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION</strong></p>
+                <span class="badge bg-primary">File Name</span> {{ file_name }}<br/>
+                <span class="badge bg-primary">Package Type</span> {{ package_type|upper }}<br/>
+                <span class="badge bg-primary">Size</span> {{ size }}<br/>
+                <span class="badge bg-primary">MD5</span> {{ md5 }}<br/>
+                <span class="badge bg-primary">SHA1</span> {{ sha1 }}<br/>
+                <span class="badge bg-primary">SHA256</span> <span class="wrap-text">{{ sha256 }}</span>
+              </div>
+              <div class="col-12 col-md-4">
+                <p><strong><i class="fas fa-file-code"></i> BUILD INFORMATION</strong></p>
+                <span class="badge bg-primary">Publisher DN</span> <span class="wrap-text">{{ publisher }}</span><br/>
+                {% if compiler_version %}<span class="badge bg-primary">Compiler Version</span> {{ compiler_version }}<br/>{% endif %}
+                {% if visual_studio_version %}<span class="badge bg-primary">Visual Studio Version</span> {{ visual_studio_version }}<br/>{% endif %}
+                {% if visual_studio_edition %}<span class="badge bg-primary">Visual Studio Edition</span> {{ visual_studio_edition }}<br/>{% endif %}
+                {% if target_os %}<span class="badge bg-primary">Target OS</span> {{ target_os }}<br/>{% endif %}
+                {% if appx_dll_version %}<span class="badge bg-primary">AppxPackage DLL Version</span> {{ appx_dll_version }}<br/>{% endif %}
+                {% if proj_guid %}<span class="badge bg-primary">Project GUID</span> {{ proj_guid }}<br/>{% endif %}
+                {% if opti_tool %}<span class="badge bg-primary">Optimizing Toolset</span> {{ opti_tool }}<br/>{% endif %}
+                {% if target_run %}<span class="badge bg-primary">Target Runtime</span> {{ target_run }}{% endif %}
+              </div>
             </div>
           </div>
-          </div>
-      <!-- /.col -->
-      <!-- row and container-->
+        </div>
       </div>
+    </div>
   </div>
-  </section>
-  <!-- =========================end information==================================== -->
-
-
+</section>
 
 <a id="scan_options" class="anchor"></a>
 <section class="content">
-      <div class="container-fluid">
-        <div class="row">
-            <div class="col-lg-12">
-            <div class="card">
-              <div class="card-body">
-                <p>
-                <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
-                </p>
-                <p align="center">
-                   <a href="{% url 'static_analyzer_windows' checksum=md5 %}?rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
-                   <a href="#" data-target="#mstrings" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-table"></i> View Strings</a>
-                   <button type="button" class="btn btn-warning" data-toggle="modal" data-target=".scan-logs-mdl"><i class="fa fa-list" aria-hidden="true"></i> Scan Logs</button>
-                   <a href="{% url "download_binary" checksum=md5 %}" class="btn btn-warning"> <i class="fa fa-download"></i> Download APPX</a>
-               </p>
-              </div>
-            </div><!-- /.card -->
-            </div>
-            <!-- end row -->
-            </div>
-        </div>
-</section>
- 
- <a id="binary_analysis" class="anchor"></a>
- <section class="content">
   <div class="container-fluid">
     <div class="row">
-        <div class="col-lg-12">
+      <div class="col-lg-12">
         <div class="card">
           <div class="card-body">
-              <p>
-             <strong><i class="fas fa-flag"></i> APPX BINARY ANALYSIS</strong>
-             </p>
-              <div class="table-responsive">
-                   <table class="table table-bordered table-hover table-striped">
-                  <thead>
-                      <tr>
-                          <th>ISSUE</th>
-                          <th>STATUS</th>
-                          <th>DESCRIPTION</th>
-                          <th>INFO</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                    {% for result in binary_analysis %}
-                      <tr>
-                        <td>{{ result.rule_id }}</td>
-                        <td>
-                          {% if result.status == "Insecure" %}
-                            <span class='badge bg-danger'>
-                          {% endif %}
-                          {% if result.status == "Secure" %}
-                            <span class='badge bg-success'>
-                          {% endif %}
-                          {% if result.status == "Info" %}
-                            <span class='badge bg-info'>
-                          {% endif %}
-                              {{ result.status }}
-                          </span>
-                        </td>
-                        <td>{{ result.desc }}</td>
-                        <td>{{ result.info }}</td>
-                      </tr>
-                    {% endfor %}
-                    {% for warn in binary_warnings %}
-                    <tr>
-                      <td>{{ warn.rule_id }}</td>
-                      <td>
-                          <span class='badge bg-info'>
-                            {{ warn.status }}
-                        </span>
-                      </td>
-                      <td>{{ warn.desc }}</td>
-                      <td>{{ warn.info }}
-                    </tr>
-                    {% endfor %}
-                    </tbody>
-                    </table>
-                  </div>
-              
+            <p><strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong></p>
+            <p align="center">
+              <a href="{% url 'static_analyzer_windows' checksum=md5 %}?rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
+              <button type="button" class="btn btn-warning" data-toggle="modal" data-target=".scan-logs-mdl"><i class="fa fa-list" aria-hidden="true"></i> Scan Logs</button>
+              <a href="{% url "download_binary" checksum=md5 %}" class="btn btn-warning"><i class="fa fa-download"></i> Download Package</a>
+            </p>
           </div>
-        </div><!-- /.card -->
         </div>
-        <!-- end row -->
-        </div>
+      </div>
     </div>
+  </div>
 </section>
- <!-- ===========================end binary analysis ================================== -->
-  <!---Malware Analysis Section-->
- <a id="malware_lookup" class="anchor"></a>
- <section class="content">
-   <div class="container-fluid">
-     <div class="row">
-         <div class="col-lg-12">
-         <div class="card">
-           <div class="card-body">
-             <p>
-              <strong><i class="fa fa-ban"></i> MALWARE LOOKUP</strong>
-              </p>
-                <div class="table-responsive">
-               <div class="row">
-                <div class="col-sm-3 col-6">
+
+<a id="signature" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p><strong><i class="fas fa-certificate"></i> PACKAGE SIGNATURE</strong></p>
+            {% if package_signature.signed %}
+              <span class="badge bg-primary">Signer</span> <span class="wrap-text">{{ package_signature.signer }}</span><br/>
+              <span class="badge bg-primary">Issuer</span> <span class="wrap-text">{{ package_signature.issuer }}</span><br/>
+              <span class="badge bg-primary">Valid To</span> {{ package_signature.valid_to }}<br/>
+              <span class="badge bg-primary">Hash Algorithm</span> {{ package_signature.hash_algorithm }}
+            {% else %}
+              No package signature found.
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<a id="manifest_analysis" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p><strong><i class="fas fa-search"></i> MANIFEST ANALYSIS</strong></p>
+            {% if manifest_analysis %}
+            <div class="table-responsive">
+              <table id="table_manifest" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>NO</th>
+                    <th>ISSUE</th>
+                    <th>SEVERITY</th>
+                    <th>DESCRIPTION</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in manifest_analysis %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><strong>{{ item.title }}</strong></td>
+                    <td><span class="badge bg-{% if item.severity == 'high' %}danger{% elif item.severity == 'warning' %}warning{% elif item.severity == 'secure' %}success{% else %}info{% endif %}">{{ item.severity }}</span></td>
+                    <td>{{ item.description }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+              No manifest issues found.
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<a id="capabilities" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p><strong><i class="fas fa-list"></i> CAPABILITIES</strong></p>
+            {% if capabilities %}
+            <div class="table-responsive">
+              <table id="table_capabilities" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>CAPABILITY</th>
+                    <th>TYPE</th>
+                    <th>SEVERITY</th>
+                    <th>DESCRIPTION</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for cap in capabilities %}
+                  <tr>
+                    <td>{{ cap.name }}</td>
+                    <td>{{ cap.type }}</td>
+                    <td><span class="badge bg-{% if cap.severity == 'high' %}danger{% elif cap.severity == 'warning' %}warning{% else %}info{% endif %}">{{ cap.severity }}</span></td>
+                    <td>{{ cap.description }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+              No capabilities declared.
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<a id="binary_analysis" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p><strong><i class="fas fa-flag"></i> PE BINARY ANALYSIS</strong></p>
+            {% if pe_analysis %}
+            <div class="table-responsive">
+              <table id="table_pe" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>NO</th>
+                    <th>BINARY</th>
+                    <th>ASLR</th>
+                    <th>HIGH ENTROPY VA</th>
+                    <th>DEP (NX)</th>
+                    <th>CONTROL FLOW GUARD</th>
+                    <th>SAFESEH</th>
+                    <th>STACK COOKIE (/GS)</th>
+                    <th>RWX SECTIONS</th>
+                    <th>AUTHENTICODE</th>
+                    <th>BANNED APIS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for pe in pe_analysis %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td class="wrap-text"><strong>{{ pe.name }}</strong><br/>{{ pe.type }} &middot; {{ pe.format }} &middot; {{ pe.arch }}<br/>{{ pe.runtime }}</td>
+                    {% include 'static_analysis/windows_pe_cell.html' with chk=pe.aslr %}
+                    {% include 'static_analysis/windows_pe_cell.html' with chk=pe.high_entropy_va %}
+                    {% include 'static_analysis/windows_pe_cell.html' with chk=pe.dep %}
+                    {% include 'static_analysis/windows_pe_cell.html' with chk=pe.cfg %}
+                    {% include 'static_analysis/windows_pe_cell.html' with chk=pe.safe_seh %}
+                    {% include 'static_analysis/windows_pe_cell.html' with chk=pe.stack_cookie %}
+                    {% include 'static_analysis/windows_pe_cell.html' with chk=pe.rwx_sections %}
+                    {% include 'static_analysis/windows_pe_cell.html' with chk=pe.code_signature %}
+                    {% include 'static_analysis/windows_pe_cell.html' with chk=pe.banned_imports %}
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% elif binary_analysis or binary_warnings %}
+            <div class="table-responsive">
+              <table id="table_legacy" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>ISSUE</th>
+                    <th>STATUS</th>
+                    <th>DESCRIPTION</th>
+                    <th>INFO</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for result in binary_analysis %}
+                  <tr>
+                    <td>{{ result.rule_id }}</td>
+                    <td>{{ result.status }}</td>
+                    <td>{{ result.desc }}</td>
+                    <td>{{ result.info }}</td>
+                  </tr>
+                  {% endfor %}
+                  {% for warn in binary_warnings %}
+                  <tr>
+                    <td>{{ warn.rule_id }}</td>
+                    <td>{{ warn.status }}</td>
+                    <td>{{ warn.desc }}</td>
+                    <td>{{ warn.info }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <p>This report was generated by an older MobSF version. Rescan to run the PE binary analysis.</p>
+            {% else %}
+              No PE binaries found.
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<a id="malware_lookup" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p><strong><i class="fa fa-ban"></i> MALWARE LOOKUP</strong></p>
+            <div class="row">
+              <div class="col-sm-3 col-6">
                 <div class="description-block border-right">
-                <span class="text-danger"><a href="https://www.virustotal.com/gui/file/{{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> VirusTotal Report</a></span>
-                </div>
-                </div>
-                
-                <div class="col-sm-3 col-6">
-                <div class="description-block border-right">
-                <span class="text-warning"></i><a href="https://tria.ge/s?q={{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> Triage Report</a>
-                </span>
-                </div>
-                </div>
-                
-                <div class="col-sm-3 col-6">
-                <div class="description-block border-right">
-                <span class="text-info"><a href="https://metadefender.com/results/hash/{{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> MetaDefender Report</a>
-                </span>
-                </div>
-                </div>
-                
-                <div class="col-sm-3 col-6">
-                  <div class="description-block border-right">
-                  <span class="text-success"><a href="https://hybrid-analysis.com/search?q={{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> Hybrid Analysis Report</a>
-                  </span>
-                  </div>
+                  <span class="text-danger"><a href="https://www.virustotal.com/gui/file/{{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> VirusTotal Report</a></span>
                 </div>
               </div>
-           </div>
-         </div><!-- /.card -->
-         </div>
-         <!-- end row -->
-         </div>
-     </div>
- </section>
- <!-- ===========================end malware lookup ================================== -->
- {% if virus_total %}
+              <div class="col-sm-3 col-6">
+                <div class="description-block border-right">
+                  <span class="text-warning"><a href="https://tria.ge/s?q={{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> Triage Report</a></span>
+                </div>
+              </div>
+              <div class="col-sm-3 col-6">
+                <div class="description-block border-right">
+                  <span class="text-info"><a href="https://metadefender.com/results/hash/{{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> MetaDefender Report</a></span>
+                </div>
+              </div>
+              <div class="col-sm-3 col-6">
+                <div class="description-block border-right">
+                  <span class="text-success"><a href="https://hybrid-analysis.com/search?q={{ sha256 }}" target="_blank" rel="noopener"><i class="fa fa-eye"></i> Hybrid Analysis Report</a></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if virus_total %}
 <a id="virus_total" class="anchor"></a>
 <section class="content">
   <div class="container-fluid">
     <div class="row">
-        <div class="col-lg-12">
+      <div class="col-lg-12">
         <div class="card">
           <div class="card-body">
-            <p>
-             <strong><i class="fas fa-spider"></i> VIRUSTOTAL SCAN</strong>
-             </p>
-               <div class="table-responsive">
-                 {% if virus_total.items|length < 9 %} {% comment %} Basic check to determine if the response is a msg or a result {% endcomment %}
-                    <p align="left">&nbsp;&nbsp;<strong>{{ virus_total.verbose_msg }}</strong></p>
-                 {% else %}
-                    <p align="left">&nbsp;&nbsp;<strong> {{ virus_total.positives }} / {{ virus_total.total }}&nbsp; AVs found this file Malicious! </strong> &nbsp;&nbsp;<a href="{{ virus_total.permalink }}" target="_blank" rel="noopener"><i class="fas fa-th-list"></i> Full Report</a></p>
-                    {% if virus_total.positives > 0 %}
-                        <table id="table_vt" class="table table-bordered table-hover table-striped">
-                            <thead>
-                                <tr>
-                                    <th>AV</th>
-                                    <th>DETECTION</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            {% for av_name,av_result in virus_total.scans.items %}
-                                {% if av_result.detected == True %}
-                                   <tr>
-                                        <td>
-                                            {{ av_name }}
-                                        </td>
-                                       <td>
-                                            <span class="badge bg-danger">{{ av_result.result }}</span>
-                                        </td>
-                                  </tr>
-                                {% endif %}
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                        {% endif %}{% comment %} if results.positive > 0 {% endcomment %}
-                     {% endif %}{% comment %} if this is the upload msg or a result {% endcomment %}
-                 </div>
-          </div>
-        </div><!-- /.card -->
-        </div>
-        <!-- end row -->
-        </div>
-    </div>
-</section>
-{% endif %}
-<!-- ===========================end virus total ================================== -->
- <a id="files" class="anchor"></a>
-<section class="content">
-  <div class="container-fluid">
-  <div class="row">
-      <div class="col-lg-12">
-      <div class="card">
-        <div class="card-body">
-            <p>
-            <strong><i class="far fa-copy"></i> FILES</strong>
-            </p>
-              <div class="list-group">
-                <p>  
-                 {% for file in files %}
-                  {{ file}} <br>
-                {% endfor %}                             
-                </p>
+            <p><strong><i class="fas fa-spider"></i> VIRUSTOTAL SCAN</strong></p>
+            <div class="table-responsive">
+              {% if virus_total.items|length < 9 %}
+                <p align="left">&nbsp;&nbsp;<strong>{{ virus_total.verbose_msg }}</strong></p>
+              {% else %}
+                <p align="left">&nbsp;&nbsp;<strong> {{ virus_total.positives }} / {{ virus_total.total }}&nbsp; AVs found this file Malicious! </strong> &nbsp;&nbsp;<a href="{{ virus_total.permalink }}" target="_blank" rel="noopener"><i class="fas fa-th-list"></i> Full Report</a></p>
+                {% if virus_total.positives > 0 %}
+                <table id="table_vt" class="table table-bordered table-hover table-striped">
+                  <thead>
+                    <tr>
+                      <th>AV</th>
+                      <th>DETECTION</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for av_name, av_result in virus_total.scans.items %}
+                      {% if av_result.detected == True %}
+                      <tr>
+                        <td>{{ av_name }}</td>
+                        <td><span class="badge bg-danger">{{ av_result.result }}</span></td>
+                      </tr>
+                      {% endif %}
+                    {% endfor %}
+                  </tbody>
+                </table>
+                {% endif %}
+              {% endif %}
             </div>
           </div>
         </div>
-      </div><!-- /.card -->
       </div>
-      <!-- end row -->
-      </div>
+    </div>
+  </div>
 </section>
- <!-- ===========================end files ================================== -->
-<!-- end of contents -->
-</div>
+{% endif %}
 
-<!-- Modal -->
-
-<div class="modal" id="mstrings" tabindex="-1" role="dialog">
-      <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4 class="modal-title">Strings</h4>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">×</span>
-            </button>
-          </div>
-          <div class="modal-body">
-           <pre><code>
-           {% for string in strings %}
-              {{string}}
-           {% endfor %}
-          </code></pre>
+<a id="malware_check" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p><strong><i class="fab fa-searchengin"></i> DOMAIN MALWARE CHECK</strong></p>
+            <div class="table-responsive">
+              {% if domains %}
+              <table id="table_malware" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>DOMAIN</th>
+                    <th>STATUS</th>
+                    <th>GEOLOCATION</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for domain, details in domains.items %}
+                  <tr>
+                    <td>{{ domain }}</td>
+                    <td>
+                      {% if details|key:"bad" == "yes" %}
+                        <span class="badge bg-danger">malware</span><br/>
+                        <pre><strong>URL: </strong>{{ details|key:"domain_or_url" }}
+<strong>IP: </strong>{{ details|key:"ip" }}
+<strong>Description: </strong>{{ details|key:"desc" }}</pre>
+                      {% else %}
+                        <span class="badge bg-success">ok</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if details|key:"geolocation" %}
+                        <strong>IP: </strong>{{ details|key:"geolocation"|key:"ip" }}<br/>
+                        <strong>Country: </strong>{{ details|key:"geolocation"|key:"country_long" }}<br/>
+                        <strong>Region: </strong>{{ details|key:"geolocation"|key:"region" }}<br/>
+                        <strong>City: </strong>{{ details|key:"geolocation"|key:"city" }}
+                      {% else %}
+                        No Geolocation information available.
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              {% endif %}
+            </div>
           </div>
         </div>
-        <!-- /.modal-content -->
       </div>
-      <!-- /.modal-dialog -->
     </div>
+  </div>
+</section>
 
+<a id="urls" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p><strong><i class="fas fa-globe"></i> URLS</strong></p>
+            <div class="table-responsive">
+              {% if urls %}
+              <table id="table_urls" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>URL</th>
+                    <th>FILE</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for urldict in urls %}
+                  <tr>
+                    <td class="wrap-text">{% for u in urldict|key:"urls" %}{{ u }}<br/>{% endfor %}</td>
+                    <td>{{ urldict|key:"path" }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
+<a id="emails" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p><strong><i class="fas fa-envelope"></i> EMAILS</strong></p>
+            <div class="table-responsive">
+              {% if emails %}
+              <table id="table_emails" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>EMAIL</th>
+                    <th>FILE</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for email_dict in emails %}
+                  <tr>
+                    <td>{% for e in email_dict|key:"emails" %}{{ e }}<br/>{% endfor %}</td>
+                    <td>{{ email_dict|key:"path" }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<a id="trackers" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p><strong><i class="fas fa-user-secret"></i> TRACKERS</strong></p>
+            <div class="table-responsive">
+              {% if trackers.trackers %}
+              <table id="table_trackers" class="table table-bordered table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>TRACKER NAME</th>
+                    <th>CATEGORIES</th>
+                    <th>URL</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for trk in trackers.trackers %}
+                  <tr>
+                    <td>{{ trk.name }}</td>
+                    <td>{{ trk.categories }}</td>
+                    <td><a target="_blank" href="{{ trk.url }}" rel="noopener noreferrer">{{ trk.url }}</a></td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<a id="secrets" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p><strong><i class="fas fa-key"></i> POSSIBLE HARDCODED SECRETS</strong></p>
+            <div class="list-group wrap-text">
+              {% include 'base/list.html' with list=secrets type="secrets" limit=100 %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<a id="strings" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p><strong><i class="fas fa-font"></i> STRINGS</strong></p>
+            <div class="list-group wrap-text">
+              {% include 'base/list.html' with list=strings type="strings" limit=100 %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<a id="files" class="anchor"></a>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <p><strong><i class="far fa-copy"></i> FILES</strong></p>
+            <div class="list-group wrap-text">
+              {% include 'base/list.html' with list=files type="files" limit=200 %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
 {% endblock %}
-<!--end new UI-->
 {% block extra_scripts %}
-<!-- DataTables -->
 <script src="{% static "datatables/js/pdfmake.min.js" %}"></script>
 <script src="{% static "datatables/js/vfs_fonts.js" %}"></script>
 <script src="{% static "datatables/js/datatables.combined.min.js" %}"></script>
 <script src="{% static "others/js/datatables_init.js" %}"></script>
 <script>
-
   // Remove rescan parameter
   window.history.replaceState({}, '', window.location.pathname);
-
-   // Navbar Active
-    $(".nav-link").on("click", function() {
+  $(".nav-link").on("click", function() {
     $(".nav-link").removeClass("active");
     $(this).addClass("active");
   });
@@ -463,36 +724,27 @@
 {% endblock %}
 {% block scan_logs %}
 <table id="scan_logs" class="table table-bordered table-hover table-striped">
-   <thead>
+  <thead>
     <tr>
-        <th>Timestamp</th>
-        <th>Event</th>
-        <th>Error</th>
+      <th>Timestamp</th>
+      <th>Event</th>
+      <th>Error</th>
     </tr>
   </thead>
-<tbody>
+  <tbody>
   {% for log in logs %}
-  <tr>
-    <td>
-      {{log.timestamp}}
-    </td>
-    <td>
-      {{log.status}}
-    </td>
-    <td>
-      {% if not log.exception %}
-      <p class="text-success">
-        OK
-      </p>
-      {% else %}
-      <p class="text-danger">
-      {{log.exception}}
-       </p>
-      {% endif %}
-    </td>
-  </tr>
+    <tr>
+      <td>{{ log.timestamp }}</td>
+      <td>{{ log.status }}</td>
+      <td>
+        {% if not log.exception %}
+          <p class="text-success">OK</p>
+        {% else %}
+          <p class="text-danger">{{ log.exception }}</p>
+        {% endif %}
+      </td>
+    </tr>
   {% endfor %}
-</tbody>
+  </tbody>
 </table>
-
 {% endblock %}
