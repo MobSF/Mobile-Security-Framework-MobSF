@@ -2,7 +2,16 @@
 
 ![](https://cloud.githubusercontent.com/assets/4301109/20019521/cc61f7fc-a2f2-11e6-95f3-407030d9fdde.png)
 
-Mobile Security Framework (MobSF) is a security research platform for mobile applications in Android, iOS, and Windows Mobile. MobSF can be used for a variety of use cases such as mobile application security, penetration testing, malware analysis, and privacy analysis. The Static Analyzer supports popular mobile app binaries and libraries (`APK`, `XAPK`, `AAB`, `JAR`, `AAR`, `DEX`, `SO`, `IPA`, `DYLIB`, `A`, `APPX`, `MSIX`) as well as Android and iOS source code. Meanwhile, the Dynamic Analyzer supports both Android and iOS applications across emulators, simulators, Corellium, and physical devices (including stock non-rooted Android devices via Frida Gadget), offering an interactive platform for instrumented testing, runtime data inspection, and live web traffic analysis. MobSF seamlessly integrates with your DevSecOps or CI/CD pipeline via REST APIs and CLI tools.
+Mobile Security Framework (MobSF) is a security research platform for Android, iOS, and Windows apps, used for mobile application security, penetration testing, malware analysis, and privacy analysis. It offers static and dynamic analysis and integrates with DevSecOps and CI/CD pipelines through REST APIs and CLI tools.
+
+**Supported files**
+
+- **Static Analyzer**
+  - Android: `APK`, `APKS`, `XAPK`, `AAB`, `JAR`, `AAR`, `DEX`, `SO`, and source code (`ZIP`)
+  - iOS: `IPA`, `DYLIB`, `A`, and source code (`ZIP`)
+  - Windows: `APPX`, `MSIX`, `APPXBUNDLE`, `MSIXBUNDLE`
+  - Hybrid apps: JavaScript/TypeScript code and bundles (including Hermes bytecode) inside Android and iOS apps built with React Native, Expo, Cordova/Ionic, Capacitor, or NativeScript
+- **Dynamic Analyzer:** Android and iOS apps on emulators, simulators, Corellium, and physical devices (including stock non-rooted Android devices via Frida Gadget), with instrumented testing, runtime data inspection, and live web traffic analysis.
 
 Made with ![Love](https://cloud.githubusercontent.com/assets/4301109/16754758/82e3a63c-4813-11e6-9430-6015d98aeaab.png) in India
 
