@@ -2,6 +2,7 @@
 """JavaScript, TypeScript, Hybrid & Hermes Bytecode Static Analysis."""
 import json
 import logging
+import os
 import re
 import struct
 import subprocess
@@ -13,13 +14,16 @@ from defusedxml.ElementTree import fromstring as xml_fromstring
 from django.conf import settings
 
 from mobsf.MobSF.security import (
+    is_path_traversal,
     is_pipe_or_link,
     is_safe_path,
     sanitize_for_logging,
 )
 from mobsf.MobSF.utils import (
     append_scan_status,
+    python_dict,
 )
+from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
 from mobsf.StaticAnalyzer.views.common.secret_detection import (
     get_secrets,
 )
@@ -46,6 +50,10 @@ SKIP_JS_DIRS = {
     'java_source', 'smali_source', 'apktool_out', '__macosx',
     'vendor', 'frameworks', 'plugins', '_codesignature', 'sc_info',
 }
+# Cordova/Capacitor ship plugin JS under www/plugins or public/plugins.
+WEB_ROOT_DIRS = {'www', 'public'}
+HYBRID_CONFIG_FILES = {'config.xml', 'capacitor.config.json'}
+MAX_LISTED_JS_FILES = 10000
 SKIP_VENDOR_FILES = {
     'cordova.js', 'cordova_plugins.js', 'phonegap.js',
     'jquery.js', 'jquery.min.js', 'bootstrap.js', 'bootstrap.min.js',
@@ -398,13 +406,38 @@ def _is_valid_candidate(scan_root, pfile):
     return True
 
 
-def _has_skipped_part(rel_parts):
-    """Return True if any directory component is in SKIP_JS_DIRS."""
-    for part in rel_parts[:-1]:
-        low = part.lower()
-        if low in SKIP_JS_DIRS or low.endswith('.framework'):
-            return True
-    return False
+def _is_skipped_dir(name, parent):
+    """Return True if a directory should not be descended into."""
+    low = name.lower()
+    if low.endswith('.framework'):
+        return True
+    if low == 'plugins' and parent.lower() in WEB_ROOT_DIRS:
+        return False
+    return low in SKIP_JS_DIRS
+
+
+def _iter_files(root):
+    """Yield files under root, pruning skipped dirs without following links."""
+    for dirpath, dirnames, filenames in os.walk(root):
+        parent = os.path.basename(dirpath)
+        dirnames[:] = [
+            d for d in dirnames if not _is_skipped_dir(d, parent)]
+        for fname in filenames:
+            yield Path(dirpath, fname)
+
+
+def _is_js_name(name):
+    """Return True if a filename has a JS source or bundle extension."""
+    suffix = os.path.splitext(name)[1].lower()
+    return suffix in JS_SOURCE_EXTS or suffix in BUNDLE_EXTS
+
+
+def _is_analysis_name(name):
+    """Return True if a filename is relevant to JS/hybrid analysis."""
+    low = name.lower()
+    return (_is_js_name(low)
+            or low in HYBRID_CONFIG_FILES
+            or low.endswith('.map'))
 
 
 def _collect_roots_for_scan(scan_root, scan_type, app_root=None):
@@ -721,6 +754,7 @@ def _inspect_candidate_file(checksum, pfile, scan_root, rel_base, scan_type,
             state['scan_files'].append(dec_file)
             dec_rel = dec_file.relative_to(rel_base).as_posix()
             state['hermes']['dec_bundles'].append(dec_rel)
+            state['source_files'].append(dec_rel)
             _extract_js_urls_emails_secrets(
                 dec_file, dec_rel, state['urls_list'], state['urls'],
                 state['emails'], state['secrets'], hbc_strings)
@@ -730,6 +764,7 @@ def _inspect_candidate_file(checksum, pfile, scan_root, rel_base, scan_type,
                 state['emails'], state['secrets'], hbc_strings)
         return
 
+    state['source_files'].append(rel_to_base)
     if pfile.stat().st_size <= MAX_JS_FILE_BYTES:
         if suffix_low in BEAUTIFY_EXTS:
             try:
@@ -759,6 +794,7 @@ def analyze_js(checksum, scan_root, scan_type, app_root=None, rel_base=None):
             'dec_bundles': [],
         },
         'scan_files': [],
+        'source_files': [],
         'config_findings': {},
         'sourcemaps': {},
         'urls_list': [],
@@ -778,11 +814,9 @@ def analyze_js(checksum, scan_root, scan_type, app_root=None, rel_base=None):
                     checksum, xml_cfg, scan_root, rel_base, scan_type, state)
 
         for rdir in roots:
-            for pfile in rdir.rglob('*'):
-                if not _is_valid_candidate(scan_root, pfile):
-                    continue
-                rel_parts = pfile.relative_to(rdir).parts
-                if _has_skipped_part(rel_parts):
+            for pfile in _iter_files(rdir):
+                if (not _is_analysis_name(pfile.name)
+                        or not _is_valid_candidate(scan_root, pfile)):
                     continue
                 _inspect_candidate_file(
                     checksum, pfile, scan_root, rel_base, scan_type, state)
@@ -824,7 +858,11 @@ def _finalize_state(state, sast_findings):
             merged[rule_id]['files'].update(details.get('files', {}))
         else:
             merged[rule_id] = details
+    source_files = None
+    if len(state['source_files']) <= MAX_LISTED_JS_FILES:
+        source_files = sorted(set(state['source_files']))
     return {
+        'source_files': source_files,
         'frameworks': sorted(state['frameworks']),
         'hermes': state['hermes'] if state['hermes']['detected'] else {},
         'findings': merged,
@@ -835,29 +873,45 @@ def _finalize_state(state, sast_findings):
     }
 
 
-def list_js_source_files(base_dir):
+def _is_listable_file(base_dir, pfile, rel_posix):
+    """Return True if pfile is a safe regular file inside base_dir."""
+    return (is_safe_path(base_dir, pfile, rel_posix)
+            and not is_pipe_or_link(pfile)
+            and pfile.is_file())
+
+
+def cached_js_source_files(checksum):
+    """Return the JS file list recorded at scan time, or None."""
+    entry = StaticAnalyzerAndroid.objects.filter(
+        MD5=checksum).values_list('JS_ANALYSIS', flat=True).first()
+    try:
+        files = python_dict(entry).get('source_files')
+    except Exception:
+        return None
+    return files if isinstance(files, list) else None
+
+
+def list_js_source_files(base_dir, cached=None):
     """Return sorted relative paths of JS/TS/Hybrid files under base_dir."""
     base_dir = Path(base_dir)
     if not base_dir.exists() or is_pipe_or_link(base_dir):
         return []
     found = []
-    for pfile in base_dir.rglob('*'):
-        try:
-            rel = pfile.relative_to(base_dir)
-            rel_posix = rel.as_posix()
-        except ValueError:
+    if cached is not None:
+        for rel_posix in cached:
+            if not isinstance(rel_posix, str) or is_path_traversal(rel_posix):
+                continue
+            if _is_listable_file(base_dir, base_dir / rel_posix, rel_posix):
+                found.append(rel_posix)
+        return sorted(found)
+    for pfile in _iter_files(base_dir):
+        name = pfile.name.lower()
+        if (not _is_js_name(name)
+                or name.endswith('.hbc')
+                or name.endswith('.raw.dec.js')):
             continue
-        if (not is_safe_path(base_dir, pfile, rel_posix)
-                or is_pipe_or_link(pfile)
-                or not pfile.is_file()):
-            continue
-        if _has_skipped_part(rel.parts):
-            continue
-        if pfile.name.endswith('.raw.dec.js'):
-            continue
-        suffix = pfile.suffix.lower()
-        if suffix not in JS_SOURCE_EXTS and suffix not in (
-                '.bundle', '.jsbundle'):
+        rel_posix = pfile.relative_to(base_dir).as_posix()
+        if not _is_listable_file(base_dir, pfile, rel_posix):
             continue
         is_hbc, _ = is_hermes_bytecode(pfile)
         if is_hbc:

@@ -15,6 +15,7 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.views.common.js_analysis import (
+    cached_js_source_files,
     list_js_source_files,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
@@ -90,7 +91,8 @@ def run(request):
         typ = request.GET['type']
         base = Path(settings.UPLD_DIR) / md5
         if typ == 'js':
-            rel_paths = list_js_source_files(base)
+            rel_paths = list_js_source_files(
+                base, cached_js_source_files(md5))
             tree_index = _js_tree_from_paths(rel_paths)
             title = 'JavaScript / Hybrid Source'
         else:

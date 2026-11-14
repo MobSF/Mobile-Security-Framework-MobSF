@@ -19,6 +19,7 @@ from mobsf.StaticAnalyzer.views.common.js_analysis import (
     beautify_minified_js,
     is_hermes_bytecode,
     is_minified_js,
+    list_js_source_files,
     slice_large_source,
 )
 from mobsf.StaticAnalyzer.views.common.suppression import (
@@ -328,3 +329,29 @@ class JSAnalysisTests(TestCase):
             self.assertIn('js_hardcoded_secret', findings)
             self.assertIn('js_client_side_auth_gate', findings)
             self.assertIn('js_webview_unverified_onmessage', findings)
+
+    def test_js_source_listing_prunes_and_caches(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            www = root / 'assets' / 'www'
+            (www / 'plugins' / 'cordova-plugin-x').mkdir(parents=True)
+            (www / 'app.js').write_text('var a = 1;\n', encoding='utf-8')
+            (www / 'plugins' / 'cordova-plugin-x' / 'x.js').write_text(
+                'eval(x);\n', encoding='utf-8')
+            for skipped in ('java_source', 'smali_source', 'plugins'):
+                sdir = root / skipped
+                sdir.mkdir()
+                (sdir / 'skip.js').write_text('eval(y);\n', encoding='utf-8')
+
+            expected = [
+                'assets/www/app.js',
+                'assets/www/plugins/cordova-plugin-x/x.js',
+            ]
+            self.assertEqual(list_js_source_files(root), expected)
+
+            res = analyze_js('0' * 32, root, 'apk')
+            self.assertEqual(res['source_files'], expected)
+            self.assertIn('js_dynamic_code_execution', res['findings'])
+
+            cached = expected + ['../../etc/passwd', 'assets/missing.js', 1]
+            self.assertEqual(list_js_source_files(root, cached), expected)

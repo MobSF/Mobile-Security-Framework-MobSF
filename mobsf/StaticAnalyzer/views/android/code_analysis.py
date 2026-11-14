@@ -210,6 +210,7 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
             'frameworks': js_res['frameworks'],
             'hermes': js_res['hermes'],
             'findings': js_res['findings'],
+            'source_files': js_res['source_files'],
         }
         result['urls_list'].extend(js_res['urls_list'])
         result['urls'].extend(js_res['urls'])

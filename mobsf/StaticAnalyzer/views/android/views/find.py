@@ -17,6 +17,7 @@ from mobsf.MobSF.utils import (
     print_n_send_error_response,
 )
 from mobsf.StaticAnalyzer.views.common.js_analysis import (
+    cached_js_source_files,
     list_js_source_files,
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
@@ -49,7 +50,8 @@ def run(request):
         if code == 'js':
             src = base
             files = [
-                base / rel for rel in list_js_source_files(base)
+                base / rel for rel in list_js_source_files(
+                    base, cached_js_source_files(md5))
             ]
         else:
             if code == 'smali':
