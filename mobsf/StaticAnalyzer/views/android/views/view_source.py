@@ -21,6 +21,9 @@ from mobsf.StaticAnalyzer.models import (
     RecentScansDB,
     StaticAnalyzerAndroid,
 )
+from mobsf.StaticAnalyzer.views.common.js_analysis import (
+    read_js_source_window,
+)
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     android_source_root,
     find_java_source_folder,
@@ -84,10 +87,11 @@ def run(request, api=False):
     try:
         logger.info('View Java Source File')
         exp = 'Error Description'
+        params = request.POST if api else request.GET
         if api:
-            viewsource_form = ViewSourceAndroidApiForm(request.POST)
+            viewsource_form = ViewSourceAndroidApiForm(params)
         else:
-            viewsource_form = ViewSourceAndroidForm(request.GET)
+            viewsource_form = ViewSourceAndroidForm(params)
         if not viewsource_form.is_valid():
             err = FormUtil.errors_message(viewsource_form)
             return send_error(request, err, api_mode, json_resp, exp)
@@ -99,6 +103,9 @@ def run(request, api=False):
         if typ == 'smali':
             src = base / 'smali_source'
             syntax = 'smali'
+        elif typ == 'js':
+            src = base
+            syntax = 'javascript'
         elif typ == 'xml':
             src = get_xml_root(base, md5)
             if src is None:
@@ -129,11 +136,36 @@ def run(request, api=False):
             msg = 'Source file not found'
             return send_error(
                 request, msg, api_mode, json_resp, status=404)
+        win = {
+            'start_line': 1,
+            'end_line': 1,
+            'total_lines': 1,
+            'window_lines': 2000,
+            'is_paged': False,
+        }
+        if typ == 'js':
+            win = read_js_source_window(
+                sfile,
+                lines_param=params.get('lines'),
+                line_start=params.get('line_start'),
+                search_term=params.get('q'),
+            )
+            raw_data = win['data']
+        else:
+            raw_data = sfile.read_text(  # lgtm [py/path-injection]
+                'utf-8', 'ignore')
         context = {
             'title': escape(ntpath.basename(fil)),
             'file': escape(ntpath.basename(fil)),
-            'data': sfile.read_text(  # lgtm [py/path-injection]
-                'utf-8', 'ignore'),
+            'file_path': escape(fil),
+            'app_type': escape(typ),
+            'md5': md5,
+            'data': raw_data,
+            'start_line': win['start_line'],
+            'end_line': win['end_line'],
+            'total_lines': win['total_lines'],
+            'window_lines': win['window_lines'],
+            'is_paged': win['is_paged'],
             'type': syntax,
             'sqlite': {},
             'version': settings.MOBSF_VER,

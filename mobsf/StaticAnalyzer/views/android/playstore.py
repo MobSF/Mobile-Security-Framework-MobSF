@@ -1,16 +1,23 @@
 # -*- coding: utf_8 -*-
-from google_play_scraper import app
+import logging
+from urllib.parse import (
+    quote,
+    urlencode,
+)
 
 from bs4 import BeautifulSoup
 
-import requests
-
-import logging
+from google_play_scraper import app
 
 from django.conf import settings
 
+from mobsf.MobSF.security import (
+    fixed_endpoint_request,
+    sanitize_for_logging,
+)
 from mobsf.MobSF.utils import (
     append_scan_status,
+    strict_package_check,
     upstream_proxy,
 )
 
@@ -25,19 +32,6 @@ def get_app_details(app_dic, man_data):
         'description': 'Failed to identify the package name',
     }
     try:
-        # Check if Google Play Store is reachable
-        # The library can cause timeout issue behind proxy
-        try:
-            proxies, verify = upstream_proxy('https')
-            requests.get(settings.PLAYSTORE,
-                         timeout=5,
-                         proxies=proxies,
-                         verify=verify)
-        except Exception:
-            logger.warning('Google Play Store is not reachable.'
-                           ' Skipping Play Store lookup.')
-            return
-
         if man_data.get('packagename'):
             package_id = man_data['packagename']
         elif app_dic.get('apk_features', {}).get('package'):
@@ -45,6 +39,27 @@ def get_app_details(app_dic, man_data):
         else:
             logger.warning('Package Name not found')
             return
+        if (not isinstance(package_id, str)
+                or not strict_package_check(package_id)):
+            logger.warning(
+                'Invalid package name for Play Store lookup: %s',
+                sanitize_for_logging(str(package_id)))
+            return
+        # Check if Google Play Store is reachable
+        # The library can cause timeout issue behind proxy
+        try:
+            proxies, verify = upstream_proxy('https')
+            fixed_endpoint_request(
+                'GET',
+                settings.PLAYSTORE,
+                timeout=5,
+                proxies=proxies,
+                verify=verify)
+        except Exception:
+            logger.warning('Google Play Store is not reachable.'
+                           ' Skipping Play Store lookup.')
+            return
+
         msg = f'Fetching Details from Play Store: {package_id}'
         logger.info(msg)
         append_scan_status(checksum, msg)
@@ -66,12 +81,18 @@ def app_search(checksum, app_id):
     det = {'error': True}
     if not settings.APPMONSTA_API:
         return det
+    if not isinstance(app_id, str) or not strict_package_check(app_id):
+        logger.warning(
+            'Invalid package name for AppMonsta lookup: %s',
+            sanitize_for_logging(str(app_id)))
+        return det
     msg = f'Fetching Details from AppMonsta: {app_id}'
     append_scan_status(checksum, msg)
     logger.info(msg)
     lookup_url = settings.APPMONSTA_URL
-    req_url = '{}{}.json?country={}'.format(
-        lookup_url, app_id, 'US')
+    safe_id = quote(app_id, safe='')
+    query = urlencode({'country': 'US'})
+    req_url = f'{lookup_url}{safe_id}.json?{query}'
     headers = {
         'User-Agent': ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
                        'AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -79,13 +100,15 @@ def app_search(checksum, app_id):
         'Accept-Encoding': 'deflate, gzip'}
     try:
         proxies, verify = upstream_proxy('https')
-        req = requests.get(req_url,
-                           timeout=5,
-                           auth=(settings.APPMONSTA_API, 'X'),
-                           headers=headers,
-                           proxies=proxies,
-                           verify=verify,
-                           stream=True)
+        req = fixed_endpoint_request(
+            'GET',
+            req_url,
+            timeout=5,
+            max_response_size=2 * 1024 * 1024,
+            auth=(settings.APPMONSTA_API, 'X'),
+            headers=headers,
+            proxies=proxies,
+            verify=verify)
         resp = req.json()
         det['title'] = resp['app_name']
         det['score'] = resp.get('all_rating', '')

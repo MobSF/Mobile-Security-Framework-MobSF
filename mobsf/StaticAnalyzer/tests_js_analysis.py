@@ -1,0 +1,858 @@
+# -*- coding: utf_8 -*-
+"""Unit tests for JavaScript, TypeScript, Hybrid & Hermes Bytecode analysis."""
+import ctypes
+import hashlib
+import json
+import struct
+import tempfile
+from pathlib import Path
+from unittest.mock import Mock, patch
+
+from django.test import RequestFactory, TestCase, override_settings
+
+from hermes_dec.parsers.hbc_file_parser import (
+    HBCReader,
+    HEADER_MAGIC,
+)
+
+from mobsf.StaticAnalyzer.forms import ViewSourceAndroidForm
+from mobsf.StaticAnalyzer.views.android.views import find
+from mobsf.StaticAnalyzer.views.android.views import (
+    view_source as android_view_source,
+)
+from mobsf.StaticAnalyzer.views.common.js_analysis import (
+    configs as js_configs,
+    frameworks as js_frameworks,
+    hermes as js_hermes,
+    sast as js_sast,
+    viewer as js_viewer,
+)
+from mobsf.StaticAnalyzer.views.common.js_analysis import (
+    analyze_js,
+    beautify_minified_js,
+    is_hermes_bytecode,
+    is_minified_js,
+    list_js_source_files,
+    read_js_source_window,
+    slice_large_source,
+)
+from mobsf.StaticAnalyzer.views.common.suppression import (
+    process_suppression_js,
+)
+from mobsf.StaticAnalyzer.views.ios.views import (
+    view_source as ios_view_source,
+)
+
+
+def _build_hermes_v84_fixture():
+    """Construct a minimal valid Hermes v84 bytecode binary for testing."""
+    reader = HBCReader()
+    header_cls = reader.get_header_reader(84)
+    hdr = header_cls()
+    reader.header = hdr
+    hdr.magic = HEADER_MAGIC
+    hdr.version = 84
+    hdr.globalCodeIndex = 0
+    hdr.functionCount = 1
+    hdr.stringKindCount = 1
+    hdr.identifierCount = 0
+
+    strings = [
+        'global',
+        'AsyncStorage',
+        'setItem',
+        'auth_token',
+        'http://api.insecure-hermes.example.com/v1',
+        'allowUniversalAccessFromFileURLs',
+    ]
+    hdr.stringCount = len(strings)
+    hdr.overflowStringCount = 0
+
+    str_blob = bytearray()
+    small_str_cls = reader.get_small_string_table_entry_reader()
+    str_entries = (small_str_cls * len(strings))()
+    for i, text in enumerate(strings):
+        raw = text.encode('ascii')
+        str_entries[i].isUTF16 = 0
+        str_entries[i].offset = len(str_blob)
+        str_entries[i].length = len(raw)
+        str_blob.extend(raw)
+    hdr.stringStorageSize = len(str_blob)
+
+    bytecode = (
+        bytes([46, 0])
+        + bytes([50, 1, 0, 1, 1])
+        + bytes([50, 2, 1, 2, 2])
+        + struct.pack('<BBH', 109, 3, 3)
+        + struct.pack('<BBH', 109, 4, 4)
+        + bytes([80, 5, 2, 1, 3, 4])
+        + bytes([114, 6])
+        + struct.pack('<BBBBH', 55, 0, 6, 1, 5)
+        + bytes([90, 7, 4])
+        + bytes([88, 7])
+    )
+
+    func_hdr_cls = reader.get_small_func_header_reader()
+    fn = func_hdr_cls()
+    fn.paramCount = 1
+    fn.bytecodeSizeInBytes = len(bytecode)
+    fn.functionName = 0
+    fn.frameSize = 16
+    fn.environmentSize = 0
+
+    kind_cls = reader.get_string_kind_entry_reader()
+    kind_entry = kind_cls()
+    kind_entry.count = len(strings)
+    kind_entry.kind = 0
+
+    dbg_hdr_cls = reader.get_debug_info_header_reader()
+    dbg_hdr = dbg_hdr_cls()
+
+    def _pad(buf, align=4):
+        rem = len(buf) % align
+        if rem:
+            buf.extend(b'\x00' * (align - rem))
+
+    body = bytearray(bytes(hdr))
+    _pad(body, 32)
+    fn_pos = len(body)
+    body.extend(bytes(fn))
+    _pad(body, 4)
+    body.extend(bytes(kind_entry))
+    _pad(body, 4)
+    body.extend(bytes(str_entries))
+    _pad(body, 4)
+    body.extend(str_blob)
+    _pad(body, 4)
+    bc_offset = len(body)
+    body.extend(bytecode)
+    _pad(body, 4)
+    dbg_offset = len(body)
+    body.extend(bytes(dbg_hdr))
+
+    fn.offset = bc_offset
+    fn.infoOffset = dbg_offset
+    hdr.debugInfoOffset = dbg_offset
+    hdr.fileLength = len(body) + 20
+
+    body[0:ctypes.sizeof(hdr)] = bytes(hdr)
+    body[fn_pos:fn_pos + ctypes.sizeof(fn)] = bytes(fn)
+    body.extend(hashlib.sha1(body).digest())
+    return bytes(body)
+
+
+class JSAnalysisTests(TestCase):
+
+    def test_hermes_bytecode_decompilation_and_ast_rules(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            assets = root / 'assets'
+            assets.mkdir()
+            bundle = assets / 'index.android.bundle'
+            bundle.write_bytes(_build_hermes_v84_fixture())
+
+            is_hbc, ver = is_hermes_bytecode(bundle)
+            self.assertTrue(is_hbc)
+            self.assertEqual(ver, 84)
+
+            res = analyze_js('0' * 32, root, 'apk')
+            self.assertIn('React Native (Hermes)', res['frameworks'])
+            self.assertTrue(res['hermes'].get('detected'))
+            self.assertEqual(res['hermes'].get('version'), 84)
+            self.assertTrue(res['hermes'].get('decompiled'))
+            self.assertTrue((assets / 'index.android.bundle.dec.js').is_file())
+
+            findings = res['findings']
+            self.assertIn('js_webview_file_access', findings)
+            self.assertIn('js_insecure_async_storage', findings)
+            self.assertIn('js_dynamic_code_execution', findings)
+            self.assertIn('js_cleartext_http_traffic', findings)
+            self.assertIn(
+                'http://api.insecure-hermes.example.com/v1',
+                res['urls_list'])
+
+    def test_react_native_source_and_hybrid_configs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / 'package.json').write_text(json.dumps({
+                'dependencies': {
+                    'react-native': '0.74.0',
+                    'expo': '51.0.0',
+                    '@capacitor/core': '6.0.0',
+                },
+            }), encoding='utf-8')
+
+            src_dir = root / 'src'
+            src_dir.mkdir()
+            (src_dir / 'App.tsx').write_text(
+                'import { WebView } from "react-native-webview";\n'
+                'import AsyncStorage from '
+                '"@react-native-async-storage/async-storage";\n'
+                'import { MMKV } from "react-native-mmkv";\n'
+                'import { Linking } from "react-native";\n'
+                'const API_KEY = "sk_live_9876543210abcdef123456";\n'
+                'const store = new MMKV();\n'
+                'export function Screen({ deepLink, html }) {\n'
+                '  const keyName = "auth_token";\n'
+                '  AsyncStorage.setItem(keyName, API_KEY);\n'
+                '  Linking.openURL(deepLink);\n'
+                '  frame.contentWindow.postMessage(API_KEY, "*");\n'
+                '  if (__DEV__) { console.log("dev secret:", API_KEY); }\n'
+                '  console.log("prod secret_token:", API_KEY);\n'
+                '  return (\n'
+                '    <WebView\n'
+                '      javaScriptEnabled={true}\n'
+                '      allowUniversalAccessFromFileURLs={true}\n'
+                '      mixedContentMode="always"\n'
+                '      originWhitelist={["*"]}\n'
+                '      dangerouslySetInnerHTML={{ __html: html }}\n'
+                '    />\n'
+                '  );\n'
+                '}\n',
+                encoding='utf-8')
+
+            # node_modules should be ignored
+            nm_dir = root / 'node_modules' / 'pkg'
+            nm_dir.mkdir(parents=True)
+            (nm_dir / 'bad.js').write_text('eval(x);\n', encoding='utf-8')
+
+            # Cordova config.xml & Capacitor config
+            (root / 'config.xml').write_text(
+                '<widget id="com.example.app">'
+                '<access origin="*" />'
+                '<allow-navigation href="*" />'
+                '</widget>',
+                encoding='utf-8')
+            (root / 'capacitor.config.json').write_text(json.dumps({
+                'appId': 'com.example.app',
+                'server': {
+                    'cleartext': True,
+                    'allowNavigation': ['*.example.com'],
+                },
+            }), encoding='utf-8')
+
+            res = analyze_js('0' * 32, root, 'zip')
+            self.assertIn('React Native', res['frameworks'])
+            self.assertIn('Expo', res['frameworks'])
+            self.assertIn('Capacitor', res['frameworks'])
+
+            findings = res['findings']
+            for expected_rule in (
+                'js_webview_javascript_enabled',
+                'js_webview_file_access',
+                'js_webview_mixed_content',
+                'js_webview_origin_wildcard',
+                'js_dom_xss_sink',
+                'js_postmessage_wildcard_origin',
+                'js_insecure_async_storage',
+                'js_mmkv_without_encryption',
+                'js_hardcoded_secret',
+                'js_deeplink_open_url',
+                'js_console_sensitive_log',
+                'cordova_config_wildcard_access',
+                'cordova_config_wildcard_navigation',
+                'capacitor_cleartext_traffic',
+                'capacitor_wildcard_navigation',
+            ):
+                self.assertIn(expected_rule, findings, expected_rule)
+
+            # node_modules/pkg/bad.js must not trigger js_dynamic_code_execution
+            self.assertNotIn('js_dynamic_code_execution', findings)
+
+            # __DEV__ console.log on line 12 must be excluded; only line 13 matched
+            log_lines = findings['js_console_sensitive_log']['files'][
+                'src/App.tsx']
+            self.assertEqual(log_lines, '13')
+
+    def test_sourcemap_and_embedded_html_in_apk(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            www = root / 'assets' / 'www'
+            www.mkdir(parents=True)
+            (www / 'index.html').write_text(
+                '<html><body><script>\n'
+                'document.getElementById("out").innerHTML = location.hash;\n'
+                '</script></body></html>\n',
+                encoding='utf-8')
+            (www / 'app.js.map').write_text(
+                '{"version":3,"sources":["src/app.ts"]}',
+                encoding='utf-8')
+
+            res = analyze_js('0' * 32, root, 'apk')
+            self.assertIn('js_sourcemap_exposed', res['findings'])
+            self.assertIn('js_dom_xss_sink', res['findings'])
+            self.assertEqual(
+                res['findings']['js_dom_xss_sink']['files'][
+                    'assets/www/index.html'],
+                '2',
+            )
+
+            sup = process_suppression_js({
+                'frameworks': res['frameworks'],
+                'hermes': res['hermes'],
+                'findings': res['findings'],
+            }, 'com.example.nonexistent')
+            self.assertIn('summary', sup)
+            self.assertGreaterEqual(sup['summary'].get('warning', 0), 2)
+
+    def test_minified_js_beautification_and_large_source_slice(self):
+        minified = (
+            'function a(){var x=1;var y=2;return x+y;}' * 30
+            + 'function vuln(u){eval(u);}'
+        )
+        self.assertTrue(is_minified_js(minified))
+        formatted = beautify_minified_js(minified)
+        self.assertGreater(formatted.count('\n'), 50)
+        self.assertIn('eval(u);', formatted)
+
+        big_text = '\n'.join(f'var line_{i} = {i};' for i in range(1, 2001))
+        sliced, start_line = slice_large_source(
+            big_text, '1000', max_bytes=1000, radius=5)
+        self.assertEqual(start_line, 995)
+        self.assertIn('var line_1000 = 1000;', sliced)
+        self.assertNotIn('var line_10 = 10;', sliced)
+
+    def test_dvrn_vulnerability_patterns(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / 'src'
+            src.mkdir()
+            (src / 'tokenStorage.ts').write_text(
+                'import AsyncStorage from '
+                '"@react-native-async-storage/async-storage";\n'
+                'export async function saveToken(token: string) {\n'
+                '  await AsyncStorage.setItem("authToken", token);\n'
+                '}\n',
+                encoding='utf-8')
+            (src / 'secrets.ts').write_text(
+                'export const PREMIUM_API_KEY = "sk_live_dvrn_9f8a2c1b4e7d";\n',
+                encoding='utf-8')
+            (src / 'PremiumScreen.tsx').write_text(
+                'export function PremiumScreen({ isPremium }) {\n'
+                '  if (!isPremium) { return null; }\n'
+                '  return null;\n'
+                '}\n',
+                encoding='utf-8')
+            (src / 'WebViewScreen.tsx').write_text(
+                'export function WebViewScreen() {\n'
+                '  const onMessage = (event) => {\n'
+                '    const data = JSON.parse(event.nativeEvent.data);\n'
+                '  };\n'
+                '}\n',
+                encoding='utf-8')
+            res = analyze_js('0' * 32, root, 'zip')
+            findings = res['findings']
+            self.assertIn('js_insecure_async_storage', findings)
+            self.assertIn('js_hardcoded_secret', findings)
+            self.assertIn('js_client_side_auth_gate', findings)
+            self.assertIn('js_webview_unverified_onmessage', findings)
+
+    def test_tls_sqlite_injection_and_crypto_rules(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / 'src'
+            src.mkdir()
+            (src / 'vuln.js').write_text(
+                'cordova.plugin.http.setServerTrustMode("nocheck", a, b);\n'
+                'RNFetchBlob.config({ trusty: true }).fetch("GET", u);\n'
+                'db.executeSql(`SELECT * FROM users WHERE id=${id}`);\n'
+                'tx.executeSql("DELETE FROM notes WHERE id=" + id, []);\n'
+                'webview.injectJavaScript(`setUser("${name}")`);\n'
+                'ref.executeScript({ code: "go(\'" + url + "\')" });\n'
+                'const h = CryptoJS.MD5(password);\n'
+                'const c = CryptoJS.DES.encrypt(data, "s3cr3tk3y");\n'
+                'const e = CryptoJS.AES.encrypt(d, k, '
+                '{ mode: CryptoJS.mode.ECB });\n'
+                'const s = crypto.createHash("sha1");\n',
+                encoding='utf-8')
+            (src / 'safe.js').write_text(
+                'db.executeSql("SELECT * FROM users WHERE id=?", [id]);\n'
+                'const m = re.exec(prefix + value);\n'
+                'webview.injectJavaScript("window.ready = true; true;");\n'
+                'const s = crypto.createHash("sha256");\n'
+                'const e = CryptoJS.AES.encrypt(data, keyFromKeychain);\n'
+                'RNFetchBlob.config({ trusty: false });\n',
+                encoding='utf-8')
+            findings = analyze_js('0' * 32, root, 'zip')['findings']
+            expected = {
+                'js_tls_validation_disabled': '1,2',
+                'js_sqlite_injection': '3,4',
+                'js_webview_script_injection': '5,6',
+                'js_weak_crypto': '7,8,9,10',
+                'js_crypto_hardcoded_key': '8',
+            }
+            for rule, lines in expected.items():
+                self.assertIn(rule, findings, rule)
+                files = findings[rule]['files']
+                self.assertEqual(
+                    sorted(files['src/vuln.js'].split(',')),
+                    sorted(lines.split(',')), rule)
+                self.assertNotIn('src/safe.js', files, rule)
+
+    def test_webview_uri_keychain_clipboard_rules(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / 'src'
+            src.mkdir()
+            (src / 'vuln.tsx').write_text(
+                'const a = <WebView source={{ uri: deepLinkUrl }} />;\n'
+                'const b = <WebView source={{ uri: `${host}/pay` }}></WebView>;\n'
+                'React.createElement(n.WebView, '
+                '{ source: { uri: props.url } });\n'
+                'Keychain.setGenericPassword(u, p, '
+                '{ accessible: Keychain.ACCESSIBLE.ALWAYS });\n'
+                'SecureStore.setItemAsync("k", v, '
+                '{ keychainAccessible: SecureStore.ALWAYS });\n'
+                'Clipboard.setString(user.password);\n'
+                'navigator.clipboard.writeText(authToken);\n'
+                'const c = <WebView allowingReadAccessToURL={docsDir} />;\n'
+                'setTimeout("refresh(" + id + ")", 100);\n'
+                'window.setInterval("poll()", 500);\n',
+                encoding='utf-8')
+            (src / 'safe.tsx').write_text(
+                'const a = <Image source={{ uri: avatarUrl }} />;\n'
+                'const b = <WebView source={{ uri: "https://example.com" }} />;\n'
+                'Keychain.setGenericPassword(u, p, { accessible: '
+                'Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY });\n'
+                'Clipboard.setString(orderId);\n'
+                'setTimeout(() => refresh(id), 100);\n'
+                'setTimeout(cb || noop, 100);\n',
+                encoding='utf-8')
+            findings = analyze_js('0' * 32, root, 'zip')['findings']
+            expected = {
+                'js_webview_dynamic_uri': '1,2,3',
+                'js_keychain_weak_accessibility': '4,5',
+                'js_clipboard_sensitive_data': '6,7',
+                'js_webview_file_access': '8',
+                'js_dynamic_code_execution': '9,10',
+            }
+            for rule, lines in expected.items():
+                self.assertIn(rule, findings, rule)
+                files = findings[rule]['files']
+                self.assertEqual(
+                    sorted(files['src/vuln.tsx'].split(',')),
+                    sorted(lines.split(',')), rule)
+                self.assertNotIn('src/safe.tsx', files, rule)
+
+    def test_react_native_expo_api_rules(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / 'src'
+            src.mkdir()
+            (src / 'vuln.tsx').write_text(
+                'const a = <WebView webviewDebuggingEnabled={true} />;\n'
+                'const b = <WebView '
+                'injectedJavaScriptForMainFrameOnly={false} />;\n'
+                'const c = <WebView '
+                'onShouldStartLoadWithRequest={() => true} />;\n'
+                'const r = makeRedirectUri({ useProxy: true });\n'
+                'useAuthRequest({ responseType: ResponseType.Token, '
+                'usePKCE: false }, d);\n'
+                'const ok = await LocalAuthentication.authenticateAsync();\n'
+                'const p = RNFS.ExternalStorageDirectoryPath + "/t.txt";\n'
+                'const realm = new Realm({ schema: [Note] });\n'
+                'const db = SQLite.openDatabase({ name: "app.db" });\n'
+                'const cfg = { key: "root", storage: AsyncStorage, '
+                'whitelist: ["auth", "settings"] };\n'
+                'Reactotron.configure({}).useReactNative().connect();\n'
+                'const dl = NativeModules.EXDevLauncher;\n',
+                encoding='utf-8')
+            (src / 'safe.tsx').write_text(
+                'const a = <WebView webviewDebuggingEnabled={__DEV__} />;\n'
+                'const c = <WebView onShouldStartLoadWithRequest='
+                '{(req) => req.url.startsWith(ORIGIN)} />;\n'
+                'useAuthRequest({ responseType: ResponseType.Code, '
+                'usePKCE: true }, d);\n'
+                'const p = RNFS.DocumentDirectoryPath + "/t.txt";\n'
+                'const realm = new Realm({ schema: [Note], '
+                'encryptionKey: key });\n'
+                'const db = SQLite.openDatabase({ name: "app.db", '
+                'key: dbKey });\n'
+                'const cfg = { key: "root", storage: createSecureStore(), '
+                'whitelist: ["auth"] };\n'
+                'const cfg2 = { key: "root", storage: AsyncStorage, '
+                'whitelist: ["settings"] };\n'
+                'const w = <WebView javaScriptEnabled={false} />;\n'
+                'const chai = { includeStack: false, useProxy: true };\n',
+                encoding='utf-8')
+            assets = root / 'assets'
+            assets.mkdir()
+            (assets / 'expo_dev_launcher_android.bundle').write_text(
+                'var dev = 1;\n', encoding='utf-8')
+            (assets / 'app.config').write_text(json.dumps({
+                'name': 'demo',
+                'extra': {
+                    'eas': {'projectId': 'abc'},
+                    'stripeSecretKey': 'sk_test_51Habcdefghijkl',
+                },
+                'updates': {'url': 'http://updates.example.com/manifest'},
+            }), encoding='utf-8')
+            res = analyze_js('0' * 32, root, 'zip')
+            findings = res['findings']
+            expected = {
+                'js_webview_debugging_enabled': '1',
+                'js_webview_inject_all_frames': '2',
+                'js_webview_allow_all_navigation': '3',
+                'js_oauth_insecure_config': '4,5',
+                'js_biometric_without_crypto': '6',
+                'js_external_storage_path': '7',
+                'js_unencrypted_database': '8,9',
+                'js_persist_sensitive_state': '10',
+                'js_debug_tooling_in_release': '11',
+            }
+            for rule, lines in expected.items():
+                self.assertIn(rule, findings, rule)
+                files = findings[rule]['files']
+                self.assertEqual(
+                    sorted(set(files['src/vuln.tsx'].split(','))),
+                    sorted(lines.split(',')), rule)
+                self.assertNotIn('src/safe.tsx', files, rule)
+            self.assertNotIn(
+                'src/safe.tsx',
+                findings.get('js_webview_javascript_enabled', {}).get(
+                    'files', {}))
+            self.assertEqual(
+                findings['js_expo_dev_client_bundled']['files'],
+                {'assets/expo_dev_launcher_android.bundle': '1'})
+            for rule in ('expo_config_extra_secrets',
+                         'expo_updates_cleartext',
+                         'expo_updates_unsigned'):
+                self.assertIn('assets/app.config',
+                              findings[rule]['files'], rule)
+            self.assertIn(
+                '"stripeSecretKey" : "sk_test_51Habcdefghijkl"',
+                res['secrets'])
+            self.assertNotIn('projectId', findings[
+                'expo_config_extra_secrets']['metadata']['description'])
+
+    def test_webview_native_config_table_not_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / 'src'
+            src.mkdir()
+            (src / 'webview_lib.js').write_text(
+                'var c={validAttributes:Object.assign({allowFileAccess:!0,'
+                'allowingReadAccessToURL:!0,messagingModuleName:!0})};\n'
+                'r7 = {\n'
+                "    'allowFileAccess': true,\n"
+                "    'javaScriptEnabled': true,\n"
+                "    'webviewDebuggingEnabled': true,\n"
+                "    'allowingReadAccessToURL': true,\n"
+                "    'messagingEnabled': true\n"
+                '};\n',
+                encoding='utf-8')
+            (src / 'Screen.js').write_text(
+                'r1 = {source: r2, allowFileAccess: true};\n',
+                encoding='utf-8')
+            findings = analyze_js('0' * 32, root, 'zip')['findings']
+            self.assertNotIn('js_webview_javascript_enabled', findings)
+            self.assertNotIn('js_webview_debugging_enabled', findings)
+            self.assertEqual(
+                findings['js_webview_file_access']['files'],
+                {'src/Screen.js': '1'})
+
+    def test_library_definitions_not_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / 'pos.js').write_text(
+                'x.innerHTML = userHtml;\n'
+                "frame.contentWindow.postMessage(token, '*');\n"
+                "var cfg = {secret_key: 'abcdefghijklmnop'};\n"
+                "console.log('token:', r3);\n"
+                'console.log(`password ${p}`);\n'
+                'console.log(user.accessToken);\n'
+                'Keychain.setGenericPassword(u, p, '
+                '{accessible: Keychain.ACCESSIBLE.ALWAYS});\n'
+                "r1 = {accessible: 'AccessibleAlways'};\n"
+                "RNFS.writeFile(RNFS.DownloadDirectoryPath + '/a.txt', d);\n"
+                'const dl = RNFetchBlob.fs.dirs.DownloadDir;\n'
+                "ReactNativeBiometrics.simplePrompt({promptMessage: 'x'});\n"
+                'const w = <WebView source={{ uri: props.url }} />;\n',
+                encoding='utf-8')
+            (root / 'neg.js').write_text(
+                "x.innerHTML = '<i class=\"fa\"></i>';\n"
+                'x.innerHTML = goog.html.SafeHtml.unwrapTrustedHTML(h);\n'
+                "global.postMessage(prefix + handle, '*');\n"
+                "r3.window.postMessage(r3, '*');\n"
+                "var keys = {'AUTH_TOKEN': 'fd.authToken'};\n"
+                "console.error('[ResetPasswordPage] Failed to load:', e);\n"
+                "console.log('resetPassword error:', r7);\n"
+                "r1['ALWAYS'] = 'AccessibleAlways';\n"
+                "ACCESSIBLE.ALWAYS = 'AccessibleAlways';\n"
+                'r7 = r1.DownloadDir;\n'
+                "r4['DownloadDir'] = r1.DownloadDir;\n"
+                'r0 = function(a0) { // Original name: simplePrompt\n'
+                '  r0 = r2.simplePrompt(r0);\n'
+                '  return r0;\n'
+                '};\n'
+                'class B { simplePrompt(o) { return n.simplePrompt(o); } }\n'
+                'const w = <WebView source={{ uri: '
+                '`${r(d[3]).API_BASE_URL}/help` }} />;\n',
+                encoding='utf-8')
+            findings = analyze_js('0' * 32, root, 'zip')['findings']
+            expected = {
+                'js_dom_xss_sink': '1',
+                'js_postmessage_wildcard_origin': '2',
+                'js_hardcoded_secret': '3',
+                'js_console_sensitive_log': '4,5,6',
+                'js_keychain_weak_accessibility': '7,8',
+                'js_external_storage_path': '9,10',
+                'js_biometric_without_crypto': '11',
+                'js_webview_dynamic_uri': '12',
+            }
+            for rule, lines in expected.items():
+                self.assertEqual(
+                    findings[rule]['files'], {'pos.js': lines}, rule)
+
+    def test_large_file_chunked_batches_map_lines(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            assets = root / 'assets'
+            assets.mkdir()
+            lines = [f'var v{i} = {i};' for i in range(1, 13)]
+            lines[1] = 'eval(a);'
+            lines[7] = 'eval(b);'
+            lines[11] = 'eval(c);'
+            (assets / 'big.bundle.dec.js').write_text(
+                '\n'.join(lines) + '\n', encoding='utf-8')
+            (assets / 'huge.js').write_text('eval(d);\n', encoding='utf-8')
+            files = [assets / 'big.bundle.dec.js', assets / 'huge.js']
+            with patch.multiple(
+                    js_sast,
+                    MAX_CHUNK_THRESHOLD_BYTES=10,
+                    CHUNK_LINES=3,
+                    SAST_BATCH_BYTES=20,
+                    MAX_SAST_JS_BYTES=250):
+                (assets / 'huge.js').write_text(
+                    'eval(d);\n' * 40, encoding='utf-8')
+                findings = js_sast.scan_js_files_with_sast(files, root)
+            self.assertEqual(
+                findings['js_dynamic_code_execution']['files'],
+                {'assets/big.bundle.dec.js': '2,8,12'})
+
+    def test_source_content_search(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            boundary = root / 'Boundary.java'
+            boundary.write_bytes(b'x' * 10 + b'PassWord' + b'y' * 10)
+            unicode_file = root / 'Unicode.java'
+            unicode_file.write_text('String s = "CONTRASEÑA";\n',
+                                    encoding='utf-8')
+            plain = root / 'Plain.java'
+            plain.write_text('class Plain {}\n', encoding='utf-8')
+            link = root / 'Link.java'
+            link.symlink_to(boundary)
+            files = sorted(find._iter_source_files(root))
+            self.assertNotIn(link, files)
+            with patch.object(find, 'READ_CHUNK', 13):
+                self.assertEqual(
+                    find._content_search(files, 'password'), [boundary])
+            self.assertEqual(
+                find._content_search(files, 'contraseña'), [unicode_file])
+            self.assertEqual(find._content_search(files, 'nomatch'), [])
+
+    def test_js_source_listing_prunes_and_caches(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            www = root / 'assets' / 'www'
+            (www / 'plugins' / 'cordova-plugin-x').mkdir(parents=True)
+            (www / 'build').mkdir(parents=True)
+            (root / 'assets' / 'public' / 'dist').mkdir(parents=True)
+            (www / 'app.js').write_text('var a = 1;\n', encoding='utf-8')
+            (www / 'build' / 'main.js').write_text(
+                'var b = 2;\n', encoding='utf-8')
+            (root / 'assets' / 'public' / 'dist' / 'bundle.js').write_text(
+                'var c = 3;\n', encoding='utf-8')
+            (www / 'plugins' / 'cordova-plugin-x' / 'x.js').write_text(
+                'eval(x);\n', encoding='utf-8')
+            for skipped in (
+                'java_source', 'smali_source', 'plugins', 'build', 'dist',
+            ):
+                sdir = root / skipped
+                sdir.mkdir()
+                (sdir / 'skip.js').write_text('eval(y);\n', encoding='utf-8')
+
+            expected = [
+                'assets/public/dist/bundle.js',
+                'assets/www/app.js',
+                'assets/www/build/main.js',
+                'assets/www/plugins/cordova-plugin-x/x.js',
+            ]
+            self.assertEqual(list_js_source_files(root), expected)
+
+            res = analyze_js('0' * 32, root, 'apk')
+            self.assertEqual(res['source_files'], expected)
+            self.assertIn('js_dynamic_code_execution', res['findings'])
+
+            cached = expected + ['../../etc/passwd', 'assets/missing.js', 1]
+            self.assertEqual(list_js_source_files(root, cached), expected)
+
+    def test_formatter_preserves_regex_and_hermes_strings(self):
+        minified = (
+            'const sep=/;/g;const br=/[{}]/;function f(a,b){return /x;y/.test(a)'
+            '?a/b:0;}eval(sep);'
+        )
+        formatted = beautify_minified_js(minified)
+        self.assertIn('const sep=/;/g;', formatted)
+        self.assertIn('const br=/[{}]/;', formatted)
+        self.assertIn('return /x;y/.test(a)', formatted)
+
+        hermes_obj = (
+            '    r0 = {alpha: "hello, world", beta: "foo, bar", '
+            'gamma: [1, 2, 3], delta: ' + ('"x"' + ' ' * 260) + '};'
+        )
+        expanded = js_viewer.format_long_object_line(hermes_obj)
+        self.assertGreater(len(expanded), 3)
+        joined = '\n'.join(expanded)
+        self.assertIn('alpha: "hello, world",', joined)
+        self.assertIn('beta: "foo, bar",', joined)
+        self.assertIn('gamma: [1, 2, 3],', joined)
+
+    def test_paged_viewer_and_config_size_limits(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            single_line = root / 'single.js'
+            single_line.write_text('var a = "' + ('A' * 50000) + '";\n',
+                                   encoding='utf-8')
+            win = read_js_source_window(
+                single_line, max_bytes=4096, window_lines=20)
+            self.assertTrue(win['is_paged'])
+            self.assertEqual(win['total_lines'], 1)
+            self.assertLessEqual(len(win['data']), 4200)
+            self.assertIn('truncated for viewer', win['data'])
+
+            cordova_cfg = root / 'config.xml'
+            cordova_cfg.write_text(
+                '<widget><access origin="*" /></widget>', encoding='utf-8')
+            cap_cfg = root / 'capacitor.config.json'
+            cap_cfg.write_text(
+                json.dumps({'server': {'cleartext': True}}), encoding='utf-8')
+            pkg_cfg = root / 'package.json'
+            pkg_cfg.write_text(
+                json.dumps({'dependencies': {'react-native': '0.74.0'}}),
+                encoding='utf-8')
+
+            findings = {}
+            frameworks = set()
+            with patch.object(js_configs, 'MAX_CONFIG_BYTES', 10), \
+                    patch.object(js_frameworks, 'MAX_CONFIG_BYTES', 10):
+                js_configs.check_cordova_config(
+                    cordova_cfg, 'config.xml', findings)
+                js_configs.check_capacitor_config(
+                    cap_cfg, 'capacitor.config.json', findings)
+                js_frameworks.detect_frameworks_from_package_json(
+                    root, frameworks)
+            self.assertEqual(findings, {})
+            self.assertEqual(frameworks, set())
+
+    def test_paged_viewer_reaches_end_of_byte_capped_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            src = Path(tmp) / 'lines.js'
+            src.write_text(
+                ''.join(f'var v{i} = "{"x" * 90}";\n' for i in range(1, 101)),
+                encoding='utf-8')
+            first = read_js_source_window(
+                src, max_bytes=1000, window_lines=20)
+            self.assertEqual(first['start_line'], 1)
+            self.assertLess(first['end_line'], 20)
+            nxt = read_js_source_window(
+                src, line_start=first['end_line'] + 1,
+                max_bytes=1000, window_lines=20)
+            self.assertEqual(nxt['start_line'], first['end_line'] + 1)
+            last = read_js_source_window(
+                src, line_start=98, max_bytes=1000, window_lines=20)
+            self.assertEqual(last['start_line'], 98)
+            self.assertEqual(last['end_line'], 100)
+            self.assertIn('var v100 =', last['data'])
+
+    def test_secret_candidates_use_all_quote_styles(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            src = Path(tmp) / 'keys.js'
+            src.write_text(
+                "'singleQuotedKey1';\nconst t = `templateKey2`;\n",
+                encoding='utf-8')
+            with patch.object(
+                    js_sast, 'get_secrets', return_value=set()) as mock_sec:
+                js_sast.extract_js_urls_emails_secrets(
+                    src, 'keys.js', [], [], [], set())
+            candidates = mock_sec.call_args.args[0]
+            self.assertIn('singleQuotedKey1', candidates)
+            self.assertIn('templateKey2', candidates)
+
+    def test_apk_cordova_config_prefers_apktool_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            raw_xml = root / 'res' / 'xml'
+            raw_xml.mkdir(parents=True)
+            (raw_xml / 'config.xml').write_bytes(b'\x03\x00\x08\x00AXML')
+            dec_xml = root / 'apktool_out' / 'res' / 'xml'
+            dec_xml.mkdir(parents=True)
+            (dec_xml / 'config.xml').write_text(
+                '<widget><access origin="*" /></widget>', encoding='utf-8')
+            res = analyze_js('0' * 32, root, 'apk')
+            self.assertEqual(
+                res['findings']['cordova_config_wildcard_access']['files'],
+                {'apktool_out/res/xml/config.xml': '1'})
+
+    def test_hermes_register_fold_keeps_string_literals(self):
+        reg_map = {'r0': '"hello"', 'r1': 'obj'}
+        self.assertEqual(
+            js_hermes._fold_args(
+                'r0, "r0", \'r1\', `r0`, x.r1, r1', reg_map),
+            '"hello", "r0", \'r1\', `r0`, x.r1, obj')
+
+    def test_expo_config_files_open_in_source_viewer(self):
+        for name in ('app.config', 'assets/app.manifest'):
+            form = ViewSourceAndroidForm(
+                {'file': name, 'type': 'js', 'md5': '0' * 32})
+            self.assertTrue(form.is_valid(), form.errors)
+            self.assertEqual(ios_view_source.set_ext_api(name), 'js')
+        form = ViewSourceAndroidForm(
+            {'file': 'app.exe', 'type': 'js', 'md5': '0' * 32})
+        self.assertFalse(form.is_valid())
+
+    def test_api_view_source_reads_paging_from_post(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            md5 = '0' * 32
+            (Path(tmp) / md5).mkdir()
+            (Path(tmp) / md5 / 'app.js').write_text(
+                'var a = 1;\n', encoding='utf-8')
+            factory = RequestFactory()
+            win = {
+                'data': '', 'start_line': 42, 'end_line': 42,
+                'total_lines': 42, 'window_lines': 2000, 'is_paged': True,
+            }
+            for module, scan_type in (
+                    (android_view_source, 'js'),
+                    (ios_view_source, 'ios')):
+                request = factory.post('/api/v1/view_source', {
+                    'file': 'app.js', 'hash': md5, 'type': scan_type,
+                    'line_start': '42', 'lines': '50', 'q': 'needle'})
+                request.user = Mock(is_authenticated=True)
+                with override_settings(UPLD_DIR=tmp), patch.object(
+                        module, 'read_js_source_window',
+                        return_value=win) as mock_win:
+                    module.run(request, api=True)
+                kwargs = mock_win.call_args.kwargs
+                self.assertEqual(kwargs['line_start'], '42')
+                self.assertEqual(kwargs['lines_param'], '50')
+                self.assertEqual(kwargs['search_term'], 'needle')
+
+    def test_chunks_are_byte_bounded_and_keep_line_numbers(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / 'long.js'
+            src.write_text('x' * 30 + '\neval(a);\n', encoding='utf-8')
+            with patch.multiple(
+                    js_sast,
+                    MAX_CHUNK_THRESHOLD_BYTES=10,
+                    CHUNK_MAX_CHARS=16,
+                    CHUNK_LINES=3):
+                chunks = list(js_sast._iter_file_chunks(src))
+                self.assertTrue(all(len(text) <= 32 for _, text in chunks))
+                self.assertEqual(
+                    ''.join(text for _, text in chunks), src.read_text())
+                findings = js_sast.scan_js_files_with_sast([src], root)
+            self.assertEqual(
+                findings['js_dynamic_code_execution']['files'],
+                {'long.js': '2'})

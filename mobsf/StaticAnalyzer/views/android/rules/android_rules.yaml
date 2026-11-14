@@ -799,3 +799,20 @@
     owasp-mobile: m1
     masvs: platform-4
     ref: https://developer.android.com/reference/android/net/LocalServerSocket
+- id: android_rn_exposed_react_method
+  message: >-
+    A React Native @ReactMethod native module performs file system or command
+    execution operations. Methods annotated with @ReactMethod are exposed over
+    the JavaScript-to-Native bridge; ensure file paths and arguments are
+    strictly validated and confined to expected directories.
+  type: RegexAnd
+  pattern:
+    - \@ReactMethod|\@com\.facebook\.react\.bridge\.ReactMethod
+    - java\.io\.File|FileInputStream|FileOutputStream|Runtime\.getRuntime\(\)\.exec|ProcessBuilder
+  severity: warning
+  input_case: exact
+  metadata:
+    cvss: 6.5
+    cwe: cwe-22
+    owasp-mobile: m1
+    masvs: platform-2

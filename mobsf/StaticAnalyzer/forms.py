@@ -20,8 +20,12 @@ class AttackDetect(forms.Form):
         # Allowed File extensions
         supported_ext = (r'^\.(kt|java|smali|xml|'
                          r'plist|entitlements|m|swift|'
-                         r'db|sqlitedb|sqlite|txt|json)$')
-        if not re.search(supported_ext, Path(file).suffix):
+                         r'db|sqlitedb|sqlite|txt|json|'
+                         r'js|jsx|ts|tsx|mjs|cjs|bundle|jsbundle|'
+                         r'html|htm|vue|svelte|map)$')
+        supported_names = {'app.config', 'app.manifest'}
+        if (not re.search(supported_ext, Path(file).suffix)
+                and Path(file).name.lower() not in supported_names):
             raise forms.ValidationError('File Extension not supported')
         return file
 
@@ -70,7 +74,8 @@ class AndroidChecks(forms.Form):
             ('aar', 'aar'),
             ('dex', 'dex'),
             ('so', 'so'),
-            ('a', 'a')))
+            ('a', 'a'),
+            ('js', 'js')))
 
 
 class ViewSourceIOSApiForm(AttackDetect, IOSChecks, APIChecks):

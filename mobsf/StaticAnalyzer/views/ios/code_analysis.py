@@ -7,6 +7,9 @@ from django.conf import settings
 from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
     MalwareDomainCheck,
 )
+from mobsf.StaticAnalyzer.views.common.js_analysis import (
+    analyze_js,
+)
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     url_n_email_extract,
 )
@@ -127,6 +130,16 @@ def ios_source_analysis(checksum, src):
         msg = 'Email and URL Extraction Completed'
         logger.info(msg)
         append_scan_status(checksum, msg)
+
+        js_res = analyze_js(
+            checksum,
+            Path(src),
+            'zip',
+            rel_base=Path(src))
+        url_list.extend(js_res['urls_list'])
+        url_n_file.extend(js_res['urls'])
+        email_n_file.extend(js_res['emails'])
+
         if not source_types:
             source_type = _SourceType.nocode.value
         elif len(source_types) > 1:
@@ -150,6 +163,12 @@ def ios_source_analysis(checksum, src):
             'domains': domains,
             'emailnfile': email_n_file,
             'source_type': source_type,
+            'js_analysis': {
+                'frameworks': js_res['frameworks'],
+                'hermes': js_res['hermes'],
+                'findings': js_res['findings'],
+            },
+            'js_secrets': js_res['secrets'],
         }
         return code_analysis_dict
     except Exception as exp:

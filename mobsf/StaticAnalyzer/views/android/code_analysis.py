@@ -19,6 +19,9 @@ from mobsf.MobSF.utils import (
     get_android_src_dir,
     settings_enabled,
 )
+from mobsf.StaticAnalyzer.views.common.js_analysis import (
+    analyze_android_js,
+)
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     url_n_email_extract,
 )
@@ -83,7 +86,9 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
         'urls_list': [],
         'urls': [],
         'emails': [],
+        'secrets': [],
         'sbom': {},
+        'js_analysis': {},
     }
     try:
         root = Path(settings.BASE_DIR) / 'StaticAnalyzer' / 'views'
@@ -198,6 +203,19 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
         msg = 'Email and URL Extraction Completed'
         logger.info(msg)
         append_scan_status(checksum, msg)
+
+        # JavaScript / Hybrid / Hermes Analysis
+        js_res = analyze_android_js(checksum, app_dir, typ)
+        result['js_analysis'] = {
+            'frameworks': js_res['frameworks'],
+            'hermes': js_res['hermes'],
+            'findings': js_res['findings'],
+            'source_files': js_res['source_files'],
+        }
+        result['urls_list'].extend(js_res['urls_list'])
+        result['urls'].extend(js_res['urls'])
+        result['emails'].extend(js_res['emails'])
+        result['secrets'].extend(js_res['secrets'])
     except Exception as exp:
         msg = 'Failed to perform code analysis'
         logger.exception(msg)

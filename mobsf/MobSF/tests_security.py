@@ -5,19 +5,23 @@ import sys
 import tempfile
 import threading
 import time
+import tracemalloc
 from pathlib import Path
 from unittest import mock
 
 from django.test import SimpleTestCase
+from django.urls import Resolver404, resolve
 
 from mobsf.MobSF import security
 from mobsf.MobSF.security import (
     clean_filename,
     cmd_injection_check,
+    fixed_endpoint_request,
     is_attack_pattern,
     is_disallowed_ip,
     is_path_traversal,
     is_pipe_or_link,
+    is_safe_ios_container_path,
     is_safe_path,
     is_safe_windows_batch_arg,
     safe_request,
@@ -29,6 +33,12 @@ from mobsf.MobSF.security import (
     subprocess_hook,
 )
 from mobsf.MobSF.utils import sha256
+from mobsf.StaticAnalyzer.views.android import playstore
+from mobsf.StaticAnalyzer.views.common.shared_func import (
+    _iter_ar_archive,
+    ar_os,
+)
+from mobsf.StaticAnalyzer.views.ios import appstore
 
 
 class SanitizeRedirectTests(SimpleTestCase):
@@ -228,6 +238,47 @@ class SafeRequestLimitTests(SimpleTestCase):
             with self.assertRaises(ValueError):
                 safe_request('GET', 'https://a.example/',
                              max_response_size=10)
+
+
+class FixedEndpointRequestTests(SimpleTestCase):
+
+    PROXIES = {'https': 'http://proxy.local:8080'}
+
+    @staticmethod
+    def _response(chunks):
+        response = mock.MagicMock(status_code=200, headers={})
+        response.__enter__.return_value = response
+        response.raw.stream.return_value = iter(chunks)
+        return response
+
+    def test_without_proxy_uses_safe_request(self):
+        with mock.patch.object(security, 'safe_request') as mock_safe:
+            fixed_endpoint_request(
+                'GET', 'https://a.example/',
+                proxies={'https': None}, max_response_size=10)
+        mock_safe.assert_called_once()
+        self.assertEqual(mock_safe.call_args.kwargs['max_response_size'], 10)
+
+    def test_proxy_is_used_without_redirects(self):
+        with mock.patch.object(
+                security.requests, 'request',
+                return_value=self._response([b'ok'])) as mock_req:
+            response = fixed_endpoint_request(
+                'GET', 'https://a.example/', proxies=self.PROXIES,
+                allow_redirects=True)
+        self.assertEqual(response._content, b'ok')
+        kwargs = mock_req.call_args.kwargs
+        self.assertEqual(kwargs['proxies'], self.PROXIES)
+        self.assertFalse(kwargs['allow_redirects'])
+
+    def test_proxy_response_size_limit(self):
+        with mock.patch.object(
+                security.requests, 'request',
+                return_value=self._response([b'a' * 6, b'a' * 6])):
+            with self.assertRaises(ValueError):
+                fixed_endpoint_request(
+                    'GET', 'https://a.example/', proxies=self.PROXIES,
+                    max_response_size=10)
 
 
 class SlowDripTests(SimpleTestCase):
@@ -473,3 +524,109 @@ class SanitizeSvgTests(SimpleTestCase):
             '<svg xmlns="http://www.w3.org/2000/svg"><text>&xxe;</text></svg>'
         )
         self.assertEqual(sanitize_svg(xxe), '')
+
+
+class IOSContainerPathTests(SimpleTestCase):
+
+    def test_valid_ios_container_paths(self):
+        uuid = '12345678-9ABC-DEF0-1234-56789ABCDEF0'
+        for path in (
+            f'/var/mobile/Containers/Data/Application/{uuid}',
+            f'/var/mobile/Containers/Data/Application/{uuid}/',
+            f'/private/var/mobile/Containers/Data/Application/{uuid}',
+            f'/private/var/mobile/Containers/Data/Application/{uuid}/',
+        ):
+            with self.subTest(path=path):
+                self.assertTrue(is_safe_ios_container_path(path))
+
+    def test_unsafe_ios_container_paths(self):
+        uuid = '12345678-9ABC-DEF0-1234-56789ABCDEF0'
+        for path in (
+            '',
+            None,
+            False,
+            '/',
+            '/var/root',
+            '/var/mobile',
+            '/private/var/Keychains',
+            '/private/var/mobile/Containers/Data/Application',
+            f'/private/var/mobile/Containers/Data/Application/{uuid}/../../x',
+            f'/private/var/mobile/Containers/Data/Application/{uuid}/Library',
+            '/private/var/mobile/Containers/Data/Application/not-a-uuid',
+            f'/private/var/mobile/Containers/Data/Application/{uuid}\n/etc',
+        ):
+            with self.subTest(path=path):
+                self.assertFalse(is_safe_ios_container_path(path))
+
+
+class ArArchiveSafetyTests(SimpleTestCase):
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_inflated_ar_header_does_not_preallocate(self):
+        ar_file = self.root / 'bomb.a'
+        header = (
+            b'evil.o          '
+            b'0           '
+            b'0     '
+            b'0     '
+            b'100644  '
+            b'9999999999'
+            b'\x60\x0a'
+        )
+        ar_file.write_bytes(b'!<arch>\n' + header)
+        tracemalloc.start()
+        try:
+            with self.assertRaises(ValueError):
+                list(_iter_ar_archive(ar_file))
+            _, peak = tracemalloc.get_traced_memory()
+        finally:
+            tracemalloc.stop()
+        self.assertLess(peak, 1024 * 1024)
+
+    def test_ar_os_preserves_working_directory(self):
+        dst = self.root / 'dst'
+        dst.mkdir()
+        src = self.root / 'sample.a'
+        src.write_bytes(b'!<arch>\n')
+        before = os.getcwd()
+        ar_os(src.as_posix(), dst.as_posix())
+        self.assertEqual(os.getcwd(), before)
+
+
+class StoreLookupAndRouteSafetyTests(SimpleTestCase):
+
+    def test_tests_route_is_not_exposed(self):
+        with self.assertRaises(Resolver404):
+            resolve('/tests/')
+
+    def test_appstore_rejects_invalid_bundle_id_and_bounds_request(self):
+        with mock.patch.object(appstore, 'fixed_endpoint_request') as mock_req, \
+                mock.patch.object(appstore, 'append_scan_status'):
+            res = appstore.app_search('0' * 32, '../../evil&country=ru')
+            self.assertEqual(res, {'error': True})
+            mock_req.assert_not_called()
+
+            mock_resp = mock.MagicMock()
+            mock_resp.json.return_value = {'results': []}
+            mock_req.return_value = mock_resp
+            res = appstore.app_search('0' * 32, 'com.example.app')
+            self.assertEqual(res, {'error': True})
+            called_url = mock_req.call_args.args[1]
+            self.assertIn('bundleId=com.example.app', called_url)
+
+    def test_playstore_rejects_traversal_package_name(self):
+        app_dic = {'md5': '0' * 32}
+        with mock.patch.object(playstore, 'fixed_endpoint_request') as mock_req:
+            playstore.get_app_details(
+                app_dic, {'packagename': '../../other/endpoint'})
+            mock_req.assert_not_called()
+            self.assertTrue(app_dic['playstore']['error'])
+            res = playstore.app_search('0' * 32, '../../other/endpoint')
+            self.assertTrue(res['error'])
+            mock_req.assert_not_called()

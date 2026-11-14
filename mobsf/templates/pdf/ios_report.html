@@ -772,6 +772,38 @@
               </table>
                    
       {% endif %}
+      {% if js_analysis and 'findings' in js_analysis and js_analysis.findings %}
+      <h2><span class="fas">&#xf121;</span>  JAVASCRIPT / HYBRID CODE ANALYSIS</h2>
+      <table class="basic">
+        <thead>
+          <tr>
+            <th width="6%">NO</th>
+            <th width="32%">ISSUE</th>
+            <th width="10%">SEVERITY</th>
+            <th width="22%">STANDARDS</th>
+            <th width="30%">FILES</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rule, details in js_analysis.findings.items %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ details.metadata.description }}</td>
+            <td>{{ details.metadata.severity }}</td>
+            <td>
+              {% if details.metadata.cwe %}<strong>CWE: </strong>{{ details.metadata.cwe }}{% endif %}
+              {% if details.metadata.masvs %}<br/><strong>OWASP MASVS: </strong>{{ details.metadata.masvs }}{% endif %}
+            </td>
+            <td style="word-break:break-word;">
+              {% for file_path in details.files %}
+                <div>{{ file_path }}</div>
+              {% endfor %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
     {% endif %}
     {% if firebase_urls %} 
     <h2><span class="fas">&#xf1c0;</span>  FIREBASE DATABASES ANALYSIS</h2>

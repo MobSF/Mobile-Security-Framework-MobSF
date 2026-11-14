@@ -736,6 +736,41 @@ def safe_request(method, url, *,
         return response
 
 
+def fixed_endpoint_request(method, url, *,
+                           max_response_size=1024 * 1024,
+                           proxies=None, **kwargs):
+    """Return a bounded response from an operator-configured endpoint.
+
+    Only for URLs whose host comes from settings, never from scan data.
+    Without an upstream proxy this is safe_request(). With one, the proxy
+    resolves DNS, so the request goes through it with redirects disabled.
+    """
+    if not _upstream_proxy_enabled(proxies):
+        return safe_request(
+            method, url, max_response_size=max_response_size, **kwargs)
+    parsed = urlparse(url)
+    if parsed.scheme not in ('http', 'https') or not parsed.hostname:
+        raise ValueError('Invalid URL')
+    kwargs.setdefault('timeout', DEFAULT_REQUEST_TIMEOUT)
+    kwargs.pop('allow_redirects', None)
+    kwargs.pop('stream', None)
+    with requests.request(
+            method,
+            url,
+            proxies=proxies,
+            allow_redirects=False,
+            stream=True,
+            **kwargs) as response:
+        content = bytearray()
+        for chunk in response.raw.stream(65536, decode_content=True):
+            content += chunk
+            if len(content) > max_response_size:
+                raise ValueError('Remote response exceeds the allowed size')
+        response._content = bytes(content)
+        response._content_consumed = True
+        return response
+
+
 _SVG_SAFE_TAGS = {
     'svg', 'g', 'path', 'rect', 'circle', 'ellipse',
     'line', 'polyline', 'polygon', 'text', 'tspan',
@@ -938,6 +973,36 @@ def is_safe_android_path(check_path, safe_root='/data/app'):
             (safe_root, normalized)) == safe_root
     except ValueError:
         return False
+
+
+_IOS_CONTAINER_ROOTS = (
+    '/var/mobile/Containers/Data/Application',
+    '/private/var/mobile/Containers/Data/Application',
+)
+_IOS_CONTAINER_UUID_RE = re.compile(
+    r'^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-'
+    r'[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$')
+
+
+def is_safe_ios_container_path(check_path):
+    """Validate an iOS sandbox data container path reported via Frida."""
+    if not isinstance(check_path, str) or not check_path:
+        return False
+    cleaned = check_path.strip()
+    if '\x00' in cleaned or '\n' in cleaned or '\r' in cleaned:
+        return False
+    for safe_root in _IOS_CONTAINER_ROOTS:
+        prefix = f'{safe_root}/'
+        if cleaned.startswith(prefix):
+            relative = cleaned[len(prefix):].rstrip('/')
+            if (not relative
+                    or '/' in relative
+                    or is_path_traversal(relative)
+                    or not _IOS_CONTAINER_UUID_RE.fullmatch(relative)):
+                return False
+            normalized = posixpath.normpath(cleaned)
+            return normalized == f'{safe_root}/{relative}'
+    return False
 
 
 def clean_filename(filename, replace=' '):

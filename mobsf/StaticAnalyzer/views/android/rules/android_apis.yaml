@@ -471,3 +471,9 @@
   pattern: CredentialManager\.create\(|GetPublicKeyCredentialOption\(|\.getAuthenticationResponseJson\(|CreatePublicKeyCredentialRequest\(
   input_case: exact
   severity: info
+- id: api_react_native_bridge_methods
+  message: React Native Bridge Methods
+  type: Regex
+  pattern: \@ReactMethod|\@com\.facebook\.react\.bridge\.ReactMethod|ReactContextBaseJavaModule
+  input_case: exact
+  severity: info

@@ -66,6 +66,17 @@ function change_snip(val){
     tbl.ajax.reload();
 }
 
+function escapeHtml(text) {
+    var map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
 $(document).ready( function () {
         $.fn.dataTable.ext.errMode = 'none';
         tbl = $('#autotbl').DataTable( {
@@ -86,11 +97,17 @@ $(document).ready( function () {
             { data: "calledFrom" }
         ],
         columnDefs: [ {
+            targets: [0, 1, 2, 6],
+            render: $.fn.dataTable.render.text()
+        }, {
             targets: [3,4, 5],
             render: function ( data, type, row ) {
-                if (data && JSON.stringify(data).length > snip )
-                    return JSON.stringify(data).slice(0, snip) + "...";
-                return JSON.stringify(data)
+                var text = JSON.stringify(data);
+                if (text === undefined)
+                    return '';
+                if (data && text.length > snip )
+                    text = text.slice(0, snip) + "...";
+                return escapeHtml(text);
             }
         }]
     });

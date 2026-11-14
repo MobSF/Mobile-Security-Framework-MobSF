@@ -11,7 +11,10 @@ from django.utils.html import escape
 from mobsf.MobSF.views.authentication import (
     login_required,
 )
-from mobsf.MobSF.security import is_safe_path
+from mobsf.MobSF.security import (
+    is_pipe_or_link,
+    is_safe_path,
+)
 from mobsf.MobSF.utils import (
     is_md5,
     print_n_send_error_response,
@@ -53,6 +56,11 @@ def view_file(request, api=False):
         src = src.as_posix()
         if not is_safe_path(src, sfile.as_posix(), fil):
             err = 'Path Traversal Attack Detected'
+            return print_n_send_error_response(request, err, api)
+        if (not sfile.exists()
+                or not sfile.is_file()
+                or is_pipe_or_link(sfile)):
+            err = 'File not found'
             return print_n_send_error_response(request, err, api)
         # Check if it's a binary plist first
         if fil.endswith('.plist'):

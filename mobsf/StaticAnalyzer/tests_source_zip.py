@@ -1,4 +1,5 @@
 """Unit tests for source ZIP type detection and post-scan views."""
+import json
 import tempfile
 from pathlib import Path
 from unittest import mock
@@ -188,6 +189,23 @@ class PostScanViewTests(TestCase):
         StaticAnalyzerAndroid.objects.create(MD5=CHECKSUM, APP_TYPE=app_type)
         return rel
 
+    def _tree_file_names(self, typ):
+        """Walk the lazily loaded source tree and return file names."""
+        names, pending = [], ['#']
+        while pending:
+            resp = self.client.post(
+                '/source_code/nodes/',
+                {'md5': CHECKSUM, 'type': typ, 'ids': json.dumps(pending)})
+            self.assertEqual(resp.status_code, 200)
+            pending = []
+            for children in resp.json().values():
+                for node in children:
+                    if node.get('children'):
+                        pending.append(node['id'])
+                    else:
+                        names.append(node['text'])
+        return ' '.join(names)
+
     def _assert_views_work(self, app_type):
         rel = self._scan(app_type)
         resp = self.client.post(
@@ -209,7 +227,7 @@ class PostScanViewTests(TestCase):
         resp = self.client.get(
             '/source_code/', {'md5': CHECKSUM, 'type': 'java'})
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, 'MainActivity')
+        self.assertIn('MainActivity', self._tree_file_names('java'))
         resp = self.client.post(
             '/find/', {'md5': CHECKSUM, 'q': 'MainActivity', 'code': 'java',
                        'search_type': 'content'})

@@ -57,12 +57,14 @@
       html = `This will suppress the rule <b>${escapeHtml(rule)}</b> from tiggering for <b>${escapeHtml(pkg)}</b> from now on.`
     }
     if (manifest){
-      table = '#table_manifest'
       type = 'manifest'
+      defaultTable = '#table_manifest'
     } else {
-      table = '#table_code'
       type = 'code'
+      defaultTable = '#table_code'
     }
+    var targetTable = $(tr).closest('table')
+    var table = targetTable.length ? targetTable : $(defaultTable)
 
     Swal.fire({
       title: title,
@@ -75,7 +77,7 @@
       if (result.value) {
         action(document.location.origin + endpoint,  { checksum: hash, rule, type }, function(json) {
             if (json.status==="ok") {
-                $(table).DataTable().row(tr).remove().draw();
+                table.DataTable().row(tr).remove().draw();
             } else {
               Swal.fire("Failed to Suppress")
             }

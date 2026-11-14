@@ -15,21 +15,12 @@
         }
     </style>
 
-<link rel="stylesheet" href="{% static "enlighterjs/enlighterjs.min.css" %}" />
+<link rel="stylesheet" href="{% static "prismjs/prism.min.css" %}" />
 <style>
 pre {
-  white-space: pre-wrap;       /* css-3 */
-  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-  white-space: -pre-wrap;      /* Opera 4-6 */
-  white-space: -o-pre-wrap;    /* Opera 7 */
-  word-wrap: break-word;       /* Internet Explorer 5.5+ */
-  }
-
-  /* custom yellow line highlight */
-  .enlighter-t-enlighter div.enlighter>div.enlighter-special {
-    background-color: #fff8bb;
-  }
-
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
 </style>
     {% endblock %}
 
@@ -1322,7 +1313,7 @@ pre {
 <script src="{% static "amcharts/maps.js" %}"></script>
 <script src="{% static "amcharts/worldIndiaLow.js" %}"></script>
 <script src="{% static "amcharts/animated.js" %}"></script>
-<script type="text/javascript" src="{% static "enlighterjs/enlighterjs.min.js" %}"></script>
+<script type="text/javascript" src="{% static "prismjs/prism.min.js" %}"></script>
 <script>
   // Navbar Active
     $(".nav-link").on("click", function() {

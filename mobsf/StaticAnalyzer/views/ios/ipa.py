@@ -57,6 +57,9 @@ from mobsf.StaticAnalyzer.views.common.firebase import (
 from mobsf.StaticAnalyzer.views.common.appsec import (
     get_ios_dashboard,
 )
+from mobsf.StaticAnalyzer.views.common.js_analysis import (
+    analyze_ios_js,
+)
 from mobsf.StaticAnalyzer.views.common.sbom import (
     ios_sbom,
 )
@@ -271,6 +274,19 @@ def ipa_analysis_task(checksum, app_dic, rescan, queue=False):
             bin_dict,
             app_dic['all_files'],
             lb['macho_strings'])
+        # JavaScript / Hybrid / Hermes Analysis
+        js_res = analyze_ios_js(checksum, app_dic, 'ipa')
+        code_dict['js_analysis'] = {
+            'frameworks': js_res['frameworks'],
+            'hermes': js_res['hermes'],
+            'findings': js_res['findings'],
+        }
+        code_dict['urls_list'].extend(js_res['urls_list'])
+        code_dict['urls_list'] = list(set(code_dict['urls_list']))
+        code_dict['urlnfile'].extend(js_res['urls'])
+        code_dict['emailnfile'].extend(js_res['emails'])
+        if js_res['secrets']:
+            app_dic['secrets'].extend(js_res['secrets'])
         # Domain Extraction and Malware Check
         code_dict['domains'] = MalwareDomainCheck().scan(
             checksum,
@@ -359,6 +375,8 @@ def ios_analysis_task(checksum, app_dic, rescan, queue=False):
             ['.swift', '.m', '.h', '.plist', '.json'])
         if ios_strs['secrets']:
             app_dic['secrets'].extend(list(ios_strs['secrets']))
+        if code_dict.get('js_secrets'):
+            app_dic['secrets'].extend(code_dict['js_secrets'])
         # Get App Icon
         get_icon_source(app_dic)
         # Firebase and Trackers

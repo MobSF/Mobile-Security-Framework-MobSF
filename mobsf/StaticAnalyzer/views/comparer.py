@@ -10,7 +10,6 @@ from copy import deepcopy
 
 from django.shortcuts import render
 from django.conf import settings
-from django.utils.html import escape
 
 from mobsf.MobSF.utils import print_n_send_error_response
 from mobsf.StaticAnalyzer.models import StaticAnalyzerAndroid
@@ -170,17 +169,7 @@ def generic_compare(request,
         # (urls are lists inside the list which mess things up...)
         tmp_list = []
         for url_obj in db_context['urls']:
-            for url in url_obj['urls']:
-                # urls can mess up the table because they can be really long,
-                # so let's cut them
-                # escape url
-                url = escape(url)
-                tmp_url = url[:70]
-                while len(url) > 70:
-                    url = url[70:]
-                    tmp_url += '<br />'
-                    tmp_url += url[:70]
-                tmp_list.append(tmp_url)
+            tmp_list.extend(url_obj['urls'])
 
         db_context['urls'] = list(set(deepcopy(tmp_list)))
         tmp_list.clear()

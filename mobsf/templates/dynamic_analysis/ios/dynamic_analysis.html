@@ -408,8 +408,8 @@ function list_apps(){
                                         <input type="hidden" name="instance_id" value="${instanceId}">
                                         <button type="submit" class="btn btn-success disable"><i class="fab fa-apple"></i> Start Dynamic Analysis</button>
                                       </form>
-                                      <a class="btn btn-info ${buttonState}" href="../../ios/view_report/${escapeHtml(bundle)}"><i class="fa fa-mobile"></i> View Report </a>
-                                      <a class="btn btn-warning" id="${$('#ios_dynamic').val()}" onclick="remove_app(this, '${escapeHtml(bundle)}')"><i class="fas fa-trash-alt"></i>  Uninstall</a>
+                                      <a class="btn btn-info ${buttonState}" href="../../ios/view_report/${escapeHtml(encodeURIComponent(bundle))}"><i class="fa fa-mobile"></i> View Report </a>
+                                      <a class="btn btn-warning" id="${instanceId}" data-bundle="${escapeHtml(bundle)}" onclick="remove_app(this, this.dataset.bundle)"><i class="fas fa-trash-alt"></i>  Uninstall</a>
                                       </div>
                                   </td></tr>`);
                         }

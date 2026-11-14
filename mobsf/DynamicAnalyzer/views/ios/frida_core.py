@@ -1,4 +1,6 @@
+import json
 import logging
+import posixpath
 import sys
 import time
 from pathlib import Path
@@ -24,8 +26,35 @@ from mobsf.DynamicAnalyzer.views.ios.frida_auxiliary_scripts import (
     string_capture,
     string_compare,
 )
+from mobsf.MobSF.security import (
+    is_safe_ios_container_path,
+    sanitize_for_logging,
+)
 
 SCREENSHOT_CAPTURED_MSG = '✅ Screenshot Captured'
+DUMP_MARKER = '[MBSFDUMP] '
+
+
+def parse_dump_message(msg):
+    """Return a one-line dump record, or None if msg is not dump data.
+
+    Dump hooks send a JSON object with a single marker-prefixed key.
+    Anything else may carry app-controlled text and must not reach
+    the dump file.
+    """
+    if isinstance(msg, str):
+        if not msg.startswith('{'):
+            return None
+        try:
+            msg = json.loads(msg)
+        except ValueError:
+            return None
+    if not isinstance(msg, dict) or len(msg) != 1:
+        return None
+    key, value = next(iter(msg.items()))
+    if not isinstance(key, str) or not key.startswith(DUMP_MARKER):
+        return None
+    return json.dumps({key[len(DUMP_MARKER):]: value})
 
 
 logger = logging.getLogger(__name__)
@@ -147,12 +176,11 @@ class Frida:
             msg = message['payload']
             aux = '[AUXILIARY] '
             jb = '[Jailbreak Detection Bypass] '
-            dump = '[MBSFDUMP] '
+            record = parse_dump_message(msg)
             if not isinstance(msg, str):
                 msg = str(msg)
-            if dump in msg:
-                msg = msg.replace(dump, '')
-                self.write_log(self.dump_file, f'{msg}\n')
+            if record is not None:
+                self.write_log(self.dump_file, f'{record}\n')
             elif msg.startswith(jb):
                 self.write_log(self.frida_log, f'{msg}\n')
             elif msg.startswith(aux):
@@ -290,8 +318,15 @@ class Frida:
         implementations = []
         try:
             try:
-                self.app_container = api.get_container()
-                self.container_file.write_text(self.app_container)
+                container = api.get_container()
+                if is_safe_ios_container_path(container):
+                    self.app_container = posixpath.normpath(container.strip())
+                    self.container_file.write_text(
+                        self.app_container, encoding='utf-8')
+                elif container:
+                    logger.warning(
+                        'Rejected unsafe iOS container path: %s',
+                        sanitize_for_logging(str(container)))
             except frida.InvalidOperationError:
                 pass
             # Migrating defaults to rpc functions

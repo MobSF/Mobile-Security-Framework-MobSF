@@ -60,6 +60,28 @@ def common_fields(findings, data):
             'description': fdesc,
             'section': 'code',
         })
+    # JavaScript / Hybrid Code Analysis
+    js_findings = data.get('js_analysis', {}).get('findings', {})
+    for cd in js_findings.values():
+        if cd['metadata']['severity'] == 'good':
+            sev = 'secure'
+        else:
+            sev = cd['metadata']['severity']
+        desc = cd['metadata']['description']
+        ref = cd['metadata'].get('ref', '')
+        files_dict = cd.get('files', {})
+        files_lines = [f'{file}, line(s) {lines}'
+                       for file, lines in files_dict.items()]
+        all_files_str = '\n'.join(files_lines)
+        if files_dict:
+            fdesc = f'{desc}\n{ref}\n\nFiles:\n{all_files_str}'
+        else:
+            fdesc = f'{desc}\n{ref}'
+        findings[sev].append({
+            'title': cd['metadata']['description'],
+            'description': fdesc,
+            'section': 'code',
+        })
     # Permissions
     dang_perms = []
     fmt_perm = ''

@@ -152,7 +152,7 @@ def get_strings_metadata(app_dic, elf_strings, exts, code_dic):
     urls_list = []
     urls_n_files = []
     emails_n_files = []
-    secrets = []
+    secrets = list(code_dic.get('secrets', []))
     if app_dic.get('androguard_string_resources') or app_dic.get('apk_strings'):
         # APK
         apk_res = strings_from_apk(checksum, app_dic)

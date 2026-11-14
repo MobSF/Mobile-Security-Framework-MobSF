@@ -870,17 +870,17 @@
                                             <th>Only in {{ second_app.name_ver }}</th>
                                         </tr>
                                         <tr>
-                                            <td>
+                                            <td style="word-break: break-all;">
                                                 {% for url in urls.common %}
                                                     {{ url }} <br/>
                                                 {% endfor %}
                                             </td>
-                                            <td>
+                                            <td style="word-break: break-all;">
                                                 {% for url in urls.only_first %}
                                                     {{ url }} <br/>
                                                 {% endfor %}
                                             </td>
-                                            <td>
+                                            <td style="word-break: break-all;">
                                                 {% for url in urls.only_second %}
                                                     {{ url }} <br/>
                                                 {% endfor %}
