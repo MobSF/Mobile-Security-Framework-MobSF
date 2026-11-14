@@ -466,3 +466,204 @@
     cwe: cwe-602
     owasp-mobile: m4
     masvs: auth-1
+
+- id: js_tls_validation_disabled
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    TLS certificate validation is disabled in a mobile HTTP client
+    (cordova-plugin-advanced-http setServerTrustMode/setSSLCertMode 'nocheck'
+    or acceptAllCerts(true), rn-fetch-blob trusty: true, or
+    react-native-ssl-pinning disableAllSecurity: true). The app accepts any
+    certificate, allowing Man-in-the-Middle attacks.
+  severity: high
+  pattern:
+    - >-
+      (call_expression
+        function: (member_expression
+          property: (property_identifier) @_fn
+          (#match? @_fn "^(setServerTrustMode|setSSLCertMode)$"))
+        arguments: (arguments
+          .
+          (string) @_mode (#match? @_mode "^['\"]nocheck['\"]$"))) @match
+    - >-
+      (call_expression
+        function: (member_expression
+          property: (property_identifier) @_fn (#eq? @_fn "acceptAllCerts"))
+        arguments: (arguments . (true))) @match
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?(trusty|disableAllSecurity)['\"]?$")
+        value: (true)) @match
+  metadata:
+    cvss: 7.4
+    cwe: cwe-295
+    owasp-mobile: m3
+    masvs: network-3
+
+- id: js_sqlite_injection
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    SQL query passed to an on-device SQLite API (executeSql, execAsync,
+    runAsync, getAllAsync, execute, etc.) is built with string concatenation
+    or template literal interpolation. Use parameterized queries with bound
+    arguments to prevent SQL injection.
+  severity: high
+  pattern:
+    - >-
+      (call_expression
+        function: (member_expression
+          property: (property_identifier) @_fn
+          (#match? @_fn "^(executeSql|sqlBatch|execAsync|runAsync|getAllAsync|getFirstAsync|getEachAsync|execSync|runSync|getAllSync|getFirstSync|execute|executeAsync)$"))
+        arguments: (arguments
+          .
+          (template_string (template_substitution)) @_q
+          (#match? @_q "(?i)\\b(select|insert|update|delete|replace|drop|create|alter|pragma)\\b"))) @match
+    - >-
+      (call_expression
+        function: (member_expression
+          property: (property_identifier) @_fn
+          (#match? @_fn "^(executeSql|sqlBatch|execAsync|runAsync|getAllAsync|getFirstAsync|getEachAsync|execSync|runSync|getAllSync|getFirstSync|execute|executeAsync)$"))
+        arguments: (arguments
+          .
+          (binary_expression) @_q
+          (#match? @_q "(?i)\\b(select|insert|update|delete|replace|drop|create|alter|pragma)\\b"))) @match
+  metadata:
+    cvss: 7.5
+    cwe: cwe-89
+    owasp-mobile: m7
+    masvs: code-4
+
+- id: js_webview_script_injection
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    JavaScript injected into a WebView or InAppBrowser (injectJavaScript,
+    injectedJavaScript, or executeScript) is built from dynamic values. If any
+    part is attacker-influenced, it executes in the web page context with
+    access to the native bridge.
+  severity: high
+  pattern:
+    - >-
+      (call_expression
+        function: (member_expression
+          property: (property_identifier) @_fn (#eq? @_fn "injectJavaScript"))
+        arguments: (arguments
+          .
+          [
+            (template_string (template_substitution))
+            (binary_expression)
+          ])) @match
+    - >-
+      (jsx_attribute
+        (property_identifier) @_prop
+        (#match? @_prop "^injectedJavaScript(BeforeContentLoaded)?$")
+        (jsx_expression
+          [
+            (template_string (template_substitution))
+            (binary_expression)
+          ])) @match
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?injectedJavaScript(BeforeContentLoaded)?['\"]?$")
+        value: [
+          (template_string (template_substitution))
+          (binary_expression)
+        ]) @match
+    - >-
+      (call_expression
+        function: (member_expression
+          property: (property_identifier) @_fn (#eq? @_fn "executeScript"))
+        arguments: (arguments
+          (object
+            (pair
+              key: [(property_identifier) (string)] @_k
+              (#match? @_k "^['\"]?code['\"]?$")
+              value: [
+                (template_string (template_substitution))
+                (binary_expression)
+              ])))) @match
+  metadata:
+    cvss: 7.5
+    cwe: cwe-94
+    owasp-mobile: m7
+    masvs: platform-2
+
+- id: js_weak_crypto
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    Weak or broken cryptographic algorithm or mode is used (MD5, SHA1, DES,
+    3DES, RC4, Rabbit, or ECB mode) via crypto-js, node-forge, or a Node-style
+    crypto API. Use SHA-256 or stronger hashes and AES-GCM.
+  severity: warning
+  pattern:
+    - >-
+      (call_expression
+        function: (member_expression
+          property: (property_identifier) @_fn
+          (#match? @_fn "^(MD5|SHA1|HmacMD5|HmacSHA1)$"))) @match
+    - >-
+      (member_expression
+        object: (member_expression
+          property: (property_identifier) @_alg
+          (#match? @_alg "^(DES|TripleDES|RC4|RC4Drop|Rabbit)$"))
+        property: (property_identifier) @_fn
+        (#match? @_fn "^(encrypt|decrypt)$")) @match
+    - >-
+      (member_expression
+        object: (member_expression
+          property: (property_identifier) @_m (#eq? @_m "mode"))
+        property: (property_identifier) @_e (#eq? @_e "ECB")) @match
+    - >-
+      (member_expression
+        object: (member_expression
+          property: (property_identifier) @_md (#eq? @_md "md"))
+        property: (property_identifier) @_h
+        (#match? @_h "^(md5|sha1)$")) @match
+    - >-
+      (call_expression
+        function: (member_expression
+          property: (property_identifier) @_fn
+          (#match? @_fn "^(createCipher|createCipheriv|createDecipher|createDecipheriv|createHash|createHmac)$"))
+        arguments: (arguments
+          .
+          (string) @_alg
+          (#match? @_alg "(?i)^['\"](md5|sha1|des|des-.*|des3|rc2.*|rc4.*|bf.*|blowfish.*|.*-ecb)['\"]$"))) @match
+  metadata:
+    cvss: 5.9
+    cwe: cwe-327
+    owasp-mobile: m5
+    masvs: crypto-4
+
+- id: js_crypto_hardcoded_key
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    A string literal is used as the encryption key or passphrase in a
+    crypto-js style encrypt/decrypt call. Keys bundled in JavaScript can be
+    trivially extracted from the application package; derive or store keys
+    in Keychain / Keystore instead.
+  severity: high
+  pattern:
+    - >-
+      (call_expression
+        function: (member_expression
+          object: (member_expression
+            property: (property_identifier) @_alg
+            (#match? @_alg "^(AES|DES|TripleDES|RC4|Rabbit)$"))
+          property: (property_identifier) @_fn
+          (#match? @_fn "^(encrypt|decrypt)$"))
+        arguments: (arguments
+          (_)
+          .
+          (string) @_key
+          (#match? @_key "^['\"][^'\"]{4,}['\"]$"))) @match
+  metadata:
+    cvss: 7.4
+    cwe: cwe-321
+    owasp-mobile: m5
+    masvs: crypto-1

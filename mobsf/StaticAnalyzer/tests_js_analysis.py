@@ -330,6 +330,48 @@ class JSAnalysisTests(TestCase):
             self.assertIn('js_client_side_auth_gate', findings)
             self.assertIn('js_webview_unverified_onmessage', findings)
 
+    def test_tls_sqlite_injection_and_crypto_rules(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / 'src'
+            src.mkdir()
+            (src / 'vuln.js').write_text(
+                'cordova.plugin.http.setServerTrustMode("nocheck", a, b);\n'
+                'RNFetchBlob.config({ trusty: true }).fetch("GET", u);\n'
+                'db.executeSql(`SELECT * FROM users WHERE id=${id}`);\n'
+                'tx.executeSql("DELETE FROM notes WHERE id=" + id, []);\n'
+                'webview.injectJavaScript(`setUser("${name}")`);\n'
+                'ref.executeScript({ code: "go(\'" + url + "\')" });\n'
+                'const h = CryptoJS.MD5(password);\n'
+                'const c = CryptoJS.DES.encrypt(data, "s3cr3tk3y");\n'
+                'const e = CryptoJS.AES.encrypt(d, k, '
+                '{ mode: CryptoJS.mode.ECB });\n'
+                'const s = crypto.createHash("sha1");\n',
+                encoding='utf-8')
+            (src / 'safe.js').write_text(
+                'db.executeSql("SELECT * FROM users WHERE id=?", [id]);\n'
+                'const m = re.exec(prefix + value);\n'
+                'webview.injectJavaScript("window.ready = true; true;");\n'
+                'const s = crypto.createHash("sha256");\n'
+                'const e = CryptoJS.AES.encrypt(data, keyFromKeychain);\n'
+                'RNFetchBlob.config({ trusty: false });\n',
+                encoding='utf-8')
+            findings = analyze_js('0' * 32, root, 'zip')['findings']
+            expected = {
+                'js_tls_validation_disabled': '1,2',
+                'js_sqlite_injection': '3,4',
+                'js_webview_script_injection': '5,6',
+                'js_weak_crypto': '7,8,9,10',
+                'js_crypto_hardcoded_key': '8',
+            }
+            for rule, lines in expected.items():
+                self.assertIn(rule, findings, rule)
+                files = findings[rule]['files']
+                self.assertEqual(
+                    sorted(files['src/vuln.js'].split(',')),
+                    sorted(lines.split(',')), rule)
+                self.assertNotIn('src/safe.js', files, rule)
+
     def test_js_source_listing_prunes_and_caches(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
