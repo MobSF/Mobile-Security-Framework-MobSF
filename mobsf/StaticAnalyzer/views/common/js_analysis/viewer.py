@@ -280,7 +280,7 @@ def read_js_source_window(file_path, lines_param=None, line_start=None,
         else:
             target_start = 1
 
-    start = min(target_start, max(1, total - window_lines + 1))
+    start = min(target_start, total)
     end = min(total, start + window_lines - 1)
     collected = []
     used_chars = 0

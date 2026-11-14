@@ -16,6 +16,7 @@ from mobsf.MobSF import security
 from mobsf.MobSF.security import (
     clean_filename,
     cmd_injection_check,
+    fixed_endpoint_request,
     is_attack_pattern,
     is_disallowed_ip,
     is_path_traversal,
@@ -237,6 +238,47 @@ class SafeRequestLimitTests(SimpleTestCase):
             with self.assertRaises(ValueError):
                 safe_request('GET', 'https://a.example/',
                              max_response_size=10)
+
+
+class FixedEndpointRequestTests(SimpleTestCase):
+
+    PROXIES = {'https': 'http://proxy.local:8080'}
+
+    @staticmethod
+    def _response(chunks):
+        response = mock.MagicMock(status_code=200, headers={})
+        response.__enter__.return_value = response
+        response.raw.stream.return_value = iter(chunks)
+        return response
+
+    def test_without_proxy_uses_safe_request(self):
+        with mock.patch.object(security, 'safe_request') as mock_safe:
+            fixed_endpoint_request(
+                'GET', 'https://a.example/',
+                proxies={'https': None}, max_response_size=10)
+        mock_safe.assert_called_once()
+        self.assertEqual(mock_safe.call_args.kwargs['max_response_size'], 10)
+
+    def test_proxy_is_used_without_redirects(self):
+        with mock.patch.object(
+                security.requests, 'request',
+                return_value=self._response([b'ok'])) as mock_req:
+            response = fixed_endpoint_request(
+                'GET', 'https://a.example/', proxies=self.PROXIES,
+                allow_redirects=True)
+        self.assertEqual(response._content, b'ok')
+        kwargs = mock_req.call_args.kwargs
+        self.assertEqual(kwargs['proxies'], self.PROXIES)
+        self.assertFalse(kwargs['allow_redirects'])
+
+    def test_proxy_response_size_limit(self):
+        with mock.patch.object(
+                security.requests, 'request',
+                return_value=self._response([b'a' * 6, b'a' * 6])):
+            with self.assertRaises(ValueError):
+                fixed_endpoint_request(
+                    'GET', 'https://a.example/', proxies=self.PROXIES,
+                    max_response_size=10)
 
 
 class SlowDripTests(SimpleTestCase):
@@ -563,8 +605,8 @@ class StoreLookupAndRouteSafetyTests(SimpleTestCase):
         with self.assertRaises(Resolver404):
             resolve('/tests/')
 
-    def test_appstore_rejects_invalid_bundle_id_and_uses_safe_request(self):
-        with mock.patch.object(appstore, 'safe_request') as mock_req, \
+    def test_appstore_rejects_invalid_bundle_id_and_bounds_request(self):
+        with mock.patch.object(appstore, 'fixed_endpoint_request') as mock_req, \
                 mock.patch.object(appstore, 'append_scan_status'):
             res = appstore.app_search('0' * 32, '../../evil&country=ru')
             self.assertEqual(res, {'error': True})
@@ -580,7 +622,7 @@ class StoreLookupAndRouteSafetyTests(SimpleTestCase):
 
     def test_playstore_rejects_traversal_package_name(self):
         app_dic = {'md5': '0' * 32}
-        with mock.patch.object(playstore, 'safe_request') as mock_req:
+        with mock.patch.object(playstore, 'fixed_endpoint_request') as mock_req:
             playstore.get_app_details(
                 app_dic, {'packagename': '../../other/endpoint'})
             mock_req.assert_not_called()

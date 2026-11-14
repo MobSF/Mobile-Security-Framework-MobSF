@@ -63,8 +63,8 @@ pre {
                           <div class="d-flex align-items-center" style="gap: 6px;">
                             <button type="button" class="btn btn-sm btn-outline-secondary" onclick="goToLine(1)">&laquo; First</button>
                             <button type="button" class="btn btn-sm btn-outline-secondary" onclick="goToLine({{ start_line|add:'-2000' }})">&lsaquo; Prev {{ window_lines }}</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="goToLine({{ start_line|add:'2000' }})">Next {{ window_lines }} &rsaquo;</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="goToLine({{ total_lines }})">Last &raquo;</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="goToLine({{ end_line|add:'1' }})"{% if end_line >= total_lines %} disabled{% endif %}>Next &rsaquo;</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="goToLine({{ total_lines|add:'-1999' }})">Last &raquo;</button>
                             <input type="number" id="goto_line_input" class="form-control form-control-sm" style="width: 110px;" min="1" max="{{ total_lines }}" placeholder="Line #" value="{{ start_line }}">
                             <button type="button" class="btn btn-sm btn-primary" onclick="goToLine(document.getElementById('goto_line_input').value)">Go</button>
                           </div>

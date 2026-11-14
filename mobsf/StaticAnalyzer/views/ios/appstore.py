@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 from django.conf import settings
 
 from mobsf.MobSF.security import (
-    safe_request,
+    fixed_endpoint_request,
     sanitize_for_logging,
 )
 from mobsf.MobSF.utils import (
@@ -41,7 +41,7 @@ def app_search(checksum, app_id):
     try:
         det = {}
         proxies, verify = upstream_proxy('https')
-        req = safe_request(
+        req = fixed_endpoint_request(
             'GET',
             req_url,
             timeout=5,

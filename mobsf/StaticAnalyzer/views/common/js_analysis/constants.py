@@ -33,6 +33,7 @@ SKIP_VENDOR_FILES = {
 }
 BEAUTIFY_EXTS = {'.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.bundle', '.jsbundle'}
 CHUNK_LINES = 50000
+CHUNK_MAX_CHARS = 4 * 1024 * 1024
 MAX_CHUNK_THRESHOLD_BYTES = 3 * 1024 * 1024
 MAX_SAST_JS_BYTES = 256 * 1024 * 1024
 SAST_BATCH_BYTES = 32 * 1024 * 1024

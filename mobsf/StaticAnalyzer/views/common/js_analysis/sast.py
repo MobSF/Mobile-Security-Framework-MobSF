@@ -1,7 +1,6 @@
 # -*- coding: utf_8 -*-
 """Tree-sitter rule scanning, URL and secret extraction."""
 import logging
-import re
 import secrets
 import time
 from pathlib import Path
@@ -11,6 +10,7 @@ from django.conf import settings
 from mobsf.MobSF.security import sanitize_for_logging
 from mobsf.StaticAnalyzer.views.common.js_analysis.constants import (
     CHUNK_LINES,
+    CHUNK_MAX_CHARS,
     JS_SOURCE_EXTS,
     MAX_CHUNK_THRESHOLD_BYTES,
     MAX_SAST_JS_BYTES,
@@ -50,7 +50,7 @@ def extract_js_urls_emails_secrets(file_path, rel_path, urls_list, urls_nf,
                 if 8 <= len(s) <= 256 and s[0].isalnum():
                     candidate_strings.add(s)
         else:
-            for match in STRINGS_REGEX.finditer(content, re.MULTILINE):
+            for match in STRINGS_REGEX.finditer(url_text):
                 s = match.group()
                 if 8 <= len(s) <= 256 and s[0].isalnum():
                     candidate_strings.add(s)
@@ -82,15 +82,21 @@ def _iter_file_chunks(fpath):
     if fpath.stat().st_size <= MAX_CHUNK_THRESHOLD_BYTES:
         yield 0, fpath.read_text('utf-8', 'ignore')
         return
-    buf = []
-    offset = 0
+    buf, buf_chars, newlines, offset = [], 0, 0, 0
     with fpath.open(encoding='utf-8', errors='ignore') as fp:
-        for line in fp:
-            buf.append(line)
-            if len(buf) >= CHUNK_LINES:
+        while True:
+            piece = fp.readline(CHUNK_MAX_CHARS)
+            if not piece:
+                break
+            buf.append(piece)
+            buf_chars += len(piece)
+            if piece.endswith('\n'):
+                newlines += 1
+            if newlines >= CHUNK_LINES or buf_chars >= CHUNK_MAX_CHARS:
                 yield offset, ''.join(buf)
-                offset += len(buf)
-                buf = []
+                # A chunk may end mid-line; the next one continues that line.
+                offset += newlines
+                buf, buf_chars, newlines = [], 0, 0
     if buf:
         yield offset, ''.join(buf)
 
@@ -161,21 +167,20 @@ def scan_js_files_with_sast(scan_files, rel_base):
             real_rel = fpath.as_posix().replace(root_prefix, '', 1)
             for idx, (offset, text) in enumerate(_iter_file_chunks(fpath)):
                 path = fpath
-                if offset:
+                if idx:
                     path = fpath.with_name(
                         f'{fpath.stem}.mobsf-{token}-{idx}{fpath.suffix}')
                     chunk_map[path.as_posix().replace(
                         root_prefix, '', 1)] = (real_rel, offset)
+                if batch and batch_bytes + len(text) > SAST_BATCH_BYTES:
+                    if time.monotonic() > deadline:
+                        logger.warning('JavaScript SAST time budget exceeded')
+                        _cap_finding_lines(findings)
+                        return findings
+                    _run_batch(sast, batch, rules, findings, chunk_map)
+                    batch, batch_bytes = [], 0
                 batch.append((path, text))
                 batch_bytes += len(text)
-                if batch_bytes < SAST_BATCH_BYTES:
-                    continue
-                if time.monotonic() > deadline:
-                    logger.warning('JavaScript SAST time budget exceeded')
-                    _cap_finding_lines(findings)
-                    return findings
-                _run_batch(sast, batch, rules, findings, chunk_map)
-                batch, batch_bytes = [], 0
         except OSError:
             continue
     if batch and time.monotonic() <= deadline:

@@ -12,7 +12,7 @@ from google_play_scraper import app
 from django.conf import settings
 
 from mobsf.MobSF.security import (
-    safe_request,
+    fixed_endpoint_request,
     sanitize_for_logging,
 )
 from mobsf.MobSF.utils import (
@@ -49,7 +49,7 @@ def get_app_details(app_dic, man_data):
         # The library can cause timeout issue behind proxy
         try:
             proxies, verify = upstream_proxy('https')
-            safe_request(
+            fixed_endpoint_request(
                 'GET',
                 settings.PLAYSTORE,
                 timeout=5,
@@ -100,7 +100,7 @@ def app_search(checksum, app_id):
         'Accept-Encoding': 'deflate, gzip'}
     try:
         proxies, verify = upstream_proxy('https')
-        req = safe_request(
+        req = fixed_endpoint_request(
             'GET',
             req_url,
             timeout=5,

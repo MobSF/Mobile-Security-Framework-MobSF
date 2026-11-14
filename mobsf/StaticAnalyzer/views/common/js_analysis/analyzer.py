@@ -150,10 +150,15 @@ def analyze_js(checksum, scan_root, scan_type, app_root=None, rel_base=None):
         detect_frameworks_from_package_json(scan_root, state['frameworks'])
         roots = collect_roots_for_scan(scan_root, scan_type, app_root)
         if scan_type == 'apk':
-            xml_cfg = scan_root / 'res' / 'xml' / 'config.xml'
-            if is_valid_candidate(scan_root, xml_cfg):
-                _inspect_candidate_file(
-                    checksum, xml_cfg, scan_root, rel_base, scan_type, state)
+            # Raw res/xml in an APK is binary AXML; prefer apktool's output.
+            for xml_cfg in (
+                    scan_root / 'apktool_out' / 'res' / 'xml' / 'config.xml',
+                    scan_root / 'res' / 'xml' / 'config.xml'):
+                if is_valid_candidate(scan_root, xml_cfg):
+                    _inspect_candidate_file(
+                        checksum, xml_cfg, scan_root, rel_base, scan_type,
+                        state)
+                    break
 
         for rdir in roots:
             for pfile in iter_files(rdir):

@@ -736,3 +736,71 @@ class JSAnalysisTests(TestCase):
                     root, frameworks)
             self.assertEqual(findings, {})
             self.assertEqual(frameworks, set())
+
+    def test_paged_viewer_reaches_end_of_byte_capped_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            src = Path(tmp) / 'lines.js'
+            src.write_text(
+                ''.join(f'var v{i} = "{"x" * 90}";\n' for i in range(1, 101)),
+                encoding='utf-8')
+            first = read_js_source_window(
+                src, max_bytes=1000, window_lines=20)
+            self.assertEqual(first['start_line'], 1)
+            self.assertLess(first['end_line'], 20)
+            nxt = read_js_source_window(
+                src, line_start=first['end_line'] + 1,
+                max_bytes=1000, window_lines=20)
+            self.assertEqual(nxt['start_line'], first['end_line'] + 1)
+            last = read_js_source_window(
+                src, line_start=98, max_bytes=1000, window_lines=20)
+            self.assertEqual(last['start_line'], 98)
+            self.assertEqual(last['end_line'], 100)
+            self.assertIn('var v100 =', last['data'])
+
+    def test_secret_candidates_use_all_quote_styles(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            src = Path(tmp) / 'keys.js'
+            src.write_text(
+                "'singleQuotedKey1';\nconst t = `templateKey2`;\n",
+                encoding='utf-8')
+            with patch.object(
+                    js_sast, 'get_secrets', return_value=set()) as mock_sec:
+                js_sast.extract_js_urls_emails_secrets(
+                    src, 'keys.js', [], [], [], set())
+            candidates = mock_sec.call_args.args[0]
+            self.assertIn('singleQuotedKey1', candidates)
+            self.assertIn('templateKey2', candidates)
+
+    def test_apk_cordova_config_prefers_apktool_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            raw_xml = root / 'res' / 'xml'
+            raw_xml.mkdir(parents=True)
+            (raw_xml / 'config.xml').write_bytes(b'\x03\x00\x08\x00AXML')
+            dec_xml = root / 'apktool_out' / 'res' / 'xml'
+            dec_xml.mkdir(parents=True)
+            (dec_xml / 'config.xml').write_text(
+                '<widget><access origin="*" /></widget>', encoding='utf-8')
+            res = analyze_js('0' * 32, root, 'apk')
+            self.assertEqual(
+                res['findings']['cordova_config_wildcard_access']['files'],
+                {'apktool_out/res/xml/config.xml': '1'})
+
+    def test_chunks_are_byte_bounded_and_keep_line_numbers(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / 'long.js'
+            src.write_text('x' * 30 + '\neval(a);\n', encoding='utf-8')
+            with patch.multiple(
+                    js_sast,
+                    MAX_CHUNK_THRESHOLD_BYTES=10,
+                    CHUNK_MAX_CHARS=16,
+                    CHUNK_LINES=3):
+                chunks = list(js_sast._iter_file_chunks(src))
+                self.assertTrue(all(len(text) <= 32 for _, text in chunks))
+                self.assertEqual(
+                    ''.join(text for _, text in chunks), src.read_text())
+                findings = js_sast.scan_js_files_with_sast([src], root)
+            self.assertEqual(
+                findings['js_dynamic_code_execution']['files'],
+                {'long.js': '2'})

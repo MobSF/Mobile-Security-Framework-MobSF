@@ -30,6 +30,8 @@ window.mobsfHighlight = function (el, opts) {
     pre.setAttribute('data-start', String(opts.startLine));
   } else {
     pre.removeAttribute('data-start');
+    // Prism sets counter-reset for data-start but never clears it.
+    pre.style.counterReset = '';
   }
   if (opts.highlight && String(opts.highlight) !== '0') {
     pre.setAttribute('data-line', String(opts.highlight));

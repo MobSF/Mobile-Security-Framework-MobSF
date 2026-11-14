@@ -497,8 +497,10 @@ function update_pager(strFileData) {
     document.getElementById('js_btn_prev').onclick = function() {
         show_file(current_file_path, Math.max(1, start - win));
     };
-    document.getElementById('js_btn_next').onclick = function() {
-        show_file(current_file_path, Math.min(total, start + win));
+    var nextBtn = document.getElementById('js_btn_next');
+    nextBtn.disabled = end >= total;
+    nextBtn.onclick = function() {
+        show_file(current_file_path, Math.min(total, end + 1));
     };
     document.getElementById('js_btn_last').onclick = function() {
         show_file(current_file_path, Math.max(1, total - win + 1));

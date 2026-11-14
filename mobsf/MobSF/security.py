@@ -736,6 +736,41 @@ def safe_request(method, url, *,
         return response
 
 
+def fixed_endpoint_request(method, url, *,
+                           max_response_size=1024 * 1024,
+                           proxies=None, **kwargs):
+    """Return a bounded response from an operator-configured endpoint.
+
+    Only for URLs whose host comes from settings, never from scan data.
+    Without an upstream proxy this is safe_request(). With one, the proxy
+    resolves DNS, so the request goes through it with redirects disabled.
+    """
+    if not _upstream_proxy_enabled(proxies):
+        return safe_request(
+            method, url, max_response_size=max_response_size, **kwargs)
+    parsed = urlparse(url)
+    if parsed.scheme not in ('http', 'https') or not parsed.hostname:
+        raise ValueError('Invalid URL')
+    kwargs.setdefault('timeout', DEFAULT_REQUEST_TIMEOUT)
+    kwargs.pop('allow_redirects', None)
+    kwargs.pop('stream', None)
+    with requests.request(
+            method,
+            url,
+            proxies=proxies,
+            allow_redirects=False,
+            stream=True,
+            **kwargs) as response:
+        content = bytearray()
+        for chunk in response.raw.stream(65536, decode_content=True):
+            content += chunk
+            if len(content) > max_response_size:
+                raise ValueError('Remote response exceeds the allowed size')
+        response._content = bytes(content)
+        response._content_consumed = True
+        return response
+
+
 _SVG_SAFE_TAGS = {
     'svg', 'g', 'path', 'rect', 'circle', 'ellipse',
     'line', 'polyline', 'polygon', 'text', 'tspan',
