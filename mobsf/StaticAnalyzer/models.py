@@ -83,6 +83,7 @@ class StaticAnalyzerAndroid(models.Model):
     NETWORK_SECURITY = models.TextField(default=[])
     SECRETS = models.TextField(default=[])
     SBOM = models.TextField(default={})
+    JS_ANALYSIS = models.TextField(default={})
 
 
 class StaticAnalyzerIOS(models.Model):
@@ -129,6 +130,7 @@ class StaticAnalyzerIOS(models.Model):
     SECRETS = models.TextField(default=[])
     TRACKERS = models.TextField(default={})
     SBOM = models.TextField(default={})
+    JS_ANALYSIS = models.TextField(default={})
 
 
 class StaticAnalyzerWindows(models.Model):

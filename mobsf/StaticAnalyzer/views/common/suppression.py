@@ -134,12 +134,18 @@ def suppress_by_files(request, api=False):
         # Do Lookups
         code_res = StaticAnalyzerAndroid.objects.filter(
             MD5=checksum).values_list('CODE_ANALYSIS', flat=True).first()
+        js_res = StaticAnalyzerAndroid.objects.filter(
+            MD5=checksum).values_list('JS_ANALYSIS', flat=True).first()
         if code_res is None:
             code_res = StaticAnalyzerIOS.objects.filter(
                 MD5=checksum).values_list('CODE_ANALYSIS', flat=True).first()
+            js_res = StaticAnalyzerIOS.objects.filter(
+                MD5=checksum).values_list('JS_ANALYSIS', flat=True).first()
         if code_res is None:
             return send_response(data, api)
         code_res = python_dict(code_res)
+        if rule not in code_res and js_res:
+            code_res = python_dict(js_res).get('findings', {})
         files_to_suppress = list(code_res[rule]['files'].keys())
         if sup_config.exists():
             # Update Record
@@ -305,6 +311,24 @@ def process_suppression(data, package):
     return {
         'findings': cleaned,
         'summary': summary,
+    }
+
+
+def process_suppression_js(js_data, package):
+    """Process all suppression for JavaScript / Hybrid analysis."""
+    if not isinstance(js_data, dict):
+        return {
+            'frameworks': [],
+            'hermes': {},
+            'findings': {},
+            'summary': {},
+        }
+    sup = process_suppression(js_data.get('findings', {}), package)
+    return {
+        'frameworks': js_data.get('frameworks', []),
+        'hermes': js_data.get('hermes', {}),
+        'findings': sup['findings'],
+        'summary': sup['summary'],
     }
 
 

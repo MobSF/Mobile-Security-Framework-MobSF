@@ -248,6 +248,9 @@ if not settings.API_ONLY:
                 name='static_analyzer'),
         # Remove this is version 4/5
         re_path(r'^source_code/$', source_tree.run, name='tree_view'),
+        re_path(r'^source_code/nodes/$',
+                source_tree.nodes,
+                name='tree_nodes'),
         re_path(r'^view_file/$', view_source.run, name='view_source'),
         re_path(r'^find/$', find.run, name='find_files'),
         re_path(fr'^manifest_view/{checksum_regex}/$',

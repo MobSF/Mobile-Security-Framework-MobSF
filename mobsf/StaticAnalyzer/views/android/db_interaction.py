@@ -18,6 +18,7 @@ from mobsf.StaticAnalyzer.views.common.secret_detection import (
 )
 from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression,
+    process_suppression_js,
     process_suppression_manifest,
 )
 
@@ -36,6 +37,9 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
         package = entry.PACKAGE_NAME
         code = process_suppression(
             python_dict(entry.CODE_ANALYSIS),
+            package)
+        js_analysis = process_suppression_js(
+            python_dict(entry.JS_ANALYSIS),
             package)
         manifest_analysis = process_suppression_manifest(
             python_list(entry.MANIFEST_ANALYSIS),
@@ -94,6 +98,7 @@ def get_context_from_db_entry(db_entry: QuerySet) -> dict:
                 python_list(entry.SECRETS)),
             'logs': get_scan_logs(entry.MD5),
             'sbom': python_dict(entry.SBOM),
+            'js_analysis': js_analysis,
         }
         return context
     except Exception:
@@ -115,6 +120,9 @@ def get_context_from_analysis(app_dic,
         package = man_data_dic['packagename']
         code = process_suppression(
             code_an_dic['findings'],
+            package)
+        js_analysis = process_suppression_js(
+            code_an_dic.get('js_analysis', {}),
             package)
         manifest_analysis = process_suppression_manifest(
             man_an_dic['manifest_anal'],
@@ -169,6 +177,7 @@ def get_context_from_analysis(app_dic,
             'secrets': sort_secrets(code_an_dic['secrets']),
             'logs': get_scan_logs(app_dic['md5']),
             'sbom': code_an_dic['sbom'],
+            'js_analysis': js_analysis,
         }
         return context
     except Exception as exp:
@@ -235,6 +244,7 @@ def save_or_update(update_type,
             'NETWORK_SECURITY': man_an_dic['network_security'],
             'SECRETS': code_an_dic['secrets'],
             'SBOM': code_an_dic['sbom'],
+            'JS_ANALYSIS': code_an_dic.get('js_analysis', {}),
         }
         if update_type == 'save':
             db_entry = StaticAnalyzerAndroid.objects.filter(

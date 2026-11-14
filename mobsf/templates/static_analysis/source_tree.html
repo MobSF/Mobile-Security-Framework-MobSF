@@ -6,22 +6,12 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static "jsTree/themes/default/style.min.css" %}" />
 <link rel="stylesheet" href="{% static "jsTree/custom.css" %}" />
-<link rel="stylesheet" href="{% static "others/css/xcode.min.css" %}">
-<link rel="stylesheet" href="{% static "enlighterjs/enlighterjs.min.css" %}" />
+<link rel="stylesheet" href="{% static "prismjs/prism.min.css" %}" />
 <style>
 pre {
-  white-space: pre-wrap;       /* css-3 */
-  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-  white-space: -pre-wrap;      /* Opera 4-6 */
-  white-space: -o-pre-wrap;    /* Opera 7 */
-  word-wrap: break-word;       /* Internet Explorer 5.5+ */
-  }
-
-  /* custom yellow line highlight */
-  .enlighter-t-enlighter div.enlighter>div.enlighter-special {
-    background-color: #fff8bb;
-  }
-
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
 </style>
 {% endblock %}
 {% block content %}
@@ -37,6 +27,8 @@ pre {
                                         <i class="fab fa-java"></i> Java Source</h3>
                                       {% elif source_type == 'smali' %}
                                         <i class="fa fa-code"></i> Smali Source</h3>
+                                      {% elif source_type == 'js' %}
+                                        <i class="fab fa-js-square"></i> JavaScript / Hybrid Source</h3>
                                       {% endif %}
                 <div class="row">
                 <div class="float-right col-4 search-container">
@@ -55,11 +47,7 @@ pre {
                         <div id="loading-div"><img src="{% static "jsTree/themes/default/throbber.gif" %}" /></div>
                         <div id="no-results"><strong>No results found</strong></div>
                         <!-- BEGIN: File Tree. -->
-                        <div id="filetree" class="transparent-effect">
-                            <ul>
-                                {% for f in subfiles %}{{ f }}{% endfor %}
-                            </ul>
-                        </div>
+                        <div id="filetree" class="transparent-effect"></div>
                         <!-- END: File Tree. -->
                     </div>
                     <!-- END: File Frame. -->
@@ -70,6 +58,19 @@ pre {
                             <h2>
                                 File: <span id="filename"></span>
                             </h2>
+                            <div id="js_pager" style="display:none; font-size: 13px;" class="align-items-center justify-content-between mb-2 p-2 border rounded">
+                                <div>
+                                    <strong id="js_pager_info"></strong>
+                                </div>
+                                <div class="d-flex align-items-center" style="gap: 6px;">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="js_btn_first">&laquo; First</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="js_btn_prev">&lsaquo; Prev</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="js_btn_next">Next &rsaquo;</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="js_btn_last">Last &raquo;</button>
+                                    <input type="number" id="js_goto_input" class="form-control form-control-sm" style="width: 110px;" min="1" placeholder="Line #">
+                                    <button type="button" class="btn btn-sm btn-primary" id="js_btn_go">Go</button>
+                                </div>
+                            </div>
                             <pre id="fileoutput">
                                 <!--<code class="{{ source_type }}" id="fileoutput"></code>-->
                             </pre>
@@ -92,7 +93,7 @@ pre {
 {% endblock %}
 {% block extra_scripts %}
 
-<script type="text/javascript" src="{% static "enlighterjs/enlighterjs.min.js" %}"></script>
+<script type="text/javascript" src="{% static "prismjs/prism.min.js" %}"></script>
 <script src="{% static "jsTree/jstree.min.js" %}"></script>
 
 <script>
@@ -107,6 +108,40 @@ if (supplied_path){
         show_file(supplied_path);
 }
 
+// Folder children are fetched on demand and cached by folder id
+var tree_cache = {};
+var search_hits = [];
+var MAX_OPENED_HITS = 1000;
+var NODE_BATCH = 2000;
+
+function fetch_nodes(ids, done) {
+    var need = ids.filter(function(id) { return !(id in tree_cache); });
+    if (!need.length) {
+        done();
+        return;
+    }
+    var batch = need.slice(0, NODE_BATCH);
+    $.ajax({
+        url: "{% url 'tree_nodes' %}",
+        type: "POST",
+        dataType: "json",
+        data: {
+            md5: "{{ hash }}",
+            type: "{{ source_type }}",
+            ids: JSON.stringify(batch),
+            csrfmiddlewaretoken: "{{ csrf_token }}",
+        },
+        success: function(resp) {
+            batch.forEach(function(id) { tree_cache[id] = resp[id] || []; });
+            fetch_nodes(need.slice(NODE_BATCH), done);
+        },
+        error: function() {
+            batch.forEach(function(id) { tree_cache[id] = []; });
+            fetch_nodes(need.slice(NODE_BATCH), done);
+        },
+    });
+}
+
 var file_tree = $('#filetree')
     // listen for event
     .on('changed.jstree', function(e, data) {
@@ -114,40 +149,206 @@ var file_tree = $('#filetree')
         console.log('[DEBUG] The selected node is: ' + data.instance.get_node(data.selected[0]).text);
         for(i = 0, j = data.selected.length; i < j; i++) {
             curr_selected = data.instance.get_node(data.selected[i]);
-            if($(curr_selected)[0].li_attr.class == "file") {
+            if (!curr_selected) {
+                continue;
+            }
+            if(curr_selected.li_attr.class == "more") {
+                load_more(curr_selected);
+            } else if($(curr_selected)[0].li_attr.class == "file") {
                 $("span#filename").text(curr_selected.text);
                 show_file($(curr_selected)[0].id);
             }
         }
     }).on('ready.jstree', function(e, data) {
         hide_loading();
-    }).on('search.jstree', function(e, data) {
-        hide_loading();
+    }).on('after_open.jstree redraw.jstree', function() {
+        mark_hits();
     })
     // create the instance
-    .jstree();
+    .jstree({
+        core: {
+            force_text: true,
+            animation: 0,
+            check_callback: true,
+            data: function(node, cb) {
+                var tree = this;
+                fetch_nodes([node.id], function() {
+                    cb.call(tree, tree_cache[node.id] || []);
+                });
+            },
+        },
+    });
 
-function open_parents(parents_ids) {
-	// In some situations, the open_node(node_obj.parent) does not work properly
-	// This function iterates over all of its ancestors in order to make sure the bug does not produce
-	for(i in parents_ids) {
-		parent_id = parents_ids[i];
-		if(parent_id != "#") {
-			file_tree.jstree(true).open_node(parent_id);
-		}
+var FILE_ICON = "/static/jsTree/themes/default/file.png";
+
+// Nodes are merged into the cached child lists and the parent is redrawn
+// once, since per-node create_node redraws the whole parent each time.
+function reload_parents(parents, done) {
+	var tree = file_tree.jstree(true);
+	if (!parents.length) {
+		done();
+		return;
 	}
+	if (parents.indexOf('#') !== -1) {
+		file_tree.one('refresh.jstree', function() { done(); });
+		tree.refresh(true);
+		return;
+	}
+	var loaded = parents.filter(function(p) {
+		return tree.get_node(p) && tree.is_loaded(p);
+	});
+	var pending = loaded.length;
+	if (!pending) {
+		done();
+		return;
+	}
+	loaded.forEach(function(p) {
+		tree.load_node(p, function() {
+			pending -= 1;
+			if (pending === 0) {
+				done();
+			}
+		});
+	});
+}
+
+function load_more(more_node) {
+	var parent = more_node.parent;
+	var more_id = more_node.id;
+	fetch_nodes([more_id], function() {
+		// Mutate in place: expanded folder nodes share this array
+		var current = tree_cache[parent] = tree_cache[parent] || [];
+		var seen = {};
+		current.forEach(function(n) { seen[n.id] = true; });
+		var at = current.findIndex(function(n) { return n.id === more_id; });
+		if (at !== -1) {
+			current.splice(at, 1);
+		}
+		(tree_cache[more_id] || []).forEach(function(n) {
+			if (!seen[n.id]) {
+				current.push(n);
+			}
+		});
+		reload_parents([parent], mark_hits);
+	});
+}
+
+function make_node(id, is_folder) {
+	var node = {id: id, text: id.slice(id.lastIndexOf('/') + 1)};
+	if (is_folder) {
+		node.children = true;
+		node.icon = "fa fa-folder";
+		node.li_attr = {"class": "dir"};
+	} else {
+		node.icon = FILE_ICON;
+		node.li_attr = {"class": "file"};
+	}
+	return node;
+}
+
+// Search results are shown by expanding the cached data and redrawing the
+// tree once; opening folders one by one redraws on every open_node.
+var expanded_nodes = [];
+
+function index_cached_nodes() {
+	var index = {};
+	var walk = function(list) {
+		list.forEach(function(n) {
+			if (index[n.id]) {
+				return;
+			}
+			index[n.id] = n;
+			if (Array.isArray(n.children)) {
+				walk(n.children);
+			}
+		});
+	};
+	Object.keys(tree_cache).forEach(function(k) { walk(tree_cache[k]); });
+	return index;
+}
+
+function child_list(parent, index) {
+	if (parent === '#') {
+		return tree_cache['#'];
+	}
+	var node = index[parent];
+	if (node && Array.isArray(node.children)) {
+		return node.children;
+	}
+	return tree_cache[parent];
+}
+
+function expand_to(ids, folders) {
+	// ids are ordered shallow first; hits on unloaded pages are inserted
+	var index = index_cached_nodes();
+	ids.forEach(function(id) {
+		if (!index[id]) {
+			var cut = id.lastIndexOf('/');
+			var list = child_list(cut === -1 ? '#' : id.slice(0, cut), index);
+			if (!list) {
+				return;
+			}
+			index[id] = make_node(id, folders[id]);
+			list.unshift(index[id]);
+		}
+		var node = index[id];
+		if (!folders[id]) {
+			return;
+		}
+		expanded_nodes.push({node: node, lazy: node.children === true});
+		if (node.children === true) {
+			node.children = tree_cache[id] = tree_cache[id] || [];
+		}
+		node.state = {opened: true};
+	});
+}
+
+function collapse_expanded() {
+	expanded_nodes.forEach(function(e) {
+		delete e.node.state;
+		if (e.lazy) {
+			e.node.children = true;
+		}
+	});
+	expanded_nodes = [];
+}
+
+function mark_hits() {
+	search_hits.forEach(function(id) {
+		var el = document.getElementById(id);
+		if (el) {
+			el.classList.add("jstree-search");
+		}
+	});
+}
+
+function unescape_html(text) {
+	return new DOMParser().parseFromString(text, "text/html").documentElement.textContent;
 }
 
 function select_nodes(node_ids) {
-	// Gets a list of node ids, getting their objects and selects them all in once
-	// This replaces the old searching method which speeds up everything
-	for(i in node_ids) {
-		node_obj = file_tree.jstree(true).get_node(node_ids[i]);
-		if(node_obj) {
-			open_parents(node_obj.parents);
-			$(document.getElementById(node_obj.id)).addClass("jstree-search");
+	search_hits = node_ids.slice(0, MAX_OPENED_HITS).map(unescape_html);
+	var folders = {};
+	search_hits.forEach(function(path) {
+		var parts = path.split('/');
+		for (var i = 1; i < parts.length; i++) {
+			folders[parts.slice(0, i).join('/')] = true;
 		}
-	}
+	});
+	var folder_ids = Object.keys(folders);
+	// The JS tree is delivered fully expanded with the root
+	var to_fetch = "{{ source_type }}" === "js" ? [] : folder_ids;
+	fetch_nodes(to_fetch, function() {
+		var ordered = folder_ids.slice().sort(function(a, b) {
+			return a.split('/').length - b.split('/').length;
+		}).concat(search_hits);
+		expand_to(ordered, folders);
+		file_tree.one('refresh.jstree', function() {
+			mark_hits();
+			hide_loading();
+		});
+		file_tree.jstree(true).refresh(true, true);
+	});
 }
 // Filename search
 var to = false;
@@ -184,7 +385,6 @@ $('#filename_search').keyup(function() {
 					console.log(response.matches.length);
 					if(response.matches.length) {
 						select_nodes(response.matches);
-						hide_loading();
 					} else {
 						hide_loading();
 						show_no_results();
@@ -234,7 +434,6 @@ $('#content_search').keyup(function() {
 				console.log(response.matches.length);
 				if(response.matches.length) {
 					select_nodes(response.matches);
-					hide_loading();
 				} else {
 					hide_loading();
 					show_no_results();
@@ -266,30 +465,74 @@ const get_lines = function() {
 	} else {
 		const parts = lines.split(",");
 		for(i = 0; i < parts.length; i++) {
-			if(parseInt(parts[i]) > 50000) return 0;
+			if(parseInt(parts[i]) > 10000000) return 0;
 		}
 		return lines;
 	}
 	return 0;
 }
 
-function show_file(strPath) {
+var current_file_path = "";
+
+function update_pager(strFileData) {
+    var pager = document.getElementById('js_pager');
+    if (!pager) return;
+    if (!strFileData.is_paged) {
+        pager.style.display = 'none';
+        return;
+    }
+    pager.style.display = 'flex';
+    var start = strFileData.start_line || 1;
+    var end = strFileData.end_line || 1;
+    var total = strFileData.total_lines || 1;
+    var win = strFileData.window_lines || 2000;
+    document.getElementById('js_pager_info').textContent = (
+        'Showing lines ' + start + ' – ' + end + ' of ' + total
+    );
+    document.getElementById('js_goto_input').value = start;
+    document.getElementById('js_goto_input').max = total;
+    document.getElementById('js_btn_first').onclick = function() {
+        show_file(current_file_path, 1);
+    };
+    document.getElementById('js_btn_prev').onclick = function() {
+        show_file(current_file_path, Math.max(1, start - win));
+    };
+    document.getElementById('js_btn_next').onclick = function() {
+        show_file(current_file_path, Math.min(total, start + win));
+    };
+    document.getElementById('js_btn_last').onclick = function() {
+        show_file(current_file_path, Math.max(1, total - win + 1));
+    };
+    document.getElementById('js_btn_go').onclick = function() {
+        var target = parseInt(document.getElementById('js_goto_input').value, 10) || 1;
+        show_file(current_file_path, Math.max(1, Math.min(total, target)));
+    };
+}
+
+function show_file(strPath, lineStart) {
+    current_file_path = strPath;
+    var reqUrl = "{% url "view_source" %}?json=1&md5={{ hash }}&type={{ source_type }}&file=" + encodeURIComponent(strPath);
+    if (lineStart) {
+        reqUrl += "&line_start=" + encodeURIComponent(lineStart);
+    } else {
+        var q = $('#content_search').val();
+        if (q && q.length >= 2) {
+            reqUrl += "&q=" + encodeURIComponent(q);
+        }
+    }
     $.ajax({
         type: "GET",
-        url: "{% url "view_source" %}?json=1&md5={{ hash }}&type={{ source_type }}&file=" + strPath,
+        url: reqUrl,
         dataType: 'json',
         success: function(strFileData) {
-            var code_block = $("pre#fileoutput")
-            code_block.text(strFileData.data);
-            code_blk = document.getElementById('fileoutput');
+            update_pager(strFileData);
+            var code_blk = document.getElementById('fileoutput');
             if(code_blk) {
-                EnlighterJS.enlight(code_blk, false);
-                EnlighterJS.enlight(code_blk, {
-                    theme: mobsfEnlighterTheme(),
-                    linehover: false,
-                    textOverflow: 'scroll',
+                code_blk.textContent = strFileData.data;
+                mobsfHighlight(code_blk, {
                     highlight: get_lines(),
-                    language: 'java',
+                    startLine: strFileData.start_line || 1,
+                    language: strFileData.type || 'java',
                 });
             }
             // Jump back to top.
@@ -299,6 +542,8 @@ function show_file(strPath) {
 }
 
 function reset_tree() {
+	search_hits = [];
+	collapse_expanded();
 	file_tree.jstree(true).close_all();
 	$('.jstree-search').removeClass("jstree-search");
 }
@@ -307,8 +552,9 @@ function clear_search() {
 	hide_no_results();
 	reset_tree();
 	$(".search-box").find("input").val('');
-	$("code#fileoutput").text('');
+	$("#fileoutput").text('');
 	$("span#filename").text('');
+	$("#js_pager").hide();
 }
 $("#clear-button").click(function() {
 	clear_search();
