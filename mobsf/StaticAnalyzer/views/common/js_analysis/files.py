@@ -40,22 +40,24 @@ def is_valid_candidate(scan_root, pfile):
     return True
 
 
-def _is_skipped_dir(name, parent):
+def _is_skipped_dir(name, ancestors):
     """Return True if a directory should not be descended into."""
     low = name.lower()
     if low.endswith('.framework'):
         return True
-    if low == 'plugins' and parent.lower() in WEB_ROOT_DIRS:
+    if low in ('plugins', 'build', 'dist') and (ancestors & WEB_ROOT_DIRS):
         return False
     return low in SKIP_JS_DIRS
 
 
 def iter_files(root):
     """Yield files under root, pruning skipped dirs without following links."""
-    for dirpath, dirnames, filenames in os.walk(root):
-        parent = os.path.basename(dirpath)
+    root_path = Path(root)
+    for dirpath, dirnames, filenames in os.walk(root_path):
+        rel_parts = Path(dirpath).relative_to(root_path).parts
+        ancestors = {p.lower() for p in (root_path.name, *rel_parts) if p}
         dirnames[:] = [
-            d for d in dirnames if not _is_skipped_dir(d, parent)]
+            d for d in dirnames if not _is_skipped_dir(d, ancestors)]
         for fname in filenames:
             yield Path(dirpath, fname)
 

@@ -152,7 +152,8 @@ def extract_hermes_strings(bundle_path):
             return [s for s in (reader.strings or []) if isinstance(s, str)]
     except Exception:
         try:
-            raw = bundle_path.read_bytes()[:MAX_URL_SCAN_BYTES]
+            with open(bundle_path, 'rb') as fp:
+                raw = fp.read(MAX_URL_SCAN_BYTES)
             return [
                 m.group(0).decode('utf-8', 'ignore')
                 for m in re.finditer(rb'[\x20-\x7e]{6,200}', raw)

@@ -36,6 +36,8 @@ def _line_of_substring(text, needle):
 def check_cordova_config(cfg_path, rel_path, findings):
     """Check Cordova / PhoneGap config.xml for insecure directives."""
     try:
+        if cfg_path.stat().st_size > MAX_CONFIG_BYTES:
+            return
         raw = cfg_path.read_text('utf-8', 'ignore')
         root = xml_fromstring(raw.encode('utf-8', 'ignore'))
     except Exception:
@@ -60,7 +62,7 @@ def check_cordova_config(cfg_path, rel_path, findings):
             )['files'][rel_path] = line
         elif tag == 'allow-navigation':
             href = elem.attrib.get('href', '').strip()
-            if href in ('*', 'http://*/*', 'https://*/*'):
+            if href in ('*', 'http://*/*', 'https://*/*'):  # NOSONAR - rule pattern
                 line = _line_of_substring(raw, '<allow-navigation')
                 findings.setdefault(
                     'cordova_config_wildcard_navigation',
@@ -82,6 +84,8 @@ def check_cordova_config(cfg_path, rel_path, findings):
 def check_capacitor_config(cfg_path, rel_path, findings):
     """Check Capacitor capacitor.config.json for cleartext or wildcard nav."""
     try:
+        if cfg_path.stat().st_size > MAX_CONFIG_BYTES:
+            return
         raw = cfg_path.read_text('utf-8', 'ignore')
         data = json.loads(raw)
     except Exception:

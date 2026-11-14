@@ -2,6 +2,9 @@
 """Hybrid and React Native framework detection."""
 import json
 
+from mobsf.StaticAnalyzer.views.common.js_analysis.constants import (
+    MAX_CONFIG_BYTES,
+)
 from mobsf.StaticAnalyzer.views.common.js_analysis.files import (
     is_valid_candidate,
 )
@@ -13,6 +16,8 @@ def detect_frameworks_from_package_json(scan_root, frameworks):
     if not is_valid_candidate(scan_root, pkg_json):
         return
     try:
+        if pkg_json.stat().st_size > MAX_CONFIG_BYTES:
+            return
         data = json.loads(pkg_json.read_text('utf-8', 'ignore'))
     except Exception:
         return

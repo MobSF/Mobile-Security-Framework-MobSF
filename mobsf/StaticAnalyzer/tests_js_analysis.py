@@ -16,13 +16,19 @@ from hermes_dec.parsers.hbc_file_parser import (
 )
 
 from mobsf.StaticAnalyzer.views.android.views import find
-from mobsf.StaticAnalyzer.views.common.js_analysis import sast as js_sast
+from mobsf.StaticAnalyzer.views.common.js_analysis import (
+    configs as js_configs,
+    frameworks as js_frameworks,
+    sast as js_sast,
+    viewer as js_viewer,
+)
 from mobsf.StaticAnalyzer.views.common.js_analysis import (
     analyze_js,
     beautify_minified_js,
     is_hermes_bytecode,
     is_minified_js,
     list_js_source_files,
+    read_js_source_window,
     slice_large_source,
 )
 from mobsf.StaticAnalyzer.views.common.suppression import (
@@ -642,16 +648,26 @@ class JSAnalysisTests(TestCase):
             root = Path(tmp)
             www = root / 'assets' / 'www'
             (www / 'plugins' / 'cordova-plugin-x').mkdir(parents=True)
+            (www / 'build').mkdir(parents=True)
+            (root / 'assets' / 'public' / 'dist').mkdir(parents=True)
             (www / 'app.js').write_text('var a = 1;\n', encoding='utf-8')
+            (www / 'build' / 'main.js').write_text(
+                'var b = 2;\n', encoding='utf-8')
+            (root / 'assets' / 'public' / 'dist' / 'bundle.js').write_text(
+                'var c = 3;\n', encoding='utf-8')
             (www / 'plugins' / 'cordova-plugin-x' / 'x.js').write_text(
                 'eval(x);\n', encoding='utf-8')
-            for skipped in ('java_source', 'smali_source', 'plugins'):
+            for skipped in (
+                'java_source', 'smali_source', 'plugins', 'build', 'dist',
+            ):
                 sdir = root / skipped
                 sdir.mkdir()
                 (sdir / 'skip.js').write_text('eval(y);\n', encoding='utf-8')
 
             expected = [
+                'assets/public/dist/bundle.js',
                 'assets/www/app.js',
+                'assets/www/build/main.js',
                 'assets/www/plugins/cordova-plugin-x/x.js',
             ]
             self.assertEqual(list_js_source_files(root), expected)
@@ -662,3 +678,61 @@ class JSAnalysisTests(TestCase):
 
             cached = expected + ['../../etc/passwd', 'assets/missing.js', 1]
             self.assertEqual(list_js_source_files(root, cached), expected)
+
+    def test_formatter_preserves_regex_and_hermes_strings(self):
+        minified = (
+            'const sep=/;/g;const br=/[{}]/;function f(a,b){return /x;y/.test(a)'
+            '?a/b:0;}eval(sep);'
+        )
+        formatted = beautify_minified_js(minified)
+        self.assertIn('const sep=/;/g;', formatted)
+        self.assertIn('const br=/[{}]/;', formatted)
+        self.assertIn('return /x;y/.test(a)', formatted)
+
+        hermes_obj = (
+            '    r0 = {alpha: "hello, world", beta: "foo, bar", '
+            'gamma: [1, 2, 3], delta: ' + ('"x"' + ' ' * 260) + '};'
+        )
+        expanded = js_viewer.format_long_object_line(hermes_obj)
+        self.assertGreater(len(expanded), 3)
+        joined = '\n'.join(expanded)
+        self.assertIn('alpha: "hello, world",', joined)
+        self.assertIn('beta: "foo, bar",', joined)
+        self.assertIn('gamma: [1, 2, 3],', joined)
+
+    def test_paged_viewer_and_config_size_limits(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            single_line = root / 'single.js'
+            single_line.write_text('var a = "' + ('A' * 50000) + '";\n',
+                                   encoding='utf-8')
+            win = read_js_source_window(
+                single_line, max_bytes=4096, window_lines=20)
+            self.assertTrue(win['is_paged'])
+            self.assertEqual(win['total_lines'], 1)
+            self.assertLessEqual(len(win['data']), 4200)
+            self.assertIn('truncated for viewer', win['data'])
+
+            cordova_cfg = root / 'config.xml'
+            cordova_cfg.write_text(
+                '<widget><access origin="*" /></widget>', encoding='utf-8')
+            cap_cfg = root / 'capacitor.config.json'
+            cap_cfg.write_text(
+                json.dumps({'server': {'cleartext': True}}), encoding='utf-8')
+            pkg_cfg = root / 'package.json'
+            pkg_cfg.write_text(
+                json.dumps({'dependencies': {'react-native': '0.74.0'}}),
+                encoding='utf-8')
+
+            findings = {}
+            frameworks = set()
+            with patch.object(js_configs, 'MAX_CONFIG_BYTES', 10), \
+                    patch.object(js_frameworks, 'MAX_CONFIG_BYTES', 10):
+                js_configs.check_cordova_config(
+                    cordova_cfg, 'config.xml', findings)
+                js_configs.check_capacitor_config(
+                    cap_cfg, 'capacitor.config.json', findings)
+                js_frameworks.detect_frameworks_from_package_json(
+                    root, frameworks)
+            self.assertEqual(findings, {})
+            self.assertEqual(frameworks, set())
