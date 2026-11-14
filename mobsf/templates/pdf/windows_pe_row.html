@@ -1,0 +1,6 @@
+<tr>
+  <td>{{ label }}</td>
+  <td>{{ chk.value }}</td>
+  <td><span class="{% if chk.severity == 'high' %}danger{% elif chk.severity == 'warning' %}warning{% elif chk.severity == 'secure' %}success{% else %}info{% endif %}">{{ chk.severity }}</span></td>
+  <td>{{ chk.description }}</td>
+</tr>

@@ -184,12 +184,12 @@ class Scanning(object):
         logger.info('Static Library uploaded')
         return self.data
 
-    def scan_appx(self):
-        """Windows appx."""
-        md5 = handle_uploaded_file(self.file, '.appx')
+    def scan_appx(self, ext='appx'):
+        """Windows APPX/MSIX package or bundle."""
+        md5 = handle_uploaded_file(self.file, f'.{ext}')
         self.data['hash'] = md5
-        self.data['scan_type'] = 'appx'
+        self.data['scan_type'] = ext
         self.data['analyzer'] = 'static_analyzer_windows'
         add_to_recent_scan(self.data)
-        logger.info('Windows APPX uploaded')
+        logger.info('Windows %s uploaded', ext.upper())
         return self.data

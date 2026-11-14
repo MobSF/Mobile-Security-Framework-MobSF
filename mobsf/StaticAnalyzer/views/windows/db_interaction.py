@@ -6,138 +6,169 @@ from django.conf import settings
 from mobsf.MobSF.utils import (
     append_scan_status,
     get_scan_logs,
+    python_dict,
     python_list,
 )
-from mobsf.StaticAnalyzer.models import StaticAnalyzerWindows
-from mobsf.StaticAnalyzer.models import RecentScansDB
+from mobsf.StaticAnalyzer.models import (
+    RecentScansDB,
+    StaticAnalyzerWindows,
+)
 
 logger = logging.getLogger(__name__)
 
 
+def _display_name(manifest):
+    """Prefer the display name unless it is an unresolved resource key."""
+    name = manifest.get('app_name', '')
+    if not name or name.startswith('ms-resource:'):
+        return manifest.get('package_name', '')
+    return name
+
+
 def get_context_from_db_entry(db_entry):
-    """Return the context for APPX from DB."""
-    try:
-        logger.info('Analysis is already Done. Fetching data from the DB...')
-        entry = db_entry[0]
-        context = {
-            'title': 'Static Analysis',
-            'version': settings.MOBSF_VER,
-            'file_name': entry.FILE_NAME,
-            'app_name': entry.APP_NAME,
-            'publisher_name': entry.PUBLISHER_NAME,
-            'size': entry.SIZE,
-            'md5': entry.MD5,
-            'sha1': entry.SHA1,
-            'sha256': entry.SHA256,
-            'app_version': entry.APP_VERSION,
-            'architecture': entry.ARCHITECTURE,
-            'compiler_version': entry.COMPILER_VERSION,
-            'visual_studio_version': entry.VISUAL_STUDIO_VERSION,
-            'visual_studio_edition': entry.VISUAL_STUDIO_EDITION,
-            'target_os': entry.TARGET_OS,
-            'appx_dll_version': entry.APPX_DLL_VERSION,
-            'proj_guid': entry.PROJ_GUID,
-            'opti_tool': entry.OPTI_TOOL,
-            'target_run': entry.TARGET_RUN,
-            'files': python_list(entry.FILES),
-            'strings': python_list(entry.STRINGS),
-            'binary_analysis': python_list(entry.BINARY_ANALYSIS),
-            'binary_warnings': python_list(entry.BINARY_WARNINGS),
-            'logs': get_scan_logs(entry.MD5),
-        }
-        return context
-    except Exception:
-        logger.exception('Fetching from DB')
+    """Return the context for APPX/MSIX from DB."""
+    logger.info('Analysis is already Done. Fetching data from the DB...')
+    entry = db_entry[0]
+    return {
+        'title': 'Static Analysis',
+        'version': settings.MOBSF_VER,
+        'file_name': entry.FILE_NAME,
+        'app_name': entry.APP_NAME,
+        'publisher_name': entry.PUBLISHER_NAME,
+        'package_name': entry.PACKAGE_NAME,
+        'publisher': entry.PUBLISHER,
+        'package_type': entry.PACKAGE_TYPE,
+        'size': entry.SIZE,
+        'md5': entry.MD5,
+        'sha1': entry.SHA1,
+        'sha256': entry.SHA256,
+        'app_version': entry.APP_VERSION,
+        'architecture': entry.ARCHITECTURE,
+        'min_os_version': entry.MIN_OS_VERSION,
+        'compiler_version': entry.COMPILER_VERSION,
+        'visual_studio_version': entry.VISUAL_STUDIO_VERSION,
+        'visual_studio_edition': entry.VISUAL_STUDIO_EDITION,
+        'target_os': entry.TARGET_OS,
+        'appx_dll_version': entry.APPX_DLL_VERSION,
+        'proj_guid': entry.PROJ_GUID,
+        'opti_tool': entry.OPTI_TOOL,
+        'target_run': entry.TARGET_RUN,
+        'files': python_list(entry.FILES),
+        'strings': python_list(entry.STRINGS),
+        'pe_analysis': python_list(entry.PE_ANALYSIS),
+        'manifest_analysis': python_list(entry.MANIFEST_ANALYSIS),
+        'capabilities': python_list(entry.CAPABILITIES),
+        'package_signature': python_dict(entry.PACKAGE_SIGNATURE),
+        'urls': python_list(entry.URLS),
+        'emails': python_list(entry.EMAILS),
+        'domains': python_dict(entry.DOMAINS),
+        'secrets': python_list(entry.SECRETS),
+        'trackers': python_dict(entry.TRACKERS),
+        'binary_analysis': python_list(entry.BINARY_ANALYSIS),
+        'binary_warnings': python_list(entry.BINARY_WARNINGS),
+        'logs': get_scan_logs(entry.MD5),
+    }
 
 
-def get_context_from_analysis(app_dic,
-                              xml_dic,
-                              bin_an_dic):
-    """Get the context for APPX from analysis results."""
-    try:
-        context = {
-            'title': 'Static Analysis',
-            'version': settings.MOBSF_VER,
-            'file_name': app_dic['app_name'],
-            'app_name': bin_an_dic['bin_name'],
-            'publisher_name': xml_dic['pub_name'],
-            'size': app_dic['size'],
-            'md5': app_dic['md5'],
-            'sha1': app_dic['sha1'],
-            'sha256': app_dic['sha256'],
-            'app_version': xml_dic['version'],
-            'architecture': xml_dic['arch'],
-            'compiler_version': xml_dic['compiler_version'],
-            'visual_studio_version': xml_dic['visual_studio_version'],
-            'visual_studio_edition': xml_dic['visual_studio_edition'],
-            'target_os': xml_dic['target_os'],
-            'appx_dll_version': xml_dic['appx_dll_version'],
-            'proj_guid': xml_dic['proj_guid'],
-            'opti_tool': xml_dic['opti_tool'],
-            'target_run': xml_dic['target_run'],
-            'files': app_dic['files'],
-            'strings': bin_an_dic['strings'],
-            'binary_analysis': bin_an_dic['results'],
-            'binary_warnings': bin_an_dic['warnings'],
-            'logs': get_scan_logs(app_dic['md5']),
-        }
-        return context
-    except Exception as exp:
-        msg = 'Rendering to Template'
-        logger.exception(msg)
-        append_scan_status(app_dic['md5'], msg, repr(exp))
+def get_context_from_analysis(analysis):
+    """Get the context for APPX/MSIX from analysis results."""
+    manifest = analysis['manifest']
+    signature = dict(analysis['signature'])
+    signature.pop('findings', None)
+    return {
+        'title': 'Static Analysis',
+        'version': settings.MOBSF_VER,
+        'file_name': analysis['file_name'],
+        'app_name': _display_name(manifest),
+        'publisher_name': manifest['pub_name'],
+        'package_name': manifest['package_name'],
+        'publisher': manifest['publisher'],
+        'package_type': analysis['package_type'],
+        'size': analysis['size'],
+        'md5': analysis['md5'],
+        'sha1': analysis['sha1'],
+        'sha256': analysis['sha256'],
+        'app_version': manifest['version'],
+        'architecture': manifest['arch'],
+        'min_os_version': manifest['min_os_version'],
+        'compiler_version': manifest['compiler_version'],
+        'visual_studio_version': manifest['visual_studio_version'],
+        'visual_studio_edition': manifest['visual_studio_edition'],
+        'target_os': manifest['target_os'],
+        'appx_dll_version': manifest['appx_dll_version'],
+        'proj_guid': manifest['proj_guid'],
+        'opti_tool': manifest['opti_tool'],
+        'target_run': manifest['target_run'],
+        'files': analysis['files'],
+        'strings': analysis['strings'],
+        'pe_analysis': analysis['pe_analysis'],
+        'manifest_analysis': analysis['manifest_analysis'],
+        'capabilities': manifest['capabilities'],
+        'package_signature': signature,
+        'urls': analysis['urls'],
+        'emails': analysis['emails'],
+        'domains': analysis['domains'],
+        'secrets': analysis['secrets'],
+        'trackers': analysis['trackers'],
+        'binary_analysis': [],
+        'binary_warnings': [],
+        'logs': get_scan_logs(analysis['md5']),
+    }
 
 
-def save_or_update(update_type,
-                   app_dic,
-                   xml_dic,
-                   bin_an_dic) -> None:
-    """Save/Update an APPX DB entry."""
+def save_or_update(analysis) -> None:
+    """Save/Update an APPX/MSIX DB entry."""
+    checksum = analysis['md5']
+    context = get_context_from_analysis(analysis)
     try:
         values = {
-            'FILE_NAME': app_dic['app_name'],
-            'APP_NAME': bin_an_dic['bin_name'],
-            'PUBLISHER_NAME': xml_dic['pub_name'],
-            'SIZE': app_dic['size'],
-            'MD5': app_dic['md5'],
-            'SHA1': app_dic['sha1'],
-            'SHA256': app_dic['sha256'],
-            'APP_VERSION': xml_dic['version'],
-            'ARCHITECTURE': xml_dic['arch'],
-            'COMPILER_VERSION': xml_dic['compiler_version'],
-            'VISUAL_STUDIO_VERSION': xml_dic['visual_studio_version'],
-            'VISUAL_STUDIO_EDITION': xml_dic['visual_studio_edition'],
-            'TARGET_OS': xml_dic['target_os'],
-            'APPX_DLL_VERSION': xml_dic['appx_dll_version'],
-            'PROJ_GUID': xml_dic['proj_guid'],
-            'OPTI_TOOL': xml_dic['opti_tool'],
-            'TARGET_RUN': xml_dic['target_run'],
-            'FILES': app_dic['files'],
-            'STRINGS': bin_an_dic['strings'],
-            'BINARY_ANALYSIS': bin_an_dic['results'],
-            'BINARY_WARNINGS': bin_an_dic['warnings'],
+            'FILE_NAME': context['file_name'],
+            'APP_NAME': context['app_name'],
+            'PUBLISHER_NAME': context['publisher_name'],
+            'PACKAGE_NAME': context['package_name'],
+            'PUBLISHER': context['publisher'],
+            'PACKAGE_TYPE': context['package_type'],
+            'SIZE': context['size'],
+            'MD5': checksum,
+            'SHA1': context['sha1'],
+            'SHA256': context['sha256'],
+            'APP_VERSION': context['app_version'],
+            'ARCHITECTURE': context['architecture'],
+            'MIN_OS_VERSION': context['min_os_version'],
+            'COMPILER_VERSION': context['compiler_version'],
+            'VISUAL_STUDIO_VERSION': context['visual_studio_version'],
+            'VISUAL_STUDIO_EDITION': context['visual_studio_edition'],
+            'TARGET_OS': context['target_os'],
+            'APPX_DLL_VERSION': context['appx_dll_version'],
+            'PROJ_GUID': context['proj_guid'],
+            'OPTI_TOOL': context['opti_tool'],
+            'TARGET_RUN': context['target_run'],
+            'FILES': context['files'],
+            'STRINGS': context['strings'],
+            'PE_ANALYSIS': context['pe_analysis'],
+            'MANIFEST_ANALYSIS': context['manifest_analysis'],
+            'CAPABILITIES': context['capabilities'],
+            'PACKAGE_SIGNATURE': context['package_signature'],
+            'URLS': context['urls'],
+            'EMAILS': context['emails'],
+            'DOMAINS': context['domains'],
+            'SECRETS': context['secrets'],
+            'TRACKERS': context['trackers'],
+            'BINARY_ANALYSIS': [],
+            'BINARY_WARNINGS': [],
         }
-        if update_type == 'save':
-            db_entry = StaticAnalyzerWindows.objects.filter(
-                MD5=app_dic['md5'])
-            if not db_entry.exists():
-                StaticAnalyzerWindows.objects.create(**values)
-        else:
-            StaticAnalyzerWindows.objects.filter(
-                MD5=app_dic['md5']).update(**values)
+        StaticAnalyzerWindows.objects.update_or_create(
+            MD5=checksum, defaults=values)
     except Exception as exp:
         msg = 'Failed to Save/Update Database'
         logger.exception(msg)
-        append_scan_status(app_dic['md5'], msg, repr(exp))
+        append_scan_status(checksum, msg, repr(exp))
     try:
-        values = {
-            'APP_NAME': bin_an_dic['bin_name'],
-            'PACKAGE_NAME': xml_dic['pub_name'],
-            'VERSION_NAME': xml_dic['version'],
-        }
-        RecentScansDB.objects.filter(
-            MD5=app_dic['md5']).update(**values)
+        RecentScansDB.objects.filter(MD5=checksum).update(
+            APP_NAME=context['app_name'],
+            PACKAGE_NAME=context['package_name'],
+            VERSION_NAME=context['app_version'])
     except Exception as exp:
         msg = 'Updating RecentScansDB table failed'
         logger.exception(msg)
-        append_scan_status(app_dic['md5'], msg, repr(exp))
+        append_scan_status(checksum, msg, repr(exp))

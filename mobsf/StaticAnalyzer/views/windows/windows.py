@@ -1,55 +1,27 @@
 # -*- coding: utf_8 -*-
-"""Windows Analysis Module."""
-import base64
-# Local analysis
-import configparser
-import json
+"""Windows APPX/MSIX Static Analysis."""
 import logging
-import os
-import platform
-import re
-import subprocess
-# Binskim/Binscope analysis
-import xmlrpc.client
-from os.path import expanduser
-
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import padding
-
-from lxml import etree
-
+from pathlib import Path
 
 from django.conf import settings
 from django.shortcuts import render
-from django.utils.html import escape
 
+import mobsf.MalwareAnalyzer.views.Trackers as Trackers
+import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
+from mobsf.MalwareAnalyzer.views.MalwareDomainCheck import (
+    MalwareDomainCheck,
+)
 from mobsf.MobSF.security import (
     is_path_traversal,
     is_pipe_or_link,
     is_safe_path,
+    sanitize_for_logging,
 )
 from mobsf.MobSF.utils import (
     append_scan_status,
     file_size,
-    get_config_loc,
     is_md5,
     print_n_send_error_response,
-)
-from mobsf.MobSF.views.home import update_scan_timestamp
-import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
-from mobsf.StaticAnalyzer.models import (
-    RecentScansDB,
-    StaticAnalyzerWindows,
-)
-from mobsf.StaticAnalyzer.tools.strings import strings_util
-from mobsf.StaticAnalyzer.views.common.shared_func import (
-    hash_gen,
-    unzip,
-)
-from mobsf.StaticAnalyzer.views.windows.db_interaction import (
-    get_context_from_analysis,
-    get_context_from_db_entry,
-    save_or_update,
 )
 from mobsf.MobSF.views.authentication import (
     login_required,
@@ -58,616 +30,269 @@ from mobsf.MobSF.views.authorization import (
     Permissions,
     has_permission,
 )
+from mobsf.MobSF.views.home import update_scan_timestamp
+from mobsf.StaticAnalyzer.models import (
+    RecentScansDB,
+    StaticAnalyzerWindows,
+)
+from mobsf.StaticAnalyzer.views.common.secret_detection import get_secrets
+from mobsf.StaticAnalyzer.views.common.shared_func import (
+    hash_gen,
+    unzip,
+    url_n_email_extract,
+)
+from mobsf.StaticAnalyzer.views.windows.db_interaction import (
+    get_context_from_analysis,
+    get_context_from_db_entry,
+    save_or_update,
+)
+from mobsf.StaticAnalyzer.views.windows.manifest import (
+    WARNING,
+    analyze_signature,
+    parse_manifest,
+    read_xml,
+)
+from mobsf.StaticAnalyzer.views.windows.pe import PEChecksec
+from mobsf.StaticAnalyzer.views.windows.strings import extract_strings
 
 logger = logging.getLogger(__name__)
-# Only used when xmlrpc is used
-proxy = None
-# Used to store the local config if windows analysis happens local
-config = None
 
-##############################################################
-# Code to support Windows Static Code Analysis
-##############################################################
-# Windows Support Functions
+BUNDLE_EXTS = ('appxbundle', 'msixbundle')
+PE_EXTS = {
+    '.exe', '.dll', '.sys', '.ocx', '.cpl', '.scr', '.pyd', '.node',
+}
+MZ_MAGIC = b'MZ'
+MAX_PE_FILES = 100
+MAX_PE_SIZE = 200 * 1024 * 1024
+MAX_STRINGS_PER_FILE = 20000
+MAX_STRINGS_TOTAL = 100000
+MAX_STORED_STRINGS = 20000
+BUNDLE_DIR = 'bundle_package'
+BUNDLE_MANIFEST = Path('AppxMetadata') / 'AppxBundleManifest.xml'
+# Preferred architecture when a bundle carries several app packages.
+ARCH_ORDER = ('x64', 'arm64', 'x86', 'neutral', 'arm')
 
 
 @login_required
 def staticanalyzer_windows(request, checksum, api=False):
-    """Analyse a windows app."""
+    """Analyse a Windows APPX/MSIX package."""
     try:
-        # Input validation
         logger.info('Windows Static Analysis Started')
-        rescan = False
-        app_dic = {}  # Dict to store the binary attributes
         if api:
-            re_scan = request.POST.get('re_scan', 0)
+            rescan = request.POST.get('re_scan', 0) == '1'
         else:
-            re_scan = request.GET.get('rescan', 0)
-        if re_scan == '1':
-            rescan = True
+            rescan = request.GET.get('rescan', 0) == '1'
         if not is_md5(checksum):
+            return print_n_send_error_response(request, 'Invalid Hash', api)
+        robj = RecentScansDB.objects.filter(MD5=checksum).first()
+        if not robj:
             return print_n_send_error_response(
-                request,
-                'Invalid Hash',
-                api)
-        robj = RecentScansDB.objects.filter(MD5=checksum)
-        if not robj.exists():
-            return print_n_send_error_response(
-                request,
-                'The file is not uploaded/available',
-                api)
-        typ = robj[0].SCAN_TYPE
-        filename = robj[0].FILE_NAME
+                request, 'The file is not uploaded/available', api)
+        typ = robj.SCAN_TYPE
         if typ not in settings.WINDOWS_EXTS:
             return print_n_send_error_response(
-                request,
-                'File type not supported',
-                api)
-
-        app_dic['app_name'] = filename  # APP ORIGINAL NAME
-        app_dic['md5'] = checksum
-        app_dic['app_dir'] = os.path.join(
-            settings.UPLD_DIR, checksum + '/')
-        app_dic['tools_dir'] = os.path.join(
-            settings.BASE_DIR, 'StaticAnalyzer/tools/windows/')
-        # DB
-        db_entry = StaticAnalyzerWindows.objects.filter(
-            MD5=checksum,
-        )
+                request, 'File type not supported', api)
+        app_dir = Path(settings.UPLD_DIR) / checksum
+        app_path = app_dir / f'{checksum}.{typ}'
+        db_entry = StaticAnalyzerWindows.objects.filter(MD5=checksum)
         if db_entry.exists() and not rescan:
-            logger.info(
-                'Analysis is already Done.'
-                ' Fetching data from the DB...')
             context = get_context_from_db_entry(db_entry)
         else:
             if not has_permission(request, Permissions.SCAN, api):
                 return print_n_send_error_response(
-                    request,
-                    'Permission Denied',
-                    False)
+                    request, 'Permission Denied', api)
             append_scan_status(checksum, 'init')
-            msg = 'Windows Binary Analysis Started'
-            logger.info(msg)
-            append_scan_status(checksum, msg)
-            app_dic['app_path'] = os.path.join(
-                app_dic['app_dir'], checksum + '.appx')
-            # ANALYSIS BEGINS
-            app_dic['size'] = str(
-                file_size(app_dic['app_path'])) + 'MB'
-            # Generate hashes
-            app_dic['sha1'], app_dic['sha256'] = hash_gen(
-                checksum,
-                app_dic['app_path'])
-            # EXTRACT APPX
-            logger.info('Extracting APPX')
-            app_dic['files'] = unzip(
-                checksum,
-                app_dic['app_path'],
-                app_dic['app_dir'])
-            xml_dic = _parse_xml(
-                checksum,
-                app_dic['app_dir'])
-            bin_an_dic = _binary_analysis(app_dic)
-            # Saving to db
-            logger.info('Connecting to DB')
+            analysis = analyze_package(
+                checksum, app_path, app_dir, typ, robj.FILE_NAME)
+            save_or_update(analysis)
             if rescan:
-                logger.info('Updating Database...')
-                save_or_update('update',
-                               app_dic,
-                               xml_dic,
-                               bin_an_dic)
                 update_scan_timestamp(checksum)
-            else:
-                logger.info('Saving to Database')
-                save_or_update('save',
-                               app_dic,
-                               xml_dic,
-                               bin_an_dic)
-            context = get_context_from_analysis(app_dic,
-                                                xml_dic,
-                                                bin_an_dic)
-            context['virus_total'] = None
-        template = 'static_analysis/windows_binary_analysis.html'
+            context = get_context_from_analysis(analysis)
         context['virus_total'] = None
         if settings.VT_ENABLED:
             vt = VirusTotal.VirusTotal(checksum)
-            context['virus_total'] = vt.get_result(
-                os.path.join(app_dic['app_dir'], checksum) + '.appx')
+            context['virus_total'] = vt.get_result(app_path.as_posix())
         if api:
             return context
-        else:
-            return render(request, template, context)
-    except Exception as exception:
+        return render(
+            request,
+            'static_analysis/windows_binary_analysis.html',
+            context)
+    except Exception as exp:
         msg = 'Error Performing Static Analysis'
         logger.exception(msg)
-        append_scan_status(checksum, msg, repr(exception))
-        return print_n_send_error_response(
-            request,
-            repr(exception),
-            api,
-            exception.__doc__)
+        append_scan_status(checksum, msg, repr(exp))
+        return print_n_send_error_response(request, msg, api)
 
 
-def _get_token():
-    """Get the authentication token for windows vm xmlrpc client."""
-    challenge = proxy.get_challenge()
-    with open(settings.WINDOWS_VM_SECRET, 'rb') as f:
-        priv_key = serialization.load_pem_private_key(f.read(), password=None)
-    signature = priv_key.sign(
-        challenge.encode('ascii'),
-        padding.PKCS1v15(),
-        hashes.SHA512(),
-    )
-    sig_b64 = base64.b64encode(signature)
-    return sig_b64
-
-
-def _contained_exe(app_dir, file_name):
-    """Return an extracted exe path that stays inside app_dir."""
-    if not file_name or not str(file_name).endswith('.exe'):
+def _safe_child(root, rel):
+    """Return root/rel if it is a regular file contained in root."""
+    if not rel or is_path_traversal(rel):
         return None
-    if is_path_traversal(file_name):
-        logger.error('APPX executable name failed the path check')
+    path = Path(root) / rel
+    if (not is_safe_path(root, path.as_posix(), rel)
+            or not path.is_file()
+            or is_pipe_or_link(path)):
         return None
-    bin_path = os.path.join(app_dir, file_name)
-    if not is_safe_path(app_dir, bin_path, file_name):
-        logger.error('APPX executable path is outside the upload directory')
-        return None
-    if not os.path.isfile(bin_path) or is_pipe_or_link(bin_path):
-        return None
-    return bin_path
+    return path
 
 
-def _binary_analysis(app_dic):
-    """Start binary analsis."""
-    msg = 'Starting Binary Analysis'
-    logger.info(msg)
-    append_scan_status(app_dic['md5'], msg)
-    bin_an_dic = {}
-
-    # Init optional sections to prevent None-Pointer-Errors
-    bin_an_dic['results'] = []
-    bin_an_dic['warnings'] = []
-    bin_an_dic['strings'] = []
-    bin_an_dic['bin'] = ''
-    bin_an_dic['bin_name'] = ''
-    # Search for exe that was actually extracted into the upload directory
-    bin_path = None
-    for file_name in app_dic['files']:
-        if not str(file_name).endswith('.exe'):
+def _select_bundle_package(app_dir):
+    """Pick the application package to analyze from a bundle."""
+    root = read_xml(app_dir / BUNDLE_MANIFEST)
+    if root is None:
+        return None
+    candidates = []
+    for elem in root.iter():
+        if not str(elem.tag).endswith('}Package'):
             continue
-        candidate = _contained_exe(app_dic['app_dir'], file_name)
-        if not candidate:
+        if (elem.get('Type') or 'application').lower() != 'application':
             continue
-        bin_an_dic['bin'] = file_name
-        bin_an_dic['bin_name'] = file_name.replace('.exe', '')
-        bin_path = candidate
-        break
-    if not bin_path:
-        logger.error('No executable in appx')
-        return bin_an_dic
-
-    # Execute strings command
-    bin_an_dic['strings'] = ''
-    # Make unique # pylint: disable-msg=R0204
-    str_list = list(set(strings_util(bin_path)))
-    str_list = [escape(s) for s in str_list]
-    bin_an_dic['strings'] = str_list
-
-    # Search for unsave function
-    pattern = re.compile('(alloca|gets|memcpy|printf|scanf|sprintf|sscanf|'
-                         'strcat|StrCat|strcpy|StrCpy|strlen|StrLen|strncat|'
-                         'StrNCat|strncpy|StrNCpy|strtok|swprintf|vsnprintf|'
-                         'vsprintf|vswprintf|wcscat|wcscpy|wcslen|wcsncat|'
-                         'wcsncpy|wcstok|wmemcpy)')
-    for elem in str_list:
-        if pattern.match(elem[5:-5]):
-            result = {
-                'rule_id': 'Possible Insecure Function',
-                'status': 'Insecure',
-                'desc': ('Possible Insecure '
-                         'Function detected: {}').format(elem[5:-5])}
-            bin_an_dic['results'].append(result)
-
-    # Execute binskim analysis if vm is available
-    if platform.system() != 'Windows' or 'CI' in os.environ:
-        if settings.WINDOWS_VM_IP:
-            msg = 'Windows VM configured'
-            logger.info(msg)
-            append_scan_status(app_dic['md5'], msg)
-            global proxy
-            proxy = xmlrpc.client.ServerProxy(  # pylint: disable-msg=C0103
-                'http://{}:{}'.format(
-                    settings.WINDOWS_VM_IP,
-                    settings.WINDOWS_VM_PORT))
-            name = _upload_sample(bin_path)
-            bin_an_dic = binskim(app_dic['md5'], name, bin_an_dic)
-            bin_an_dic = binscope(app_dic['md5'], name, bin_an_dic)
-        else:
-            msg = (
-                f'Windows VM not configured in {get_config_loc()}.'
-                ' Skipping Binskim and Binscope analysis')
-            logger.warning(msg)
-            append_scan_status(app_dic['md5'], msg)
-            warning = {
-                'rule_id': 'VM',
-                'status': 'Info',
-                'info': '',
-                'desc': 'VM is not configured. Please read the readme.md'
-                ' in MobSF/install/windows.',
-            }
-            bin_an_dic['results'].append(warning)
-    else:
-        msg = 'Running Analysis on Windows host'
-        logger.info(msg)
-        append_scan_status(app_dic['md5'], msg)
-        global config
-        config = configparser.ConfigParser()
-        # Switch to settings defined path if available
-        config.read(expanduser('~') + '\\MobSF\\Config\\config.txt')
-
-        # Run analysis functions
-        bin_an_dic = binskim(app_dic['md5'],
-                             bin_path,
-                             bin_an_dic,
-                             run_local=True,
-                             app_dir=app_dic['app_dir'])
-        bin_an_dic = binscope(app_dic['md5'],
-                              bin_path,
-                              bin_an_dic,
-                              run_local=True,
-                              app_dir=app_dic['app_dir'])
-
-    return bin_an_dic
+        name = elem.get('FileName', '')
+        arch = (elem.get('Architecture') or 'neutral').lower()
+        rank = ARCH_ORDER.index(arch) if arch in ARCH_ORDER else len(
+            ARCH_ORDER)
+        candidates.append((rank, name))
+    for _, name in sorted(candidates):
+        path = _safe_child(app_dir, name)
+        if path and path.suffix.lower() in ('.appx', '.msix'):
+            return path
+    return None
 
 
-def _upload_sample(bin_path):
-    """Upload sample to windows vm."""
-    logger.info('Uploading sample.')
-
-    # Upload test
-    with open(bin_path, 'rb') as handle:
-        binary_data = xmlrpc.client.Binary(handle.read())
-    # Name of the sample is return by the remote machine
-    name = proxy.upload_file(binary_data, _get_token())
-
-    return name
-
-
-def binskim(checksum, name, bin_an_dic, run_local=False, app_dir=None):
-    """Run the binskim analysis."""
-    msg = 'Running binskim.'
-    logger.info(msg)
-    append_scan_status(checksum, msg)
-    if run_local:
-        bin_path = _contained_exe(app_dir, bin_an_dic.get('bin'))
-        if not bin_path:
-            logger.error(
-                'Skipping binskim for an executable outside the upload directory')
-            return bin_an_dic
-
-        # Set params for execution of binskim
-        if platform.machine().endswith('64'):
-            binskim_path = config['binskim']['file_x64']
-        else:
-            binskim_path = config['binskim']['file_x86']
-
-        command = 'analyze'
-        path = bin_path
-        output_p = '-o'
-        output_d = bin_path + '_binskim'
-        verbose = '--verbose'
-        policy_p = '--config'
-        force = '--force'
-        policy_d = 'default'  # TODO(Other policies?)
-
-        # Assemble
-        params = [
-            binskim_path,
-            command,
-            path,
-            verbose,
-            output_p, output_d,
-            policy_p, policy_d, force,
-        ]
-
-        # Execute process
-        pipe = subprocess.Popen(subprocess.list2cmdline(params))
-        pipe.wait()  # Wait for the process to finish..
-
-        # Open the file and return the json
-        out_file = open(output_d)
-        output = json.loads(out_file.read())
-    else:
-        # Analyse the sample
-        response = proxy.binskim(name, _get_token())
-
-        # Load output as json
-        output = json.loads(response)
-    bin_an_dic = parse_binskim(bin_an_dic, output)
-    return bin_an_dic
+def _iter_pe_files(root, executables):
+    """Yield (path, relative path) for PE images, main executables first."""
+    root = Path(root)
+    found = []
+    for path in root.rglob('*'):
+        if path.suffix.lower() not in PE_EXTS:
+            continue
+        if is_pipe_or_link(path) or not path.is_file():
+            continue
+        rel = path.relative_to(root).as_posix()
+        if not is_safe_path(root.as_posix(), path.as_posix(), rel):
+            continue
+        if path.stat().st_size > MAX_PE_SIZE:
+            logger.warning(
+                'Skipping large PE file: %s', sanitize_for_logging(rel))
+            continue
+        with path.open('rb') as fp:
+            if fp.read(2) != MZ_MAGIC:
+                continue
+        found.append((path, rel))
+    main = {e.replace('\\', '/').lower() for e in executables}
+    found.sort(key=lambda item: (item[1].lower() not in main, item[1]))
+    return found[:MAX_PE_FILES]
 
 
-def parse_binskim(bin_an_dic, output):
-    """Parse output to results and warnings."""
-    try:
-        output['runs'][0]['rules']
-        return parse_binskim_old(bin_an_dic, output)
-    except Exception:
-        return parse_binskim_sarif(bin_an_dic, output)
+def _package_file_findings(files):
+    """Findings derived from the packaged file list."""
+    pdbs = sorted(f for f in files if f.lower().endswith('.pdb'))
+    if not pdbs:
+        return []
+    shown = ', '.join(pdbs[:10])
+    more = f' and {len(pdbs) - 10} more' if len(pdbs) > 10 else ''
+    return [{
+        'rule': 'debug_symbols_packaged',
+        'title': 'Debug symbol files (.pdb) are packaged',
+        'severity': WARNING,
+        'description': (
+            'The package ships program database files that contain '
+            'function names, source file paths and type information, '
+            f'which makes reverse engineering easier: {shown}{more}.'),
+    }]
 
 
-def get_short_desc(rules, rule_id):
-    """Get short description from sarif."""
-    for i in rules:
-        if i['id'] == rule_id:
-            return i['shortDescription']['text']
-
-
-def parse_binskim_sarif(bin_an_dic, output):
-    """Parse new version of binskim sarif output."""
-    current_run = output['runs'][0]
-    rules = current_run['tool']['driver']['rules']
-    if 'results' in current_run:
-        for res in current_run['results']:
-            if res['level'] != 'pass':
-                if len(res['message']['arguments']) > 2:
-                    info = ('{}, {}').format(
-                        res['message']['arguments'][1],
-                        res['message']['arguments'][2])
-                else:
-                    info = ''
-                result = {
-                    'rule_id': res['ruleId'],
-                    'status': 'Insecure',
-                    'info': info,
-                    'desc': get_short_desc(rules, res['ruleId']),
-                }
-            else:
-                result = {
-                    'rule_id': res['ruleId'],
-                    'status': 'Secure',
-                    'info': '',
-                    'desc': get_short_desc(rules, res['ruleId']),
-                }
-            bin_an_dic['results'].append(result)
-    else:
-        logger.warning('binskim has no results.')
-        # Create an warning for the gui
-        warning = {
-            'rule_id': 'No Binskim-Results',
-            'status': 'Info',
-            'info': '',
-            'desc': 'No results from Binskim.',
-        }
-        bin_an_dic['warnings'].append(warning)
-    return bin_an_dic
-
-
-def parse_binskim_old(bin_an_dic, output):
-    """Parse old version of binskim."""
-    current_run = output['runs'][0]
-    if 'results' in current_run:
-        rules = output['runs'][0]['rules']
-        for res in current_run['results']:
-            if res['level'] != 'pass':
-                if len(res['formattedRuleMessage']['arguments']) > 2:
-                    info = ('{}, {}').format(
-                        res['formattedRuleMessage']['arguments'][1],
-                        res['formattedRuleMessage']['arguments'][2])
-                else:
-                    info = ''
-                result = {
-                    'rule_id': res['ruleId'],
-                    'status': 'Insecure',
-                    'info': info,
-                    'desc': rules[res['ruleId']]['shortDescription'],
-                }
-            else:
-                result = {
-                    'rule_id': res['ruleId'],
-                    'status': 'Secure',
-                    'info': '',
-                    'desc': rules[res['ruleId']]['shortDescription'],
-                }
-            bin_an_dic['results'].append(result)
-    else:
-        logger.warning('binskim has no results.')
-        # Create an warning for the gui
-        warning = {
-            'rule_id': 'No Binskim-Results',
-            'status': 'Info',
-            'info': '',
-            'desc': 'No results from Binskim.',
-        }
-        bin_an_dic['warnings'].append(warning)
-
-    if 'configurationNotifications' in current_run:
-        for warn in current_run['configurationNotifications']:
-            warning = {
-                'rule_id': warn['ruleId'],
-                'status': 'Info',
-                'info': '',
-                'desc': warn['message'],
-            }
-            bin_an_dic['warnings'].append(warning)
-
-    # Return updated dict
-    return bin_an_dic
-
-
-def binscope(checksum, name, bin_an_dic, run_local=False, app_dir=None):
-    """Run the binskim analysis."""
-    msg = 'Running binscope. This might take a while.'
-    logger.info(msg)
-    append_scan_status(checksum, msg)
-    if run_local:
-        global config
-        bin_path = _contained_exe(app_dir, bin_an_dic.get('bin'))
-        if not bin_path:
-            logger.error(
-                'Skipping binscope for an executable outside the upload directory')
-            return bin_an_dic
-
-        # Set params for execution of binskim
-        binscope_path = [config['binscope']['file']]
-        target = [bin_path]
-        out_type = ['/Red', '/v']
-        output = ['/l', target[0] + '_binscope']
-        checks = [
-            '/Checks', 'ATLVersionCheck',
-            '/Checks', 'ATLVulnCheck',
-            '/Checks', 'AppContainerCheck',
-            '/Checks', 'CompilerVersionCheck',
-            '/Checks', 'DBCheck',
-            '/Checks', 'DefaultGSCookieCheck',
-            '/Checks', 'ExecutableImportsCheck',
-            '/Checks', 'FunctionPointersCheck',
-            '/Checks', 'GSCheck',
-            '/Checks', 'GSFriendlyInitCheck',
-            '/Checks', 'GSFunctionSafeBuffersCheck',
-            '/Checks', 'HighEntropyVACheck',
-            '/Checks', 'NXCheck',
-            '/Checks', 'RSA32Check',
-            '/Checks', 'SafeSEHCheck',
-            '/Checks', 'SharedSectionCheck',
-            '/Checks', 'VB6Check',
-            '/Checks', 'WXCheck',
-        ]
-
-        # Assemble
-        params = (
-            binscope_path
-            + target
-            + out_type
-            + output
-            + checks
-        )
-
-        # Execute process
-        p = subprocess.Popen(subprocess.list2cmdline(params))
-        p.wait()  # Wait for the process to finish..
-
-        # Open the file and return the json
-        f = open(output[1])
-        response = f.read()
-    else:
-        # Analyse the sample via rpc
-        response = proxy.binscope(name, _get_token())
-
-    res = response[response.find('<'):]
-    config = etree.XMLParser(  # pylint: disable-msg=E1101
-        remove_blank_text=True,
-        resolve_entities=False,
-    )
-    xml_file = etree.XML(bytes(res, 'utf-8', 'ignore'),
-                         config)  # pylint: disable-msg=E1101
-
-    for item in xml_file.find('items').getchildren():
-        if item.find('issueType') is not None:
-            res = item.find('result').text
-
-            if res == 'PASS':
-                status = 'Secure'
-                try:
-                    desc = item.find('Information').text
-                except AttributeError:
-                    desc = 'No description provided by analysing tool.'
-            elif res == 'FAIL':
-                status = 'Insecure'
-
-                if item.find('Failure1') is not None:
-                    desc = item.find('Failure1').text
-                elif item.find('Information') is not None:
-                    desc = item.find('Information').text
-                elif item.find('diagnostic') is not None:
-                    status = 'Info'
-                    desc = item.find('diagnostic').text
-                else:
-                    desc = 'No description provided by analysing tool.'
-
-            result = {
-                'rule_id': item.find('issueType').text,
-                'status': status,
-                'info': '',
-                'desc': desc,
-            }
-            bin_an_dic['results'].append(result)
-
-    return bin_an_dic
-
-
-def _parse_xml(checksum, app_dir):
-    """Parse the AppxManifest file to get basic information."""
-    msg = 'Starting Binary Analysis - XML'
-    logger.info(msg)
-    append_scan_status(checksum, msg)
-    xml_file = os.path.join(app_dir, 'AppxManifest.xml')
-    xml_dic = {
-        'version': '',
-        'arch': '',
-        'app_name': '',
-        'pub_name': '',
-        'compiler_version': '',
-        'visual_studio_version': '',
-        'visual_studio_edition': '',
-        'target_os': '',
-        'appx_dll_version': '',
-        'proj_guid': '',
-        'opti_tool': '',
-        'target_run': '',
+def _analyze_binaries(checksum, root, executables):
+    """Run PE hardening checks and string extraction on all binaries."""
+    pe_analysis = []
+    all_strings = set()
+    urls_list, urls, emails = [], [], []
+    for path, rel in _iter_pe_files(root, executables):
+        logger.info('Analyzing %s', sanitize_for_logging(rel))
+        append_scan_status(checksum, f'Analyzing {rel}')
+        try:
+            result = PEChecksec(path, rel).checksec()
+        except Exception as exp:
+            append_scan_status(checksum, f'Failed to analyze {rel}', repr(exp))
+            continue
+        if not result:
+            continue
+        pe_analysis.append(result)
+        if len(all_strings) >= MAX_STRINGS_TOTAL:
+            continue
+        try:
+            strings = extract_strings(path, MAX_STRINGS_PER_FILE)
+        except OSError:
+            continue
+        all_strings.update(strings)
+        file_urls, url_nf, email_nf = url_n_email_extract(
+            '\n'.join(strings), rel)
+        urls_list.extend(file_urls)
+        urls.extend(url_nf)
+        emails.extend(email_nf)
+    return {
+        'pe_analysis': pe_analysis,
+        'strings': sorted(all_strings),
+        'urls_list': sorted(set(urls_list)),
+        'urls': urls,
+        'emails': emails,
     }
 
-    try:
-        msg = 'Reading AppxManifest'
-        logger.info(msg)
-        append_scan_status(checksum, msg)
-        config = etree.XMLParser(  # pylint: disable-msg=E1101
-            remove_blank_text=True,
-            resolve_entities=False,
-        )
-        xml = etree.XML(open(xml_file, 'rb').read(),
-                        config)  # pylint: disable-msg=E1101
-        for child in xml.getchildren():
-            # } to prevent conflict with PhoneIdentity..
-            if isinstance(child.tag, str) and child.tag.endswith('}Identity'):
-                xml_dic['version'] = child.get('Version')
-                xml_dic['arch'] = child.get('ProcessorArchitecture')
-            elif (isinstance(child.tag, str)
-                    and child.tag.endswith('Properties')):
-                for sub_child in child.getchildren():
-                    if sub_child.tag.endswith('}DisplayName'):
-                        # TODO(Needed? Compare to existing app_name)
-                        xml_dic['app_name'] = sub_child.text
-                    elif sub_child.tag.endswith('}PublisherDisplayName'):
-                        xml_dic['pub_name'] = sub_child.text
-            elif (isinstance(child.tag, str)
-                    and child.tag.endswith('}Metadata')):
-                xml_dic = parse_xml_metadata(xml_dic, child)
-    except Exception as exp:
-        msg = 'Error Reading AppxManifest'
-        logger.exception(msg)
-        append_scan_status(checksum, msg, repr(exp))
-    return xml_dic
 
+def analyze_package(checksum, app_path, app_dir, typ, file_name):
+    """Analyze an APPX/MSIX package or bundle."""
+    msg = 'Windows Package Analysis Started'
+    logger.info(msg)
+    append_scan_status(checksum, msg)
+    analysis = {
+        'md5': checksum,
+        'file_name': file_name,
+        'package_type': typ,
+        'size': f'{file_size(app_path.as_posix())}MB',
+    }
+    analysis['sha1'], analysis['sha256'] = hash_gen(
+        checksum, app_path.as_posix())
+    budget = {'used': 0}
+    files = unzip(checksum, app_path.as_posix(), app_dir.as_posix(), budget)
+    root = app_dir
+    if typ in BUNDLE_EXTS:
+        inner = _select_bundle_package(app_dir)
+        if not inner:
+            raise ValueError('No application package found in bundle')
+        logger.info(
+            'Extracting %s from bundle', sanitize_for_logging(inner.name))
+        append_scan_status(checksum, f'Extracting {inner.name} from bundle')
+        root = app_dir / BUNDLE_DIR
+        files = unzip(checksum, inner.as_posix(), root.as_posix(), budget)
+    analysis['files'] = sorted(
+        f for f in files if f and not f.endswith(('/', '\\')))
 
-def parse_xml_metadata(xml_dic, xml_node):
-    """Return the XML Metadata."""
-    for child in xml_node.getchildren():
-        if child.get('Name') == 'cl.exe':
-            xml_dic['compiler_version'] = child.get('Version')
-        elif child.get('Name') == 'VisualStudio':
-            xml_dic['visual_studio_version'] = child.get('Version')
-        elif child.get('Name') == 'VisualStudioEdition':
-            xml_dic['visual_studio_edition'] = child.get('Value')
-        elif child.get('Name') == 'OperatingSystem':
-            xml_dic['target_os'] = child.get('Version')
-        elif child.get('Name') == 'Microsoft.Build.AppxPackage.dll':
-            xml_dic['appx_dll_version'] = child.get('Version')
-        elif child.get('Name') == 'ProjectGUID':
-            xml_dic['proj_guid'] = child.get('Value')
-        elif child.get('Name') == 'OptimizingToolset':
-            xml_dic['opti_tool'] = child.get('Value')
-        elif child.get('Name') == 'TargetRuntime':
-            xml_dic['target_run'] = child.get('Value')
-    return xml_dic
+    msg = 'Reading AppxManifest.xml'
+    logger.info(msg)
+    append_scan_status(checksum, msg)
+    manifest = parse_manifest(root / 'AppxManifest.xml')
+    signature = analyze_signature(app_dir, manifest['publisher'])
+    analysis['manifest'] = manifest
+    analysis['signature'] = signature
+    analysis['manifest_analysis'] = (
+        manifest['findings']
+        + signature['findings']
+        + _package_file_findings(analysis['files']))
+
+    msg = 'Running PE Binary Analysis'
+    logger.info(msg)
+    append_scan_status(checksum, msg)
+    binaries = _analyze_binaries(checksum, root, manifest['executables'])
+    analysis.update(binaries)
+    analysis['secrets'] = sorted(get_secrets(binaries['strings']))
+    analysis['strings'] = binaries['strings'][:MAX_STORED_STRINGS]
+    analysis['domains'] = MalwareDomainCheck().scan(
+        checksum, binaries['urls_list'])
+    analysis['trackers'] = Trackers.Trackers(
+        checksum, None, None).get_trackers_domains_or_deps(
+            analysis['domains'], [])
+    msg = 'Windows Package Analysis Completed'
+    logger.info(msg)
+    append_scan_status(checksum, msg)
+    return analysis

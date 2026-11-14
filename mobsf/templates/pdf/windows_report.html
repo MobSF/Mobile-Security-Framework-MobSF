@@ -71,106 +71,238 @@
       <h2><span class="fas">&#xf49e;</span>  FILE INFORMATION</h2>
 
       <h5>File Name:</h5> {{ file_name }}<br/>
+      <h5>Package Type:</h5> {{ package_type|upper }}<br/>
       <h5>Size: </h5> {{ size }}<br/>
       <h5>MD5:</h5> {{ md5 }}<br/>
       <h5>SHA1:</h5> {{ sha1 }}<br/>
       <h5>SHA256:</h5> {{ sha256 }}<br/>
-     
 
       <h2><span class="fas">&#xf129;</span>  APP INFORMATION</h2>
 
       <h5>App Name:</h5> {{ app_name }}<br/>
+      <h5>Package Name:</h5> {{ package_name }}<br/>
       <h5>Publisher:</h5> {{ publisher_name }}<br/>
+      <h5>Publisher DN:</h5> {{ publisher }}<br/>
       <h5>Version:</h5> {{ app_version }}<br/>
       <h5>Arch:</h5> {{ architecture }}<br/>
-     
+      <h5>Min OS Version:</h5> {{ min_os_version }}<br/>
 
-      <h2><span class="fas">&#xf1c9;</span>  XML INFORMATION </h2>
-
-      <h5>Compiler Version:</h5> {{ compiler_version }}<br/>
-      <h5>Visual Studio Version:</h5> {{ visual_studio_version }}<br/>
-      <h5>Visual Studio Edition:</h5> {{ visual_studio_edition }}<br/>
-      <h5>Target OS:</h5> {{ target_os }}<br/>
-      <h5>APPX DLL Version:</h5> {{ appx_dll_version }}<br/>
-      <h5>Proj GUID:</h5> {{ proj_guid }}<br/>
-      <h5>Opti Tool:</h5> {{ opti_tool }}<br/>
-      <h5>Target Run:</h5> {{ target_run }}<br/>
-
-
-        {% if virus_total and virus_total.items|length > 9 and 'request successfully queued' not in virus_total.verbose_msg %}
-       <h2><span class="fas">&#xf717;</span>  VIRUSTOTAL SCAN</h2>
-       <p> <h5>{{ virus_total.positives }} / {{ virus_total.total }}</h5> &nbsp; AVs found this file Malicious! </p>
-            {% if virus_total.positives %}
-          
-                    <table class="basic">
-                                    <thead>
-                                        <tr>
-                                            <th>AV</th>
-                                            <th>DETECTION</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for av_name,av_result in virus_total.scans.items %}
-                                        {% if av_result.detected == True %}
-                                            <tr>
-                                                <td>
-                                                    {{ av_name }}
-                                                </td>
-                                                <td>
-                                                    <span class="danger">{{ av_result.result }}</span>
-                                                </td>
-                                          </tr>
-                                        {% endif %}
-                                    {% endfor %}
-                               </tbody>
-                    </table>
-            {% endif %}
+      <h2><span class="fas">&#xf0a3;</span>  PACKAGE SIGNATURE</h2>
+      {% if package_signature.signed %}
+      <h5>Signer:</h5> {{ package_signature.signer }}<br/>
+      <h5>Issuer:</h5> {{ package_signature.issuer }}<br/>
+      <h5>Valid To:</h5> {{ package_signature.valid_to }}<br/>
+      <h5>Hash Algorithm:</h5> {{ package_signature.hash_algorithm }}<br/>
+      {% else %}
+      <p>No package signature found.</p>
       {% endif %}
-      
-      <h2><span class="fas">&#xf024;</span>  APPX BINARY ANALYSIS</h2>
-       <table class="basic">
-                  <thead>
-                      <tr>
-                          <th width="25%">ISSUE</th>
-                          <th width="15%">STATUS</th>
-                          <th width="40%">DESCRIPTION</th>
-                          <th width="20%">INFO</th>
 
-                      </tr>
-                  </thead>
-                  <tbody>
-                    {% for result in binary_analysis %}
-                      <tr>
-                        <td>{{ result.rule_id }}</td>
-                        <td>
-                          {% if result.status == "Insecure" %}
-                            <span class='danger'>{{ result.status }}</span>
-                          {% elif result.status == "Secure" %}
-                            <span class='success'>{{ result.status }}</span>
-                          {% elif result.status == "Info" %}
-                            <span class='info'>{{ result.status }}</span>
-                          {% else %}
-                            {{ result.status }}
-                          {% endif %}
-                        </td>
-                        <td>{{ result.desc }}</td>
-                        <td>{{ result.info }}</td>
-                      </tr>
-                    {% endfor %}
-                    {% for warn in binary_warnings %}
-                    <tr>
-                      <td>{{ warn.rule_id }}</td>
-                      <td>
-                          <span class='info'>
-                            {{ warn.status }}
-                        </span>
-                      </td>
-                      <td>{{ warn.desc }}</td>
-                      <td>{{ warn.info }}</td>
-                    </tr>
-                    {% endfor %}
-                    </tbody>
-                    </table>
+      {% if virus_total and virus_total.items|length > 9 and 'request successfully queued' not in virus_total.verbose_msg %}
+      <h2><span class="fas">&#xf717;</span>  VIRUSTOTAL SCAN</h2>
+      <p> <h5>{{ virus_total.positives }} / {{ virus_total.total }}</h5> &nbsp; AVs found this file Malicious! </p>
+      {% if virus_total.positives %}
+      <table class="basic">
+        <thead>
+          <tr>
+            <th>AV</th>
+            <th>DETECTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for av_name, av_result in virus_total.scans.items %}
+          {% if av_result.detected == True %}
+          <tr>
+            <td>{{ av_name }}</td>
+            <td><span class="danger">{{ av_result.result }}</span></td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+      {% endif %}
+
+      <h2><span class="fas">&#xf002;</span>  MANIFEST ANALYSIS</h2>
+      {% if manifest_analysis %}
+      <table class="basic">
+        <thead>
+          <tr>
+            <th width="5%">NO</th>
+            <th width="30%">ISSUE</th>
+            <th width="10%">SEVERITY</th>
+            <th width="55%">DESCRIPTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in manifest_analysis %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.title }}</td>
+            <td><span class="{% if item.severity == 'high' %}danger{% elif item.severity == 'warning' %}warning{% elif item.severity == 'secure' %}success{% else %}info{% endif %}">{{ item.severity }}</span></td>
+            <td>{{ item.description }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p>No manifest issues found.</p>
+      {% endif %}
+
+      <h2><span class="fas">&#xf03a;</span>  CAPABILITIES</h2>
+      {% if capabilities %}
+      <table class="basic">
+        <thead>
+          <tr>
+            <th width="25%">CAPABILITY</th>
+            <th width="15%">TYPE</th>
+            <th width="10%">SEVERITY</th>
+            <th width="50%">DESCRIPTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cap in capabilities %}
+          <tr>
+            <td>{{ cap.name }}</td>
+            <td>{{ cap.type }}</td>
+            <td><span class="{% if cap.severity == 'high' %}danger{% elif cap.severity == 'warning' %}warning{% else %}info{% endif %}">{{ cap.severity }}</span></td>
+            <td>{{ cap.description }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p>No capabilities declared.</p>
+      {% endif %}
+
+      <h2><span class="fas">&#xf024;</span>  PE BINARY ANALYSIS</h2>
+      {% if pe_analysis %}
+      {% for pe in pe_analysis %}
+      <h5>{{ forloop.counter }}. {{ pe.name }}</h5> {{ pe.type }} &middot; {{ pe.format }} &middot; {{ pe.arch }} &middot; {{ pe.runtime }}
+      <table class="basic">
+        <thead>
+          <tr>
+            <th width="20%">PROTECTION</th>
+            <th width="20%">STATUS</th>
+            <th width="10%">SEVERITY</th>
+            <th width="50%">DESCRIPTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% include 'pdf/windows_pe_row.html' with label='ASLR' chk=pe.aslr %}
+          {% include 'pdf/windows_pe_row.html' with label='High Entropy VA' chk=pe.high_entropy_va %}
+          {% include 'pdf/windows_pe_row.html' with label='DEP (NX)' chk=pe.dep %}
+          {% include 'pdf/windows_pe_row.html' with label='Control Flow Guard' chk=pe.cfg %}
+          {% include 'pdf/windows_pe_row.html' with label='SafeSEH' chk=pe.safe_seh %}
+          {% include 'pdf/windows_pe_row.html' with label='Stack Cookie (/GS)' chk=pe.stack_cookie %}
+          {% include 'pdf/windows_pe_row.html' with label='RWX Sections' chk=pe.rwx_sections %}
+          {% include 'pdf/windows_pe_row.html' with label='Authenticode' chk=pe.code_signature %}
+          {% include 'pdf/windows_pe_row.html' with label='Banned APIs' chk=pe.banned_imports %}
+        </tbody>
+      </table>
+      {% endfor %}
+      {% elif binary_analysis %}
+      <table class="basic">
+        <thead>
+          <tr>
+            <th width="25%">ISSUE</th>
+            <th width="15%">STATUS</th>
+            <th width="40%">DESCRIPTION</th>
+            <th width="20%">INFO</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for result in binary_analysis %}
+          <tr>
+            <td>{{ result.rule_id }}</td>
+            <td>{{ result.status }}</td>
+            <td>{{ result.desc }}</td>
+            <td>{{ result.info }}</td>
+          </tr>
+          {% endfor %}
+          {% for warn in binary_warnings %}
+          <tr>
+            <td>{{ warn.rule_id }}</td>
+            <td><span class="info">{{ warn.status }}</span></td>
+            <td>{{ warn.desc }}</td>
+            <td>{{ warn.info }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p>No PE binaries found.</p>
+      {% endif %}
+
+      {% if domains %}
+      <h2><span class="fas">&#xf002;</span>  DOMAIN MALWARE CHECK</h2>
+      <table class="basic">
+        <thead>
+          <tr>
+            <th width="30%">DOMAIN</th>
+            <th width="20%">STATUS</th>
+            <th width="50%">GEOLOCATION</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for domain, details in domains.items %}
+          <tr>
+            <td>{{ domain }}</td>
+            <td>{% if details|key:"bad" == "yes" %}<span class="danger">malware</span>{% else %}<span class="success">ok</span>{% endif %}</td>
+            <td>
+              {% if details|key:"geolocation" %}
+              IP: {{ details|key:"geolocation"|key:"ip" }}<br/>
+              Country: {{ details|key:"geolocation"|key:"country_long" }}<br/>
+              Region: {{ details|key:"geolocation"|key:"region" }}<br/>
+              City: {{ details|key:"geolocation"|key:"city" }}
+              {% else %}
+              No Geolocation information available.
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+
+      {% if trackers.trackers %}
+      <h2><span class="fas">&#xf21b;</span>  TRACKERS</h2>
+      <table class="basic">
+        <thead>
+          <tr>
+            <th width="30%">TRACKER</th>
+            <th width="30%">CATEGORIES</th>
+            <th width="40%">URL</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for trk in trackers.trackers %}
+          <tr>
+            <td>{{ trk.name }}</td>
+            <td>{{ trk.categories }}</td>
+            <td>{{ trk.url }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+
+      {% if secrets %}
+      <h2><span class="fas">&#xf084;</span>  HARDCODED SECRETS</h2>
+      <table class="basic">
+        <thead>
+          <tr>
+            <th>POSSIBLE SECRETS</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for secret in secrets %}
+          <tr>
+            <td>{{ secret }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
 
                     <h2><span class="fas">&#xf03a;</span>  SCAN LOGS</h2>
                     <table id="scan_logs" class="basic">

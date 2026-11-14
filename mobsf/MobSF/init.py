@@ -17,7 +17,6 @@ from mobsf.MobSF.tools_download import (
     JADX_VERSION,
     install_jadx,
 )
-from mobsf.install.windows.setup import windows_config_local
 
 logger = logging.getLogger(__name__)
 
@@ -50,8 +49,6 @@ def first_run(secret_file, base_dir, mobsf_home):
         # Run Once
         make_migrations(base_dir)
         migrate(base_dir)
-        # Windows Setup
-        windows_config_local(mobsf_home.as_posix())
     if not (mobsf_home / 'tools' / 'jadx' / f'jadx-{JADX_VERSION}').exists():
         thread = threading.Thread(
             target=install_jadx,
