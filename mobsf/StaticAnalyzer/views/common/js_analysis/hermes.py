@@ -31,7 +31,9 @@ _REG_BIND_CALL_RE = re.compile(r'^(r\d+)\.bind\((r\d+)\)\((.*)\)$')
 _OBJ_CREATE_CTOR_RE = re.compile(
     r'^Object\.create\(r\d+(?:\.prototype'
     r'|,\s*\{constructor:\s*\{value:\s*(r\d+)\}\})\)$')
-_REG_TOKEN_RE = re.compile(r'\br\d+\b')
+_REG_TOKEN_RE = re.compile(
+    r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|`(?:\\.|[^`\\])*`'
+    r'|(?<![\w$.])r\d+\b')
 _SAFE_EXPR_RE = re.compile(
     r'^(?:true|false|null|-?\d+(?:\.\d+)?|[\'"][^\r\n]{0,80}[\'"]'
     r'|r\d+(?:\.[A-Za-z_$][\w$]*)+)$')
@@ -57,6 +59,8 @@ def _fold_args(args_str, reg_map):
 
     def _repl(match):
         tok = match.group(0)
+        if tok[0] in '"\'`':
+            return tok
         return reg_map.get(tok, tok)
 
     return _REG_TOKEN_RE.sub(_repl, args_str)

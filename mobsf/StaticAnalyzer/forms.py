@@ -23,7 +23,9 @@ class AttackDetect(forms.Form):
                          r'db|sqlitedb|sqlite|txt|json|'
                          r'js|jsx|ts|tsx|mjs|cjs|bundle|jsbundle|'
                          r'html|htm|vue|svelte|map)$')
-        if not re.search(supported_ext, Path(file).suffix):
+        supported_names = {'app.config', 'app.manifest'}
+        if (not re.search(supported_ext, Path(file).suffix)
+                and Path(file).name.lower() not in supported_names):
             raise forms.ValidationError('File Extension not supported')
         return file
 

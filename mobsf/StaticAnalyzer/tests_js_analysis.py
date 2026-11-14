@@ -6,19 +6,24 @@ import json
 import struct
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
-from django.test import TestCase
+from django.test import RequestFactory, TestCase, override_settings
 
 from hermes_dec.parsers.hbc_file_parser import (
     HBCReader,
     HEADER_MAGIC,
 )
 
+from mobsf.StaticAnalyzer.forms import ViewSourceAndroidForm
 from mobsf.StaticAnalyzer.views.android.views import find
+from mobsf.StaticAnalyzer.views.android.views import (
+    view_source as android_view_source,
+)
 from mobsf.StaticAnalyzer.views.common.js_analysis import (
     configs as js_configs,
     frameworks as js_frameworks,
+    hermes as js_hermes,
     sast as js_sast,
     viewer as js_viewer,
 )
@@ -33,6 +38,9 @@ from mobsf.StaticAnalyzer.views.common.js_analysis import (
 )
 from mobsf.StaticAnalyzer.views.common.suppression import (
     process_suppression_js,
+)
+from mobsf.StaticAnalyzer.views.ios.views import (
+    view_source as ios_view_source,
 )
 
 
@@ -785,6 +793,50 @@ class JSAnalysisTests(TestCase):
             self.assertEqual(
                 res['findings']['cordova_config_wildcard_access']['files'],
                 {'apktool_out/res/xml/config.xml': '1'})
+
+    def test_hermes_register_fold_keeps_string_literals(self):
+        reg_map = {'r0': '"hello"', 'r1': 'obj'}
+        self.assertEqual(
+            js_hermes._fold_args(
+                'r0, "r0", \'r1\', `r0`, x.r1, r1', reg_map),
+            '"hello", "r0", \'r1\', `r0`, x.r1, obj')
+
+    def test_expo_config_files_open_in_source_viewer(self):
+        for name in ('app.config', 'assets/app.manifest'):
+            form = ViewSourceAndroidForm(
+                {'file': name, 'type': 'js', 'md5': '0' * 32})
+            self.assertTrue(form.is_valid(), form.errors)
+            self.assertEqual(ios_view_source.set_ext_api(name), 'js')
+        form = ViewSourceAndroidForm(
+            {'file': 'app.exe', 'type': 'js', 'md5': '0' * 32})
+        self.assertFalse(form.is_valid())
+
+    def test_api_view_source_reads_paging_from_post(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            md5 = '0' * 32
+            (Path(tmp) / md5).mkdir()
+            (Path(tmp) / md5 / 'app.js').write_text(
+                'var a = 1;\n', encoding='utf-8')
+            factory = RequestFactory()
+            win = {
+                'data': '', 'start_line': 42, 'end_line': 42,
+                'total_lines': 42, 'window_lines': 2000, 'is_paged': True,
+            }
+            for module, scan_type in (
+                    (android_view_source, 'js'),
+                    (ios_view_source, 'ios')):
+                request = factory.post('/api/v1/view_source', {
+                    'file': 'app.js', 'hash': md5, 'type': scan_type,
+                    'line_start': '42', 'lines': '50', 'q': 'needle'})
+                request.user = Mock(is_authenticated=True)
+                with override_settings(UPLD_DIR=tmp), patch.object(
+                        module, 'read_js_source_window',
+                        return_value=win) as mock_win:
+                    module.run(request, api=True)
+                kwargs = mock_win.call_args.kwargs
+                self.assertEqual(kwargs['line_start'], '42')
+                self.assertEqual(kwargs['lines_param'], '50')
+                self.assertEqual(kwargs['search_term'], 'needle')
 
     def test_chunks_are_byte_bounded_and_keep_line_numbers(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -109,7 +109,7 @@ if (supplied_path){
 }
 
 // Folder children are fetched on demand and cached by folder id
-var tree_cache = {};
+var tree_cache = Object.create(null);
 var search_hits = [];
 var MAX_OPENED_HITS = 1000;
 var NODE_BATCH = 2000;
@@ -218,7 +218,7 @@ function load_more(more_node) {
 	fetch_nodes([more_id], function() {
 		// Mutate in place: expanded folder nodes share this array
 		var current = tree_cache[parent] = tree_cache[parent] || [];
-		var seen = {};
+		var seen = Object.create(null);
 		current.forEach(function(n) { seen[n.id] = true; });
 		var at = current.findIndex(function(n) { return n.id === more_id; });
 		if (at !== -1) {
@@ -251,7 +251,7 @@ function make_node(id, is_folder) {
 var expanded_nodes = [];
 
 function index_cached_nodes() {
-	var index = {};
+	var index = Object.create(null);
 	var walk = function(list) {
 		list.forEach(function(n) {
 			if (index[n.id]) {
@@ -328,7 +328,7 @@ function unescape_html(text) {
 
 function select_nodes(node_ids) {
 	search_hits = node_ids.slice(0, MAX_OPENED_HITS).map(unescape_html);
-	var folders = {};
+	var folders = Object.create(null);
 	search_hits.forEach(function(path) {
 		var parts = path.split('/');
 		for (var i = 1; i < parts.length; i++) {

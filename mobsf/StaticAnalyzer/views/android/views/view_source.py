@@ -87,10 +87,11 @@ def run(request, api=False):
     try:
         logger.info('View Java Source File')
         exp = 'Error Description'
+        params = request.POST if api else request.GET
         if api:
-            viewsource_form = ViewSourceAndroidApiForm(request.POST)
+            viewsource_form = ViewSourceAndroidApiForm(params)
         else:
-            viewsource_form = ViewSourceAndroidForm(request.GET)
+            viewsource_form = ViewSourceAndroidForm(params)
         if not viewsource_form.is_valid():
             err = FormUtil.errors_message(viewsource_form)
             return send_error(request, err, api_mode, json_resp, exp)
@@ -145,9 +146,9 @@ def run(request, api=False):
         if typ == 'js':
             win = read_js_source_window(
                 sfile,
-                lines_param=request.GET.get('lines'),
-                line_start=request.GET.get('line_start'),
-                search_term=request.GET.get('q'),
+                lines_param=params.get('lines'),
+                line_start=params.get('line_start'),
+                search_term=params.get('q'),
             )
             raw_data = win['data']
         else:

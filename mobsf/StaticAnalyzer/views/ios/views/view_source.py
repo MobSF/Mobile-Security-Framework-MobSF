@@ -40,6 +40,8 @@ logger = logging.getLogger(__name__)
 def set_ext_api(file_path):
     """Smart Function to set Extension."""
     ext = file_path.split('.')[-1]
+    if Path(file_path).name.lower() in ('app.config', 'app.manifest'):
+        return 'js'
     if ext in ('plist', 'entitlements'):
         return 'plist'
     elif ext == 'xml':
@@ -62,6 +64,7 @@ def run(request, api=False):
         logger.info('View iOS Source File')
         exp = 'Error Description'
         file_format = None
+        params = request.POST if api else request.GET
         if api:
             fil = request.POST['file']
             md5_hash = request.POST['hash']
@@ -117,9 +120,9 @@ def run(request, api=False):
             file_format = 'javascript'
             win = read_js_source_window(
                 Path(sfile),
-                lines_param=request.GET.get('lines'),
-                line_start=request.GET.get('line_start'),
-                search_term=request.GET.get('q'),
+                lines_param=params.get('lines'),
+                line_start=params.get('line_start'),
+                search_term=params.get('q'),
             )
             dat = win['data']
         elif typ == 'xml':
