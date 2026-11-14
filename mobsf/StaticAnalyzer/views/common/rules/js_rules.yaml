@@ -45,7 +45,7 @@
     allowFileAccessFromFileURLs, or allowUniversalAccessFromFileURLs). An
     attacker who can control WebView content or navigation may read arbitrary
     local application files.
-  severity: high
+  severity: warning
   pattern:
     - >-
       (jsx_attribute
@@ -225,7 +225,7 @@
     Dynamic JavaScript code execution via eval() or new Function() was
     detected. Executing dynamically constructed strings can lead to arbitrary
     code execution inside the application context.
-  severity: high
+  severity: warning
   pattern:
     - >-
       (call_expression
@@ -410,7 +410,7 @@
     cryptographic key binding (disableDeviceFallback: false or
     allowDeviceCredentials: true). This can be bypassed on rooted/jailbroken
     devices via Frida hooking if not backed by Keystore/Keychain crypto objects.
-  severity: info
+  severity: warning
   pattern:
     - >-
       (pair
@@ -486,7 +486,7 @@
     authorization and entitlement checks are enforced server-side on every API
     request, as JavaScript and Hermes bytecode conditions can be patched or
     hooked on the device.
-  severity: info
+  severity: warning
   pattern:
     - >-
       (if_statement
