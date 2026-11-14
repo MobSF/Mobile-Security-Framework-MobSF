@@ -56,17 +56,21 @@ def make_finding(description, severity, cvss, cwe, owasp, masvs, files_dict):
     }
 
 
+_MAX_CONFIG_LINES = 25
+
+
 def _append_line(files_map, rel_path, line):
-    """Record a 1-indexed line number on files_map[rel_path] without dupes."""
+    """Record up to _MAX_CONFIG_LINES unique 1-indexed lines per file."""
     line_str = str(line)
     existing = files_map.get(rel_path)
     if not existing:
         files_map[rel_path] = line_str
         return
     parts = [tok.strip() for tok in existing.split(',') if tok.strip()]
-    if line_str not in parts:
-        parts.append(line_str)
-        files_map[rel_path] = ','.join(parts)
+    if len(parts) >= _MAX_CONFIG_LINES or line_str in parts:
+        return
+    parts.append(line_str)
+    files_map[rel_path] = ','.join(parts)
 
 
 def _parse_cordova_elements(raw):
@@ -83,10 +87,7 @@ def _parse_cordova_elements(raw):
         state['depth'] += 1
         if not state['is_widget']:
             return
-        norm_attrs = {
-            k.split(':')[-1].lower(): str(v)
-            for k, v in attrs.items()
-        }
+        norm_attrs = {k.lower(): str(v) for k, v in attrs.items()}
         elements.append((local_tag, norm_attrs, parser.CurrentLineNumber))
 
     def end_element(_name):
