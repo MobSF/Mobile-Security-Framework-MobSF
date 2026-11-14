@@ -4,9 +4,6 @@
 import logging
 import json
 import os
-import re
-import shutil
-import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -33,7 +30,8 @@ logger = logging.getLogger(__name__)
 SOURCE_EXTS = ('.java', '.kt', '.smali')
 READ_CHUNK = 4 * 1024 * 1024
 SEARCH_WORKERS = min(8, os.cpu_count() or 2)
-RG_TIMEOUT = 300
+OPEN_FLAGS = (os.O_RDONLY | getattr(os, 'O_BINARY', 0)
+              | getattr(os, 'O_NOFOLLOW', 0))
 
 
 def _iter_source_files(src):
@@ -58,57 +56,34 @@ def _make_matcher(query):
     raw = query.encode('utf-8')
     overlap = max(len(raw) - 1, 0)
     if query.isascii():
-        pattern = re.compile(re.escape(raw), re.IGNORECASE)
-        return pattern.search, overlap
-    pattern = re.compile(re.escape(query), re.IGNORECASE)
-    return (lambda buf: pattern.search(buf.decode('utf-8', 'ignore'))), overlap
+        # bytes.lower() + `in` is several times faster than re.IGNORECASE
+        needle = raw.lower()
+        return (lambda buf: needle in buf.lower()), overlap
+    needle = query.lower()
+    return (lambda buf: needle in buf.decode('utf-8', 'ignore').lower()), (
+        overlap)
 
 
 def _file_contains(fpath, match, overlap):
+    # os.read avoids the per-file overhead of Python file objects
     try:
-        with open(fpath, 'rb') as fp:
-            tail = b''
-            while True:
-                chunk = fp.read(READ_CHUNK)
-                if not chunk:
-                    return False
-                buf = tail + chunk
-                if match(buf):
-                    return True
-                tail = buf[-overlap:] if overlap else b''
+        fd = os.open(fpath, OPEN_FLAGS)
     except OSError:
         return False
-
-
-def _ripgrep_search(src, query):
-    """Return matching source files under src using ripgrep, or None."""
-    rg = shutil.which('rg')
-    if not rg:
-        return None
-    args = [
-        rg, '--files-with-matches', '--null', '--fixed-strings',
-        '--ignore-case', '--no-messages', '--no-config', '--no-ignore',
-        '--hidden',
-    ]
-    for ext in SOURCE_EXTS:
-        args.extend(['--glob', f'*{ext}'])
-    args.extend(['--', query, src.as_posix()])
     try:
-        out = subprocess.run(
-            args, capture_output=True, timeout=RG_TIMEOUT, check=False)
-    except (OSError, subprocess.TimeoutExpired):
-        logger.warning('ripgrep search failed, using fallback')
-        return None
-    if out.returncode not in (0, 1) and not out.stdout:
-        return None
-    found = []
-    for raw in out.stdout.split(b'\0'):
-        if not raw:
-            continue
-        fpath = Path(os.fsdecode(raw))
-        if fpath.is_relative_to(src):
-            found.append(fpath)
-    return found
+        tail = b''
+        while True:
+            chunk = os.read(fd, READ_CHUNK)
+            if not chunk:
+                return False
+            buf = tail + chunk
+            if match(buf):
+                return True
+            tail = buf[-overlap:] if overlap else b''
+    except OSError:
+        return False
+    finally:
+        os.close(fd)
 
 
 def _content_search(files, query):
@@ -150,19 +125,11 @@ def run(request):
                 msg = 'Invalid Directory Structure'
                 return print_n_send_error_response(request, msg, True)
             files = None
+        if files is None:
+            files = list(_iter_source_files(src))
         if search_type == 'content':
-            found = None
-            if not query:
-                found = []
-            elif files is None:
-                found = _ripgrep_search(src, query)
-            if found is None:
-                if files is None:
-                    files = list(_iter_source_files(src))
-                found = _content_search(files, query)
+            found = _content_search(files, query) if query else []
         else:
-            if files is None:
-                files = list(_iter_source_files(src))
             q_lower = query.lower()
             found = [f for f in files if q_lower in f.name.lower()]
         matches = sorted({escape(f.relative_to(src).as_posix())

@@ -39,7 +39,6 @@ RUN groupadd --gid $USER_ID $MOBSF_USER && \
         git \
         locales \
         python3-dev \
-        ripgrep \
         sqlite3 \
         unzip \
         wget && \

@@ -6,6 +6,7 @@ import json
 import struct
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
 from django.test import TestCase
 
@@ -14,6 +15,7 @@ from hermes_dec.parsers.hbc_file_parser import (
     HEADER_MAGIC,
 )
 
+from mobsf.StaticAnalyzer.views.android.views import find
 from mobsf.StaticAnalyzer.views.common.js_analysis import (
     analyze_js,
     beautify_minified_js,
@@ -502,6 +504,27 @@ class JSAnalysisTests(TestCase):
                 res['secrets'])
             self.assertNotIn('projectId', findings[
                 'expo_config_extra_secrets']['metadata']['description'])
+
+    def test_source_content_search(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            boundary = root / 'Boundary.java'
+            boundary.write_bytes(b'x' * 10 + b'PassWord' + b'y' * 10)
+            unicode_file = root / 'Unicode.java'
+            unicode_file.write_text('String s = "CONTRASEÑA";\n',
+                                    encoding='utf-8')
+            plain = root / 'Plain.java'
+            plain.write_text('class Plain {}\n', encoding='utf-8')
+            link = root / 'Link.java'
+            link.symlink_to(boundary)
+            files = sorted(find._iter_source_files(root))
+            self.assertNotIn(link, files)
+            with patch.object(find, 'READ_CHUNK', 13):
+                self.assertEqual(
+                    find._content_search(files, 'password'), [boundary])
+            self.assertEqual(
+                find._content_search(files, 'contraseña'), [unicode_file])
+            self.assertEqual(find._content_search(files, 'nomatch'), [])
 
     def test_js_source_listing_prunes_and_caches(self):
         with tempfile.TemporaryDirectory() as tmp:
