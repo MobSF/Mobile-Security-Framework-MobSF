@@ -29,6 +29,7 @@ from mobsf.StaticAnalyzer.views.common.secret_detection import (
 )
 from mobsf.StaticAnalyzer.views.common.shared_func import (
     STRINGS_REGEX,
+    is_secret_key,
     url_n_email_extract,
 )
 from mobsf.StaticAnalyzer.views.sast_engine import SastEngine
@@ -52,7 +53,10 @@ SKIP_JS_DIRS = {
 }
 # Cordova/Capacitor ship plugin JS under www/plugins or public/plugins.
 WEB_ROOT_DIRS = {'www', 'public'}
-HYBRID_CONFIG_FILES = {'config.xml', 'capacitor.config.json'}
+EXPO_CONFIG_FILES = {'app.config', 'app.manifest', 'app.json'}
+HYBRID_CONFIG_FILES = {'config.xml', 'capacitor.config.json'} | (
+    EXPO_CONFIG_FILES)
+MAX_CONFIG_BYTES = 5 * 1024 * 1024
 MAX_LISTED_JS_FILES = 10000
 SKIP_VENDOR_FILES = {
     'cordova.js', 'cordova_plugins.js', 'phonegap.js',
@@ -612,6 +616,99 @@ def _check_capacitor_config(cfg_path, rel_path, findings):
         )['files'][rel_path] = line
 
 
+def _load_expo_config(cfg_path):
+    """Return (raw, expo config dict) for an embedded or source Expo config."""
+    if cfg_path.stat().st_size > MAX_CONFIG_BYTES:
+        return None, None
+    try:
+        raw = cfg_path.read_text('utf-8', 'ignore')
+        data = json.loads(raw)
+    except Exception:
+        return None, None
+    if not isinstance(data, dict):
+        return None, None
+    if cfg_path.name.lower() == 'app.json':
+        data = data.get('expo')
+        if not isinstance(data, dict):
+            return None, None
+    return raw, data
+
+
+def _iter_secret_pairs(obj, prefix=''):
+    """Yield (dotted key, value) for secret-looking string values."""
+    if isinstance(obj, dict):
+        for key, val in obj.items():
+            name = f'{prefix}{key}'
+            if isinstance(val, (dict, list)):
+                yield from _iter_secret_pairs(val, f'{name}.')
+            elif (isinstance(val, str) and len(val) >= 8
+                    and is_secret_key(str(key))):
+                yield name, val
+    elif isinstance(obj, list):
+        for item in obj:
+            yield from _iter_secret_pairs(item, prefix)
+
+
+def _check_expo_config(cfg_path, rel_path, findings, secrets):
+    """Check an Expo app config / embedded manifest for insecure settings."""
+    raw, data = _load_expo_config(cfg_path)
+    if data is None:
+        return
+    extra_secrets = list(_iter_secret_pairs(data.get('extra')))
+    if extra_secrets:
+        for key, val in extra_secrets:
+            secrets.add(f'"{key}" : "{val}"')
+        findings.setdefault(
+            'expo_config_extra_secrets',
+            _make_finding(
+                'Expo app config "extra" contains secret-looking values ('
+                + ', '.join(sorted(k for k, _ in extra_secrets)[:10])
+                + '). Values in "extra" are embedded in the app package '
+                'and readable by anyone through expo-constants.',
+                'warning',
+                7.5,
+                'CWE-798: Use of Hard-coded Credentials',
+                'M1: Improper Credential Usage',
+                'MSTG-STORAGE-14',
+                {},
+            ),
+        )['files'][rel_path] = _line_of_substring(raw, '"extra"')
+    updates = data.get('updates')
+    if not isinstance(updates, dict) or updates.get('enabled') is False:
+        return
+    url = str(updates.get('url', ''))
+    if url.lower().startswith('http://'):
+        findings.setdefault(
+            'expo_updates_cleartext',
+            _make_finding(
+                'Expo over-the-air updates are fetched over cleartext HTTP '
+                '(updates.url). A network attacker can serve a malicious '
+                'JavaScript bundle that runs with full app privileges.',
+                'high',
+                8.1,
+                'CWE-319: Cleartext Transmission of Sensitive Information',
+                'M5: Insecure Communication',
+                'MSTG-NETWORK-1',
+                {},
+            ),
+        )['files'][rel_path] = _line_of_substring(raw, '"url"')
+    if url and not updates.get('codeSigningCertificate'):
+        findings.setdefault(
+            'expo_updates_unsigned',
+            _make_finding(
+                'Expo over-the-air updates are enabled without code signing '
+                '(no updates.codeSigningCertificate). Update integrity '
+                'relies only on transport security and the update server.',
+                'info',
+                3.7,
+                'CWE-494: Download of Code Without Integrity Check',
+                'M7: Insufficient Binary Protections',
+                'MSTG-CODE-1',
+                {},
+            ),
+        )['files'][rel_path] = _line_of_substring(raw, '"updates"')
+
+
 def _extract_js_urls_emails_secrets(file_path, rel_path, urls_list, urls_nf,
                                     emails_nf, secrets_set, extra_strings=None):
     """Extract URLs, emails, and high-entropy secrets from JS or HBC strings."""
@@ -733,6 +830,10 @@ def _inspect_candidate_file(checksum, pfile, scan_root, rel_base, scan_type,
     if name_low == 'capacitor.config.json':
         state['frameworks'].add('Capacitor')
         _check_capacitor_config(pfile, rel_to_base, state['config_findings'])
+        return
+    if name_low in EXPO_CONFIG_FILES:
+        _check_expo_config(
+            pfile, rel_to_base, state['config_findings'], state['secrets'])
         return
     if suffix_low == '.map' and scan_type in ('apk', 'ipa'):
         state['sourcemaps'][rel_to_base] = '1'

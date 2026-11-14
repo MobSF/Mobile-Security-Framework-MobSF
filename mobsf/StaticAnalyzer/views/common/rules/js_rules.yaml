@@ -12,11 +12,9 @@
         (property_identifier) @_prop (#eq? @_prop "javaScriptEnabled")
         (jsx_expression (true))) @match
     - >-
-      (jsx_opening_element
-        name: (identifier) @_tag (#eq? @_tag "WebView")
-        attribute: (jsx_attribute
-          (property_identifier) @_prop (#eq? @_prop "javaScriptEnabled")
-          !value)) @match
+      (jsx_attribute
+        (property_identifier) @_prop (#eq? @_prop "javaScriptEnabled")
+        .) @match
     - >-
       (pair
         key: [(property_identifier) (string)] @_k
@@ -821,3 +819,308 @@
     cwe: cwe-200
     owasp-mobile: m2
     masvs: storage-10
+
+- id: js_webview_debugging_enabled
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    WebView remote debugging is enabled (webviewDebuggingEnabled). Anyone with
+    USB or Safari Web Inspector access can inspect and modify WebView content,
+    storage, and bridge traffic. Enable it only in development builds.
+  severity: warning
+  pattern:
+    - >-
+      (jsx_attribute
+        (property_identifier) @_prop (#eq? @_prop "webviewDebuggingEnabled")
+        (jsx_expression (true))) @match
+    - >-
+      (jsx_attribute
+        (property_identifier) @_prop (#eq? @_prop "webviewDebuggingEnabled")
+        .) @match
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?webviewDebuggingEnabled['\"]?$")
+        value: (true)) @match
+  metadata:
+    cvss: 4.6
+    cwe: cwe-489
+    owasp-mobile: m7
+    masvs: resilience-2
+
+- id: js_webview_inject_all_frames
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    WebView injected JavaScript runs in every frame
+    (injectedJavaScriptForMainFrameOnly or
+    injectedJavaScriptBeforeContentLoadedForMainFrameOnly set to false).
+    Third-party iframes receive the injected bridge code and can call into
+    the app.
+  severity: warning
+  pattern:
+    - >-
+      (jsx_attribute
+        (property_identifier) @_prop
+        (#match? @_prop "^injectedJavaScript(BeforeContentLoaded)?ForMainFrameOnly$")
+        (jsx_expression (false))) @match
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?injectedJavaScript(BeforeContentLoaded)?ForMainFrameOnly['\"]?$")
+        value: (false)) @match
+  metadata:
+    cvss: 5.4
+    cwe: cwe-749
+    owasp-mobile: m1
+    masvs: platform-2
+
+- id: js_webview_allow_all_navigation
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    WebView onShouldStartLoadWithRequest always returns true, so every
+    navigation is allowed. Validate the request URL against an allowlist of
+    trusted origins before allowing it.
+  severity: warning
+  pattern:
+    - >-
+      (jsx_attribute
+        (property_identifier) @_prop (#eq? @_prop "onShouldStartLoadWithRequest")
+        (jsx_expression
+          [
+            (arrow_function body: (true))
+            (arrow_function
+              body: (statement_block . (return_statement (true)) .))
+            (function_expression
+              body: (statement_block . (return_statement (true)) .))
+          ])) @match
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?onShouldStartLoadWithRequest['\"]?$")
+        value: [
+          (arrow_function body: (true))
+          (arrow_function
+            body: (statement_block . (return_statement (true)) .))
+          (function_expression
+            body: (statement_block . (return_statement (true)) .))
+        ]) @match
+  metadata:
+    cvss: 5.4
+    cwe: cwe-601
+    owasp-mobile: m1
+    masvs: platform-2
+
+- id: js_oauth_insecure_config
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    Insecure OAuth configuration in expo-auth-session: the deprecated Expo
+    auth proxy (useProxy: true or AuthSession.startAsync), the implicit flow
+    (responseType token / ResponseType.Token), or PKCE disabled
+    (usePKCE: false). These can leak tokens or authorization codes to other
+    apps or sites. Use the authorization code flow with PKCE and a native
+    redirect URI.
+  severity: warning
+  pattern:
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?useProxy['\"]?$")
+        value: (true)) @match
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?usePKCE['\"]?$")
+        value: (false)) @match
+    - >-
+      (pair
+        key: [(property_identifier) (string)] @_k
+        (#match? @_k "^['\"]?responseType['\"]?$")
+        value: (string) @_v
+        (#match? @_v "^['\"](token|id_token token|token id_token)['\"]$")) @match
+    - >-
+      (member_expression
+        object: (_) @_o (#match? @_o "ResponseType$")
+        property: (property_identifier) @_p (#eq? @_p "Token")) @match
+    - >-
+      (call_expression
+        function: (member_expression
+          object: (_) @_o (#match? @_o "AuthSession$")
+          property: (property_identifier) @_fn (#eq? @_fn "startAsync"))) @match
+  metadata:
+    cvss: 6.5
+    cwe: cwe-287
+    owasp-mobile: m4
+    masvs: auth-1
+
+- id: js_biometric_without_crypto
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    Biometric authentication that only returns success or failure
+    (expo-local-authentication authenticateAsync, react-native-biometrics
+    simplePrompt, TouchID.authenticate, or FingerprintScanner.authenticate).
+    The result is not bound to a Keystore / Keychain key and can be bypassed
+    with runtime hooking. Use a crypto-backed flow such as createSignature or
+    a biometric-protected Keychain item.
+  severity: warning
+  pattern:
+    - >-
+      (call_expression
+        function: (member_expression
+          property: (property_identifier) @_fn
+          (#match? @_fn "^(authenticateAsync|simplePrompt)$"))) @match
+    - >-
+      (call_expression
+        function: (member_expression
+          object: (_) @_o (#match? @_o "(TouchID|FingerprintScanner)$")
+          property: (property_identifier) @_fn (#eq? @_fn "authenticate"))) @match
+  metadata:
+    cvss: 0
+    cwe: cwe-287
+    owasp-mobile: m4
+    masvs: auth-8
+
+- id: js_external_storage_path
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    Files are read from or written to shared external storage
+    (react-native-fs ExternalStorageDirectoryPath / ExternalDirectoryPath /
+    DownloadDirectoryPath, or blob-util SDCardDir / DownloadDir). Other apps
+    can read or replace files there; keep sensitive data in app-private
+    storage.
+  severity: warning
+  pattern:
+    - >-
+      (member_expression
+        property: (property_identifier) @_p
+        (#match? @_p "^(ExternalStorageDirectoryPath|ExternalDirectoryPath|ExternalCachesDirectoryPath|DownloadDirectoryPath|PicturesDirectoryPath|SDCardDir|SDCardApplicationDir|DownloadDir)$")) @match
+  metadata:
+    cvss: 5.5
+    cwe: cwe-276
+    owasp-mobile: m2
+    masvs: storage-2
+
+- id: js_unencrypted_database
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    Local database is opened without an encryption key (Realm without
+    encryptionKey, or a SQLite openDatabase call without key /
+    encryptionKey). Data is stored in plaintext on the device; use an
+    encrypted database for sensitive information.
+  severity: info
+  pattern:
+    - >-
+      (new_expression
+        constructor: [(identifier) (member_expression)] @_cls
+        (#match? @_cls "Realm$")
+        arguments: (arguments) @_args
+        (#not-match? @_args "encryptionKey")) @match
+    - >-
+      (call_expression
+        function: (member_expression
+          object: (_) @_o (#match? @_o "Realm$")
+          property: (property_identifier) @_fn (#eq? @_fn "open"))
+        arguments: (arguments) @_args
+        (#not-match? @_args "encryptionKey")) @match
+    - >-
+      (call_expression
+        function: (member_expression
+          property: (property_identifier) @_fn
+          (#match? @_fn "^(openDatabase|openDatabaseSync|openDatabaseAsync)$"))
+        arguments: (arguments) @_args
+        (#not-match? @_args "(key|encryptionKey|password)['\"]?\\s*:")) @match
+  metadata:
+    cvss: 0
+    cwe: cwe-311
+    owasp-mobile: m2
+    masvs: storage-1
+
+- id: js_persist_sensitive_state
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    redux-persist is configured to save auth, token, session, or user state
+    to non-encrypted storage (for example AsyncStorage). Persisted state is
+    written in plaintext; exclude secrets or use an encrypted storage engine.
+  severity: warning
+  pattern:
+    - >-
+      (object
+        (pair
+          key: [(property_identifier) (string)] @_s
+          (#match? @_s "^['\"]?storage['\"]?$")
+          value: (_) @_v
+          (#not-match? @_v "(?i)(secure|encrypt|keychain|sensitive)"))
+        (pair
+          key: [(property_identifier) (string)] @_w
+          (#match? @_w "^['\"]?whitelist['\"]?$")
+          value: (array) @_list
+          (#match? @_list "(?i)['\"][a-z_]*(auth|token|session|credential|user|login)[a-z_]*['\"]"))) @match
+    - >-
+      (object
+        (pair
+          key: [(property_identifier) (string)] @_w
+          (#match? @_w "^['\"]?whitelist['\"]?$")
+          value: (array) @_list
+          (#match? @_list "(?i)['\"][a-z_]*(auth|token|session|credential|user|login)[a-z_]*['\"]"))
+        (pair
+          key: [(property_identifier) (string)] @_s
+          (#match? @_s "^['\"]?storage['\"]?$")
+          value: (_) @_v
+          (#not-match? @_v "(?i)(secure|encrypt|keychain|sensitive)"))) @match
+  metadata:
+    cvss: 5.5
+    cwe: cwe-312
+    owasp-mobile: m2
+    masvs: storage-1
+
+- id: js_debug_tooling_in_release
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    Development tooling is bundled with the app (Reactotron or Flipper).
+    These tools stream app state, network traffic, and storage contents to a
+    remote debugger. Ensure they are stripped from release builds.
+  severity: warning
+  pattern:
+    - >-
+      (call_expression
+        function: (member_expression
+          property: (property_identifier) @_fn (#eq? @_fn "useReactNative"))) @match
+    - >-
+      (member_expression
+        object: (_) @_o (#match? @_o "NativeModules$")
+        property: (property_identifier) @_p (#match? @_p "^(Flipper|FlipperModule)$")) @match
+  metadata:
+    cvss: 4.3
+    cwe: cwe-489
+    owasp-mobile: m7
+    masvs: resilience-2
+
+- id: js_expo_dev_client_bundled
+  type: TreeSitter
+  languages: [javascript, typescript, tsx]
+  message: >-
+    expo-dev-client / expo-dev-launcher / expo-dev-menu native modules are
+    referenced in the bundle. Development client builds can load JavaScript
+    from arbitrary development servers; confirm this is not a distributed
+    release build.
+  severity: info
+  pattern:
+    - >-
+      ((string) @_s
+        (#match? @_s "^['\"](EXDevLauncher|ExpoDevLauncher|EXDevMenu|ExpoDevMenu|ExpoDevLauncherInternal|EXDevLauncherInternal)['\"]$")) @match
+    - >-
+      (member_expression
+        property: (property_identifier) @_p
+        (#match? @_p "^(EXDevLauncher|ExpoDevLauncher|EXDevMenu|ExpoDevMenu|EXDevLauncherInternal)$")) @match
+  metadata:
+    cvss: 0
+    cwe: cwe-489
+    owasp-mobile: m7
+    masvs: resilience-2

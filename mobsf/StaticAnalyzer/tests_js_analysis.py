@@ -417,6 +417,92 @@ class JSAnalysisTests(TestCase):
                     sorted(lines.split(',')), rule)
                 self.assertNotIn('src/safe.tsx', files, rule)
 
+    def test_react_native_expo_api_rules(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / 'src'
+            src.mkdir()
+            (src / 'vuln.tsx').write_text(
+                'const a = <WebView webviewDebuggingEnabled={true} />;\n'
+                'const b = <WebView '
+                'injectedJavaScriptForMainFrameOnly={false} />;\n'
+                'const c = <WebView '
+                'onShouldStartLoadWithRequest={() => true} />;\n'
+                'const r = makeRedirectUri({ useProxy: true });\n'
+                'useAuthRequest({ responseType: ResponseType.Token, '
+                'usePKCE: false }, d);\n'
+                'const ok = await LocalAuthentication.authenticateAsync();\n'
+                'const p = RNFS.ExternalStorageDirectoryPath + "/t.txt";\n'
+                'const realm = new Realm({ schema: [Note] });\n'
+                'const db = SQLite.openDatabase({ name: "app.db" });\n'
+                'const cfg = { key: "root", storage: AsyncStorage, '
+                'whitelist: ["auth", "settings"] };\n'
+                'Reactotron.configure({}).useReactNative().connect();\n'
+                'const dl = NativeModules.EXDevLauncher;\n',
+                encoding='utf-8')
+            (src / 'safe.tsx').write_text(
+                'const a = <WebView webviewDebuggingEnabled={__DEV__} />;\n'
+                'const c = <WebView onShouldStartLoadWithRequest='
+                '{(req) => req.url.startsWith(ORIGIN)} />;\n'
+                'useAuthRequest({ responseType: ResponseType.Code, '
+                'usePKCE: true }, d);\n'
+                'const p = RNFS.DocumentDirectoryPath + "/t.txt";\n'
+                'const realm = new Realm({ schema: [Note], '
+                'encryptionKey: key });\n'
+                'const db = SQLite.openDatabase({ name: "app.db", '
+                'key: dbKey });\n'
+                'const cfg = { key: "root", storage: createSecureStore(), '
+                'whitelist: ["auth"] };\n'
+                'const cfg2 = { key: "root", storage: AsyncStorage, '
+                'whitelist: ["settings"] };\n'
+                'const w = <WebView javaScriptEnabled={false} />;\n',
+                encoding='utf-8')
+            assets = root / 'assets'
+            assets.mkdir()
+            (assets / 'app.config').write_text(json.dumps({
+                'name': 'demo',
+                'extra': {
+                    'eas': {'projectId': 'abc'},
+                    'stripeSecretKey': 'sk_test_51Habcdefghijkl',
+                },
+                'updates': {'url': 'http://updates.example.com/manifest'},
+            }), encoding='utf-8')
+            res = analyze_js('0' * 32, root, 'zip')
+            findings = res['findings']
+            expected = {
+                'js_webview_debugging_enabled': '1',
+                'js_webview_inject_all_frames': '2',
+                'js_webview_allow_all_navigation': '3',
+                'js_oauth_insecure_config': '4,5',
+                'js_biometric_without_crypto': '6',
+                'js_external_storage_path': '7',
+                'js_unencrypted_database': '8,9',
+                'js_persist_sensitive_state': '10',
+                'js_debug_tooling_in_release': '11',
+                'js_expo_dev_client_bundled': '12',
+            }
+            for rule, lines in expected.items():
+                self.assertIn(rule, findings, rule)
+                files = findings[rule]['files']
+                self.assertEqual(
+                    sorted(set(files['src/vuln.tsx'].split(','))),
+                    sorted(lines.split(',')), rule)
+                self.assertNotIn('src/safe.tsx', files, rule)
+            self.assertNotIn(
+                'src/safe.tsx',
+                findings.get('js_webview_javascript_enabled', {}).get(
+                    'files', {}))
+            for rule in ('expo_config_extra_secrets',
+                         'expo_updates_cleartext',
+                         'expo_updates_unsigned'):
+                self.assertIn('assets/app.config',
+                              findings[rule]['files'], rule)
+            self.assertIn(
+                '"stripeSecretKey" : "sk_test_51Habcdefghijkl"',
+                res['secrets'])
+            self.assertNotIn('projectId', findings[
+                'expo_config_extra_secrets']['metadata']['description'])
+
     def test_js_source_listing_prunes_and_caches(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
