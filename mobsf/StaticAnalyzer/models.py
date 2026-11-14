@@ -160,6 +160,19 @@ class StaticAnalyzerWindows(models.Model):
     STRINGS = models.TextField(default=[])
     BINARY_ANALYSIS = models.TextField(default=[])
     BINARY_WARNINGS = models.TextField(default=[])
+    PACKAGE_TYPE = models.CharField(max_length=20, default='')
+    PACKAGE_NAME = models.TextField(default='')
+    PUBLISHER = models.TextField(default='')
+    MIN_OS_VERSION = models.TextField(default='')
+    PE_ANALYSIS = models.TextField(default=[])
+    MANIFEST_ANALYSIS = models.TextField(default=[])
+    CAPABILITIES = models.TextField(default=[])
+    PACKAGE_SIGNATURE = models.TextField(default={})
+    URLS = models.TextField(default=[])
+    EMAILS = models.TextField(default=[])
+    DOMAINS = models.TextField(default={})
+    SECRETS = models.TextField(default=[])
+    TRACKERS = models.TextField(default={})
 
 
 class SuppressFindings(models.Model):
