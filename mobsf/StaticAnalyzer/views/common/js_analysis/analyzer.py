@@ -213,7 +213,11 @@ def analyze_js(checksum, scan_root, scan_type, app_root=None, rel_base=None):
 
 def _finalize_state(state, sast_findings):
     """Merge config and SAST findings and return structured output."""
-    merged = dict(state['config_findings'])
+    merged = {}
+    for rule_id, details in state['config_findings'].items():
+        merged[rule_id] = {
+            k: v for k, v in details.items() if not k.startswith('_')
+        }
     for rule_id, details in (sast_findings or {}).items():
         if rule_id in merged:
             merged[rule_id]['files'].update(details.get('files', {}))

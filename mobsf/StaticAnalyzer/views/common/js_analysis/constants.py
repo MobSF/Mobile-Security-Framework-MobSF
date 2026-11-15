@@ -18,7 +18,12 @@ SKIP_JS_DIRS = {
 }
 # Cordova/Capacitor ship plugin JS under www/plugins or public/plugins.
 WEB_ROOT_DIRS = {'www', 'public'}
-EXPO_CONFIG_FILES = {'app.config', 'app.manifest', 'app.json'}
+EXPO_CONFIG_FILES = {
+    'app.config',
+    'app.config.json',
+    'app.manifest',
+    'app.json',
+}
 HYBRID_CONFIG_FILES = {'config.xml', 'capacitor.config.json'} | (
     EXPO_CONFIG_FILES)
 EXPO_DEV_CLIENT_FILES = {

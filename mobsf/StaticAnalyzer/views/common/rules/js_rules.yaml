@@ -56,6 +56,11 @@
         (#match? @_prop "^(allowFileAccess|allowFileAccessFromFileURLs|allowUniversalAccessFromFileURLs)$")
         (jsx_expression (true))) @match
     - >-
+      (jsx_attribute
+        (property_identifier) @_prop
+        (#match? @_prop "^(allowFileAccess|allowFileAccessFromFileURLs|allowUniversalAccessFromFileURLs)$")
+        .) @match
+    - >-
       (pair
         key: [(property_identifier) (string)] @_k
         (#match? @_k "^['\"]?(allowFileAccess|allowFileAccessFromFileURLs|allowUniversalAccessFromFileURLs)['\"]?$")
@@ -140,12 +145,12 @@
       (jsx_attribute
         (property_identifier) @_prop (#eq? @_prop "originWhitelist")
         (jsx_expression
-          (array (string) @_v (#match? @_v "^['\"](\\*|http://\\*)['\"]$")))) @match
+          (array (string) @_v (#match? @_v "^['\"](\\*|https?://\\*)['\"]$")))) @match
     - >-
       (pair
         key: [(property_identifier) (string)] @_k
         (#match? @_k "^['\"]?originWhitelist['\"]?$")
-        value: (array (string) @_v (#match? @_v "^['\"](\\*|http://\\*)['\"]$"))) @match
+        value: (array (string) @_v (#match? @_v "^['\"](\\*|https?://\\*)['\"]$"))) @match
     - >-
       (assignment_expression
         left: [
@@ -154,7 +159,7 @@
           (subscript_expression
             index: (string) @_s (#match? @_s "^['\"]originWhitelist['\"]$"))
         ]
-        right: (array (string) @_v (#match? @_v "^['\"](\\*|http://\\*)['\"]$"))) @match
+        right: (array (string) @_v (#match? @_v "^['\"](\\*|https?://\\*)['\"]$"))) @match
   metadata:
     cvss: 6.1
     cwe: cwe-942
@@ -186,8 +191,17 @@
             index: (string) @_s (#match? @_s "^['\"](innerHTML|outerHTML)['\"]$"))
         ]
         right: (_) @_rhs
-        (#not-match? @_rhs "^('[^']*'|\"[^\"]*\"|`[^`$]*`)$")
-        (#not-match? @_rhs "(?i)(sanitize|dompurify|unwrapTrustedHTML|escapeHtml)")) @match
+        (#not-match? @_rhs "^('[^']*'|\"[^\"]*\"|`[^`$]*`)$")) @match
+    - >-
+      (augmented_assignment_expression
+        left: [
+          (member_expression
+            property: (property_identifier) @_ap (#match? @_ap "^(innerHTML|outerHTML)$"))
+          (subscript_expression
+            index: (string) @_as (#match? @_as "^['\"](innerHTML|outerHTML)['\"]$"))
+        ]
+        right: (_) @_arhs
+        (#not-match? @_arhs "^('[^']*'|\"[^\"]*\"|`[^`$]*`)$")) @match
     - >-
       (call_expression
         function: [
@@ -200,6 +214,33 @@
             (#match? @_fn "^(write|writeln)$"))
         ]
         arguments: (arguments)) @match
+  exclude_ancestor: >-
+    (assignment_expression
+      left: [
+        (member_expression
+          property: (property_identifier) @_xp (#match? @_xp "^(innerHTML|outerHTML)$"))
+        (subscript_expression
+          index: (string) @_xs (#match? @_xs "^['\"](innerHTML|outerHTML)['\"]$"))
+      ]
+      right: [
+        (call_expression
+          function: (_) @_callee
+          (#match? @_callee "(^|\\.)(sanitize|sanitizeHtml|sanitizeHTML|unwrapTrustedHTML|escapeHtml|escapeHTML)$"))
+        (await_expression
+          (call_expression
+            function: (_) @_acallee
+            (#match? @_acallee "(^|\\.)(sanitize|sanitizeHtml|sanitizeHTML|unwrapTrustedHTML|escapeHtml|escapeHTML)$")))
+      ]) @match
+    (augmented_assignment_expression
+      left: [
+        (member_expression
+          property: (property_identifier) @_xap (#match? @_xap "^(innerHTML|outerHTML)$"))
+        (subscript_expression
+          index: (string) @_xas (#match? @_xas "^['\"](innerHTML|outerHTML)['\"]$"))
+      ]
+      right: (call_expression
+        function: (_) @_aucallee
+        (#match? @_aucallee "(^|\\.)(sanitize|sanitizeHtml|sanitizeHTML|unwrapTrustedHTML|escapeHtml|escapeHTML)$"))) @match
   metadata:
     cvss: 6.1
     cwe: cwe-79
@@ -266,7 +307,7 @@
       (call_expression
         function: (member_expression
           object: (_) @_o
-          (#not-match? @_o "(^|\\.)(window|self|global|globalThis)$")
+          (#not-match? @_o "^(window|self|global|globalThis|r[0-9]+\\.(window|self|global|globalThis))(\\.window|\\.self|\\.globalThis)*$")
           property: (property_identifier) @_fn (#eq? @_fn "postMessage"))
         arguments: (arguments
           (_)
@@ -293,10 +334,25 @@
           object: (_) @_obj
           (#match? @_obj "(AsyncStorage|localStorage|sessionStorage)")
           property: (property_identifier) @_fn
-          (#match? @_fn "^(setItem|multiSet)$"))
+          (#eq? @_fn "setItem"))
         arguments: (arguments
+          .
           (string) @_key
           (#match? @_key "(?i)(token|password|passwd|secret|api[_-]?key|private[_-]?key|jwt|session|credential|pin|ssn)"))) @match
+    - >-
+      (call_expression
+        function: (member_expression
+          object: (_) @_obj
+          (#match? @_obj "(AsyncStorage|localStorage|sessionStorage)")
+          property: (property_identifier) @_fn
+          (#eq? @_fn "multiSet"))
+        arguments: (arguments
+          .
+          (array
+            (array
+              .
+              (string) @_key
+              (#match? @_key "(?i)(token|password|passwd|secret|api[_-]?key|private[_-]?key|jwt|session|credential|pin|ssn)"))))) @match
   metadata:
     cvss: 6.5
     cwe: cwe-312
@@ -384,7 +440,7 @@
     - >-
       ((string) @_url
         (#match? @_url "^['\"]http://[a-zA-Z0-9._-]+")
-        (#not-match? @_url "^['\"]http://(localhost|127\\.0\\.0\\.1|10\\.0\\.2\\.2|0\\.0\\.0\\.0|schemas\\.android\\.com|www\\.w3\\.org|ns\\.adobe\\.com|apache\\.org)")) @match
+        (#not-match? @_url "^['\"]http://(localhost|127\\.0\\.0\\.1|10\\.0\\.2\\.2|0\\.0\\.0\\.0|schemas\\.android\\.com|www\\.w3\\.org|ns\\.adobe\\.com|apache\\.org)(:[0-9]+)?([/?#'\"]|$)")) @match
   metadata:
     cvss: 5.3
     cwe: cwe-319
@@ -407,6 +463,7 @@
           property: (property_identifier) @_fn
           (#match? @_fn "^(openURL|open|openBrowserAsync|openAuthSessionAsync)$"))
         arguments: (arguments
+          .
           [
             (identifier)
             (member_expression)
@@ -513,7 +570,8 @@
   exclude_ancestor: >-
     (if_statement
       condition: (parenthesized_expression
-        (identifier) @_c (#eq? @_c "__DEV__")))
+        (identifier) @_c (#eq? @_c "__DEV__"))
+      consequence: (_) @match)
   metadata:
     cvss: 0
     cwe: cwe-532
@@ -535,6 +593,163 @@
         object: (member_expression
           property: (property_identifier) @_ne (#eq? @_ne "nativeEvent"))
         property: (property_identifier) @_d (#eq? @_d "data")) @match
+  exclude_ancestor: >-
+    (statement_block
+      (if_statement
+        condition: (parenthesized_expression
+          [
+            (binary_expression
+              left: [(member_expression) (subscript_expression)] @_gl
+              operator: ["!=" "!=="]
+              right: (_) @_gr
+              (#match? @_gl "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$")
+              (#not-match? @_gr "^(['\"]['\"]|``|null|undefined)$"))
+            (binary_expression
+              left: (_) @_gl2
+              operator: ["!=" "!=="]
+              right: [(member_expression) (subscript_expression)] @_gr2
+              (#match? @_gr2 "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$")
+              (#not-match? @_gl2 "^(['\"]['\"]|``|null|undefined)$"))
+            (unary_expression
+              operator: "!"
+              argument: (call_expression
+                function: (member_expression
+                  object: (_) @_gobj (#match? @_gobj "nativeEvent\\.url$")
+                  property: (property_identifier) @_gfn (#eq? @_gfn "startsWith"))
+                arguments: (arguments . (string) @_gpfx (#match? @_gpfx "^['\"]https?://[^/'\"]+[/#?]"))))
+            (unary_expression
+              operator: "!"
+              argument: (call_expression
+                function: (member_expression
+                  object: [(identifier) (member_expression) (subscript_expression)]
+                  property: (property_identifier) @_ghhas (#eq? @_ghhas "has"))
+                arguments: (arguments . (_) @_gharg (#match? @_gharg "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$"))))
+            (unary_expression
+              operator: "!"
+              argument: (call_expression
+                function: (member_expression
+                  object: (array)
+                  property: (property_identifier) @_ghinc (#eq? @_ghinc "includes"))
+                arguments: (arguments . (_) @_ghiarg (#match? @_ghiarg "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$"))))
+          ])
+        consequence: [
+          (return_statement)
+          (throw_statement)
+          (statement_block [(return_statement) (throw_statement)])
+        ])
+      (_) @match)
+    (statement_block
+      (lexical_declaration
+        (variable_declarator
+          name: (object_pattern
+            (shorthand_property_identifier_pattern) @_uid (#match? @_uid "^(url|origin)$"))
+          value: (member_expression
+            property: (property_identifier) @_une (#eq? @_une "nativeEvent"))))
+      (if_statement
+        condition: (parenthesized_expression
+          [
+            (binary_expression
+              left: (identifier) @_dl (#match? @_dl "^(url|origin)$")
+              operator: ["!=" "!=="]
+              right: (_) @_dr (#not-match? @_dr "^(['\"]['\"]|``|null|undefined)$"))
+            (unary_expression
+              operator: "!"
+              argument: (call_expression
+                function: (member_expression
+                  object: (identifier) @_dobj (#eq? @_dobj "url")
+                  property: (property_identifier) @_dfn (#eq? @_dfn "startsWith"))
+                arguments: (arguments . (string) @_dpfx (#match? @_dpfx "^['\"]https?://[^/'\"]+[/#?]"))))
+            (unary_expression
+              operator: "!"
+              argument: (call_expression
+                function: (member_expression
+                  object: [(identifier) (member_expression) (subscript_expression)]
+                  property: (property_identifier) @_dhhas (#eq? @_dhhas "has"))
+                arguments: (arguments . (identifier) @_dharg (#match? @_dharg "^(url|origin)$"))))
+            (unary_expression
+              operator: "!"
+              argument: (call_expression
+                function: (member_expression
+                  object: (array)
+                  property: (property_identifier) @_dhinc (#eq? @_dhinc "includes"))
+                arguments: (arguments . (identifier) @_dhiarg (#match? @_dhiarg "^(url|origin)$"))))
+          ])
+        consequence: [
+          (return_statement)
+          (throw_statement)
+          (statement_block [(return_statement) (throw_statement)])
+        ])
+      (_) @match)
+    (if_statement
+      condition: (parenthesized_expression
+        [
+          (binary_expression
+            left: [(member_expression) (subscript_expression)] @_pl
+            operator: ["==" "==="]
+            right: (_) @_pr
+            (#match? @_pl "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$")
+            (#not-match? @_pr "^(['\"]['\"]|``|null|undefined)$"))
+          (binary_expression
+            left: (_) @_pl2
+            operator: ["==" "==="]
+            right: [(member_expression) (subscript_expression)] @_pr2
+            (#match? @_pr2 "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$")
+            (#not-match? @_pl2 "^(['\"]['\"]|``|null|undefined)$"))
+          (call_expression
+            function: (member_expression
+              object: (_) @_pobj (#match? @_pobj "nativeEvent\\.url$")
+              property: (property_identifier) @_pfn (#eq? @_pfn "startsWith"))
+            arguments: (arguments . (string) @_ppfx (#match? @_ppfx "^['\"]https?://[^/'\"]+[/#?]")))
+          (call_expression
+            function: (member_expression
+              object: [(identifier) (member_expression) (subscript_expression)]
+              property: (property_identifier) @_phhas (#eq? @_phhas "has"))
+            arguments: (arguments . (_) @_pharg (#match? @_pharg "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$")))
+          (call_expression
+            function: (member_expression
+              object: (array)
+              property: (property_identifier) @_phinc (#eq? @_phinc "includes"))
+            arguments: (arguments . (_) @_phiarg (#match? @_phiarg "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$")))
+        ])
+      consequence: (_) @match)
+    (if_statement
+      condition: (parenthesized_expression
+        [
+          (binary_expression
+            left: [(member_expression) (subscript_expression)] @_nl
+            operator: ["!=" "!=="]
+            right: (_) @_nr
+            (#match? @_nl "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$")
+            (#not-match? @_nr "^(['\"]['\"]|``|null|undefined)$"))
+          (binary_expression
+            left: (_) @_nl2
+            operator: ["!=" "!=="]
+            right: [(member_expression) (subscript_expression)] @_nr2
+            (#match? @_nr2 "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$")
+            (#not-match? @_nl2 "^(['\"]['\"]|``|null|undefined)$"))
+          (unary_expression
+            operator: "!"
+            argument: (call_expression
+              function: (member_expression
+                object: (_) @_nobj (#match? @_nobj "nativeEvent\\.url$")
+                property: (property_identifier) @_nfn (#eq? @_nfn "startsWith"))
+              arguments: (arguments . (string) @_npfx (#match? @_npfx "^['\"]https?://[^/'\"]+[/#?]"))))
+          (unary_expression
+            operator: "!"
+            argument: (call_expression
+              function: (member_expression
+                object: [(identifier) (member_expression) (subscript_expression)]
+                property: (property_identifier) @_nhhas (#eq? @_nhhas "has"))
+              arguments: (arguments . (_) @_nharg (#match? @_nharg "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$"))))
+          (unary_expression
+            operator: "!"
+            argument: (call_expression
+              function: (member_expression
+                object: (array)
+                property: (property_identifier) @_nhinc (#eq? @_nhinc "includes"))
+              arguments: (arguments . (_) @_nhiarg (#match? @_nhiarg "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$"))))
+        ])
+      alternative: (else_clause (_) @match))
   metadata:
     cvss: 6.5
     cwe: cwe-345
@@ -1200,6 +1415,11 @@
       (member_expression
         object: (_) @_o (#match? @_o "NativeModules$")
         property: (property_identifier) @_p (#match? @_p "^(Flipper|FlipperModule)$")) @match
+  exclude_ancestor: >-
+    (if_statement
+      condition: (parenthesized_expression
+        (identifier) @_c (#eq? @_c "__DEV__"))
+      consequence: (_) @match)
   metadata:
     cvss: 4.3
     cwe: cwe-489
