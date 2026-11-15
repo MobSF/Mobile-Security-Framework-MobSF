@@ -216,6 +216,12 @@
         arguments: (arguments)) @match
   exclude_ancestor: >-
     (assignment_expression
+      left: [
+        (member_expression
+          property: (property_identifier) @_xp (#match? @_xp "^(innerHTML|outerHTML)$"))
+        (subscript_expression
+          index: (string) @_xs (#match? @_xs "^['\"](innerHTML|outerHTML)['\"]$"))
+      ]
       right: [
         (call_expression
           function: (_) @_callee
@@ -226,6 +232,12 @@
             (#match? @_acallee "(^|\\.)(sanitize|sanitizeHtml|sanitizeHTML|unwrapTrustedHTML|escapeHtml|escapeHTML)$")))
       ]) @match
     (augmented_assignment_expression
+      left: [
+        (member_expression
+          property: (property_identifier) @_xap (#match? @_xap "^(innerHTML|outerHTML)$"))
+        (subscript_expression
+          index: (string) @_xas (#match? @_xas "^['\"](innerHTML|outerHTML)['\"]$"))
+      ]
       right: (call_expression
         function: (_) @_aucallee
         (#match? @_aucallee "(^|\\.)(sanitize|sanitizeHtml|sanitizeHTML|unwrapTrustedHTML|escapeHtml|escapeHTML)$"))) @match
@@ -590,13 +602,13 @@
               left: [(member_expression) (subscript_expression)] @_gl
               operator: ["!=" "!=="]
               right: (_) @_gr
-              (#match? @_gl "(nativeEvent\\.(url|origin)|\\.origin)$")
+              (#match? @_gl "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$")
               (#not-match? @_gr "^(['\"]['\"]|``|null|undefined)$"))
             (binary_expression
               left: (_) @_gl2
               operator: ["!=" "!=="]
               right: [(member_expression) (subscript_expression)] @_gr2
-              (#match? @_gr2 "(nativeEvent\\.(url|origin)|\\.origin)$")
+              (#match? @_gr2 "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$")
               (#not-match? @_gl2 "^(['\"]['\"]|``|null|undefined)$"))
             (unary_expression
               operator: "!"
@@ -609,8 +621,16 @@
               operator: "!"
               argument: (call_expression
                 function: (member_expression
-                  property: (property_identifier) @_ghfn (#match? @_ghfn "^(has|includes)$"))
-                arguments: (arguments . (_) @_gharg (#match? @_gharg "(nativeEvent\\.origin|\\.origin)$"))))
+                  object: [(identifier) (member_expression) (subscript_expression)]
+                  property: (property_identifier) @_ghhas (#eq? @_ghhas "has"))
+                arguments: (arguments . (_) @_gharg (#match? @_gharg "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$"))))
+            (unary_expression
+              operator: "!"
+              argument: (call_expression
+                function: (member_expression
+                  object: (array)
+                  property: (property_identifier) @_ghinc (#eq? @_ghinc "includes"))
+                arguments: (arguments . (_) @_ghiarg (#match? @_ghiarg "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$"))))
           ])
         consequence: [
           (return_statement)
@@ -619,8 +639,12 @@
         ])
       (_) @match)
     (statement_block
-      (lexical_declaration) @_udecl
-      (#match? @_udecl "nativeEvent")
+      (lexical_declaration
+        (variable_declarator
+          name: (object_pattern
+            (shorthand_property_identifier_pattern) @_uid (#match? @_uid "^(url|origin)$"))
+          value: (member_expression
+            property: (property_identifier) @_une (#eq? @_une "nativeEvent"))))
       (if_statement
         condition: (parenthesized_expression
           [
@@ -639,8 +663,16 @@
               operator: "!"
               argument: (call_expression
                 function: (member_expression
-                  property: (property_identifier) @_dhfn (#match? @_dhfn "^(has|includes)$"))
-                arguments: (arguments . (identifier) @_dharg (#eq? @_dharg "origin"))))
+                  object: [(identifier) (member_expression) (subscript_expression)]
+                  property: (property_identifier) @_dhhas (#eq? @_dhhas "has"))
+                arguments: (arguments . (identifier) @_dharg (#match? @_dharg "^(url|origin)$"))))
+            (unary_expression
+              operator: "!"
+              argument: (call_expression
+                function: (member_expression
+                  object: (array)
+                  property: (property_identifier) @_dhinc (#eq? @_dhinc "includes"))
+                arguments: (arguments . (identifier) @_dhiarg (#match? @_dhiarg "^(url|origin)$"))))
           ])
         consequence: [
           (return_statement)
@@ -655,13 +687,13 @@
             left: [(member_expression) (subscript_expression)] @_pl
             operator: ["==" "==="]
             right: (_) @_pr
-            (#match? @_pl "(nativeEvent\\.(url|origin)|\\.origin)$")
+            (#match? @_pl "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$")
             (#not-match? @_pr "^(['\"]['\"]|``|null|undefined)$"))
           (binary_expression
             left: (_) @_pl2
             operator: ["==" "==="]
             right: [(member_expression) (subscript_expression)] @_pr2
-            (#match? @_pr2 "(nativeEvent\\.(url|origin)|\\.origin)$")
+            (#match? @_pr2 "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$")
             (#not-match? @_pl2 "^(['\"]['\"]|``|null|undefined)$"))
           (call_expression
             function: (member_expression
@@ -670,8 +702,14 @@
             arguments: (arguments . (string) @_ppfx (#match? @_ppfx "^['\"]https?://[^/'\"]+[/#?]")))
           (call_expression
             function: (member_expression
-              property: (property_identifier) @_phfn (#match? @_phfn "^(has|includes)$"))
-            arguments: (arguments . (_) @_pharg (#match? @_pharg "(nativeEvent\\.origin|\\.origin)$")))
+              object: [(identifier) (member_expression) (subscript_expression)]
+              property: (property_identifier) @_phhas (#eq? @_phhas "has"))
+            arguments: (arguments . (_) @_pharg (#match? @_pharg "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$")))
+          (call_expression
+            function: (member_expression
+              object: (array)
+              property: (property_identifier) @_phinc (#eq? @_phinc "includes"))
+            arguments: (arguments . (_) @_phiarg (#match? @_phiarg "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$")))
         ])
       consequence: (_) @match)
     (if_statement
@@ -681,8 +719,14 @@
             left: [(member_expression) (subscript_expression)] @_nl
             operator: ["!=" "!=="]
             right: (_) @_nr
-            (#match? @_nl "(nativeEvent\\.(url|origin)|\\.origin)$")
+            (#match? @_nl "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$")
             (#not-match? @_nr "^(['\"]['\"]|``|null|undefined)$"))
+          (binary_expression
+            left: (_) @_nl2
+            operator: ["!=" "!=="]
+            right: [(member_expression) (subscript_expression)] @_nr2
+            (#match? @_nr2 "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$")
+            (#not-match? @_nl2 "^(['\"]['\"]|``|null|undefined)$"))
           (unary_expression
             operator: "!"
             argument: (call_expression
@@ -694,8 +738,16 @@
             operator: "!"
             argument: (call_expression
               function: (member_expression
-                property: (property_identifier) @_nhfn (#match? @_nhfn "^(has|includes)$"))
-              arguments: (arguments . (_) @_nharg (#match? @_nharg "(nativeEvent\\.origin|\\.origin)$"))))
+                object: [(identifier) (member_expression) (subscript_expression)]
+                property: (property_identifier) @_nhhas (#eq? @_nhhas "has"))
+              arguments: (arguments . (_) @_nharg (#match? @_nharg "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$"))))
+          (unary_expression
+            operator: "!"
+            argument: (call_expression
+              function: (member_expression
+                object: (array)
+                property: (property_identifier) @_nhinc (#eq? @_nhinc "includes"))
+              arguments: (arguments . (_) @_nhiarg (#match? @_nhiarg "((^|\\.)nativeEvent\\.(url|origin)|new URL\\([^()]*nativeEvent\\.url[^()]*\\)\\)?\\.origin)$"))))
         ])
       alternative: (else_clause (_) @match))
   metadata:

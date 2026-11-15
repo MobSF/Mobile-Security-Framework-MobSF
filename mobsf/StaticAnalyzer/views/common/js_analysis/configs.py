@@ -99,14 +99,20 @@ def _parse_cordova_elements(raw):
     return elements
 
 
+_MAX_JSON_PATH_DEPTH = 3
+_MAX_JSON_TOKENS = 100_000
+
+
 def _parse_json_value(tokens, pos, path, lines):
-    """Advance past one RFC-8259 JSON value, recording key line numbers."""
-    tok, line = tokens[pos]
+    """Advance past one RFC-8259 JSON value, recording key line numbers.
+
+    path is None inside arrays, where no line numbers are recorded.
+    """
+    tok = tokens[pos][0]
     if tok == '{':
         return _parse_json_object(tokens, pos + 1, path, lines)
     if tok == '[':
-        return _parse_json_array(tokens, pos + 1, path, lines)
-    lines.setdefault(path, line)
+        return _parse_json_array(tokens, pos + 1, lines)
     return pos + 1
 
 
@@ -115,10 +121,11 @@ def _parse_json_object(tokens, pos, path, lines):
     if tokens[pos][0] == '}':
         return pos + 1
     while pos < len(tokens):
-        key_tok, key_line = tokens[pos]
-        key = json.loads(key_tok)
-        key_path = path + (key,)
-        lines[key_path] = key_line
+        key_path = None
+        if path is not None and len(path) < _MAX_JSON_PATH_DEPTH:
+            key_tok, key_line = tokens[pos]
+            key_path = path + (json.loads(key_tok),)
+            lines[key_path] = key_line
         pos = _parse_json_value(tokens, pos + 2, key_path, lines)
         if tokens[pos][0] == ',':
             pos += 1
@@ -127,16 +134,12 @@ def _parse_json_object(tokens, pos, path, lines):
     return pos
 
 
-def _parse_json_array(tokens, pos, path, lines):
-    """Advance past a JSON array body and index element positions."""
+def _parse_json_array(tokens, pos, lines):
+    """Advance past a JSON array body without recording element lines."""
     if tokens[pos][0] == ']':
         return pos + 1
-    idx = 0
     while pos < len(tokens):
-        elem_path = path + (idx,)
-        lines[elem_path] = tokens[pos][1]
-        pos = _parse_json_value(tokens, pos, elem_path, lines)
-        idx += 1
+        pos = _parse_json_value(tokens, pos, None, lines)
         if tokens[pos][0] == ',':
             pos += 1
             continue
@@ -159,6 +162,8 @@ def _load_json_with_lines(cfg_path):
         line_no = 1
         last_idx = 0
         for match in _JSON_TOKEN_RE.finditer(raw):
+            if len(tokens) >= _MAX_JSON_TOKENS:
+                return data, {}
             start = match.start()
             line_no += raw.count('\n', last_idx, start)
             last_idx = start
