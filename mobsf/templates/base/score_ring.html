@@ -1,0 +1,17 @@
+{% load static %}
+{% with score=appsec.security_score %}
+<a class="score-ring {% if score < 30 %}risk-critical{% elif score < 40 %}risk-high{% elif score < 60 %}risk-medium{% else %}risk-low{% endif %}" href="{% url 'appsec_dashboard' checksum=md5 %}" title="Open MobSF Scorecard">
+  <span class="score-ring-dial">
+    <svg viewBox="0 0 36 36" aria-hidden="true">
+      <circle class="score-ring-track" cx="18" cy="18" r="16" pathLength="100"/>
+      <circle class="score-ring-value" cx="18" cy="18" r="16" pathLength="100" stroke-dasharray="{{ score }} 100"/>
+    </svg>
+    <img id="app_icon" alt="App icon" src="{% if store and store|key:"icon"|is_http_url %}{{ store|key:"icon" }}{% elif icon_path %}/download/{{ icon_path }}{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
+    <span class="score-ring-badge">{{ score }}</span>
+  </span>
+  <span class="score-ring-label">
+    Security Score <strong>{{ score }}/100</strong><br/>
+    <small>{% if score < 30 %}Critical{% elif score < 40 %}High{% elif score < 60 %}Medium{% else %}Low{% endif %} Risk · Scorecard <i class="fas fa-chevron-right"></i></small>
+  </span>
+</a>
+{% endwith %}

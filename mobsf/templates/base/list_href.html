@@ -1,8 +1,10 @@
 {% if list|length != 0 %}
-<details {% if list|length < limit %}open{% endif %}>
-  <summary>{% if list|length < limit %}Showing{% else %}Show{% endif %} all <strong>{{ list | length }}</strong> {{ type }}</summary>
+<details {% if list|length < limit and list|length <= 10 %}open{% endif %}>
+  <summary>{% if list|length < limit and list|length <= 10 %}Showing{% else %}Show{% endif %} all <strong>{{ list | length }}</strong> {{ type }}</summary>
+  <div class="mobsf-columns">
   {% for val in list %}
-    <a href="{% url "view_source" %}?file={{ val | pathify }}.java&amp;md5={{ md5 }}&amp;type={{app_type}}"> {{ val }}</a><br/>
+    <a href="{% url "view_source" %}?file={{ val | pathify }}.java&amp;md5={{ md5 }}&amp;type={{app_type}}">{{ val }}</a>
   {% endfor %}
+  </div>
 </details>
 {% endif %}

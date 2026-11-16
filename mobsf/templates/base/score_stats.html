@@ -1,0 +1,12 @@
+<dl class="info-grid score-stats">
+  <dt>Trackers</dt>
+  <dd><span class="{% if trackers.detected_trackers %}text-warning-strong{% else %}text-success{% endif %}"><b>{{ trackers.detected_trackers|default:0 }}</b></span> / {{ trackers.total_trackers|default:0 }}</dd>
+  {% if virus_total and virus_total.items|length > 9 %}
+  <dt>VirusTotal</dt>
+  <dd><span class="{% if virus_total.positives %}text-danger{% else %}text-success{% endif %}"><b>{{ virus_total.positives }}</b></span> / {{ virus_total.total }}</dd>
+  {% endif %}
+  {% if average_cvss %}
+  <dt>Avg CVSS</dt>
+  <dd><b>{{ average_cvss }}</b></dd>
+  {% endif %}
+</dl>

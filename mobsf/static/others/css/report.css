@@ -1,0 +1,531 @@
+/* Let the browser skip layout and paint for sections far off screen. */
+section.content {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
+
+/* Tighter cards: 30+ sections add up. */
+section.content .card {
+  margin-bottom: .75rem;
+}
+section.content .card-body {
+  padding: .9rem 1rem;
+}
+section.content .card-body > p:first-child {
+  margin-bottom: .5rem;
+}
+section.section-empty .card-body {
+  padding-top: .6rem;
+  padding-bottom: .6rem;
+}
+.empty-note {
+  font-size: .9em;
+}
+
+/* One text node per list instead of one element per item. */
+pre.mobsf-list {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* Short names (components, files) flow into columns. */
+.mobsf-columns {
+  columns: 24em auto;
+  column-gap: 2rem;
+}
+.mobsf-columns > a {
+  display: block;
+  break-inside: avoid;
+  overflow-wrap: anywhere;
+}
+
+/* Long text shows a few lines until expanded. */
+.clamp:not(.expanded) {
+  max-height: calc(var(--clamp-lines, 3) * 1.5em);
+  overflow: hidden;
+}
+.clamp.clamped:not(.expanded) {
+  -webkit-mask-image: linear-gradient(to bottom, #000 60%, transparent);
+  mask-image: linear-gradient(to bottom, #000 60%, transparent);
+}
+pre.clamp:not(.expanded) {
+  margin-bottom: 0;
+}
+.clamp-toggle {
+  padding: 0;
+  font-size: .85em;
+}
+
+/* Long unbroken URLs and emails wrap instead of spilling into the next column. */
+#table_urls td:first-child,
+#table_emails td:first-child {
+  width: 65%;
+  max-width: 0;
+}
+#table_urls td,
+#table_emails td,
+#table_malware td,
+#table_firebase td,
+#table_trackers td,
+#table_network td {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Binary hardening checks: value and severity; explanation on demand. */
+.check-cell {
+  white-space: nowrap;
+}
+.check-cell[tabindex] {
+  cursor: help;
+}
+.check-cell .check-desc {
+  display: none;
+}
+.check-cell.expanded {
+  white-space: normal;
+  min-width: 14em;
+}
+.check-cell.expanded .check-desc {
+  display: block;
+  margin-top: .25rem;
+  font-size: .85em;
+}
+
+/* Permission chips in the abused permissions card. */
+.perm-chip {
+  margin: 0 .25rem .3rem 0;
+  font-weight: 500;
+  font-size: .8em;
+}
+
+/* Sidebar section counts. */
+.nav-sidebar .nav-count {
+  font-size: .7em;
+  opacity: .8;
+}
+.nav-sidebar .nav-link.nav-empty {
+  opacity: .55;
+}
+
+/* Scan options and decompiled code: even button rows, equal card heights. */
+.row-eq > [class*="col-"] {
+  display: flex;
+  flex-direction: column;
+}
+.row-eq > [class*="col-"] > .card {
+  flex: 1 1 auto;
+}
+.report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin-bottom: .5rem;
+}
+.report-actions:last-child {
+  margin-bottom: 0;
+}
+.report-actions:not(:has(*)) {
+  display: none;
+}
+.report-actions form {
+  margin: 0;
+}
+.report-actions .btn i {
+  margin-right: .2rem;
+}
+
+/* Exported component counts in one line. */
+section.content .exported-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .4rem 1rem;
+  margin-top: .9rem;
+  padding-top: .75rem;
+  border-top: 1px solid rgba(0, 0, 0, .08);
+}
+.exported-title {
+  margin-right: .25rem;
+}
+.exported-stat {
+  padding: .15rem .6rem;
+  border: 1px solid #dee2e6;
+  border-radius: 1rem;
+  color: #6c757d;
+  white-space: nowrap;
+}
+.exported-stat:hover,
+.exported-stat:focus {
+  border-color: #adb5bd;
+  color: #343a40;
+  text-decoration: none;
+}
+.exported-stat i {
+  margin-right: .2rem;
+}
+.exported-stat b {
+  margin-left: .2rem;
+}
+.exported-stat span {
+  margin-left: .15rem;
+  font-size: .85em;
+}
+.exported-stat.has-exported {
+  border-color: rgba(220, 53, 69, .45);
+  background: rgba(220, 53, 69, .06);
+  color: #343a40;
+}
+.exported-stat.has-exported b {
+  color: #dc3545;
+}
+
+/* Static explanatory tooltips; open upward because sections clip overflow. */
+[data-tip] {
+  position: relative;
+}
+.exported-title[data-tip] {
+  cursor: help;
+}
+[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 1060;
+  width: max-content;
+  max-width: 340px;
+  padding: .55rem .7rem;
+  border-radius: .35rem;
+  background: #1f2d3d;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .2);
+  color: #fff;
+  font-size: .8rem;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: left;
+  white-space: pre-line;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .12s ease;
+}
+[data-tip]:hover::after,
+[data-tip]:focus::after,
+[data-tip]:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: .15s;
+}
+
+/* Security score ring around the app icon, linking to the scorecard. */
+.score-ring {
+  --ring: #28a745;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: .5rem;
+  color: inherit;
+}
+.score-ring:hover,
+.score-ring:focus {
+  color: inherit;
+  text-decoration: none;
+}
+.score-ring.risk-critical { --ring: #dc3545; }
+.score-ring.risk-high { --ring: #fd7e14; }
+.score-ring.risk-medium { --ring: #ffc107; }
+.score-ring-dial {
+  position: relative;
+  display: block;
+  width: 108px;
+  height: 108px;
+}
+.score-ring-dial svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.score-ring-dial circle {
+  fill: none;
+  stroke-width: 2.6;
+}
+.score-ring-track {
+  stroke: #e9ecef;
+}
+.score-ring-value {
+  stroke: var(--ring);
+  stroke-linecap: round;
+}
+.score-ring-dial #app_icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  object-fit: cover;
+  transform: translate(-50%, -50%);
+  transition: transform .15s ease;
+}
+.score-ring:hover #app_icon,
+.score-ring:focus #app_icon {
+  transform: translate(-50%, -50%) scale(1.06);
+}
+.score-ring-badge {
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  min-width: 2.4em;
+  padding: .1em .45em;
+  border: 2px solid #fff;
+  border-radius: 1em;
+  background: var(--ring);
+  color: #fff;
+  font-size: .8rem;
+  font-weight: 700;
+  line-height: 1.3;
+  transform: translateX(-50%);
+}
+.score-ring.risk-medium .score-ring-badge {
+  color: #1f2d3d;
+}
+.score-ring-label {
+  margin-top: .4rem;
+  line-height: 1.25;
+}
+.score-ring-label small {
+  color: #6c757d;
+}
+.score-ring:hover .score-ring-label small,
+.score-ring:focus .score-ring-label small {
+  color: var(--ring);
+}
+
+/* Finding counts as a proportional bar plus legend. */
+.sev-summary {
+  display: block;
+  margin: .25rem 0 .6rem;
+  color: inherit;
+}
+.sev-summary:hover,
+.sev-summary:focus {
+  color: inherit;
+  text-decoration: none;
+}
+.sev-bar {
+  display: flex;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #e9ecef;
+}
+.sev-bar > span + span {
+  margin-left: 2px;
+}
+.sev-legend {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: .1rem .9rem;
+  margin-top: .4rem;
+  font-size: .8rem;
+}
+.sev-legend b {
+  margin-right: .2rem;
+}
+.sev-dot {
+  display: inline-block;
+  width: .55rem;
+  height: .55rem;
+  margin-right: .3rem;
+  border-radius: 50%;
+}
+.sev-high { background: #dc3545; }
+.sev-warning { background: #ffc107; }
+.sev-info { background: #17a2b8; }
+.sev-secure { background: #28a745; }
+.sev-hotspot { background: #6c757d; }
+.score-stats {
+  padding-top: .5rem;
+  border-top: 1px solid rgba(0, 0, 0, .08);
+}
+.text-warning-strong {
+  color: #d39e00;
+}
+body.dark-mode .sev-bar {
+  background: #4b545c;
+}
+body.dark-mode .score-stats {
+  border-top-color: rgba(255, 255, 255, .1);
+}
+body.dark-mode .text-warning-strong {
+  color: #ffc107;
+}
+
+/* Label / value rows for file, app and binary information. */
+.info-grid {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: .2rem 1rem;
+  margin: 0;
+  font-size: .9rem;
+}
+.info-grid dt {
+  color: #6c757d;
+  font-size: .85rem;
+  font-weight: 400;
+  line-height: 1.6;
+}
+.info-grid dd {
+  margin: 0;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.info-grid .mono {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: .82rem;
+}
+.info-grid .sep {
+  margin: 0 .35rem;
+  color: #adb5bd;
+}
+body.dark-mode .info-grid dt {
+  color: #adb5bd;
+}
+
+/* Technology fingerprint under file and app information. */
+.tech-block {
+  margin-top: .9rem;
+  padding-top: .75rem;
+  border-top: 1px solid rgba(0, 0, 0, .08);
+}
+.tech-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .3rem;
+  margin-bottom: .3rem;
+}
+.tech-label {
+  min-width: 9.5rem;
+  color: #6c757d;
+  font-size: .85rem;
+}
+.tech-label i {
+  width: 1.1em;
+  text-align: center;
+}
+.tech-chip {
+  padding: .1rem .55rem;
+  border: 1px solid #dee2e6;
+  border-radius: 1rem;
+  background: #f8f9fa;
+  font-size: .82rem;
+}
+.tech-warn .tech-chip {
+  border-color: rgba(220, 53, 69, .45);
+  background: rgba(220, 53, 69, .08);
+  color: #b02a37;
+}
+
+/* Dark mode. */
+body.dark-mode .tech-block,
+body.dark-mode section.content .exported-strip {
+  border-top-color: rgba(255, 255, 255, .1);
+}
+body.dark-mode .tech-label {
+  color: #adb5bd;
+}
+body.dark-mode .tech-chip {
+  border-color: #56606a;
+  background: #3d444b;
+  color: #f8f9fa;
+}
+body.dark-mode .tech-warn .tech-chip {
+  border-color: rgba(255, 107, 122, .55);
+  background: rgba(220, 53, 69, .18);
+  color: #ff8592;
+}
+body.dark-mode .exported-stat {
+  border-color: #56606a;
+  color: #adb5bd;
+}
+body.dark-mode .exported-stat:hover,
+body.dark-mode .exported-stat:focus {
+  border-color: #adb5bd;
+  color: #fff;
+}
+body.dark-mode .exported-stat.has-exported {
+  border-color: rgba(255, 107, 122, .55);
+  background: rgba(220, 53, 69, .18);
+  color: #f8f9fa;
+}
+body.dark-mode .exported-stat.has-exported b {
+  color: #ff8592;
+}
+body.dark-mode .report-actions .btn-outline-primary,
+body.dark-mode .scan-security-foot .btn-outline-primary {
+  border-color: #5b9bd5;
+  color: #8ec1f0;
+}
+body.dark-mode .report-actions .btn-outline-primary:hover,
+body.dark-mode .report-actions .btn-outline-primary:focus,
+body.dark-mode .scan-security-foot .btn-outline-primary:hover,
+body.dark-mode .scan-security-foot .btn-outline-primary:focus {
+  background: #3f6791;
+  border-color: #5b9bd5;
+  color: #fff;
+}
+body.dark-mode .report-actions .btn-outline-secondary {
+  border-color: #6c757d;
+  color: #ced4da;
+}
+body.dark-mode .report-actions .btn-outline-secondary:hover,
+body.dark-mode .report-actions .btn-outline-secondary:focus {
+  background: #56606a;
+  border-color: #adb5bd;
+  color: #fff;
+}
+body.dark-mode .score-ring,
+body.dark-mode .score-ring:hover,
+body.dark-mode .score-ring:focus {
+  color: #fff;
+}
+body.dark-mode .score-ring-track {
+  stroke: #4b545c;
+}
+body.dark-mode .score-ring-badge {
+  border-color: #343a40;
+}
+body.dark-mode .score-ring-label small {
+  color: #adb5bd;
+}
+body.dark-mode [data-tip]::after {
+  border: 1px solid #6c757d;
+  background: #1f2327;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .5);
+}
+
+@media print {
+  section.content {
+    content-visibility: visible;
+  }
+  .clamp:not(.expanded) {
+    max-height: none;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .clamp-toggle {
+    display: none;
+  }
+  .check-cell .check-desc {
+    display: block;
+  }
+}

@@ -1,0 +1,26 @@
+{% with ps=playstore_details %}
+<p class="mb-1"><strong><i class="fab fa-google-play"></i> PLAYSTORE INFORMATION</strong></p>
+<div>
+  <strong>{{ ps.title }}</strong>
+  {% if ps.score %}<span class="text-muted">&middot;</span> <i class="fas fa-star text-warning"></i> {{ ps.score|floatformat:1 }}{% endif %}
+  {% if ps.installs %}<span class="text-muted">&middot;</span> {{ ps.installs }} installs{% endif %}
+  {% if ps.genre %}<span class="text-muted">&middot;</span> {{ ps.genre }}{% endif %}
+  <span class="text-muted">&middot;</span> {% if ps.price %}{{ ps.price }}{% else %}Free{% endif %}
+  {% if ps.androidVersionText %}<span class="text-muted">&middot;</span> Android {{ ps.androidVersionText }}{% endif %}
+  {% if ps.released %}<span class="text-muted">&middot;</span> Released {{ ps.released }}{% endif %}
+  {% if ps.url|is_http_url %}<span class="text-muted">&middot;</span> <a target="_blank" href="{{ ps.url }}" rel="noopener noreferrer">Play Store</a>{% endif %}
+</div>
+<details class="mt-1">
+  <summary>Developer details</summary>
+  <span class="badge bg-info">Developer</span> {{ ps.developer }}
+  <span class="badge bg-info">Developer ID</span> {{ ps.developerId }}<br/>
+  <span class="badge bg-info">Developer Address</span> {{ ps.developerAddress }}<br/>
+  <span class="badge bg-info">Developer Website</span> {{ ps.developerWebsite }}<br/>
+  <span class="badge bg-info">Developer Email</span> {{ ps.developerEmail }}<br/>
+  <span class="badge bg-info">Privacy Policy</span>
+  {% if ps.privacyPolicy|is_http_url %}<a target="_blank" href="{{ ps.privacyPolicy }}" rel="noopener noreferrer">{{ ps.privacyPolicy }}</a>{% else %}{{ ps.privacyPolicy }}{% endif %}
+</details>
+{% if ps.description %}
+<pre id="pre-wrap" class="clamp mt-2" data-clamp-lines="6">{{ ps.description }}</pre>
+{% endif %}
+{% endwith %}

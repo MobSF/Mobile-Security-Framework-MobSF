@@ -1,4 +1,3 @@
-
 {% extends "base/base_layout.html" %}
 {% load static %}
 {% block sidebar_option %}
@@ -6,76 +5,188 @@
 {% endblock %}
 {% block extra_css %}
 <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
+<link href="{% static "others/css/report.css" %}" rel="stylesheet">
 <style>
-    /* Loader Spinner */
-    .loader {
-        border: 2px solid #f3f3f3; /* Light gray */
-        border-top: 2px solid #3498db; /* Blue */
-        border-radius: 50%;
-        width: 12px;
-        height: 12px;
-        animation: spin 1s linear infinite;
-        display: inline-block;
-        vertical-align: middle;
-    }
-    
-    @keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
-        100% {
-            transform: rotate(360deg);
-        }
-    }
+.queue-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.queue-head h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+.queue-head p {
+  margin: .2rem 0 0;
+  color: #6c757d;
+}
+.queue-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+.queue-stat {
+  min-width: 6.5rem;
+  padding: .4rem .8rem;
+  border: 1px solid #dee2e6;
+  border-left: 4px solid var(--c);
+  border-radius: .35rem;
+  line-height: 1.2;
+}
+.queue-stat b {
+  display: block;
+  font-size: 1.25rem;
+}
+.queue-stat span {
+  color: #6c757d;
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.st-queued { --c: #6c757d; }
+.st-running { --c: #007bff; }
+.st-done { --c: #28a745; }
+.st-failed { --c: #dc3545; }
+.tasks-table td {
+  vertical-align: middle;
+}
+.task-file {
+  display: flex;
+  gap: .8rem;
+  align-items: center;
+  min-width: 16rem;
+}
+.task-file > i {
+  width: 1.6rem;
+  color: #6c757d;
+  font-size: 1.5rem;
+  text-align: center;
+}
+.task-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.task-meta {
+  color: #6c757d;
+  font-size: .78rem;
+  overflow-wrap: anywhere;
+}
+.task-meta.mono {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+.task-badge {
+  display: inline-flex;
+  gap: .4rem;
+  align-items: center;
+  padding: .2rem .6rem;
+  border-radius: 1rem;
+  background: var(--c);
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 600;
+}
+.task-status-msg {
+  max-width: 28rem;
+  margin-top: .3rem;
+  color: #6c757d;
+  font-size: .8rem;
+  overflow-wrap: anywhere;
+}
+.task-timeline {
+  font-size: .82rem;
+  white-space: nowrap;
+}
+.task-timeline .info-grid {
+  font-size: .82rem;
+}
+.loader {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid rgba(255, 255, 255, .45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.queue-empty {
+  padding: 2.5rem 1rem;
+  color: #6c757d;
+  text-align: center;
+}
+.queue-empty i {
+  display: block;
+  margin-bottom: .5rem;
+  font-size: 2rem;
+}
+body.dark-mode .queue-stat {
+  border-color: #56606a;
+  border-left-color: var(--c);
+}
+body.dark-mode .queue-head p,
+body.dark-mode .queue-stat span,
+body.dark-mode .task-meta,
+body.dark-mode .task-status-msg,
+body.dark-mode .task-file > i,
+body.dark-mode .queue-empty {
+  color: #adb5bd;
+}
 </style>
 {% endblock %}
 {% block content %}
 <div class="content-wrapper">
-    <div class="content-header">
-    </div>
-     <div class="container-fluid">
-          <div class="row">
-              <div class="col-lg-12">
-              <div class="card">
-                <div class="card-body">
-                   <div class="box">
-          <div class="box-header with-border">
-              <h3 class="box-title"><i class="fa fa-rocket"></i> Scan Queue</h3>
-              <p class="lead">The scan results will appear in <strong><a href="{% url 'recent' %}">Recent Scans</a></strong> once completed.</p>
+  <div class="content-header"></div>
+  <div class="container-fluid">
+    <div class="card">
+      <div class="card-body">
+        <div class="queue-head">
+          <div>
+            <h3><i class="fa fa-rocket"></i> Scan Queue</h3>
+            <p>Completed scans appear in <a href="{% url 'recent' %}">Recent Scans</a>. Updates every 5 seconds.</p>
           </div>
-          <div class="box-body">
-            <div class="table-responsive">
-                <table id="tasks-table" class="table table-bordered table-hover table-striped">
-                    <thead>
-                        <tr>
-                            <th>Scan Task</th>
-                            <th>Filename</th>
-                            <th>Timeline</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Rows will be populated dynamically -->
-                    </tbody>
-                </table>
-            </div>
-<!-- /.box-body -->
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
+          <div class="queue-stats">
+            <div class="queue-stat st-queued"><b id="count-queued">0</b><span>Queued</span></div>
+            <div class="queue-stat st-running"><b id="count-running">0</b><span>Running</span></div>
+            <div class="queue-stat st-done"><b id="count-done">0</b><span>Completed</span></div>
+            <div class="queue-stat st-failed"><b id="count-failed">0</b><span>Failed</span></div>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table id="tasks-table" class="table table-hover tasks-table">
+            <thead>
+              <tr>
+                <th>SCAN</th>
+                <th>STATUS</th>
+                <th>TIMELINE</th>
+                <th>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
 {% block extra_scripts %}
 <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script>
-   document.addEventListener("DOMContentLoaded", function () {
-    const tasksTableBody = document.querySelector("#tasks-table tbody");
+document.addEventListener("DOMContentLoaded", function () {
+    const tbody = document.querySelector("#tasks-table tbody");
+    const STATES = {
+        queued: { label: "Queued", icon: "far fa-clock" },
+        running: { label: "Running", icon: null },
+        done: { label: "Completed", icon: "fas fa-check" },
+        failed: { label: "Failed", icon: "fas fa-times" },
+    };
 
-    // Fetch tasks using POST request
     async function fetchTasks() {
         const response = await fetch("{% url 'list_tasks' %}", {
             method: "POST",
@@ -84,208 +195,174 @@
                 "X-CSRFToken": "{{ csrf_token }}",
             },
         });
-
         if (!response.ok) {
             console.error("Failed to fetch tasks.");
-            return [];
+            return null;
         }
-
         return await response.json();
     }
 
-    function addLoader(statusCell) {
-        const loader = document.createElement("span");
-        loader.classList.add("loader");
-        loader.style.marginLeft = "10px"; 
-        statusCell.appendChild(loader);
-    }
-
-    function addAppName(task, statusCell) {
-        if (task.app_name) {
-            const strongElement = document.createElement("strong");
-            strongElement.textContent = ` ${task.app_name}`;
-            statusCell.appendChild(document.createElement("br"));
-            statusCell.appendChild(strongElement);
+    function taskState(task) {
+        if (task.completed_at) {
+            return task.status === "Success" ? "done" : "failed";
         }
+        return task.started_at ? "running" : "queued";
     }
 
-    function addReportLink(task, statusCell) {
-        const reportLink = document.createElement("a");
-        reportLink.href = `/search?query=${encodeURIComponent(task.checksum)}`;
-        reportLink.textContent = ' View Report';
-
-        const icon = document.createElement("i");
-        icon.classList.add("fa", "fa-eye");
-        reportLink.prepend(icon);
-
-        statusCell.appendChild(document.createElement("br"));
-        statusCell.appendChild(reportLink);
+    function el(tag, className, text) {
+        const node = document.createElement(tag);
+        if (className) {
+            node.className = className;
+        }
+        if (text !== undefined && text !== null) {
+            node.textContent = text;
+        }
+        return node;
     }
 
-    function buildTableRow(task) {
-        const row = document.createElement("tr");
-        row.setAttribute("data-task-id", task.task_id);
+    function fileIcon(name) {
+        const n = String(name || "").toLowerCase();
+        if (/\.(apk|xapk|apks|aab)$/.test(n)) return "fab fa-android";
+        if (n.endsWith(".ipa")) return "fab fa-apple";
+        if (/\.(appx|msix)$/.test(n)) return "fab fa-windows";
+        if (n.endsWith(".zip")) return "fas fa-file-archive";
+        return "far fa-file";
+    }
 
-        // Scan Task
-        const taskIdCell = document.createElement("td");
-        const taskP = document.createElement("p");
-        const checksumP = document.createElement("p");
+    function ago(value) {
+        if (!value) return "";
+        const secs = Math.max(0, Math.round((Date.now() - new Date(value)) / 1000));
+        if (secs < 60) return secs + "s ago";
+        if (secs < 3600) return Math.floor(secs / 60) + "m ago";
+        if (secs < 86400) return Math.floor(secs / 3600) + "h ago";
+        return Math.floor(secs / 86400) + "d ago";
+    }
 
-        const taskLabel = document.createElement("strong");
-        taskLabel.textContent = "Task ID: ";
-        taskP.appendChild(taskLabel);
-        taskP.appendChild(document.createTextNode(task.task_id));
+    function duration(start, end) {
+        if (!start) return "";
+        const secs = Math.max(0, Math.round((new Date(end || Date.now()) - new Date(start)) / 1000));
+        const m = Math.floor(secs / 60);
+        return m ? m + "m " + (secs % 60) + "s" : secs + "s";
+    }
 
-        const checksumLabel = document.createElement("strong");
-        checksumLabel.textContent = "Checksum: ";
-        checksumP.appendChild(checksumLabel);
-        checksumP.appendChild(document.createTextNode(task.checksum));
+    function timelineRow(dl, label, value) {
+        dl.appendChild(el("dt", null, label));
+        const dd = el("dd", null, value || "-");
+        dl.appendChild(dd);
+        return dd;
+    }
 
-        taskIdCell.appendChild(taskP);
-        taskIdCell.appendChild(checksumP);
+    function buildRow(task) {
+        const state = taskState(task);
+        const row = el("tr");
+        row.dataset.taskId = task.task_id;
 
-        // File Name
-        const fileNameCell = document.createElement("td");
-        fileNameCell.textContent = task.file_name;
+        const fileCell = el("td");
+        const file = el("div", "task-file");
+        file.appendChild(el("i", fileIcon(task.file_name)));
+        const names = el("div");
+        const appName = task.app_name && task.app_name !== "Failed" ? task.app_name : "";
+        names.appendChild(el("div", "task-name", appName || task.file_name));
+        if (appName) {
+            names.appendChild(el("div", "task-meta", task.file_name));
+        }
+        names.appendChild(el("div", "task-meta mono", task.checksum));
+        names.lastChild.title = "MD5";
+        const taskId = el("div", "task-meta mono", "Task " + task.task_id);
+        names.appendChild(taskId);
+        file.appendChild(names);
+        fileCell.appendChild(file);
 
-        // Timeline
-        const timelineCell = document.createElement("td");
-        timelineCell.setAttribute("id", `timeline-${task.task_id}`);
+        const statusCell = el("td");
+        const badge = el("span", "task-badge st-" + state);
+        if (STATES[state].icon) {
+            badge.appendChild(el("i", STATES[state].icon));
+        } else {
+            badge.appendChild(el("span", "loader"));
+        }
+        badge.appendChild(document.createTextNode(STATES[state].label));
+        statusCell.appendChild(badge);
+        if (task.status && task.status !== "Success") {
+            statusCell.appendChild(el("div", "task-status-msg", task.status));
+        }
 
-        // Status
-        const statusCell = document.createElement("td");
-        statusCell.setAttribute("id", `status-${task.task_id}`);
-        statusCell.classList.add(task.completed_at ? "text-success" : "text-warning");
+        const timeCell = el("td", "task-timeline");
+        const dl = el("dl", "info-grid");
+        timelineRow(dl, "Queued", ago(task.created_at)).title = task.created_at ? new Date(task.created_at).toLocaleString() : "";
+        if (task.started_at) {
+            timelineRow(dl, "Started", ago(task.started_at)).title = new Date(task.started_at).toLocaleString();
+        }
+        if (task.completed_at) {
+            timelineRow(dl, "Finished", ago(task.completed_at)).title = new Date(task.completed_at).toLocaleString();
+        }
+        if (task.started_at) {
+            timelineRow(dl, "Duration", duration(task.started_at, task.completed_at));
+        }
+        timeCell.appendChild(dl);
 
-        updateCellStatus(task, statusCell, timelineCell);
+        const actionCell = el("td");
+        if (state === "done") {
+            const link = el("a", "btn btn-sm btn-primary");
+            link.href = "/search?query=" + encodeURIComponent(task.checksum);
+            link.appendChild(el("i", "fas fa-eye"));
+            link.appendChild(document.createTextNode(" View Report"));
+            actionCell.appendChild(link);
+        } else {
+            actionCell.appendChild(el("span", "text-muted", "-"));
+        }
 
-        // Append cells to row
-        row.appendChild(taskIdCell);
-        row.appendChild(fileNameCell);
-        row.appendChild(timelineCell);
-        row.appendChild(statusCell);
+        row.append(fileCell, statusCell, timeCell, actionCell);
+        return { row: row, state: state };
+    }
 
+    function emptyRow() {
+        const row = el("tr");
+        const cell = el("td", "queue-empty");
+        cell.colSpan = 4;
+        cell.appendChild(el("i", "fas fa-inbox"));
+        cell.appendChild(document.createTextNode("No scans in the queue."));
+        row.appendChild(cell);
         return row;
     }
 
-    function updateCellStatus(task, statusCell, timelineCell) {
-        // Update the status text
-        statusCell.textContent = task.status;
-
-        // Clear existing content in timelineCell
-        while (timelineCell.firstChild) {
-            timelineCell.removeChild(timelineCell.firstChild);
-        }
-
-        // Create and append "Queued At"
-        const queuedAtElement = document.createElement("p");
-        const queuedAtLabel = document.createElement("strong");
-        queuedAtLabel.textContent = "Queued At: ";
-        queuedAtElement.appendChild(queuedAtLabel);
-        queuedAtElement.appendChild(document.createTextNode(task.created_at ? new Date(task.created_at).toLocaleString() : "N/A"));
-        timelineCell.appendChild(queuedAtElement);
-
-        // Create and append "Started At"
-        const startedAtElement = document.createElement("p");
-        const startedAtLabel = document.createElement("strong");
-        startedAtLabel.textContent = "Started At: ";
-        startedAtElement.appendChild(startedAtLabel);
-        startedAtElement.appendChild(document.createTextNode(task.started_at ? new Date(task.started_at).toLocaleString() : "N/A"));
-        timelineCell.appendChild(startedAtElement);
-
-        // Create and append "Completed At"
-        const completedAtElement = document.createElement("p");
-        const completedAtLabel = document.createElement("strong");
-        completedAtLabel.textContent = "Completed At: ";
-        completedAtElement.appendChild(completedAtLabel);
-        completedAtElement.appendChild(document.createTextNode(task.completed_at ? new Date(task.completed_at).toLocaleString() : "N/A"));
-        timelineCell.appendChild(completedAtElement);
-
-        // Add loader or success indicators
-        if (!task.completed_at) {
-            addLoader(statusCell);
-        } else {
-            if (task.status === "Success") {
-                statusCell.classList.add("text-success");
-                statusCell.classList.remove("text-warning");
-                addReportLink(task, statusCell);
-            } else if (task.status === "Failed") {
-                statusCell.classList.add("text-danger");
-                statusCell.classList.remove("text-warning");
-            }
-        }
-
-        addAppName(task, statusCell);
-    }
-
-    async function renderTable() {
+    async function render() {
         const tasks = await fetchTasks();
-        tasksTableBody.innerHTML = ""; // Clear existing rows
-
-        if (tasks.length === 0) {
-            const noTasksRow = document.createElement("tr");
-            const noTasksCell = document.createElement("td");
-            noTasksCell.setAttribute("colspan", "4");
-            noTasksCell.textContent = "No tasks in queue.";
-            noTasksRow.appendChild(noTasksCell);
-            tasksTableBody.appendChild(noTasksRow);
-        } else {
-            tasks.forEach((task) => {
-                const row = buildTableRow(task);
-                tasksTableBody.appendChild(row);
-            });
+        if (tasks === null) {
+            return;
         }
-    }
-
-    async function updateTaskStatuses() {
-        const tasks = await fetchTasks();
-        const existingTaskIds = Array.from(document.querySelectorAll("#tasks-table tbody tr"))
-            .map(row => row.getAttribute("data-task-id")); // Get existing task IDs from the table
-
-        tasks.forEach((task) => {
-            const statusCell = document.getElementById(`status-${task.task_id}`);
-            const timelineCell = document.getElementById(`timeline-${task.task_id}`);
-
-            if (statusCell && timelineCell) {
-                // Update existing task status and timeline
-                updateCellStatus(task, statusCell, timelineCell);
-            } else if (!existingTaskIds.includes(task.task_id)) {
-                // Add a new row if the task ID is not found, at the top of the table
-                const newRow = buildTableRow(task);
-                tasksTableBody.prepend(newRow); // Add the new row to the top
-            }
+        const counts = { queued: 0, running: 0, done: 0, failed: 0 };
+        const rows = tasks.map(function (task) {
+            const built = buildRow(task);
+            counts[built.state] += 1;
+            return built.row;
+        });
+        tbody.replaceChildren.apply(tbody, rows.length ? rows : [emptyRow()]);
+        Object.keys(counts).forEach(function (k) {
+            document.getElementById("count-" + k).textContent = counts[k];
         });
     }
 
+    render();
+    setInterval(function () {
+        if (!document.hidden) {
+            render();
+        }
+    }, 5000);
 
-
-    // Initial render
-    renderTable();
-
-    // Periodically update statuses
-    setInterval(updateTaskStatuses, 5000); // Update every 5 seconds
-
-    function getQueryParam(paramName) {
-        const urlParams = new URLSearchParams(window.location.search); // Get the query string
-        return urlParams.has(paramName) ? urlParams.get(paramName) : null;
-    }
-
-    const q = getQueryParam('q');
-
-    if (q && q === 'completed') {
+    const q = new URLSearchParams(window.location.search).get("q");
+    if (q === "completed") {
         Swal.fire(
-            'Scan Task Recently Completed!',
-            'The scan was recently processed.',
-            'warning'
-        )
-    } else if (q && q === 'queued') {
+            "Scan Task Recently Completed!",
+            "The scan was recently processed.",
+            "warning"
+        );
+    } else if (q === "queued") {
         Swal.fire(
-            'Scan Task Already Added!',
-            'This scan task has already been added to the scan queue.',
-            'warning'
-        )
+            "Scan Task Already Added!",
+            "This scan task has already been added to the scan queue.",
+            "warning"
+        );
     }
 });
-
-    </script>
+</script>
 {% endblock %}

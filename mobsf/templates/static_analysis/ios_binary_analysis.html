@@ -4,6 +4,7 @@
       sidebar-mini
      {% endblock %}
     {% block extra_css %}
+    <link href="{% static "others/css/report.css" %}" rel="stylesheet">
     <!-- DataTables -->
     <link href="{% static "datatables/css/datatables.combined.min.css" %}" rel="stylesheet">
     <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
@@ -329,80 +330,33 @@
                 <div class="col-12 col-md-2">
                   <p><strong><i class="fas fa-check-double"></i> APP SCORES</strong></p>
               {% if app_type not in 'Dylib,A' %}
-                  <img id="app_icon" src="{% if not appstore_details.error %}{{appstore_details.icon}}{% elif icon_path %}/download/{{ icon_path }}{% else %}{% static 'img/no_icon.png' %}{% endif %}"/>
-                  <p>
-                  {% if average_cvss %}
-                  <span class="badge bg-info">Average CVSS</span> <strong>{{ average_cvss }} </strong><br/>
+                  {% include 'base/score_ring.html' with store=appstore_details %}
+                  {% include 'base/severity_strip.html' %}
                   {% endif %}
-                  <span class="badge bg-{% if appsec.security_score < 40 %}danger{% elif appsec.security_score == 100 %}success{% else %}warning{% endif %}">Security Score</span> <strong>{{ appsec.security_score }}/100 </strong><br/>
-              {% endif %}
-                  {% if trackers.detected_trackers > 0 %}
-                  <span class="badge bg-warning">Trackers Detection</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
-                {% else %}
-                  <span class="badge bg-success">Trackers Detection</span> <strong>{{ trackers.detected_trackers }}/{{ trackers.total_trackers }}</strong><br/>
-                {% endif %}
-                  {% if virus_total and virus_total.items|length > 9 %}
-                    {% if virus_total.positives > 0 %} 
-                      <span class="badge bg-danger">VirusTotal Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
-                    {% else %}
-                      <span class="badge bg-success">VirusTotal Detection</span> <strong>{{ virus_total.positives }}/{{ virus_total.total }}</strong><br/>
-                    {% endif %}
-                  {% endif %}
-                </p>
-                {% if app_type not in 'Dylib,A' %}
-                  <p> <a href="{% url 'appsec_dashboard' checksum=md5 %}" class="btn btn-outline-primary btn-sm" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
-                {% endif %}
+                  {% include 'base/score_stats.html' %}
                 </div>
-                <div class="col-12 col-md-4">
-                  <p><strong><i class="fas fa-box-open"></i> FILE INFORMATION </strong></p>                         
-                  <span class="badge bg-primary">File Name</span>
-                  {{ file_name }}<br/>
-                  <span class="badge bg-primary">Size</span>
-                  {{ size }}<br/>
-                  <span class="badge bg-primary">MD5</span>
-                  {{ md5 }}<br/>
-                  <span class="badge bg-primary">SHA1</span>
-                  {{ sha1 }}<br/>           
-                  <span class="badge bg-primary">SHA256</span>
-                  {{ sha256 }}<br/>
+                <div class="col-12 col-md-10">
+                <div class="row">
+                <div class="col-12 col-lg-5">
+                  {% include 'base/file_info.html' %}
                 </div>
                 {% if app_type not in 'Dylib,A' %}
-                <div class="col-12 col-md-3">
-                  <p><strong><i class="fas fa-info"></i> APP INFORMATION </strong></p>                                       
-                  <span class="badge bg-primary">App Name</span>
-                  {{ app_name }}<br/>
-                  <span class="badge bg-primary">App Type</span>
-                  {{ app_type }}<br/>                               
-                  <span class="badge bg-primary">Identifier</span>
-                  {{ bundle_id }}<br/>
-                  <span class="badge bg-primary">SDK Name</span>
-                  {{ sdk_name }}<br/>
-                  <span class="badge bg-primary">Version</span>
-                  {{ app_version }}           
-                  <span class="badge bg-primary">Build</span>
-                  {{ build }}
-                  <span class="badge bg-primary">Platform Version</span>
-                  {{ platform }}
-                  <span class="badge bg-primary">Min OS Version</span>
-                  {{ min_os_version }} <br/>
-                  <span class="badge bg-primary">Supported Platforms</span>
-                  {% for pl in bundle_supported_platforms %}
-                    {{pl}},
-                  {% endfor %}
+                <div class="col-12 col-lg-4">
+                  {% include 'base/ios_app_info.html' %}
                 </div>
                 {% endif %}
-                 <div class="col-12 col-md-3">
-                  <p><strong><i class="fas fa-ad"></i> BINARY INFORMATION </strong></p>                                       
-                  <span class="badge bg-primary">Arch</span>
-                  {{ binary_info.arch }}<br/>
-                  <span class="badge bg-primary">Sub Arch</span>
-                  {{ binary_info.subarch }}<br/>                               
-                  <span class="badge bg-primary">Bit</span>
-                  {{ binary_info.bit }}
-                  <span class="badge bg-primary">Endian</span>
-                  {{ binary_info.endian }}<br/>
-                </div>    
-
+                 <div class="col-12 col-lg-3">
+                  <p class="mb-1"><strong><i class="fas fa-ad"></i> BINARY INFORMATION</strong></p>
+                  <dl class="info-grid">
+                    <dt>Arch</dt><dd>{{ binary_info.arch }}</dd>
+                    <dt>Sub Arch</dt><dd>{{ binary_info.subarch }}</dd>
+                    <dt>Bit</dt><dd>{{ binary_info.bit }}</dd>
+                    <dt>Endian</dt><dd>{% if binary_info.endian == '<' %}Little{% elif binary_info.endian == '>' %}Big{% else %}{{ binary_info.endian }}{% endif %}</dd>
+                  </dl>
+                </div>
+                </div>
+                {% include 'base/technology.html' with os_name='ios' %}
+                </div>
               </div>
 
             </div>
@@ -414,41 +368,7 @@
           <div class="col-lg-12">
           <div class="card">
             <div class="card-body">
-                <p>
-                <strong><i class="fab fa-app-store-ios"></i> APP STORE INFORMATION</strong>
-                </p>
-                    <span class="badge bg-info">Title</span>
-                      {{ appstore_details.title }} <br/>                                     
-                    <span class="badge bg-info">Score</span>
-                      {{ appstore_details.score}}
-                    <span class="badge bg-info">Features</span>
-                      {% for fea in appstore_details.features %}
-                        {{ fea }}, 
-                      {% endfor %}
-                      <span class="badge bg-info">Price</span>
-                        {{ appstore_details.price }}
-                      <span class="badge bg-info">Category</span>
-                      {% for cat in appstore_details.category %}
-                        {{ cat }}, 
-                        {% endfor %}
-                      <span class="badge bg-info">App Store URL</span>
-                        <a target="_blank" href="{{ appstore_details.itunes_url }}" rel="noopener noreferrer">{{ appstore_details.app_id }} </a>
-                      <br/>
-                    <span class="badge bg-info">Developer</span>
-                        {{appstore_details.developer}},
-                    <span class="badge bg-info">Developer ID</span>
-                        {{appstore_details.developer_id}}  <br/>
-                    <span class="badge bg-info">Developer Website</span>
-                      {{appstore_details.developer_website }} <br/>
-                    <span class="badge bg-info">Developer URL</span>
-                      {{appstore_details.developer_url}} <br/>
-                     <span class="badge bg-info">Supported Devices</span>
-                      {% for dev in appstore_details.supported_devices %}
-                      {{ dev }}, 
-                      {% endfor %}
-                    <br/>                                     
-                      <span class="badge bg-info">Description</span>
-                      <pre id="pre-wrap">{{ appstore_details.description }}</pre>
+              {% include 'base/appstore_card.html' %}
             </div>
           </div><!-- /.card -->
           </div>
@@ -466,39 +386,39 @@
 <a id="scan_options" class="anchor"></a>
 <section class="content">
       <div class="container-fluid">
-        <div class="row">
-          
+        <div class="row row-eq">
           <div class="col-lg-4">
             <div class="card">
               <div class="card-body">
                 <p>
                 <strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong>
                 </p>
-                 <a role="button" class="btn btn-info" href="{% url 'static_analyzer_ios' checksum=md5 %}?rescan=1" ><i class="fa fa-sync"></i> Rescan</a>
-                 <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-table"></i> Manage Suppressions</a>
-                 <button type="button" class="btn btn-warning" data-toggle="modal" data-target=".scan-logs-mdl"><i class="fa fa-list" aria-hidden="true"></i> Scan Logs</button>
-                </p>
+                <div class="report-actions">
+                  <a role="button" class="btn btn-sm btn-outline-primary" href="{% url 'static_analyzer_ios' checksum=md5 %}?rescan=1"><i class="fa fa-sync"></i> Rescan</a>
+                  <a id="supbtn" onclick="list_suppressions()" role="button" class="btn btn-sm btn-outline-primary" data-target="#sup_list" data-toggle="modal" href="#"><i class="fa fa-table"></i> Manage Suppressions</a>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target=".scan-logs-mdl"><i class="fa fa-list" aria-hidden="true"></i> Scan Logs</button>
+                </div>
               </div>
             </div><!-- /.card -->
             </div>
             <div class="col-lg-8">
               <div class="card">
                 <div class="card-body">
-                    <p>
+                  <p>
                     <strong><i class="fas fa-file-code"></i> DECOMPILED ASSETS</strong>
                   </p>
-                  <p>
+                  <div class="report-actions">
                     {% if app_type not in 'Dylib,A' %}
-                    <a role="button" class="btn btn-primary" data-target="#mplist" data-toggle="modal" href="#"><i class="fa fa-list"></i> View Info.plist</a>
-                    {% endif %}
-                    {% if app_type not in 'Dylib,A' %}
-                    <a target="_blank" href="{% url 'view_file_ios' %}?file=classdump.txt&amp;md5={{ md5 }}&amp;type=ios" class="btn btn-warning" role="button"><i class="fa fa-code"></i> View Class Dump</a>
+                    <a role="button" class="btn btn-sm btn-outline-primary" data-target="#mplist" data-toggle="modal" href="#"><i class="fa fa-list"></i> View Info.plist</a>
+                    <a target="_blank" href="{% url 'view_file_ios' %}?file=classdump.txt&amp;md5={{ md5 }}&amp;type=ios" class="btn btn-sm btn-outline-primary" role="button"><i class="fa fa-code"></i> View Class Dump</a>
                     {% endif %}
                     {% if js_analysis and js_analysis.findings or js_analysis.frameworks or js_analysis.hermes %}
-                    <a href="{% url "tree_view" %}?md5={{ md5 }}&amp;type=js" class="btn btn-info" role="button"><i class="fab fa-js-square"></i> View JavaScript</a>
+                    <a href="{% url "tree_view" %}?md5={{ md5 }}&amp;type=js" class="btn btn-sm btn-outline-primary" role="button"><i class="fab fa-js-square"></i> View JavaScript</a>
                     {% endif %}
-                    <a href="{% url "download_binary" checksum=md5 %}" class="btn btn-warning"> <i class="fa fa-download"></i> Download {% if app_type in 'Dylib' %}DYLIB{% elif app_type in 'A' %}A{% else %}IPA{% endif %}</a>
-                 </p>
+                  </div>
+                  <div class="report-actions">
+                    <a href="{% url "download_binary" checksum=md5 %}" class="btn btn-sm btn-outline-secondary"><i class="fa fa-download"></i> Download {% if app_type in 'Dylib' %}DYLIB{% elif app_type in 'A' %}A{% else %}IPA{% endif %}</a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -520,7 +440,7 @@
                 <strong><i class="fa fa-certificate"></i> CODE SIGNING &amp; ENTITLEMENTS</strong>
               </p>
               {% if binary_info.code_signing %}
-                <pre><code>{{ binary_info.code_signing }}</code></pre>
+                <pre class="clamp" data-clamp-lines="9"><code>{{ binary_info.code_signing }}</code></pre>
               {% else %}
                 <p>No Code Signing or Entitlements information found.</p>
               {% endif %}
@@ -960,7 +880,7 @@
                     <td>{{ forloop.counter }}</td>
                     <td>
                       {% if details.metadata|key:"ref" %}
-                        <a href="{{details.metadata.ref}}" target="_blank" rel="noopener">{{ details.metadata.description }}</a>
+                        <a href="{{ details.metadata.ref|http_url }}" target="_blank" rel="noopener">{{ details.metadata.description }}</a>
                       {% else %}
                         {{ details.metadata.description }}
                       {% endif %}
@@ -1143,34 +1063,13 @@
                 <a class="btn btn-primary btn-xs" href="{% url 'scan_library' checksum=md5 %}?library={{ dy.name }}" target="_blank" rel="noopener noreferrer"><i class="fa fa-search"></i> Analyze</a> 
               </td>
               {% endif %}
-              <td><b>{{dy.nx.has_nx}}</b>
-                <br/>
-                <span class="badge bg-{% if dy.nx.severity == 'high' %}danger{% elif dy.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.nx.severity}}</span>
-                <br/>{{dy.nx.description}}</td>
-              <td><b>{{dy.stack_canary.has_canary}}</b>
-                  <br/>
-                  <span class="badge bg-{% if dy.stack_canary.severity == 'high' %}danger{% elif dy.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.stack_canary.severity}}</span>
-                  <br/>{{dy.stack_canary.description}}</td>
-              <td><b>{{dy.arc.has_arc}}</b>
-                <br/>
-                <span class="badge bg-{% if dy.arc.severity == 'high' %}danger{% elif dy.arc.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.arc.severity}}</span>
-                <br/>{{dy.arc.description}}</td>
-              <td><b>{{dy.rpath.has_rpath}}</b>
-                <br/>
-                <span class="badge bg-{% if dy.rpath.severity == 'high' %}danger{% elif dy.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.rpath.severity}}</span>
-                <br/>{{dy.rpath.description}}</td>
-              <td><b>{{dy.code_signature.has_code_signature}}</b>
-                  <br/>
-                  <span class="badge bg-{% if dy.code_signature.severity == 'high' %}danger{% elif dy.code_signature.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.code_signature.severity}}</span>
-                  <br/>{{dy.code_signature.description}}</td>
-              <td><b>{{dy.encrypted.is_encrypted}}</b>
-                  <br/>
-                  <span class="badge bg-{% if dy.encrypted.severity == 'high' %}danger{% elif dy.encrypted.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.encrypted.severity}}</span>
-                  <br/>{{dy.encrypted.description}}</td>
-              <td><b>{{dy.symbol.is_stripped}}</b>
-                <br/>
-                <span class="badge bg-{% if dy.symbol.severity == 'high' %}danger{% elif dy.symbol.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.symbol.severity}}</span>
-                <br/>{{dy.symbol.description}}</td>
+              {% include 'base/check_cell.html' with value=dy.nx.has_nx chk=dy.nx %}
+              {% include 'base/check_cell.html' with value=dy.stack_canary.has_canary chk=dy.stack_canary %}
+              {% include 'base/check_cell.html' with value=dy.arc.has_arc chk=dy.arc %}
+              {% include 'base/check_cell.html' with value=dy.rpath.has_rpath chk=dy.rpath %}
+              {% include 'base/check_cell.html' with value=dy.code_signature.has_code_signature chk=dy.code_signature %}
+              {% include 'base/check_cell.html' with value=dy.encrypted.is_encrypted chk=dy.encrypted %}
+              {% include 'base/check_cell.html' with value=dy.symbol.is_stripped chk=dy.symbol %}
             </tr>
              {% endfor %}
              {% for frm in framework_analysis %}
@@ -1179,34 +1078,13 @@
               <td>{{frm.name | relative_path}}</br>
                 <a class="btn btn-primary btn-xs" href="{% url 'scan_library' checksum=md5 %}?library={{ frm.name }}" target="_blank" rel="noopener noreferrer"><i class="fa fa-search"></i> Analyze</a> 
               </td>
-              <td><b>{{frm.nx.has_nx}}</b>
-                <br/>
-                <span class="badge bg-{% if frm.nx.severity == 'high' %}danger{% elif frm.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.nx.severity}}</span>
-                <br/>{{frm.nx.description}}</td>
-              <td><b>{{frm.stack_canary.has_canary}}</b>
-                  <br/>
-                  <span class="badge bg-{% if frm.stack_canary.severity == 'high' %}danger{% elif frm.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.stack_canary.severity}}</span>
-                  <br/>{{frm.stack_canary.description}}</td>
-              <td><b>{{frm.arc.has_arc}}</b>
-                <br/>
-                <span class="badge bg-{% if frm.arc.severity == 'high' %}danger{% elif frm.arc.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.arc.severity}}</span>
-                <br/>{{frm.arc.description}}</td>
-              <td><b>{{frm.rpath.has_rpath}}</b>
-                <br/>
-                <span class="badge bg-{% if frm.rpath.severity == 'high' %}danger{% elif frm.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.rpath.severity}}</span>
-                <br/>{{frm.rpath.description}}</td>
-              <td><b>{{frm.code_signature.has_code_signature}}</b>
-                  <br/>
-                  <span class="badge bg-{% if frm.code_signature.severity == 'high' %}danger{% elif frm.code_signature.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.code_signature.severity}}</span>
-                  <br/>{{frm.code_signature.description}}</td>
-              <td><b>{{frm.encrypted.is_encrypted}}</b>
-                  <br/>
-                  <span class="badge bg-{% if frm.encrypted.severity == 'high' %}danger{% elif frm.encrypted.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.encrypted.severity}}</span>
-                  <br/>{{frm.encrypted.description}}</td>
-              <td><b>{{frm.symbol.is_stripped}}</b>
-                <br/>
-                <span class="badge bg-{% if frm.symbol.severity == 'high' %}danger{% elif frm.symbol.severity == 'warning' %}warning{% else %}info{% endif %}">{{frm.symbol.severity}}</span>
-                <br/>{{frm.symbol.description}}</td>
+              {% include 'base/check_cell.html' with value=frm.nx.has_nx chk=frm.nx %}
+              {% include 'base/check_cell.html' with value=frm.stack_canary.has_canary chk=frm.stack_canary %}
+              {% include 'base/check_cell.html' with value=frm.arc.has_arc chk=frm.arc %}
+              {% include 'base/check_cell.html' with value=frm.rpath.has_rpath chk=frm.rpath %}
+              {% include 'base/check_cell.html' with value=frm.code_signature.has_code_signature chk=frm.code_signature %}
+              {% include 'base/check_cell.html' with value=frm.encrypted.is_encrypted chk=frm.encrypted %}
+              {% include 'base/check_cell.html' with value=frm.symbol.is_stripped chk=frm.symbol %}
             </tr>
              {% endfor %}
                     </tbody>
@@ -1259,26 +1137,11 @@
           <tr>
           <td>{{ forloop.counter }}</td>
           <td>{{dy.name}}</td>
-          <td><b>{{dy.nx.has_nx}}</b>
-            <br/>
-            <span class="badge bg-{% if dy.nx.severity == 'high' %}danger{% elif dy.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.nx.severity}}</span>
-            <br/>{{dy.nx.description}}</td>
-          <td><b>{{dy.stack_canary.has_canary}}</b>
-              <br/>
-              <span class="badge bg-{% if dy.stack_canary.severity == 'high' %}danger{% elif dy.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.stack_canary.severity}}</span>
-              <br/>{{dy.stack_canary.description}}</td>
-          <td><b>{{dy.arc.has_arc}}</b>
-            <br/>
-            <span class="badge bg-{% if dy.arc.severity == 'high' %}danger{% elif dy.arc.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.arc.severity}}</span>
-            <br/>{{dy.arc.description}}</td>
-          <td><b>{{dy.rpath.has_rpath}}</b>
-            <br/>
-            <span class="badge bg-{% if dy.rpath.severity == 'high' %}danger{% elif dy.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.rpath.severity}}</span>
-            <br/>{{dy.rpath.description}}</td>
-          <td><b>{{dy.symbol.is_stripped}}</b>
-            <br/>
-            <span class="badge bg-{% if dy.symbol.severity == 'high' %}danger{% elif dy.symbol.severity == 'warning' %}warning{% else %}info{% endif %}">{{dy.symbol.severity}}</span>
-            <br/>{{dy.symbol.description}}</td>
+          {% include 'base/check_cell.html' with value=dy.nx.has_nx chk=dy.nx %}
+          {% include 'base/check_cell.html' with value=dy.stack_canary.has_canary chk=dy.stack_canary %}
+          {% include 'base/check_cell.html' with value=dy.arc.has_arc chk=dy.arc %}
+          {% include 'base/check_cell.html' with value=dy.rpath.has_rpath chk=dy.rpath %}
+          {% include 'base/check_cell.html' with value=dy.symbol.is_stripped chk=dy.symbol %}
           </tr>
           {% endfor %}
                 </tbody>
@@ -1306,30 +1169,12 @@
         <tr>
         <td>{{ forloop.counter }}</td>
         <td>{{so.name}}</td>
-        <td><b>{{so.nx.is_nx}}</b>
-          <br/>
-          <span class="badge bg-{% if so.nx.severity == 'high' %}danger{% elif so.nx.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.nx.severity}}</span>
-          <br/>{{so.nx.description}}</td>
-        <td><b>{{so.stack_canary.has_canary}}</b>
-            <br/>
-            <span class="badge bg-{% if so.stack_canary.severity == 'high' %}danger{% elif so.stack_canary.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.stack_canary.severity}}</span>
-            <br/>{{so.stack_canary.description}}</td>
-        <td><b>{{so.rpath.rpath}}</b>
-          <br/>
-          <span class="badge bg-{% if so.rpath.severity == 'high' %}danger{% elif so.rpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.rpath.severity}}</span>
-          <br/>{{so.rpath.description}}</td>
-        <td><b>{{so.runpath.runpath}}</b>
-          <br/>
-          <span class="badge bg-{% if so.runpath.severity == 'high' %}danger{% elif so.runpath.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.runpath.severity}}</span>
-          <br/>{{so.runpath.description}}</td>
-        <td><b>{{so.fortify.is_fortified}}</b>
-          <br/>
-          <span class="badge bg-{% if so.fortify.severity == 'high' %}danger{% elif so.fortify.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.fortify.severity}}</span>
-          <br/>{{so.fortify.description}}</td>
-        <td><b>{{so.symbol.is_stripped}}</b>
-          <br/>
-          <span class="badge bg-{% if so.symbol.severity == 'high' %}danger{% elif so.symbol.severity == 'warning' %}warning{% else %}info{% endif %}">{{so.symbol.severity}}</span>
-          <br/>{{so.symbol.description}}</td>
+        {% include 'base/check_cell.html' with value=so.nx.is_nx chk=so.nx %}
+        {% include 'base/check_cell.html' with value=so.stack_canary.has_canary chk=so.stack_canary %}
+        {% include 'base/check_cell.html' with value=so.rpath.rpath chk=so.rpath %}
+        {% include 'base/check_cell.html' with value=so.runpath.runpath chk=so.runpath %}
+        {% include 'base/check_cell.html' with value=so.fortify.is_fortified chk=so.fortify %}
+        {% include 'base/check_cell.html' with value=so.symbol.is_stripped chk=so.symbol %}
         </tr>
         {% endfor %}
               </tbody>
@@ -1394,6 +1239,7 @@
                         Show Files
                       </a>
                       <div class="collapse" id="collapsefiles{{forloop.counter}}">
+                      <template>
                         {% for file in item.files %}
                           <small>
                             {% if file.type %}
@@ -1404,6 +1250,7 @@
                           </small>
                         </br>
                         {% endfor %}
+                      </template>
                       </div>
                     {% endif %}
 
@@ -1535,7 +1382,7 @@
                  {% if virus_total.items|length < 9 %} {% comment %} Basic check to determine if the response is a msg or a result {% endcomment %}
                     <p align="left">&nbsp;&nbsp;<strong>{{ virus_total.verbose_msg }}</strong></p>
                  {% else %}
-                    <p align="left">&nbsp;&nbsp;<strong> {{ virus_total.positives }} / {{ virus_total.total }}&nbsp; AVs found this file Malicious! </strong> &nbsp;&nbsp;<a href="{{ virus_total.permalink }}" target="_blank" rel="noopener"><i class="fas fa-th-list"></i> Full Report</a></p>
+                    <p align="left">&nbsp;&nbsp;<strong> {{ virus_total.positives }} / {{ virus_total.total }}&nbsp; AVs found this file Malicious! </strong> &nbsp;&nbsp;<a href="{{ virus_total.permalink|http_url }}" target="_blank" rel="noopener"><i class="fas fa-th-list"></i> Full Report</a></p>
                     {% if virus_total.positives > 0 %}
                         <table id="table_vt" class="table table-bordered table-hover table-striped">
                             <thead>
@@ -1574,7 +1421,7 @@
 <style>
   #chartdiv {
   width: 100%;
-  height: 500px;
+  height: 360px;
   overflow: hidden;
 }
 </style>
@@ -1593,7 +1440,7 @@
             </div>
 
             <div class="table-responsive">
-              {% if domains %}
+              {% if domains|has_ofac %}
               <p></br>This app may communicate with the following OFAC sanctioned list of countries.</p>
              <table id="table_ofac" class="table table-bordered table-hover table-striped">
                   <thead>
@@ -1606,12 +1453,7 @@
                  {% for domain, details in domains.items %}
                  {% if details|key:"ofac" == True %}
                   <tr><td>{{domain}}</td>
-                  <td>
-                    <strong>IP: </strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
-                    <strong>Country: </strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
-                    <strong>Region: </strong>{{details|key:"geolocation"|key:"region"}} <br/>
-                    <strong>City: </strong>{{details|key:"geolocation"|key:"city"}} <br/>
-                  </td>
+                  <td>{% include 'base/geo_inline.html' with geo=details|key:"geolocation" map=False %}</td>
                   </tr>
                   {% endif %}
                   {% endfor %}
@@ -1640,7 +1482,7 @@
              </p>
               <div class="table-responsive">
               {% if domains %} 
-             <table id="table_malware" class="table table-bordered table-hover table-striped">
+             <table id="table_malware" data-order="[]" class="table table-bordered table-hover table-striped">
                   <thead>
                   <tr>
                      <th>DOMAIN</th>
@@ -1649,36 +1491,9 @@
                   </tr>
                  </thead>
                  <tbody>
-                 {% for domain, details in domains.items %}
-                  <tr><td>{{domain}}</td><td> 
-
-                    {% if details|key:"bad" == "yes" %}
-                    <span class="badge bg-danger">malware</span><br/>
-                      <pre>
-                      <strong>URL: </strong>{{details|key:"domain_or_url"}}
-                      <strong>IP: </strong><span class="badge bg-danger">{{details|key:"ip"}}</span>
-                      <strong>Description: </strong>{{details|key:"desc"}}
-                      </pre>
-                  {% else %}
-                    <span class="badge bg-success">ok</span><br/>
-                  {% endif %}
-                  </td>
-                  <td>
-                    {% if details|key:"geolocation" %}
-                      <strong>IP: </strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
-                      <strong>Country: </strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
-                      <strong>Region: </strong>{{details|key:"geolocation"|key:"region"}} <br/>
-                      <strong>City: </strong>{{details|key:"geolocation"|key:"city"}} <br/>
-                      <strong>Latitude: </strong>{{details|key:"geolocation"|key:"latitude"}} <br/>
-                      <strong>Longitude: </strong>{{details|key:"geolocation"|key:"longitude"}} <br/>
-                      <strong>View: <a target="_blank" href="http://maps.google.com/maps?q={{details|key:"geolocation"|key:"latitude"}},{{details|key:"geolocation"|key:"longitude"}}">Google Map</a>
-
-                    {% else %}
-                    No Geolocation information available.
-                    {% endif %}
-                  </td>
-                  </tr>
-                  {% endfor %}
+                 {% for domain, details in domains|malware_first %}
+{% include 'base/domain_row.html' with map=True %}
+{% endfor %}
                 </tbody>
             </table>
              {% endif %}
@@ -1809,7 +1624,7 @@
                      {{trk.categories}}
                    </td>
                    <td>
-                     <a target="_blank" href="{{trk.url}}" rel="noopener noreferrer">{{trk.url}}</a>
+                     <a target="_blank" href="{{ trk.url|http_url }}" rel="noopener noreferrer">{{trk.url}}</a>
                    </td>
                  </tr>
                  {% endfor %}
@@ -2018,14 +1833,9 @@
 <!--end new UI-->
 {% block extra_scripts %}
 <!-- DataTables -->
-<script src="{% static "datatables/js/pdfmake.min.js" %}"></script>
-<script src="{% static "datatables/js/vfs_fonts.js" %}"></script>
 <script src="{% static "datatables/js/datatables.combined.min.js" %}"></script>
+<script src="{% static "others/js/lazy_load.js" %}"></script>
 <script src="{% static "others/js/datatables_init.js" %}"></script>
-<script src="{% static "amcharts/core.js" %}"></script>
-<script src="{% static "amcharts/maps.js" %}"></script>
-<script src="{% static "amcharts/worldIndiaLow.js" %}"></script>
-<script src="{% static "amcharts/animated.js" %}"></script>
 <script src="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.js" %}"></script>
 <script>
   var list_suppressions_url = '{% url 'list_suppressions' %}';
@@ -2053,6 +1863,7 @@
   });
 </script>
 <script>
+function renderDomainMap() {
   // Themes begin
   am4core.useTheme(am4themes_animated);
   // Themes end
@@ -2126,7 +1937,16 @@
     {% endfor %}
   {% endif %}
   ];
-  </script>
+}
+mobsfWhenVisible(document.getElementById('chartdiv'), function () {
+  mobsfLoadScripts([
+    "{% static "amcharts/core.js" %}",
+    "{% static "amcharts/maps.js" %}",
+    "{% static "amcharts/worldIndiaLow.js" %}",
+    "{% static "amcharts/animated.js" %}",
+  ]).then(renderDomainMap);
+});
+</script>
 {% endblock %}
 {% block scan_logs %}
 <table id="scan_logs" class="table table-bordered table-hover table-striped">

@@ -4,6 +4,7 @@
       sidebar-mini
      {% endblock %}
     {% block extra_css %}
+    <link href="{% static "others/css/report.css" %}" rel="stylesheet">
     <!-- DataTables -->
     <link href="{% static "datatables/css/datatables.combined.min.css" %}" rel="stylesheet">
      <style type="text/css" media="print">
@@ -15,9 +16,6 @@
         }
     </style>
     <style>
-      .pe-cell {
-        min-width: 160px;
-      }
       .wrap-text {
         word-break: break-all;
       }
@@ -206,11 +204,11 @@
         <div class="card">
           <div class="card-body">
             <p><strong><i class="fas fa-cog"></i> SCAN OPTIONS</strong></p>
-            <p align="center">
-              <a href="{% url 'static_analyzer_windows' checksum=md5 %}?rescan=1" class="btn btn-info" role="button"><i class="fa fa-sync"></i> Rescan</a>
-              <button type="button" class="btn btn-warning" data-toggle="modal" data-target=".scan-logs-mdl"><i class="fa fa-list" aria-hidden="true"></i> Scan Logs</button>
-              <a href="{% url "download_binary" checksum=md5 %}" class="btn btn-warning"><i class="fa fa-download"></i> Download Package</a>
-            </p>
+            <div class="report-actions">
+              <a href="{% url 'static_analyzer_windows' checksum=md5 %}?rescan=1" class="btn btn-sm btn-outline-primary" role="button"><i class="fa fa-sync"></i> Rescan</a>
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target=".scan-logs-mdl"><i class="fa fa-list" aria-hidden="true"></i> Scan Logs</button>
+              <a href="{% url "download_binary" checksum=md5 %}" class="btn btn-sm btn-outline-secondary"><i class="fa fa-download"></i> Download Package</a>
+            </div>
           </div>
         </div>
       </div>
@@ -460,7 +458,7 @@
               {% if virus_total.items|length < 9 %}
                 <p align="left">&nbsp;&nbsp;<strong>{{ virus_total.verbose_msg }}</strong></p>
               {% else %}
-                <p align="left">&nbsp;&nbsp;<strong> {{ virus_total.positives }} / {{ virus_total.total }}&nbsp; AVs found this file Malicious! </strong> &nbsp;&nbsp;<a href="{{ virus_total.permalink }}" target="_blank" rel="noopener"><i class="fas fa-th-list"></i> Full Report</a></p>
+                <p align="left">&nbsp;&nbsp;<strong> {{ virus_total.positives }} / {{ virus_total.total }}&nbsp; AVs found this file Malicious! </strong> &nbsp;&nbsp;<a href="{{ virus_total.permalink|http_url }}" target="_blank" rel="noopener"><i class="fas fa-th-list"></i> Full Report</a></p>
                 {% if virus_total.positives > 0 %}
                 <table id="table_vt" class="table table-bordered table-hover table-striped">
                   <thead>
@@ -501,7 +499,7 @@
             <p><strong><i class="fab fa-searchengin"></i> DOMAIN MALWARE CHECK</strong></p>
             <div class="table-responsive">
               {% if domains %}
-              <table id="table_malware" class="table table-bordered table-hover table-striped">
+              <table id="table_malware" data-order="[]" class="table table-bordered table-hover table-striped">
                 <thead>
                   <tr>
                     <th>DOMAIN</th>
@@ -510,31 +508,9 @@
                   </tr>
                 </thead>
                 <tbody>
-                  {% for domain, details in domains.items %}
-                  <tr>
-                    <td>{{ domain }}</td>
-                    <td>
-                      {% if details|key:"bad" == "yes" %}
-                        <span class="badge bg-danger">malware</span><br/>
-                        <pre><strong>URL: </strong>{{ details|key:"domain_or_url" }}
-<strong>IP: </strong>{{ details|key:"ip" }}
-<strong>Description: </strong>{{ details|key:"desc" }}</pre>
-                      {% else %}
-                        <span class="badge bg-success">ok</span>
-                      {% endif %}
-                    </td>
-                    <td>
-                      {% if details|key:"geolocation" %}
-                        <strong>IP: </strong>{{ details|key:"geolocation"|key:"ip" }}<br/>
-                        <strong>Country: </strong>{{ details|key:"geolocation"|key:"country_long" }}<br/>
-                        <strong>Region: </strong>{{ details|key:"geolocation"|key:"region" }}<br/>
-                        <strong>City: </strong>{{ details|key:"geolocation"|key:"city" }}
-                      {% else %}
-                        No Geolocation information available.
-                      {% endif %}
-                    </td>
-                  </tr>
-                  {% endfor %}
+                  {% for domain, details in domains|malware_first %}
+{% include 'base/domain_row.html' with map=True %}
+{% endfor %}
                 </tbody>
               </table>
               {% endif %}
@@ -639,7 +615,7 @@
                   <tr>
                     <td>{{ trk.name }}</td>
                     <td>{{ trk.categories }}</td>
-                    <td><a target="_blank" href="{{ trk.url }}" rel="noopener noreferrer">{{ trk.url }}</a></td>
+                    <td><a target="_blank" href="{{ trk.url|http_url }}" rel="noopener noreferrer">{{ trk.url }}</a></td>
                   </tr>
                   {% endfor %}
                 </tbody>
@@ -709,9 +685,8 @@
 </div>
 {% endblock %}
 {% block extra_scripts %}
-<script src="{% static "datatables/js/pdfmake.min.js" %}"></script>
-<script src="{% static "datatables/js/vfs_fonts.js" %}"></script>
 <script src="{% static "datatables/js/datatables.combined.min.js" %}"></script>
+<script src="{% static "others/js/lazy_load.js" %}"></script>
 <script src="{% static "others/js/datatables_init.js" %}"></script>
 <script>
   // Remove rescan parameter

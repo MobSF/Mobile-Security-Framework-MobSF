@@ -11,6 +11,7 @@ from datetime import timedelta
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
+from django.core.cache import cache
 from django.utils.timezone import now
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
@@ -26,12 +27,17 @@ from mobsf.MobSF.forms import FormUtil, UploadFileForm
 from mobsf.MobSF.utils import (
     MD5_REGEX,
     get_md5,
+    has_ofac,
+    http_url,
     is_dir_exists,
     is_file_exists,
+    is_http_url,
     is_md5,
     key,
+    malware_first,
     print_n_send_error_response,
     python_dict,
+    replace,
     scan_state_dir,
 )
 from mobsf.MobSF.init import api_key
@@ -44,6 +50,10 @@ from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
     StaticAnalyzerIOS,
     StaticAnalyzerWindows,
+    SuppressFindings,
+)
+from mobsf.StaticAnalyzer.views.common.technology import (
+    detect_technologies,
 )
 from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
@@ -62,8 +72,21 @@ LINUX_PLATFORM = ['Darwin', 'Linux']
 HTTP_BAD_REQUEST = 400
 HTTP_STATUS_404 = 404
 HTTP_SERVER_ERROR = 500
+NO_SCORECARD_EXT = ('.so', '.dylib', '.a')
+SUMMARY_CACHE_TTL = 24 * 60 * 60
 logger = logging.getLogger(__name__)
 register.filter('key', key)
+register.filter('malware_first', malware_first)
+register.filter('has_ofac', has_ofac)
+register.filter('is_http_url', is_http_url)
+register.filter('http_url', http_url)
+register.filter('replace', replace)
+
+
+@register.simple_tag(takes_context=True)
+def technologies(context, os_name):
+    """Technology fingerprints for the report header."""
+    return detect_technologies(context, os_name)
 
 
 @login_required
@@ -269,6 +292,63 @@ def dynamic_analysis(request):
     return render(request, template, context)
 
 
+def _tracker_count(trackers):
+    """Number of detected trackers, or None when unavailable."""
+    try:
+        count = python_dict(trackers).get('detected_trackers')
+    except (ValueError, SyntaxError, AttributeError, TypeError):
+        return None
+    return count if isinstance(count, int) else None
+
+
+def _suppression_revisions(packages):
+    """Fingerprint of the suppression rules for each package."""
+    rules = {}
+    rows = SuppressFindings.objects.filter(
+        PACKAGE_NAME__in=packages).order_by('id').values_list(
+            'PACKAGE_NAME', 'SUPPRESS_TYPE', 'SUPPRESS_RULE_ID',
+            'SUPPRESS_FILES')
+    for package, *values in rows:
+        rules.setdefault(package, []).append(values)
+    return {
+        package: get_md5(repr(values).encode('utf-8'))
+        for package, values in rules.items()}
+
+
+def _appsec_summaries(entries):
+    """Scorecard summaries per MD5, cached per scan and suppression state."""
+    # Imported here: db_interaction imports this module.
+    from mobsf.StaticAnalyzer.views.common.appsec import appsec_summary
+    summaries = {}
+    pending = {}
+    revisions = _suppression_revisions(
+        {e['PACKAGE_NAME'] for e in entries if e['PACKAGE_NAME']})
+    for entry in entries:
+        name = entry['FILE_NAME'].lower()
+        if (entry['ANALYZER'] == 'static_analyzer_windows'
+                or name.endswith(NO_SCORECARD_EXT)):
+            continue
+        stamp = entry['TIMESTAMP'].timestamp() if entry['TIMESTAMP'] else 0
+        revision = revisions.get(entry['PACKAGE_NAME'], '')
+        key = f'appsec_summary:{entry["MD5"]}:{stamp}:{revision}'
+        cached = cache.get(key)
+        if cached is not None:
+            summaries[entry['MD5']] = cached or None
+        else:
+            pending[entry['MD5']] = key
+    # iOS source zips are recorded under the Android analyzer.
+    for platform_name, model in (('android', StaticAnalyzerAndroid),
+                                 ('ios', StaticAnalyzerIOS)):
+        if not pending:
+            break
+        for db_entry in model.objects.filter(MD5__in=list(pending)):
+            summary = appsec_summary(db_entry, platform_name)
+            cache.set(
+                pending.pop(db_entry.MD5), summary or {}, SUMMARY_CACHE_TTL)
+            summaries[db_entry.MD5] = summary
+    return summaries
+
+
 @login_required
 def recent_scans(request, page_size=10, page_number=1):
     """Show Recent Scans Route."""
@@ -281,25 +361,42 @@ def recent_scans(request, page_size=10, page_number=1):
 
     android = StaticAnalyzerAndroid.objects.filter(
         MD5__in=md5_list).only(
-            'PACKAGE_NAME', 'VERSION_NAME', 'FILE_NAME', 'MD5', 'ICON_PATH')
+            'PACKAGE_NAME', 'MD5', 'ICON_PATH', 'SIZE', 'TRACKERS')
     ios = StaticAnalyzerIOS.objects.filter(
-        MD5__in=md5_list).only('FILE_NAME', 'MD5', 'ICON_PATH')
+        MD5__in=md5_list).only(
+            'MD5', 'ICON_PATH', 'SIZE', 'TRACKERS')
+    windows = StaticAnalyzerWindows.objects.filter(
+        MD5__in=md5_list).only('MD5', 'SIZE', 'TRACKERS')
 
+    summaries = _appsec_summaries(page_obj)
     updir = Path(settings.UPLD_DIR)
-    icon_mapping = {}
-    package_mapping = {}
+    details = {}
     for item in android:
-        package_mapping[item.MD5] = item.PACKAGE_NAME
-        icon_mapping[item.MD5] = item.ICON_PATH
+        details[item.MD5] = {
+            'PACKAGE': item.PACKAGE_NAME,
+            'ICON_PATH': item.ICON_PATH,
+            'SIZE': item.SIZE,
+            'TRACKER_COUNT': _tracker_count(item.TRACKERS),
+        }
     for item in ios:
-        icon_mapping[item.MD5] = item.ICON_PATH
+        details[item.MD5] = {
+            'ICON_PATH': item.ICON_PATH,
+            'SIZE': item.SIZE,
+            'TRACKER_COUNT': _tracker_count(item.TRACKERS),
+        }
+    for item in windows:
+        details[item.MD5] = {
+            'SIZE': item.SIZE,
+            'TRACKER_COUNT': _tracker_count(item.TRACKERS),
+        }
 
     for entry in page_obj:
-        if entry['MD5'] in package_mapping.keys():
-            entry['PACKAGE'] = package_mapping[entry['MD5']]
-        else:
-            entry['PACKAGE'] = ''
-        entry['ICON_PATH'] = icon_mapping.get(entry['MD5'], '')
+        info = details.get(entry['MD5'], {})
+        entry['PACKAGE'] = info.get('PACKAGE', '')
+        entry['ICON_PATH'] = info.get('ICON_PATH', '')
+        entry['SIZE'] = info.get('SIZE', '')
+        entry['TRACKER_COUNT'] = info.get('TRACKER_COUNT')
+        entry['APPSEC'] = summaries.get(entry['MD5'])
 
         if entry['FILE_NAME'].endswith('.ipa'):
             entry['BUNDLE_HASH'] = get_md5(
@@ -315,6 +412,7 @@ def recent_scans(request, page_size=10, page_number=1):
         'version': settings.MOBSF_VER,
         'page_obj': page_obj,
         'async_scans': settings.ASYNC_ANALYSIS,
+        'efr01': bool(settings.EFR_01),
     }
     template = 'general/recent.html'
     return render(request, template, context)

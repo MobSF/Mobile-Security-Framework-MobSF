@@ -4,6 +4,7 @@
       sidebar-mini
      {% endblock %}
     {% block extra_css %}
+    <link href="{% static "others/css/report.css" %}" rel="stylesheet">
     <!-- DataTables -->
     <link href="{% static "datatables/css/datatables.combined.min.css" %}" rel="stylesheet">
     <style type="text/css" media="print">
@@ -957,7 +958,7 @@ pre {
  <style>
   #chartdiv {
   width: 100%;
-  height: 500px;
+  height: 360px;
   overflow: hidden;
 }
 </style>
@@ -976,7 +977,7 @@ pre {
             </div>
 
             <div class="table-responsive">
-              {% if domains %}
+              {% if domains|has_ofac %}
               <p></br>This app may communicate with the following OFAC sanctioned list of countries.</p>
              <table id="table_ofac" class="table table-bordered table-hover table-striped">
                   <thead>
@@ -989,12 +990,7 @@ pre {
                  {% for domain, details in domains.items %}
                  {% if details|key:"ofac" == True %}
                   <tr><td>{{domain}}</td>
-                  <td>
-                    <strong>IP: </strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
-                    <strong>Country: </strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
-                    <strong>Region: </strong>{{details|key:"geolocation"|key:"region"}} <br/>
-                    <strong>City: </strong>{{details|key:"geolocation"|key:"city"}} <br/>
-                  </td>
+                  <td>{% include 'base/geo_inline.html' with geo=details|key:"geolocation" map=False %}</td>
                   </tr>
                   {% endif %}
                   {% endfor %}
@@ -1023,7 +1019,7 @@ pre {
              </p>
               <div class="table-responsive">
               {% if domains %} 
-                <table id="table_malware" class="table table-bordered table-hover table-striped">
+                <table id="table_malware" data-order="[]" class="table table-bordered table-hover table-striped">
                   <thead>
                   <tr>
                      <th>DOMAIN</th>
@@ -1032,36 +1028,9 @@ pre {
                   </tr>
                  </thead>
                  <tbody>
-                 {% for domain, details in domains.items %}
-                  <tr><td>{{domain}}</td><td> 
-
-                    {% if details|key:"bad" == "yes" %}
-                    <span class="badge bg-danger">malware</span><br/>
-                      <pre>
-                      <strong>URL: </strong>{{details|key:"domain_or_url"}}
-                      <strong>IP: </strong><span class="badge bg-danger">{{details|key:"ip"}}</span>
-                      <strong>Description: </strong>{{details|key:"desc"}}
-                      </pre>
-                  {% else %}
-                    <span class="badge bg-success">good</span><br/>
-                  {% endif %}
-                  </td>
-                  <td>
-                    {% if details|key:"geolocation" %}
-                      <strong>IP: </strong>{{details|key:"geolocation"|key:"ip"}}  <br/>
-                      <strong>Country: </strong>{{details|key:"geolocation"|key:"country_long"}} <br/>
-                      <strong>Region: </strong>{{details|key:"geolocation"|key:"region"}} <br/>
-                      <strong>City: </strong>{{details|key:"geolocation"|key:"city"}} <br/>
-                      <strong>Latitude: </strong>{{details|key:"geolocation"|key:"latitude"}} <br/>
-                      <strong>Longitude: </strong>{{details|key:"geolocation"|key:"longitude"}} <br/>
-                      <strong>View: <a target="_blank" href="http://maps.google.com/maps?q={{details|key:"geolocation"|key:"latitude"}},{{details|key:"geolocation"|key:"longitude"}}">Google Map</a>
-
-                    {% else %}
-                    No Geolocation information available.
-                    {% endif %}
-                  </td>
-                  </tr>
-                  {% endfor %}
+                 {% for domain, details in domains|malware_first %}
+{% include 'base/domain_row.html' with map=True %}
+{% endfor %}
                 </tbody>
             </table>    
              {% endif %}
@@ -1154,7 +1123,7 @@ pre {
                     {{trk.categories}}
                   </td>
                   <td>
-                    <a target="_blank" href="{{trk.url}}" rel="noopener noreferrer">{{trk.url}}</a>
+                    <a target="_blank" href="{{ trk.url|http_url }}" rel="noopener noreferrer">{{trk.url}}</a>
                   </td>
                 </tr>
                 {% endfor %}
@@ -1305,14 +1274,9 @@ pre {
 <!--end new UI-->
 {% block extra_scripts %}
 <!-- DataTables -->
-<script src="{% static "datatables/js/pdfmake.min.js" %}"></script>
-<script src="{% static "datatables/js/vfs_fonts.js" %}"></script>
 <script src="{% static "datatables/js/datatables.combined.min.js" %}"></script>
+<script src="{% static "others/js/lazy_load.js" %}"></script>
 <script src="{% static "others/js/datatables_init.js" %}"></script>
-<script src="{% static "amcharts/core.js" %}"></script>
-<script src="{% static "amcharts/maps.js" %}"></script>
-<script src="{% static "amcharts/worldIndiaLow.js" %}"></script>
-<script src="{% static "amcharts/animated.js" %}"></script>
 <script type="text/javascript" src="{% static "prismjs/prism.min.js" %}"></script>
 <script>
   // Navbar Active
@@ -1322,6 +1286,7 @@ pre {
   });
 </script>
 <script>
+function renderDomainMap() {
   // Themes begin
   am4core.useTheme(am4themes_animated);
   // Themes end
@@ -1395,6 +1360,15 @@ pre {
     {% endfor %}
   {% endif %}
   ];
+}
+mobsfWhenVisible(document.getElementById('chartdiv'), function () {
+  mobsfLoadScripts([
+    "{% static "amcharts/core.js" %}",
+    "{% static "amcharts/maps.js" %}",
+    "{% static "amcharts/worldIndiaLow.js" %}",
+    "{% static "amcharts/animated.js" %}",
+  ]).then(renderDomainMap);
+});
 
 
 //For All Ajax

@@ -34,6 +34,16 @@ def calculate_security_score(high, warn, sec):
     return round(10 + (90 * 15 / (15 + risk)))
 
 
+def code_finding_description(cd):
+    """Finding description followed by the affected file paths."""
+    desc = cd['metadata']['description']
+    ref = cd['metadata'].get('ref', '')
+    files = '\n'.join(cd.get('files') or {})
+    if files:
+        return f'{desc}\n{ref}\n\nFiles:\n{files}'
+    return f'{desc}\n{ref}'
+
+
 def common_fields(findings, data):
     """Common Fields for Android and iOS."""
     # Code Analysis
@@ -42,22 +52,9 @@ def common_fields(findings, data):
             sev = 'secure'
         else:
             sev = cd['metadata']['severity']
-        desc = cd['metadata']['description']
-        ref = cd['metadata'].get('ref', '')
-
-        files_dict = cd.get('files', {})
-        files_lines = [f'{file}, line(s) {lines}'
-                       for file, lines in files_dict.items()]
-        all_files_str = '\n'.join(files_lines)
-
-        if files_dict:
-            fdesc = f'{desc}\n{ref}\n\nFiles:\n{all_files_str}'
-        else:
-            fdesc = f'{desc}\n{ref}'
-
         findings[sev].append({
             'title': cd['metadata']['description'],
-            'description': fdesc,
+            'description': code_finding_description(cd),
             'section': 'code',
         })
     # JavaScript / Hybrid Code Analysis
@@ -67,19 +64,9 @@ def common_fields(findings, data):
             sev = 'secure'
         else:
             sev = cd['metadata']['severity']
-        desc = cd['metadata']['description']
-        ref = cd['metadata'].get('ref', '')
-        files_dict = cd.get('files', {})
-        files_lines = [f'{file}, line(s) {lines}'
-                       for file, lines in files_dict.items()]
-        all_files_str = '\n'.join(files_lines)
-        if files_dict:
-            fdesc = f'{desc}\n{ref}\n\nFiles:\n{all_files_str}'
-        else:
-            fdesc = f'{desc}\n{ref}'
         findings[sev].append({
             'title': cd['metadata']['description'],
-            'description': fdesc,
+            'description': code_finding_description(cd),
             'section': 'code',
         })
     # Permissions
@@ -223,6 +210,7 @@ def common_fields(findings, data):
     findings['app_name'] = data.get('app_name', '')
     findings['file_name'] = data.get('file_name', '')
     findings['hash'] = data['md5']
+    findings['icon_path'] = data.get('icon_path', '')
 
 
 def get_android_dashboard(context, from_ctx=False):
@@ -384,6 +372,25 @@ def get_ios_dashboard(context, from_ctx=False):
     return findings
 
 
+def appsec_summary(db_entry, platform):
+    """Security score and finding counts for one stored scan."""
+    try:
+        if platform == 'android':
+            findings = get_android_dashboard([db_entry])
+        else:
+            findings = get_ios_dashboard([db_entry])
+    except Exception:
+        logger.warning('Unable to summarize scorecard for %s', db_entry.MD5)
+        return None
+    if 'security_score' not in findings:
+        return None
+    summary = {
+        sev: len(findings[sev])
+        for sev in ('high', 'warning', 'info', 'secure', 'hotspot')}
+    summary['score'] = findings['security_score']
+    return summary
+
+
 @login_required
 def appsec_dashboard(request, checksum, api=False):
     """Provide data for appsec dashboard."""
@@ -415,6 +422,9 @@ def appsec_dashboard(request, checksum, api=False):
         if api:
             return context
         else:
+            context['analyzer'] = (
+                'static_analyzer' if android_static_db
+                else 'static_analyzer_ios')
             return render(
                 request,
                 'static_analysis/appsec_dashboard.html',

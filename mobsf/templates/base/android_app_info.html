@@ -1,0 +1,10 @@
+<p class="mb-1"><strong><i class="fas fa-info"></i> APP INFORMATION</strong></p>
+<dl class="info-grid">
+  <dt>App Name</dt><dd>{{ app_name }}</dd>
+  <dt>Package Name</dt><dd>{{ package_name }}</dd>
+  <dt>Main Activity</dt><dd>{{ main_activity }}</dd>
+  <dt>SDK</dt>
+  <dd>Target {{ target_sdk|default:"-" }}<span class="sep">&middot;</span>Min {{ min_sdk|default:"-" }}<span class="sep">&middot;</span>Max {{ max_sdk|default:"-" }}</dd>
+  <dt>Version</dt>
+  <dd>{{ version_name|default:"-" }}{% if version_code %} <span class="text-muted">(code {{ version_code }})</span>{% endif %}</dd>
+</dl>

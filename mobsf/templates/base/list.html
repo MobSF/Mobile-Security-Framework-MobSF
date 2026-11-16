@@ -1,9 +1,8 @@
 <!-- "strings" on big binaries can easily result in millions of hits, avoid rendering them unless needed: -->
 {% if list|length != 0 %}
-<details {% if list|length < limit %}open{% endif %}>
-  <summary>{% if list|length < limit %}Showing{% else %}Show{% endif %} all <strong>{{ list | length }}</strong> {{ type }}</summary>
-  {% for val in list %}
-    {{ val }}<br/>
-  {% endfor %}
+<details {% if list|length < limit and list|length <= 10 %}open{% endif %}>
+  <summary>{% if list|length < limit and list|length <= 10 %}Showing{% else %}Show{% endif %} all <strong>{{ list | length }}</strong> {{ type }}</summary>
+  <pre class="mobsf-list{% if list|length < limit and list|length <= 10 %} clamp" data-clamp-lines="12{% endif %}">{% for val in list %}{{ val }}{% if not forloop.last %}
+{% endif %}{% endfor %}</pre>
 </details>
 {% endif %}

@@ -1,0 +1,16 @@
+<tr>
+  <td>{{ domain }}</td>
+  <td>
+    {% if details|key:"bad" == "yes" %}
+    <span class="badge bg-danger">malware</span>
+    <div class="small text-wrap">
+      <strong>URL:</strong> {{ details|key:"domain_or_url" }}<br/>
+      <strong>IP:</strong> {{ details|key:"ip" }}<br/>
+      {{ details|key:"desc" }}
+    </div>
+    {% else %}
+    <span class="badge bg-success">ok</span>
+    {% endif %}
+  </td>
+  <td>{% include 'base/geo_inline.html' with geo=details|key:"geolocation" map=map %}</td>
+</tr>
