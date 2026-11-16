@@ -140,8 +140,17 @@
     table.insertAdjacentElement('afterend', note);
   }
 
+  // Malformed percent-encoding in a fragment must not break the page.
+  function fragmentId(hash) {
+    try {
+      return decodeURIComponent(hash.slice(1));
+    } catch (e) {
+      return '';
+    }
+  }
+
   function sectionFor(link) {
-    var id = decodeURIComponent(link.getAttribute('href').slice(1));
+    var id = fragmentId(link.getAttribute('href'));
     var anchor = id && document.getElementById(id);
     if (!anchor) {
       return null;
@@ -242,13 +251,13 @@
   document.addEventListener('click', function (event) {
     var link = event.target.closest && event.target.closest('a[href^="#"]:not([data-toggle])');
     if (link && link.getAttribute('href').length > 1) {
-      pinTarget(decodeURIComponent(link.getAttribute('href').slice(1)));
+      pinTarget(fragmentId(link.getAttribute('href')));
     }
   });
 
   window.addEventListener('load', function () {
     if (location.hash.length > 1) {
-      pinTarget(decodeURIComponent(location.hash.slice(1)));
+      pinTarget(fragmentId(location.hash));
     }
   });
 
