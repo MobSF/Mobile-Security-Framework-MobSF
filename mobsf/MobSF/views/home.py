@@ -49,6 +49,7 @@ from mobsf.StaticAnalyzer.models import (
     StaticAnalyzerAndroid,
     StaticAnalyzerIOS,
     StaticAnalyzerWindows,
+    SuppressFindings,
 )
 from mobsf.StaticAnalyzer.views.common.technology import (
     detect_technologies,
@@ -298,19 +299,36 @@ def _tracker_count(trackers):
     return count if isinstance(count, int) else None
 
 
+def _suppression_revisions(packages):
+    """Fingerprint of the suppression rules for each package."""
+    rules = {}
+    rows = SuppressFindings.objects.filter(
+        PACKAGE_NAME__in=packages).order_by('id').values_list(
+            'PACKAGE_NAME', 'SUPPRESS_TYPE', 'SUPPRESS_RULE_ID',
+            'SUPPRESS_FILES')
+    for package, *values in rows:
+        rules.setdefault(package, []).append(values)
+    return {
+        package: get_md5(repr(values).encode('utf-8'))
+        for package, values in rules.items()}
+
+
 def _appsec_summaries(entries):
-    """Scorecard summaries per MD5, cached until the scan is updated."""
+    """Scorecard summaries per MD5, cached per scan and suppression state."""
     # Imported here: db_interaction imports this module.
     from mobsf.StaticAnalyzer.views.common.appsec import appsec_summary
     summaries = {}
     pending = {}
+    revisions = _suppression_revisions(
+        {e['PACKAGE_NAME'] for e in entries if e['PACKAGE_NAME']})
     for entry in entries:
         name = entry['FILE_NAME'].lower()
         if (entry['ANALYZER'] == 'static_analyzer_windows'
                 or name.endswith(NO_SCORECARD_EXT)):
             continue
         stamp = entry['TIMESTAMP'].timestamp() if entry['TIMESTAMP'] else 0
-        key = f'appsec_summary:{entry["MD5"]}:{stamp}'
+        revision = revisions.get(entry['PACKAGE_NAME'], '')
+        key = f'appsec_summary:{entry["MD5"]}:{stamp}:{revision}'
         cached = cache.get(key)
         if cached is not None:
             summaries[entry['MD5']] = cached or None

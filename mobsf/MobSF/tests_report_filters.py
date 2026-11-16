@@ -3,7 +3,7 @@
 from unittest import mock
 
 from django.template import Context, Template
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, TestCase
 
 import mobsf.MobSF.views.home  # noqa: F401  registers report filters
 from mobsf.MobSF.utils import (
@@ -12,8 +12,10 @@ from mobsf.MobSF.utils import (
     malware_first,
 )
 from mobsf.MobSF.views.home import (
+    _suppression_revisions,
     _tracker_count,
 )
+from mobsf.StaticAnalyzer.models import SuppressFindings
 from mobsf.StaticAnalyzer.views.common.appsec import appsec_summary
 from mobsf.StaticAnalyzer.views.common.technology import (
     detect_technologies,
@@ -176,3 +178,32 @@ class ReportFilterTests(SimpleTestCase):
         with mock.patch(target + 'get_ios_dashboard',
                         side_effect=KeyError('code_analysis')):
             self.assertIsNone(appsec_summary(entry, 'ios'))
+
+    def test_source_languages(self):
+        android = detect_technologies({'files': [
+            'app/src/main/java/com/example/Main.java',
+            'app/src/main/kotlin/com/example/Util.kt',
+        ], 'app_type': 'studio'}, 'android')
+        langs = next(g for g in android if g['label'] == 'Languages')
+        self.assertEqual(langs['items'], ['Java', 'Kotlin'])
+        ios = detect_technologies({'files': [
+            'App/AppDelegate.swift', 'App/Legacy.m',
+        ], 'app_type': ''}, 'ios')
+        langs = next(g for g in ios if g['label'] == 'Languages')
+        self.assertEqual(langs['items'], ['Swift', 'Objective-C'])
+
+
+class SuppressionRevisionTests(TestCase):
+
+    def test_revision_tracks_suppression_changes(self):
+        self.assertEqual(_suppression_revisions({'com.example'}), {})
+        rule = SuppressFindings.objects.create(
+            PACKAGE_NAME='com.example', SUPPRESS_TYPE='code',
+            SUPPRESS_RULE_ID="['rule_a']", SUPPRESS_FILES='{}')
+        first = _suppression_revisions({'com.example'})['com.example']
+        rule.SUPPRESS_RULE_ID = "['rule_a', 'rule_b']"
+        rule.save()
+        second = _suppression_revisions({'com.example'})['com.example']
+        self.assertNotEqual(first, second)
+        rule.delete()
+        self.assertEqual(_suppression_revisions({'com.example'}), {})

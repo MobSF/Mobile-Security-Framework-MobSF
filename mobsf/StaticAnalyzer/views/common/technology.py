@@ -84,10 +84,10 @@ def _android(ctx):
     langs, fws, abis, build, warnings = [], [], [], [], []
     js = _js_frameworks(ctx.get('js_analysis'))
 
-    if any(p.endswith('.dex') for p in paths) or ctx.get('app_type') in (
-            'jar', 'aar'):
+    if any(p.endswith(('.dex', '.java')) for p in paths) or ctx.get(
+            'app_type') in ('jar', 'aar'):
         _add(langs, 'Java')
-    if any(p.endswith(('.kotlin_builtins', '.kotlin_module'))
+    if any(p.endswith(('.kotlin_builtins', '.kotlin_module', '.kt', '.kts'))
            for p in paths):
         _add(langs, 'Kotlin')
     native = [p for p in paths if p.startswith('lib/') and p.endswith('.so')]
@@ -137,9 +137,10 @@ def _ios(ctx):
     paths = _paths(ctx.get('files'))
     langs, fws, build, warnings = [], [], [], []
     app_type = str(ctx.get('app_type') or '')
-    if 'Swift' in app_type:
+    if 'Swift' in app_type or any(p.endswith('.swift') for p in paths):
         _add(langs, 'Swift')
-    if 'Objective' in app_type:
+    if 'Objective' in app_type or any(
+            p.endswith(('.m', '.mm')) for p in paths):
         _add(langs, 'Objective-C')
     for fragment, framework, lang in IOS_PATH_FRAMEWORKS:
         if any(fragment in p for p in paths):
