@@ -1027,6 +1027,11 @@ def is_http_url(value):
             and value.strip().lower().startswith(('http://', 'https://')))
 
 
+def http_url(value):
+    """Return the value when it is an http(s) URL, otherwise '#'."""
+    return value.strip() if is_http_url(value) else '#'
+
+
 def has_ofac(domains):
     """Check if any domain resolves to an OFAC sanctioned country."""
     if not isinstance(domains, dict):

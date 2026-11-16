@@ -762,7 +762,7 @@
                     {{trk.categories}}
                   </td>
                   <td>
-                    <a target="_blank" href="{{trk.url}}" rel="noopener noreferrer">{{trk.url}}</a>
+                    <a target="_blank" href="{{ trk.url|http_url }}" rel="noopener noreferrer">{{trk.url}}</a>
                   </td>
                 </tr>
                 {% endfor %}

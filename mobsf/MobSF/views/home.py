@@ -28,6 +28,7 @@ from mobsf.MobSF.utils import (
     MD5_REGEX,
     get_md5,
     has_ofac,
+    http_url,
     is_dir_exists,
     is_file_exists,
     is_http_url,
@@ -78,6 +79,7 @@ register.filter('key', key)
 register.filter('malware_first', malware_first)
 register.filter('has_ofac', has_ofac)
 register.filter('is_http_url', is_http_url)
+register.filter('http_url', http_url)
 register.filter('replace', replace)
 
 

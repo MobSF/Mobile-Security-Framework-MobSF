@@ -8,6 +8,7 @@ from django.test import SimpleTestCase, TestCase
 import mobsf.MobSF.views.home  # noqa: F401  registers report filters
 from mobsf.MobSF.utils import (
     has_ofac,
+    http_url,
     is_http_url,
     malware_first,
 )
@@ -191,6 +192,16 @@ class ReportFilterTests(SimpleTestCase):
         ], 'app_type': ''}, 'ios')
         langs = next(g for g in ios if g['label'] == 'Languages')
         self.assertEqual(langs['items'], ['Swift', 'Objective-C'])
+
+    def test_http_url(self):
+        self.assertEqual(http_url(' https://x.example/a '), 'https://x.example/a')
+        self.assertEqual(http_url('javascript:alert(1)'), '#')
+        self.assertEqual(http_url(' JavaScript:alert(1)'), '#')
+        self.assertEqual(http_url('data:text/html,<b>x</b>'), '#')
+        self.assertEqual(http_url(None), '#')
+        tpl = Template('<a href="{{ u|http_url }}">x</a>')
+        html = tpl.render(Context({'u': 'https://a.example/?q="><img>'}))
+        self.assertNotIn('"><img>', html)
 
 
 class SuppressionRevisionTests(TestCase):

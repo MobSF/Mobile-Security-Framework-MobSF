@@ -871,7 +871,7 @@
                   <td>{{ forloop.counter }}</td>
                   <td>
                     {% if details.metadata|key:"ref" %}
-                    <a href="{{details.metadata.ref}}" target="_blank" rel="noopener"> {{ details.metadata.description }}</a>
+                    <a href="{{ details.metadata.ref|http_url }}" target="_blank" rel="noopener"> {{ details.metadata.description }}</a>
                   {% else %}
                     {{ details.metadata.description }}
                   {% endif %}
@@ -1042,7 +1042,7 @@
                     <td>{{ forloop.counter }}</td>
                     <td>
                       {% if details.metadata|key:"ref" %}
-                        <a href="{{details.metadata.ref}}" target="_blank" rel="noopener">{{ details.metadata.description }}</a>
+                        <a href="{{ details.metadata.ref|http_url }}" target="_blank" rel="noopener">{{ details.metadata.description }}</a>
                       {% else %}
                         {{ details.metadata.description }}
                       {% endif %}
@@ -1574,7 +1574,7 @@
                      {{trk.categories}}
                    </td>
                    <td>
-                     <a target="_blank" href="{{trk.url}}" rel="noopener noreferrer">{{trk.url}}</a>
+                     <a target="_blank" href="{{ trk.url|http_url }}" rel="noopener noreferrer">{{trk.url}}</a>
                    </td>
                  </tr>
                  {% endfor %}

@@ -458,7 +458,7 @@
               {% if virus_total.items|length < 9 %}
                 <p align="left">&nbsp;&nbsp;<strong>{{ virus_total.verbose_msg }}</strong></p>
               {% else %}
-                <p align="left">&nbsp;&nbsp;<strong> {{ virus_total.positives }} / {{ virus_total.total }}&nbsp; AVs found this file Malicious! </strong> &nbsp;&nbsp;<a href="{{ virus_total.permalink }}" target="_blank" rel="noopener"><i class="fas fa-th-list"></i> Full Report</a></p>
+                <p align="left">&nbsp;&nbsp;<strong> {{ virus_total.positives }} / {{ virus_total.total }}&nbsp; AVs found this file Malicious! </strong> &nbsp;&nbsp;<a href="{{ virus_total.permalink|http_url }}" target="_blank" rel="noopener"><i class="fas fa-th-list"></i> Full Report</a></p>
                 {% if virus_total.positives > 0 %}
                 <table id="table_vt" class="table table-bordered table-hover table-striped">
                   <thead>
@@ -615,7 +615,7 @@
                   <tr>
                     <td>{{ trk.name }}</td>
                     <td>{{ trk.categories }}</td>
-                    <td><a target="_blank" href="{{ trk.url }}" rel="noopener noreferrer">{{ trk.url }}</a></td>
+                    <td><a target="_blank" href="{{ trk.url|http_url }}" rel="noopener noreferrer">{{ trk.url }}</a></td>
                   </tr>
                   {% endfor %}
                 </tbody>
