@@ -245,7 +245,6 @@ def save_get_ctx(app_dict, code_dict, bin_dict, rescan):
         logger.info(msg)
         append_scan_status(app_dict['md5_hash'], msg)
         action = 'update'
-        update_scan_timestamp(app_dict['md5_hash'])
     else:
         msg = 'Saving to Database'
         logger.info(msg)
@@ -256,6 +255,8 @@ def save_get_ctx(app_dict, code_dict, bin_dict, rescan):
         app_dict,
         code_dict,
         bin_dict)
+    if rescan:
+        update_scan_timestamp(app_dict['md5_hash'])
     return get_context_from_analysis(
         app_dict,
         code_dict,

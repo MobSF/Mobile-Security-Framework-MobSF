@@ -279,7 +279,6 @@ def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, trk, rscn):
         logger.info(msg)
         append_scan_status(app['md5'], msg)
         action = 'update'
-        update_scan_timestamp(app['md5'])
     else:
         msg = 'Saving to Database'
         logger.info(msg)
@@ -296,6 +295,8 @@ def save_get_ctx(app, man, m_anal, code, cert, elf, apkid, trk, rscn):
         apkid,
         trk,
     )
+    if rscn:
+        update_scan_timestamp(app['md5'])
     return get_context_from_analysis(
         app,
         man,
