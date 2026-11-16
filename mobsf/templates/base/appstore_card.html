@@ -1,0 +1,22 @@
+{% with st=appstore_details %}
+<p class="mb-1"><strong><i class="fab fa-app-store-ios"></i> APP STORE INFORMATION</strong></p>
+<div>
+  <strong>{{ st.title }}</strong>
+  {% if st.score %}<span class="text-muted">&middot;</span> <i class="fas fa-star text-warning"></i> {{ st.score|floatformat:1 }}{% endif %}
+  {% if st.category %}<span class="text-muted">&middot;</span> {{ st.category|join:", " }}{% endif %}
+  <span class="text-muted">&middot;</span> {% if st.price %}{{ st.price }}{% else %}Free{% endif %}
+  {% if st.itunes_url|is_http_url %}<span class="text-muted">&middot;</span> <a target="_blank" href="{{ st.itunes_url }}" rel="noopener noreferrer">App Store ({{ st.app_id }})</a>{% endif %}
+</div>
+<details class="mt-1">
+  <summary>Developer and device details</summary>
+  <span class="badge bg-info">Developer</span> {{ st.developer }}
+  <span class="badge bg-info">Developer ID</span> {{ st.developer_id }}<br/>
+  <span class="badge bg-info">Developer Website</span> {{ st.developer_website }}<br/>
+  <span class="badge bg-info">Developer URL</span> {{ st.developer_url }}<br/>
+  <span class="badge bg-info">Features</span> {{ st.features|join:", " }}<br/>
+  <span class="badge bg-info">Supported Devices</span> {{ st.supported_devices|join:", " }}
+</details>
+{% if st.description %}
+<pre id="pre-wrap" class="clamp mt-2" data-clamp-lines="6">{{ st.description }}</pre>
+{% endif %}
+{% endwith %}

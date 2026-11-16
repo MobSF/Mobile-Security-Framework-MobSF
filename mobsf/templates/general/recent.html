@@ -6,18 +6,167 @@
 {% endblock %}
  {% block extra_css %}
 <link href="{% static "adminlte/plugins/sweetalert2/sweetalert2.min.css" %}" rel="stylesheet">
-
+<link href="{% static "others/css/report.css" %}" rel="stylesheet">
 <style>
-#app_icon{
-        width: 64px;
-        height: 64px;
-    }
-.selected {
-    background-color: lightgreen !important;
+.scans-table td {
+  vertical-align: middle;
 }
-
+.scan-app {
+  display: flex;
+  align-items: flex-start;
+  gap: .85rem;
+  min-width: 15rem;
+  max-width: 20rem;
+}
+.scan-app > div {
+  min-width: 0;
+}
+.scan-clip {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scan-app img {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+.scan-app-name {
+  font-weight: 600;
+  line-height: 1.3;
+}
+.scan-app-name .scan-version {
+  margin-left: .3rem;
+  color: #6c757d;
+  font-weight: 400;
+  font-size: .85em;
+}
+.scan-meta {
+  color: #6c757d;
+  font-size: .82rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.scan-meta .mono {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: .78rem;
+}
+.scan-type {
+  text-align: center;
+  white-space: nowrap;
+}
+.scan-type i {
+  display: block;
+  margin-bottom: .3rem;
+  color: #6c757d;
+  font-size: 1.6rem;
+}
+.scan-security-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem .8rem;
+  align-items: center;
+  margin-top: .45rem;
+  font-size: .8rem;
+}
+.scan-trackers i {
+  color: #6c757d;
+}
+.scan-when {
+  font-size: .85rem;
+  white-space: nowrap;
+}
+.scan-actions {
+  min-width: 15rem;
+}
+.scan-actions .report-actions {
+  margin-bottom: .35rem;
+}
+.scan-actions .icon-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2rem;
+  padding: 0;
+}
+.scan-actions .icon-actions .btn i {
+  margin-right: 0;
+}
+body.dark-mode .scan-actions .icon-actions .btn-outline-danger {
+  border-color: #6c757d;
+  color: #f1707d;
+}
+body.dark-mode .scan-actions .icon-actions .btn-outline-danger:hover,
+body.dark-mode .scan-actions .icon-actions .btn-outline-danger:focus {
+  border-color: #dc3545;
+  background: #dc3545;
+  color: #fff;
+}
+.scan-score {
+  --ring: #28a745;
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  white-space: nowrap;
+}
+.scan-score.risk-critical { --ring: #dc3545; }
+.scan-score.risk-high { --ring: #fd7e14; }
+.scan-score.risk-medium { --ring: #ffc107; }
+.mini-ring {
+  position: relative;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+}
+.mini-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.mini-ring circle {
+  fill: none;
+  stroke-width: 3.4;
+}
+.mini-ring b {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .95rem;
+}
+.sev-counts {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: .1rem .8rem;
+  font-size: .8rem;
+}
+.sev-counts .is-zero {
+  opacity: .45;
+}
+.scans-table [data-tip]::after {
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.scans-table [data-tip]:focus:not(:focus-visible)::after {
+  opacity: 0;
+  visibility: hidden;
+}
+.selected {
+  background-color: rgba(40, 167, 69, .18) !important;
+}
 .selectable_table tr:hover {
-    background-color: lightgreen !important;
+  background-color: rgba(40, 167, 69, .12) !important;
+  cursor: pointer;
+}
+body.dark-mode .scan-meta,
+body.dark-mode .scan-app-name .scan-version,
+body.dark-mode .scan-type i {
+  color: #adb5bd;
 }
 </style>
 {% endblock %}
@@ -30,7 +179,6 @@
             <div class="col-lg-12">
             <div class="card">
               <div class="card-body">
-                
 
                  <div class="box">
         <div class="box-header with-border">
@@ -42,79 +190,108 @@
 
         <div class="box-body">
             <div class="table-responsive">
-                <table class="table table-bordered table-hover table-striped">
+                <table class="table table-hover table-striped scans-table">
                     <thead>
                     <tr>
                         <th>APP</th>
-                        <th>FILE</th>
-                        <th>TYPE</th>
-                        <th>HASH</th>
-                        <th>SCAN DATE</th>
-                        <th style="width: 9%">ACTIONS</th>
+                        <th class="text-center">TYPE</th>
+                        <th>SECURITY</th>
+                        <th>SCANNED</th>
+                        <th>ACTIONS</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for e in entries %}
-                        <tr>
-                            <td style="text-align: center;">
-                                <img id="app_icon" src="{% if e.ICON_PATH %}/download/{{ e.ICON_PATH }}{% else %}{% static 'img/no_icon.png' %}{% endif %}">
-                                {% if e.PACKAGE_NAME or e.APP_NAME %}
-                                  <br/><strong>{{ e.APP_NAME }} {% if e.VERSION_NAME %} - {{ e.VERSION_NAME }} {% endif %}</strong>
-                                  </br>{{ e.PACKAGE_NAME }}
-                                  {% if e.FILE_NAME|slice:"-6:" != '.dylib' %}
-                                  {% if e.ANALYZER != 'static_analyzer_windows' %}
-                                    {% if e.FILE_NAME|slice:"-3:" != '.so' %}
-                                      {% if e.FILE_NAME|slice:"-2:" != '.a' %}
-                                    <p> <a href="{% url "appsec_dashboard" checksum=e.MD5 %}" class="btn btn-sm btn-outline-primary" role="button"><i class="fas fa-user-shield"></i> MobSF Scorecard</a></p>
-                                      {% endif %}
-                                    {% endif %}
-                                    {% endif %}
+                        {% with fn=e.FILE_NAME|lower %}
+                        <tr data-md5="{{ e.MD5 }}" data-name="{{ e.FILE_NAME }}">
+                            <td>
+                              <div class="scan-app">
+                                <img alt="" src="{% if e.ICON_PATH %}/download/{{ e.ICON_PATH }}{% else %}{% static 'img/no_icon.png' %}{% endif %}">
+                                <div>
+                                  {% if e.PACKAGE_NAME or e.APP_NAME %}
+                                  <div class="scan-app-name scan-clip" title="{{ e.APP_NAME|default:e.FILE_NAME }} {{ e.VERSION_NAME }}">{{ e.APP_NAME|default:e.FILE_NAME }}{% if e.VERSION_NAME %}<span class="scan-version">{{ e.VERSION_NAME }}</span>{% endif %}</div>
+                                  {% if e.PACKAGE_NAME %}<div class="scan-meta scan-clip" title="{{ e.PACKAGE_NAME }}">{{ e.PACKAGE_NAME }}</div>{% endif %}
+                                  {% else %}
+                                  <div class="scan-app-name scan-clip" title="{{ e.FILE_NAME }}">{{ e.FILE_NAME }}</div>
+                                  <span class="badge bg-warning">scan not completed</span>
                                   {% endif %}
-                                  <p><a class="btn btn-primary btn-sm" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/"><i class="fas fa-eye"></i> Static Report</a>
-                                  {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:" or '.aab' == e.FILE_NAME|slice:"-4:" %}
-                                    <a  class="btn btn-success btn-sm {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "dynamic_report" checksum=e.MD5 %}"><i class="fa fa-mobile"></i> Dynamic Report</a>
-                                  {% elif '.ipa' == e.FILE_NAME|slice:"-4:" %}
-                                    {% if e.PACKAGE_NAME %}
-                                        <a  class="btn btn-success btn-sm {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "ios_view_report" bundle_id=e.PACKAGE_NAME %}"><i class="fa fa-mobile"></i> Dynamic Report</a>
-                                    {% endif %}
-                                  {% endif %}
-                                  </p>
-                                {% else %}
-                                </br><span class="badge bg-warning">scan not completed</span>
+                                  <div class="scan-meta mt-1">
+                                    <i class="far fa-file"></i> {{ e.FILE_NAME }}{% if e.SIZE %} <span class="scan-size">&middot; {{ e.SIZE }}</span>{% endif %}<br/>
+                                    <span class="mono" title="MD5">{{ e.MD5 }}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            <td class="scan-type">
+                                {% if e.ANALYZER == 'static_analyzer_windows' %}<i class="fab fa-windows"></i>
+                                {% elif fn|slice:"-4:" == '.apk' or fn|slice:"-5:" == '.xapk' or fn|slice:"-5:" == '.apks' or fn|slice:"-4:" == '.aab' %}<i class="fab fa-android"></i>
+                                {% elif fn|slice:"-4:" == '.jar' %}<i class="fab fa-java"></i>
+                                {% elif fn|slice:"-4:" == '.aar' %}<i class="fas fa-box"></i>
+                                {% elif fn|slice:"-4:" == '.dex' %}<i class="fas fa-file-code"></i>
+                                {% elif fn|slice:"-4:" == '.ipa' %}<i class="fab fa-apple"></i>
+                                {% elif fn|slice:"-3:" == '.so' or fn|slice:"-6:" == '.dylib' or fn|slice:"-2:" == '.a' %}<i class="fas fa-microchip"></i>
+                                {% elif fn|slice:"-4:" == '.zip' %}<i class="fas fa-file-archive"></i>
                                 {% endif %}
+                                {% if e.SCAN_TYPE %}<span class="badge bg-light border text-dark">{{ e.SCAN_TYPE|upper }}</span>{% endif %}
                             </td>
-                            <td>{{ e.FILE_NAME }}
-                            </td>
-                            <td style="text-align: center;">
-                                {% if '.apk' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-android fa-3x"></i>
-                                {% elif '.xapk' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-android fa-3x"></i>
-                                {% elif '.apks' == e.FILE_NAME|slice:"-5:"%}<i class="fab fa-android fa-3x"></i>
-                                {% elif '.aab' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-android fa-3x"></i>
-                                {% elif '.jar' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-java fa-3x"></i>
-                                {% elif '.aar' == e.FILE_NAME|slice:"-4:"%}<i class="fas fa-table fa-3x"></i>
-                                {% elif '.dex' == e.FILE_NAME|slice:"-4:"%}<i class="fas fa-file-code fa-3x"></i>
-                                {% elif '.so' == e.FILE_NAME|slice:"-3:"%}<i class="fa fa-th-large fa-3x"></i>
-                                {% elif '.ipa' == e.FILE_NAME|slice:"-4:"%}<i class="fab fa-apple fa-3x"></i>
-                                {% elif '.dylib' == e.FILE_NAME|slice:"-6:"%}<i class="fa fa-th-large fa-3x"></i>
-                                {% elif '.a' == e.FILE_NAME|slice:"-2:"%}<i class="fa fa-th-large fa-3x"></i>
-                                {% elif '.zip' == e.FILE_NAME|slice:"-4:"%}<i class="fas fa-file-archive fa-3x"></i>
-                                {% elif e.ANALYZER == 'static_analyzer_windows' %}<i class="fab fa-windows fa-3x"></i>
+                            <td class="scan-security">
+                              {% if e.APPSEC %}{% with a=e.APPSEC %}
+                              <div class="scan-score {% if a.score < 30 %}risk-critical{% elif a.score < 40 %}risk-high{% elif a.score < 60 %}risk-medium{% else %}risk-low{% endif %}">
+                                {% if not efr01 %}
+                                <span class="mini-ring" data-tip="Security score {{ a.score }}/100">
+                                  <svg viewBox="0 0 36 36" aria-hidden="true">
+                                    <circle class="score-ring-track" cx="18" cy="18" r="15.5" pathLength="100"/>
+                                    <circle class="score-ring-value" cx="18" cy="18" r="15.5" pathLength="100" stroke-dasharray="{{ a.score }} 100"/>
+                                  </svg>
+                                  <b>{{ a.score }}</b>
+                                </span>
                                 {% endif %}
+                                <span class="sev-counts">
+                                  <span class="{% if not a.high %}is-zero{% endif %}"><i class="sev-dot sev-high"></i><b>{{ a.high }}</b> High</span>
+                                  <span class="{% if not a.warning %}is-zero{% endif %}"><i class="sev-dot sev-warning"></i><b>{{ a.warning }}</b> Medium</span>
+                                  <span class="{% if not a.info %}is-zero{% endif %}"><i class="sev-dot sev-info"></i><b>{{ a.info }}</b> Info</span>
+                                  <span class="{% if not a.secure %}is-zero{% endif %}"><i class="sev-dot sev-secure"></i><b>{{ a.secure }}</b> Secure</span>
+                                </span>
+                              </div>
+                              {% endwith %}{% endif %}
+                              {% if e.APPSEC or e.TRACKER_COUNT is not None %}
+                              <div class="scan-security-foot">
+                                {% if e.TRACKER_COUNT is not None %}
+                                <span class="scan-trackers"><i class="fas fa-user-secret"></i> <b class="{% if e.TRACKER_COUNT %}text-warning-strong{% else %}text-success{% endif %}">{{ e.TRACKER_COUNT }}</b> tracker{{ e.TRACKER_COUNT|pluralize }}</span>
+                                {% endif %}
+                                {% if e.APPSEC %}
+                                <a class="btn btn-xs btn-outline-primary" href="{% url 'appsec_dashboard' checksum=e.MD5 %}"><i class="fas fa-user-shield"></i> Scorecard</a>
+                                {% endif %}
+                              </div>
+                              {% else %}<span class="text-muted">&ndash;</span>{% endif %}
                             </td>
-                            <td>{{ e.MD5 }}</td>
-                            <td>{{ e.TIMESTAMP }}</td>
-                            <td><p>
-                                   <a class="btn btn-outline-primary btn-sm" href="{% url "pdf" checksum=e.MD5%}"><i class="fas fa-file-pdf"></i></a>
-                                   <a class="btn btn-outline-info btn-sm" href="../../../{{ e.ANALYZER }}/{{e.MD5}}/?rescan=1"><i class="fas fa-sync-alt"></i></a>
-                                   <a class="btn btn-outline-secondary btn-sm" href="{% url "download_binary" checksum=e.MD5%}"><i class="fas fa-download"></i></a>
-                                </p>
-                            {% if '.apk' == e.FILE_NAME|slice:"-4:" or '.xapk' == e.FILE_NAME|slice:"-5:" or '.apks' == e.FILE_NAME|slice:"-5:" or '.aab' == e.FILE_NAME|slice:"-4:"%}
-                                <p><a class="diffButton btn btn-warning btn-sm" id="{{ e.MD5 }}_{{ e.FILE_NAME }}"><i class="fas fa-not-equal"></i> Diff or Compare</a>
-                                </p>
-                            {% endif %}
-                            <p> <a class="btn btn-danger btn-sm" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="#"><i class="fa fa-trash"></i> Delete Scan</a> </p>
+                            <td class="scan-when" title="{{ e.TIMESTAMP }}">
+                              {{ e.TIMESTAMP|timesince }} ago<br/>
+                              <span class="scan-meta">{{ e.TIMESTAMP|date:"M j, Y H:i" }}</span>
+                            </td>
+                            <td class="scan-actions">
+                              {% if e.PACKAGE_NAME or e.APP_NAME %}
+                              <div class="report-actions">
+                                <a class="btn btn-primary btn-sm" href="../../../{{ e.ANALYZER }}/{{ e.MD5 }}/"><i class="fas fa-eye"></i> Static Report</a>
+                                {% if fn|slice:"-4:" == '.apk' or fn|slice:"-5:" == '.xapk' or fn|slice:"-5:" == '.apks' or fn|slice:"-4:" == '.aab' %}
+                                <a class="btn btn-sm btn-outline-success {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "dynamic_report" checksum=e.MD5 %}"><i class="fa fa-mobile-alt"></i> Dynamic Report</a>
+                                {% elif fn|slice:"-4:" == '.ipa' and e.PACKAGE_NAME %}
+                                <a class="btn btn-sm btn-outline-success {% if not e.DYNAMIC_REPORT_EXISTS %}disabled{% endif %}" href="{% url "ios_view_report" bundle_id=e.PACKAGE_NAME %}"><i class="fa fa-mobile-alt"></i> Dynamic Report</a>
+                                {% endif %}
+                              </div>
+                              {% endif %}
+                              <div class="report-actions icon-actions">
+                                <a class="btn btn-sm btn-outline-secondary" data-tip="Download PDF report" aria-label="Download PDF report" href="{% url "pdf" checksum=e.MD5 %}"><i class="fas fa-file-pdf"></i></a>
+                                <a class="btn btn-sm btn-outline-secondary" data-tip="Rescan" aria-label="Rescan" href="../../../{{ e.ANALYZER }}/{{ e.MD5 }}/?rescan=1"><i class="fas fa-sync-alt"></i></a>
+                                <a class="btn btn-sm btn-outline-secondary" data-tip="Download uploaded file" aria-label="Download uploaded file" href="{% url "download_binary" checksum=e.MD5 %}"><i class="fas fa-download"></i></a>
+                                {% if fn|slice:"-4:" == '.apk' or fn|slice:"-5:" == '.xapk' or fn|slice:"-5:" == '.apks' or fn|slice:"-4:" == '.aab' %}
+                                <a class="diffButton btn btn-sm btn-outline-secondary" data-tip="Compare with another scan" aria-label="Compare with another scan" href="#" data-md5="{{ e.MD5 }}" data-name="{{ e.FILE_NAME }}"><i class="fas fa-not-equal"></i></a>
+                                {% endif %}
+                                <a class="btn btn-sm btn-outline-danger" data-tip="Delete scan" aria-label="Delete scan" id="{{ e.MD5 }}" onclick="delete_scan(this)" href="#"><i class="fa fa-trash"></i></a>
+                              </div>
                             </td>
                         </tr>
+                        {% endwith %}
                     {% endfor %}
                     </tbody>
                 </table>
@@ -125,13 +302,13 @@
                   {% if page_obj.has_previous %}
                   <li class="page-item">
                     <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.previous_page_number %}">Previous</a>
-                  </li>   
+                  </li>
                   {% else %}
                   <li class="page-item">
                   <a class="page-link">Previous</a>
                   </li>
                   {% endif %}
-      
+
                   {% for i in page_obj.paginator.page_range %}
                   {% if page_obj.number == i %}
                   <li class="page-item active">
@@ -143,7 +320,7 @@
                   </li>
                   {% endif %}
                   {% endfor %}
-      
+
                   {% if page_obj.has_next %}
                   <li class="page-item">
                     <a class="page-link" href="{% url 'scans_paginated' page_size=page_obj.page_size page_number=page_obj.next_page_number %}">Next</a>
@@ -189,7 +366,7 @@
     // Escape HTML
     function escapeHtml(unsafe)
     {
-        return unsafe
+        return String(unsafe)
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
@@ -203,7 +380,7 @@
 
     // When a row is clicked, we check if we already have first scan, if so, ask for confirmation
     function enable_partner_select() {
-        $('table tr').on('click', function (e) {
+        $('.scans-table tbody tr').on('click', function (e) {
             e.preventDefault();
             if (diff_first_md5 == '') {
                 return;
@@ -212,9 +389,13 @@
         })
     }
 
+    function disable_partner_select() {
+        $('.scans-table tbody tr').off('click');
+    }
 
     function enable_diff_button(){
         $(".diffButton").on('click', function(e){
+            e.preventDefault();
             e.stopPropagation();
             diff_select($(this));
         });
@@ -233,8 +414,8 @@
             text: 'Please select the second scan result for comparison',
             timer: 10000
         });
-        diff_first_md5 = item.attr('id').slice(0, 32);
-        diff_first_name = item.attr('id').slice(33);
+        diff_first_md5 = item.attr('data-md5');
+        diff_first_name = item.attr('data-name');
         item.closest("tr").addClass("selected");
         item.closest("tbody").addClass("selectable_table");
 
@@ -244,24 +425,22 @@
     }
 
     function diff_cleanup() {
-        first_td_id = diff_first_md5 + '_' + escapeHtml(diff_first_name);
-        $('[id="' + first_td_id + '"]').closest("tr").removeClass("selected");
-        $('[id="' + first_td_id + '"]').closest("tbody").removeClass("selectable_table");
+        $('.scans-table tr.selected').removeClass("selected");
+        $('.scans-table tbody').removeClass("selectable_table");
         diff_first_md5 = "";
         diff_first_name = "";
+        disable_partner_select();
         enable_diff_button();
     }
 
     // Here we get jquery row
-    function diff_confirmation(item) {
-        // First we need the id which has the md5 and name
-        rows_tds = item.find('td');
-        selected_md5 = rows_tds[3].innerText;
-        if (diff_first_md5 == selected_md5) {
+    function diff_confirmation(row) {
+        var selected_md5 = row.attr('data-md5');
+        if (!selected_md5 || diff_first_md5 == selected_md5) {
             return;
         }
-        diff_second_md5 = selected_md5;
-        diff_second_name = rows_tds[1].innerText;
+        var diff_second_md5 = selected_md5;
+        var diff_second_name = row.attr('data-name');
 
         Swal.fire({
             title: '<strong>Diff confirmation</strong>',
@@ -274,7 +453,7 @@
             cancelButtonText: 'Cancel',
             confirmButtonText: 'Start Diffing!',
         }).then((result) => {
-            if (result.value) {
+            if (result.value && /^[0-9a-f]{32}$/i.test(diff_first_md5) && /^[0-9a-f]{32}$/i.test(diff_second_md5)) {
                 window.location = '/compare/' + diff_first_md5 + '/' + diff_second_md5 + '/';
             } else {
                  diff_cleanup();
@@ -329,13 +508,13 @@
                                     )
                             }
                 });
-               
+
         } else {
                 diff_cleanup();
         }
         });
 }
-    
+
 
 enable_diff_button();
 

@@ -1,0 +1,11 @@
+<p class="mb-1"><strong><i class="fas fa-info"></i> APP INFORMATION</strong></p>
+<dl class="info-grid">
+  <dt>App Name</dt><dd>{{ app_name }}</dd>
+  <dt>App Type</dt><dd>{{ app_type }}</dd>
+  <dt>Identifier</dt><dd>{{ bundle_id }}</dd>
+  <dt>Version</dt>
+  <dd>{{ app_version|default:"-" }}{% if build %} <span class="text-muted">(build {{ build }})</span>{% endif %}</dd>
+  <dt>SDK</dt>
+  <dd>{{ sdk_name|default:"-" }}<span class="sep">&middot;</span>Platform {{ platform|default:"-" }}<span class="sep">&middot;</span>Min OS {{ min_os_version|default:"-" }}</dd>
+  <dt>Platforms</dt><dd>{{ bundle_supported_platforms|join:", "|default:"-" }}</dd>
+</dl>

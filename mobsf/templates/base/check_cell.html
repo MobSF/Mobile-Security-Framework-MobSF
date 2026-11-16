@@ -1,0 +1,7 @@
+<td class="check-cell"{% if chk %} title="{{ chk.description }}" tabindex="0"{% endif %}>
+  {% if chk %}
+  <b>{{ value }}</b>
+  <span class="badge bg-{% if chk.severity == 'high' %}danger{% elif chk.severity == 'warning' %}warning{% elif chk.severity == 'secure' %}success{% else %}info{% endif %}">{{ chk.severity }}</span>
+  <span class="check-desc">{{ chk.description }}</span>
+  {% endif %}
+</td>

@@ -20,7 +20,7 @@ from mobsf.MobSF.tools_download import (
 
 logger = logging.getLogger(__name__)
 
-VERSION = '4.6.6'
+VERSION = '4.7.0'
 BANNER = r"""
   __  __       _    ____  _____       _  _    __   
  |  \/  | ___ | |__/ ___||  ___|_   _| || |  / /_  

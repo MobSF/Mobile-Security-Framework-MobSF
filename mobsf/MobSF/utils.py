@@ -1010,6 +1010,32 @@ def key(data, key_name):
     return data.get(key_name)
 
 
+def malware_first(domains):
+    """Return domain items with malicious domains first."""
+    if not isinstance(domains, dict):
+        return []
+    return sorted(
+        domains.items(),
+        key=lambda item: (
+            not (isinstance(item[1], dict) and item[1].get('bad') == 'yes'),
+            str(item[0])))
+
+
+def is_http_url(value):
+    """Check if a value is an absolute http(s) URL."""
+    return (isinstance(value, str)
+            and value.strip().lower().startswith(('http://', 'https://')))
+
+
+def has_ofac(domains):
+    """Check if any domain resolves to an OFAC sanctioned country."""
+    if not isinstance(domains, dict):
+        return False
+    return any(
+        isinstance(d, dict) and d.get('ofac') is True
+        for d in domains.values())
+
+
 def replace(value, arg):
     """
     Replacing filter.

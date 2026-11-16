@@ -212,6 +212,7 @@ INSTALLED_APPS = (
     'mobsf.MalwareAnalyzer',
 )
 MIDDLEWARE = (
+    'mobsf.MobSF.middleware.CompressionMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'mobsf.MobSF.views.api.api_middleware.RestApiAuthMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

@@ -1,0 +1,15 @@
+<div class="exported-strip">
+      <strong class="exported-title" tabindex="0" data-tip="Exported components are entry points that any other app on the device can call. A component is exported when it sets android:exported=&quot;true&quot;, or, for apps targeting Android 11 or lower, when it has an intent filter.&#10;&#10;Counts show exported / total. Every exported component must check who is calling it and validate all input it receives. If it doesn't need to be public, set android:exported=&quot;false&quot; or protect it with a signature-level permission."><i class="fas fa-door-open"></i> EXPORTED COMPONENTS <i class="fas fa-info-circle text-muted"></i></strong>
+      <a href="#activities" class="exported-stat{% if exported_count.exported_activities %} has-exported{% endif %}" data-tip="Activities are the app's screens. Any app can launch an exported activity directly.&#10;&#10;Risks: skipping login or payment flows by opening internal screens, acting on untrusted intent extras or deep links, leaking data through returned results, and task hijacking (StrandHogg).">
+        <i class="fa fa-language"></i> Activities <b>{{ exported_count.exported_activities }}</b><span>/ {{ activities|length }}</span>
+      </a>
+      <a href="#services" class="exported-stat{% if exported_count.exported_services %} has-exported{% endif %}" data-tip="Services do background work and expose IPC interfaces. Any app can start or bind to an exported service.&#10;&#10;Risks: triggering privileged actions (uploads, sync, account or payment operations), calling exposed AIDL or Messenger methods without authorization, and draining battery or denial of service.">
+        <i class="fa fa-cogs"></i> Services <b>{{ exported_count.exported_services }}</b><span>/ {{ services|length }}</span>
+      </a>
+      <a href="#receivers" class="exported-stat{% if exported_count.exported_receivers %} has-exported{% endif %}" data-tip="Broadcast receivers react to system and app events. Any app can send a broadcast to an exported receiver.&#10;&#10;Risks: spoofed broadcasts triggering sensitive actions, injecting crafted data into the app, and denial of service. Sensitive receivers should require a signature-level permission.">
+        <i class="fa fa-assistive-listening-systems"></i> Receivers <b>{{ exported_count.exported_receivers }}</b><span>/ {{ receivers|length }}</span>
+      </a>
+      <a href="#providers" class="exported-stat{% if exported_count.exported_providers %} has-exported{% endif %}" data-tip="Content providers share the app's data, such as databases and files. Any app can query an exported provider.&#10;&#10;Risks: reading or changing private user data, SQL injection through query arguments, and path traversal in openFile() exposing internal files. Prefer FileProvider with scoped URI permissions.">
+        <i class="fa fa-database"></i> Providers <b>{{ exported_count.exported_providers }}</b><span>/ {{ providers|length }}</span>
+      </a>
+</div>

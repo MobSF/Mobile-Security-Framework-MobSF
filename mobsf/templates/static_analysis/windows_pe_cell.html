@@ -1,7 +1,1 @@
-<td class="pe-cell">
-  {% if chk %}
-  <span class="badge bg-{% if chk.severity == 'high' %}danger{% elif chk.severity == 'warning' %}warning{% elif chk.severity == 'secure' %}success{% else %}info{% endif %}">{{ chk.value }}</span><br/>
-  <strong>{{ chk.severity }}</strong><br/>
-  {{ chk.description }}
-  {% endif %}
-</td>
+{% include 'base/check_cell.html' with value=chk.value chk=chk %}

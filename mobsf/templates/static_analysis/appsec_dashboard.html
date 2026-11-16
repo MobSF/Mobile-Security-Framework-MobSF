@@ -4,604 +4,412 @@
 sidebar-collapse
 {% endblock %}
 {% block extra_css %}
+<link href="{% static "others/css/report.css" %}" rel="stylesheet">
 <style>
-    @media print {
-      body { 
-        -webkit-print-color-adjust: exact; 
-      }
+  @media print {
+    body {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
-    #mobsf{
-      width: 30px;
-      height: 30px;
-      background-color: #46494c;
+    .no-print {
+      display: none !important;
     }
-    #app_icon{
-      width: 64px;
-      height: 64px;
+  }
+  .sc-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) auto minmax(0, 1.2fr);
+    gap: 1.5rem 2.5rem;
+    align-items: center;
+  }
+  @media (max-width: 991px) {
+    .sc-hero {
+      grid-template-columns: 1fr;
     }
-
-    #app_icon2{
-      width: 32px;
-      height: 32px;
-    }
-    
-    #severity{
-      width:240px !important;
-      height:238px !important;
-    }
-
-
-    #risk{
-      width:220px !important;
-      height:115px !important;
-    }
-
-    .privacy {
-        text-align: center;
-        font-size: 125px;
-        color: white;
-        line-height:205px;
-        display: inline-block;
-        height:205px;
-        width: 205px;
-    }
-    pre {
-        white-space: pre-wrap;       /* Since CSS 2.1 */
-        white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-        white-space: -pre-wrap;      /* Opera 4-6 */
-        white-space: -o-pre-wrap;    /* Opera 7 */
-        word-wrap: break-word;       /* Internet Explorer 5.5+ */
-    }
-    .sameline{
-      display: flex;
-      justify-content: space-between;
-      padding-right: 10px;
-}
-
-
-.risk-level {
-  counter-reset: step-counter;
-  margin: 0;
-  padding: 0;
-}
-.risk-level > li {
-  color:rgb(49, 49, 49);
-  display: inline-block;
-  overflow: hidden;
-  width: 30px;
-  height: 30px;
-  -moz-border-radius: 3px;
-  -webkit-border-radius: 3px;
-  border-radius: 3px;
-  text-align: center;
-  line-height: 30px;
-  vertical-align: middle;
-}
-.risk-level > li::before {
-  display: block;
-  color: rgba(255, 255, 255, 0.5);
-  font-family: "Trebuchet MS", Arial, sans-serif;
-  font-size: 25px;
-}
-.risk-level > li.isActive {
-  font-weight: bold;
-  font-size: 28px;
-  width: 50px;
-  height: 50px;
-  line-height: 50px;
-}
-.risk-level > li.isActive::before {
-  color: white;
-  font-size: 42px;
-}
-.risk-level > li:nth-child(1) {
-  background: #28a745;
-}
-.risk-level > li:nth-child(2) {
-  background: yellow;
-}
-.risk-level > li:nth-child(3) {
-  background: #ffc107;
-}
-.risk-level > li:nth-child(4) {
-  background: #ff0018;
-}
-/* Credits for Risk Level
-// @Author: Bastien Heynderickx (hachbé)
-// @Website: http://www.hachbe.be
-// @Version: 0.0.2 (2015-02-18)
-*/
+  }
+  .sc-app {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    min-width: 0;
+  }
+  .sc-app img {
+    width: 72px;
+    height: 72px;
+    border-radius: 16px;
+    background: #e9ecef;
+    object-fit: cover;
+  }
+  body.dark-mode .sc-app img {
+    background: transparent;
+  }
+  .sc-app h1 {
+    margin: 0;
+    font-size: 1.45rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  .sc-app .sc-sub {
+    color: #6c757d;
+    font-size: .85rem;
+    overflow-wrap: anywhere;
+  }
+  .sc-kicker {
+    color: #6c757d;
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .sc-logo {
+    width: 20px;
+    height: 20px;
+    margin-right: .3rem;
+    padding: 2px;
+    border-radius: 4px;
+    background: #46494c;
+    vertical-align: -5px;
+  }
+  .sc-actions {
+    margin-top: .6rem;
+  }
+  .sc-score {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+  }
+  .sc-dial {
+    position: relative;
+    width: 150px;
+    height: 150px;
+  }
+  .sc-dial svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+  .sc-dial circle {
+    fill: none;
+    stroke-width: 3;
+  }
+  .sc-dial-value {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .sc-dial-value b {
+    font-size: 2.6rem;
+  }
+  .sc-dial-value small {
+    margin-top: .25rem;
+    color: #6c757d;
+  }
+  .sc-grade {
+    display: grid;
+    grid-template-columns: repeat(4, 2rem);
+    gap: .3rem;
+    margin: .35rem 0 .5rem;
+  }
+  .sc-grade span {
+    height: 2rem;
+    border-radius: .35rem;
+    background: #e9ecef;
+    color: #6c757d;
+    font-weight: 700;
+    line-height: 2rem;
+    text-align: center;
+  }
+  .sc-grade span.active {
+    background: var(--ring);
+    color: #fff;
+    transform: scale(1.12);
+  }
+  .score-ring.risk-medium .sc-grade span.active {
+    color: #1f2d3d;
+  }
+  .sc-risk {
+    color: var(--ring);
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+  .sc-side .sev-bar {
+    height: 12px;
+    border-radius: 6px;
+  }
+  .sc-side .sev-legend {
+    grid-template-columns: repeat(3, max-content);
+    font-size: .85rem;
+  }
+  .sc-side .info-grid {
+    margin-top: .75rem;
+  }
+  .sc-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: .9rem;
+  }
+  .sc-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+  }
+  .sc-filter {
+    padding: .2rem .7rem;
+    border: 1px solid #dee2e6;
+    border-radius: 1rem;
+    background: transparent;
+    color: inherit;
+    font-size: .85rem;
+  }
+  .sc-filter b {
+    margin-left: .25rem;
+  }
+  .sc-filter.active {
+    border-color: #343a40;
+    background: #343a40;
+    color: #fff;
+  }
+  .sc-search {
+    max-width: 18rem;
+  }
+  .finding {
+    margin-bottom: .4rem;
+    border: 1px solid rgba(0, 0, 0, .08);
+    border-left: 4px solid #6c757d;
+    border-radius: .35rem;
+  }
+  .finding-high { border-left-color: #dc3545; }
+  .finding-warning { border-left-color: #ffc107; }
+  .finding-info { border-left-color: #17a2b8; }
+  .finding-secure { border-left-color: #28a745; }
+  .finding summary {
+    display: flex;
+    gap: .6rem;
+    align-items: center;
+    padding: .55rem .8rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  .finding summary::-webkit-details-marker {
+    display: none;
+  }
+  .finding summary::before {
+    content: "\25B8";
+    color: #adb5bd;
+    transition: transform .12s ease;
+  }
+  .finding[open] summary::before {
+    transform: rotate(90deg);
+  }
+  .finding-title {
+    flex: 1 1 auto;
+    font-weight: 500;
+  }
+  .finding-section {
+    color: #6c757d;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .05em;
+    white-space: nowrap;
+  }
+  .finding-desc {
+    margin: 0;
+    padding: .2rem 1rem .9rem 2.1rem;
+    font-size: .85rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .sc-empty {
+    padding: 1rem 0;
+    color: #6c757d;
+  }
+  body.dark-mode .sc-grade span {
+    background: #4b545c;
+    color: #ced4da;
+  }
+  body.dark-mode .sc-filter {
+    border-color: #56606a;
+  }
+  body.dark-mode .sc-filter.active {
+    border-color: #f8f9fa;
+    background: #f8f9fa;
+    color: #1f2327;
+  }
+  body.dark-mode .finding {
+    border-color: rgba(255, 255, 255, .1);
+  }
+  body.dark-mode .sc-app .sc-sub,
+  body.dark-mode .sc-kicker,
+  body.dark-mode .finding-section,
+  body.dark-mode .sc-dial-value small {
+    color: #adb5bd;
+  }
 </style>
-<link rel="stylesheet" href="{% static "others/css/spinner.css" %}">
 {% endblock %}
 {% block content %}
-    <!-- Content Wrapper. Contains page content -->
-  <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
-    <section class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-12">
-            <div class="sameline">
-           <h1><img src="{% static "img/mobsf_icon.png" %}" id="mobsf" alt="MobSF"> MobSF Application Security Scorecard
-           <img id="app_icon" src="/download/{{ hash }}-icon.png" onerror="this.src='{% static 'img/no_icon.png' %}'"/>
-           - {% if app_name %}  {{ app_name }}  {% else %} {{ file_name }} {% endif %} {{ version_name }}
-        
-            {% if '.apk' == file_name|slice:"-4:"%}<i class="fab fa-android"></i>
-            {% elif '.xapk' == file_name|slice:"-5:"%}<i class="fab fa-android"></i>
-            {% elif '.apks' == file_name|slice:"-5:"%}<i class="fab fa-android"></i>
-            {% elif '.dex' == file_name|slice:"-4:"%}<i class="fas fa-file-code"></i>
-            {% elif '.ipa' == file_name|slice:"-4:"%}<i class="fab fa-apple"></i>
-            {% elif '.zip' == file_name|slice:"-4:"%}<i class="fas fa-file-archive"></i>
-            {% elif '.appx' == file_name|slice:"-5:"%}<i class="fab fa-windows"></i>
+<div class="content-wrapper">
+  <section class="content-header"></section>
+  <section class="content">
+    <div class="container-fluid">
+
+      <div class="card">
+        <div class="card-body">
+          <div class="sc-hero">
+            <div>
+              <div class="sc-kicker"><img class="sc-logo" src="{% static "img/mobsf_icon.png" %}" alt=""> MobSF Application Security Scorecard</div>
+              <div class="sc-app mt-2">
+                <img src="{% if icon_path %}/download/{{ icon_path }}{% else %}{% static 'img/no_icon.png' %}{% endif %}" alt="" onerror="this.onerror=null;this.src='{% static 'img/no_icon.png' %}'">
+                <div>
+                  <h1>{% if app_name %}{{ app_name }}{% else %}{{ file_name }}{% endif %}{% if version_name %} <small class="text-muted">{{ version_name }}</small>{% endif %}</h1>
+                  <div class="sc-sub">
+                    <i class="fab {% if analyzer == 'static_analyzer_ios' %}fa-apple{% else %}fa-android{% endif %}"></i>
+                    {{ file_name }}<br/>
+                    <span class="mono" title="MD5">{{ hash }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="report-actions sc-actions no-print">
+                <a class="btn btn-sm btn-outline-primary" href="{% url analyzer checksum=hash %}"><i class="fas fa-eye"></i> Static Report</a>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="fas fa-file-pdf"></i> Print / PDF</button>
+              </div>
+            </div>
+
+            {% if not efr01 %}
+            <div class="score-ring {% if security_score < 30 %}risk-critical{% elif security_score < 40 %}risk-high{% elif security_score < 60 %}risk-medium{% else %}risk-low{% endif %}">
+              <div class="sc-score">
+                <div class="sc-dial">
+                  <svg viewBox="0 0 36 36" aria-hidden="true">
+                    <circle class="score-ring-track" cx="18" cy="18" r="16" pathLength="100"/>
+                    <circle class="score-ring-value" cx="18" cy="18" r="16" pathLength="100" stroke-dasharray="{{ security_score }} 100"/>
+                  </svg>
+                  <div class="sc-dial-value"><b>{{ security_score }}</b><small>/ 100</small></div>
+                </div>
+                <div>
+                  <div class="sc-kicker">Grade</div>
+                  <div class="sc-grade">
+                    <span class="{% if security_score >= 60 %}active{% endif %}">A</span>
+                    <span class="{% if security_score >= 40 and security_score < 60 %}active{% endif %}">B</span>
+                    <span class="{% if security_score >= 30 and security_score < 40 %}active{% endif %}">C</span>
+                    <span class="{% if security_score < 30 %}active{% endif %}">F</span>
+                  </div>
+                  <div class="sc-risk">{% if security_score < 30 %}Critical Risk{% elif security_score < 40 %}High Risk{% elif security_score < 60 %}Medium Risk{% else %}Low Risk{% endif %}</div>
+                </div>
+              </div>
+            </div>
             {% endif %}
-        </h1>
-        <label class="text-right">  <a class="btn btn-outline-primary" onclick="window.print()"><i class="fas fa-file-pdf"></i></a> </label>
-      </div>
+
+            <div class="sc-side">
+              <div class="sc-kicker mb-2">Findings</div>
+              {% with h=high|length w=warning|length i=info|length s=secure|length hs=hotspot|length %}
+              <span class="sev-bar" aria-hidden="true">
+                {% if h %}<span class="sev-high" style="flex: {{ h }}"></span>{% endif %}
+                {% if w %}<span class="sev-warning" style="flex: {{ w }}"></span>{% endif %}
+                {% if i %}<span class="sev-info" style="flex: {{ i }}"></span>{% endif %}
+                {% if s %}<span class="sev-secure" style="flex: {{ s }}"></span>{% endif %}
+                {% if hs %}<span class="sev-hotspot" style="flex: {{ hs }}"></span>{% endif %}
+              </span>
+              <span class="sev-legend">
+                <span><i class="sev-dot sev-high"></i><b>{{ h }}</b> High</span>
+                <span><i class="sev-dot sev-warning"></i><b>{{ w }}</b> Medium</span>
+                <span><i class="sev-dot sev-info"></i><b>{{ i }}</b> Info</span>
+                <span><i class="sev-dot sev-secure"></i><b>{{ s }}</b> Secure</span>
+                <span><i class="sev-dot sev-hotspot"></i><b>{{ hs }}</b> {% if efr01 %}Investigate{% else %}Hotspot{% endif %}</span>
+              </span>
+              {% endwith %}
+              {% if not efr01 %}
+              <dl class="info-grid">
+                <dt>Privacy</dt>
+                <dd>{% if total_trackers %}<b class="{% if trackers %}text-warning-strong{% else %}text-success{% endif %}">{{ trackers }}</b> user/device tracker{{ trackers|pluralize }}{% else %}<span class="text-muted">Trackers not scanned</span>{% endif %}</dd>
+              </dl>
+              {% endif %}
+            </div>
           </div>
         </div>
-      </div><!-- /.container-fluid -->
-    </section>
+      </div>
 
-    <!-- Main content -->
-    <section class="content">
-        <div class="row">
-
-            <div class="col-lg-3">
-              {% if not efr01 %}
-                <div class="card">
-                    <div class="card-header ui-sortable-handle" >
-                      <h3 class="card-title">
-                        <i class="fas fa-star-half-alt"></i> Security Score
-                      </h3>
-                    </div><!-- /.card-header -->
-                    <div class="card-body">
-                      <div align="center"class="tab-content p-0">
-                        <p>
-                        <input type="text" value="{{ security_score }}" class="dial" data-fgColor="
-                        {% if security_score < 30 %}
-                        #ff0018
-                        {% elif security_score < 40 %}
-                        #ffc107
-                        {% elif security_score < 60 %}
-                        #17a2b8
-                        {% else %}
-                        #28a745
-                        {% endif %}
-                        ">
-                        </br>
-                   <h5>Security Score {{ security_score }}/100</h5></p>
-                      </div>
-                    </div><!-- /.card-body -->
-                  </div>
-                  {% endif %}
+      <div class="card">
+        <div class="card-body">
+          <div class="sc-toolbar no-print">
+            <div class="sc-filters" role="group" aria-label="Filter findings">
+              <button type="button" class="sc-filter active" data-filter="all">All<b class="sc-total"></b></button>
+              <button type="button" class="sc-filter" data-filter="high"><i class="sev-dot sev-high"></i>High<b>{{ high|length }}</b></button>
+              <button type="button" class="sc-filter" data-filter="warning"><i class="sev-dot sev-warning"></i>Medium<b>{{ warning|length }}</b></button>
+              <button type="button" class="sc-filter" data-filter="info"><i class="sev-dot sev-info"></i>Info<b>{{ info|length }}</b></button>
+              <button type="button" class="sc-filter" data-filter="secure"><i class="sev-dot sev-secure"></i>Secure<b>{{ secure|length }}</b></button>
+              <button type="button" class="sc-filter" data-filter="hotspot"><i class="sev-dot sev-hotspot"></i>{% if efr01 %}Investigate{% else %}Hotspot{% endif %}<b>{{ hotspot|length }}</b></button>
             </div>
+            <input type="search" class="form-control form-control-sm sc-search" placeholder="Search findings" aria-label="Search findings">
+          </div>
 
-            <div class="col-lg-3">
-                <div class="card">
-                    <div class="card-header ui-sortable-handle" >
-                      <h3 class="card-title">
-                        <i class="fas fa-tachometer-alt"></i> Risk Rating
-                      </h3>
-                    </div><!-- /.card-header -->
-                    <div class="card-body">
-                      <div align="center" class="tab-content p-0">
-                        <p>
-                          <canvas id="risk"></canvas>
-                        </br>
-                        <p><h5>Grade</h5></p>
-                        <ol class="risk-level">
-                          {% if security_score < 30 %}
-                          <li>A</li>
-                          <li>B</li>
-                          <li>C</li>
-                          <li class="isActive">F</li>
-                          {% elif security_score < 40 %}
-                          <li>A</li>
-                          <li>B</li>
-                          <li class="isActive">C</li>
-                          <li>F</li>
-                          {% elif security_score < 60 %}
-                          <li>A</li>
-                          <li class="isActive">B</li>
-                          <li>C</li>
-                          <li>F</li>
-                          {% else %}
-                          <li class="isActive">A</li>
-                          <li>B</li>
-                          <li>C</li>
-                          <li>F</li>
-                          {% endif %}
-                        </ol>
-                        </h5>
-                        </p>
-                      </div>
-                    </div><!-- /.card-body -->
-                  </div>
-            </div>
-
-            <div class="col-lg-3">
-                <div class="card">
-                    <div class="card-header ui-sortable-handle" >
-                      <h3 class="card-title">
-                        <i class="fas fa-chart-pie mr-1"></i>
-                        Severity Distribution (%)
-                      </h3>
-                    </div><!-- /.card-header -->
-                    <div class="card-body">
-                      <div align="center" class="tab-content p-0">
-                        <canvas width="100%" height="100%" id="severity"></canvas>
-                      </br>
-                      </div>
-                    </div><!-- /.card-body -->
-                  </div>
-            </div>
-
-            <div class="col-lg-3">
-              {% if not efr01 %}
-                <div class="card">
-                    <div class="card-header ui-sortable-handle" >
-                      <h3 class="card-title">
-                        <i class="fas fa-user-secret"></i>
-                        Privacy Risk
-                      </h3>
-                    </div><!-- /.card-header -->
-                    <div class="card-body">
-                      <div align="center" class="tab-content p-0">
-                        <p>
-                        <span class="privacy" style="{% if total_trackers %}
-                            {% if trackers == 0 %}
-                              background:#39850d">
-                            {% elif trackers > 4 %}
-                              background:#ff0018">
-                            {% else %}
-                              background:#303238">
-                            {% endif %}
-                            {{ trackers }} {% else %}"> NA {% endif %}</span>
-                        </br>
-                        <h5>{% if total_trackers %} User/Device Trackers {% else %} Not Scanned {% endif %}</h5></p>
-                      </div>
-                    </div><!-- /.card-body -->
-                  </div>
-                  {% endif %}
-            </div>
-
+          <div id="sc-findings">
+            {% for item in high %}{% include 'static_analysis/appsec_finding.html' with sev='high' badge='bg-danger' label='high' %}{% endfor %}
+            {% for item in warning %}{% include 'static_analysis/appsec_finding.html' with sev='warning' badge='bg-warning' label='medium' %}{% endfor %}
+            {% for item in info %}{% include 'static_analysis/appsec_finding.html' with sev='info' badge='bg-info' label='info' %}{% endfor %}
+            {% for item in secure %}{% include 'static_analysis/appsec_finding.html' with sev='secure' badge='bg-success' label='secure' %}{% endfor %}
+            {% if efr01 %}
+            {% for item in hotspot %}{% include 'static_analysis/appsec_finding.html' with sev='hotspot' badge='bg-secondary' label='need to investigate' %}{% endfor %}
+            {% else %}
+            {% for item in hotspot %}{% include 'static_analysis/appsec_finding.html' with sev='hotspot' badge='bg-secondary' label='hotspot' %}{% endfor %}
+            {% endif %}
+          </div>
+          <p class="sc-empty" hidden>No findings match.</p>
         </div>
+      </div>
 
-    </br>
-
-    
-
-        <div class="row">
-            <div class="col-12" id="accordion">
-
-                <div class="col-lg-12">
-                    <div class="card">
-                        <div class="card-header ui-sortable-handle" >
-                          <h3 class="card-title">
-                            <i class="fas fa-file-alt"></i> Findings
-                          </h3>
-                        </div><!-- /.card-header -->
-                        <div class="card-body">
-                            <!--boxes-->
-                            <div class="row">
-                                <!-- /.col -->
-                                <div class="col-md-3 col-sm-6 col-12">
-                                    <div class="info-box">
-                                      <span class="info-box-icon bg-danger"><i class="fas fa-bug"></i></span>
-                        
-                                      <div class="info-box-content">
-                                        <span class="info-box-text">High</span>
-                                        <span class="info-box-number">{{ high | length}}</span>
-                                      </div>
-                                      <!-- /.info-box-content -->
-                                    </div>
-                                    <!-- /.info-box -->
-                                  </div>
-                                  <!-- /.col -->
-                                  <div class="col-md-3 col-sm-6 col-12">
-                                    <div class="info-box">
-                                      <span class="info-box-icon bg-warning"><i class="fas fa-exclamation-triangle"></i></span>
-                        
-                                      <div class="info-box-content">
-                                        <span class="info-box-text">Medium</span>
-                                        <span class="info-box-number">{{ warning | length}}</span>
-                                      </div>
-                                      <!-- /.info-box-content -->
-                                    </div>
-                                    <!-- /.info-box -->
-                                  </div>
-                                 
-                                  <!-- /.col -->
-                                <div class="col-md-2 col-sm-6 col-12">
-                                  <div class="info-box">
-                                    <span class="info-box-icon bg-info"><i class="fas fa-info"></i></span>
-                      
-                                    <div class="info-box-content">
-                                      <span class="info-box-text">Info</span>
-                                      <span class="info-box-number">{{ info | length}}</span>
-                                    </div>
-                                    <!-- /.info-box-content -->
-                                  </div>
-                                  <!-- /.info-box -->
-                                </div>
-                                <!-- /.col -->
-                                <div class="col-md-2 col-sm-6 col-12">
-                                    <div class="info-box">
-                                      <span class="info-box-icon bg-success"><i class="fas fa-check"></i></span>
-                        
-                                      <div class="info-box-content">
-                                        <span class="info-box-text">Secure</span>
-                                        <span class="info-box-number">{{ secure | length}}</span>
-                                      </div>
-                                      <!-- /.info-box-content -->
-                                    </div>
-                                    <!-- /.info-box -->
-                                  </div>
-                                
-
-                              <div class="col-md-2 col-sm-6 col-12">
-                                <div class="info-box">
-                                  <span class="info-box-icon bg-secondary"><i class="fab fa-searchengin"></i></span>
-                    
-                                  <div class="info-box-content">
-                                    <span class="info-box-text"> {% if efr01 %}Need to Investigate{% else %}Hotspot{% endif %}</span>
-                                    <span class="info-box-number">{{ hotspot | length}}</span>
-                                  </div>
-                                  <!-- /.info-box-content -->
-                                </div>
-                                <!-- /.info-box -->
-                              </div>
-                            
-                          </div>
-                             <!--end boxes-->
-                            </br>
-{% for item in high %}
-    <div class="card card-danger card-outline">
-        <a class="d-block w-100" data-toggle="collapse" href="#high-{{ forloop.counter }}">
-        <div class="sameline">
-            <div class="card-header">
-                <h4 class="card-title w-100">
-                    <span class="badge bg-danger">high</span> {{ item.title}} 
-                </h4>
-            </div>
-        <label> {{ item.section | upper }}</label>
-        </div>
-        </a>
-        <div id="high-{{ forloop.counter }}" class="collapse" data-parent="#accordion">
-            <div class="card-body">
-                <pre>{{ item.description}}</pre>
-            </div>
-        </div>
+      <p class="text-center text-muted small">MobSF Application Security Scorecard for {% if app_name %}{{ app_name }}{% else %}{{ file_name }}{% endif %} {{ version_name }}</p>
     </div>
-{% endfor %}
-
-{% for item in warning %}
-    <div class="card card-warning card-outline">
-        <a class="d-block w-100" data-toggle="collapse" href="#warning-{{ forloop.counter }}">
-        <div class="sameline">
-            <div class="card-header">
-                <h4 class="card-title w-100">
-                    <span class="badge bg-warning">medium</span> {{ item.title}}
-                </h4>
-            </div>
-            <label> {{ item.section | upper }}</label>
-        </div>
-        </a>
-        <div id="warning-{{ forloop.counter }}" class="collapse" data-parent="#accordion">
-            <div class="card-body">
-            <pre>{{ item.description}}</pre>
-            </div>
-        </div>
-    </div>
-{% endfor %}
-
-{% for item in info %}
-    <div class="card card-info card-outline">
-        <a class="d-block w-100" data-toggle="collapse" href="#info-{{ forloop.counter }}">
-        <div class="sameline">
-            <div class="card-header">
-                <h4 class="card-title w-100">
-                    <span class="badge bg-info">info</span> {{ item.title}}
-                </h4>
-            </div>
-            <label class="text-right"> {{ item.section | upper }}</label>
-        </div>
-        </a>
-        <div id="info-{{ forloop.counter }}" class="collapse" data-parent="#accordion">
-            <div class="card-body">
-            <pre>{{ item.description}}</pre>
-            </div>
-        </div>
-    </div>
-{% endfor %}
-
-
-
-
-{% for item in secure %}
-    <div class="card card-success card-outline">
-        <a class="d-block w-100" data-toggle="collapse" href="#success-{{ forloop.counter }}">
-        <div class="sameline">
-            <div class="card-header">
-                <h4 class="card-title w-100">
-                    <span class="badge bg-success">secure</span> {{ item.title}}
-                </h4>
-            </div>
-            <label class="text-right"> {{ item.section | upper }}</label>
-        </div>
-        </a>
-        
-        <div id="success-{{ forloop.counter }}" class="collapse" data-parent="#accordion">
-            <div class="card-body">
-            <pre>{{ item.description}}</pre>
-            </div>
-        </div>
-    </div>
-{% endfor %}
-
-
-{% for item in hotspot %}
-    <div class="card card-secondary card-outline">
-        <a class="d-block w-100" data-toggle="collapse" href="#secondary-{{ forloop.counter }}">
-        <div class="sameline">
-            <div class="card-header">
-                <h4 class="card-title w-100">
-                    <span class="badge bg-secondary">{% if efr01 %}need to investigate{% else %}hotspot{% endif %}</span> {{ item.title}}
-                </h4>
-            </div>
-            <label class="text-right"> {{ item.section | upper }}</label>
-        </div>
-        </a>
-        
-        <div id="secondary-{{ forloop.counter }}" class="collapse" data-parent="#accordion">
-            <div class="card-body">
-            <pre>{{ item.description}}</pre>
-            </div>
-        </div>
-    </div>
-{% endfor %}
-
-
-
-
-                </div>
-        </div>  </div>
-    </div>
-              
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12 mt-3 text-center">
-                <p class="lead">
-                  <h5> MobSF Application Security Scorecard generated for 
-                    <img id="app_icon2" src="/download/{{ hash }}-icon.png" onerror="this.src='{% static 'img/no_icon.png' %}'"/>
-                    ({% if app_name %}  {{ app_name }}  {% else %} {{ file_name }} {% endif %} {{ version_name }})
-                     {% if '.apk' == file_name|slice:"-4:"%}<i class="fab fa-android"></i>
-                     {% elif '.xapk' == file_name|slice:"-5:"%}<i class="fab fa-android"></i>
-                     {% elif '.apks' == file_name|slice:"-5:"%}<i class="fab fa-android"></i>
-                     {% elif '.dex' == file_name|slice:"-4:"%}<i class="fas fa-file-code"></i>
-                     {% elif '.ipa' == file_name|slice:"-4:"%}<i class="fab fa-apple"></i>
-                     {% elif '.zip' == file_name|slice:"-4:"%}<i class="fas fa-file-archive"></i>
-                     {% elif '.appx' == file_name|slice:"-5:"%}<i class="fab fa-windows"></i>
-                     {% endif %}
-                  </h5>
-                </p>
-            </div>
-        </div>
-    </section>
-    <!-- /.content -->
-  </div>
-  <!-- /.content-wrapper -->
-<!--Loader-->
-<div class="hidden loading">
-  <div class='uil-ring-css' style='transform:scale(0.79);'>
-    <div></div>
-  </div>
-  </div>
+  </section>
+</div>
 {% endblock %}
 {% block extra_scripts %}
-<script src="{% static "chartjs/Chart.bundle.js" %}"></script>
-<script src="{% static "chartjs/chartjs-gauge.js" %}"></script>
-<script src="{% static "jqueryknob/jquery.knob.min.js" %}"></script>
 <script>
-    function dynamic_loader(){
-        var loadingOverlay = document.querySelector('.loading');
-        loadingOverlay.classList.remove('hidden');
-    }
-    function stop_loader(){
-        var loadingOverlay = document.querySelector('.loading');
-        loadingOverlay.classList.add('hidden');
-    }
-    dynamic_loader();
-    document.onreadystatechange = function(){
-      if(document.readyState=='loaded' || document.readyState=='complete')
-        stop_loader();
-    }
-    // Severity
+(function () {
+  var list = document.getElementById('sc-findings');
+  var findings = Array.prototype.slice.call(list.querySelectorAll('.finding'));
+  var search = document.querySelector('.sc-search');
+  var empty = document.querySelector('.sc-empty');
+  var current = 'all';
+  document.querySelector('.sc-total').textContent = findings.length;
 
-    const high = {{ high | length }};
-    const warn = {{warning | length}};
-    const info = {{ info | length}};
-    const secure = {{ secure | length}};
-    const total = Math.max(1, high + warn + info + secure);
-    const hp = Math.floor(high/ total * 100)
-    const wp = Math.floor(warn/ total * 100)
-    const ip = Math.floor(info/ total * 100)
-    const sp = Math.floor(secure/ total * 100)
-    var ctx = document.getElementById("severity").getContext('2d');
-    var myChart = new Chart(ctx, {
-    type: 'pie',
-    options: {
-        responsive: true,
-        legend: {
-            display: true,
-            labels: {
-                fontSize: 22,
-            }
-        },
-        tooltips: {
-            bodyFontSize: 22,
-        }
-    },
-    data: {
-        labels: [`High`, `Medium`, `Info`, `Secure`],
-        datasets: [{
-        backgroundColor: [
-            "#dc3545",
-            "#ffc107",
-            "#17a2b8",
-            "#28a745",
-        ],
-        data: [hp, wp, ip, sp],
-        }],
-    }
-    });
-    
-    // Security Score
-    $(function() {
-        $(".dial").knob({
-            'readOnly': true,
-        });
-    });
-
-
-    // Risk Meter
-    const riskFactor = '{% if security_score < 30 %}3.9{% elif security_score < 40 %}2.5{% elif security_score < 60 %}1.5{% else %}.5{% endif %}';
-    var ctx = document.getElementById("risk").getContext('2d');
-    var chart = new Chart(ctx, {
-    type: 'gauge',
-    data: {
-      datasets: [{
-        value: riskFactor,
-        minValue: 0,
-        data: [1, 2, 3, 4],
-        backgroundColor: ['#28a745', 'yellow', 'orange', '#dc3545'],
-      }]
-    },
-    options: {
-      needle: {
-        radiusPercentage: 2,
-        widthPercentage: 3.2,
-        lengthPercentage: 80,
-        color: 'rgba(0, 0, 0, 1)'
-      },
-      valueLabel: {
-        display: true,
-        formatter: (value) => {
-          return '{% if security_score < 30 %}Critical Risk{% elif security_score < 40 %}High Risk{% elif security_score < 60 %}Medium Risk{% else %}Low Risk{% endif %}';
-        },
-        color: 'rgba(255, 255, 255, 1)',
-        backgroundColor: 'rgba(0, 0, 0, 1)',
-        fontSize: 20,
-        borderRadius: 5,
-        padding: {
-          top: 5,
-          bottom: 10
-        }
+  function apply() {
+    var query = search.value.trim().toLowerCase();
+    var shown = 0;
+    findings.forEach(function (el) {
+      var match = (current === 'all' || el.dataset.sev === current) &&
+        (!query || el.textContent.toLowerCase().indexOf(query) !== -1);
+      el.hidden = !match;
+      if (match) {
+        shown += 1;
       }
-    }
-  });
+    });
+    empty.hidden = shown !== 0;
+  }
 
+  document.querySelectorAll('.sc-filter').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.sc-filter.active').forEach(function (b) {
+        b.classList.remove('active');
+      });
+      btn.classList.add('active');
+      current = btn.dataset.filter;
+      apply();
+    });
+  });
+  search.addEventListener('input', apply);
+  apply();
+
+  window.addEventListener('beforeprint', function () {
+    findings.forEach(function (el) {
+      el.hidden = false;
+      el.open = true;
+    });
+  });
+})();
 </script>
 {% endblock %}

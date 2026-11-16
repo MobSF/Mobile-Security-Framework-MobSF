@@ -1,0 +1,20 @@
+{% if appsec.high is not None %}
+{% with h=appsec.high|length w=appsec.warning|length i=appsec.info|length s=appsec.secure|length hs=appsec.hotspot|length %}
+<a class="sev-summary" href="{% url 'appsec_dashboard' checksum=md5 %}" title="Open MobSF Scorecard">
+  <span class="sev-bar" aria-hidden="true">
+    {% if h %}<span class="sev-high" style="flex: {{ h }}"></span>{% endif %}
+    {% if w %}<span class="sev-warning" style="flex: {{ w }}"></span>{% endif %}
+    {% if i %}<span class="sev-info" style="flex: {{ i }}"></span>{% endif %}
+    {% if s %}<span class="sev-secure" style="flex: {{ s }}"></span>{% endif %}
+    {% if hs %}<span class="sev-hotspot" style="flex: {{ hs }}"></span>{% endif %}
+  </span>
+  <span class="sev-legend">
+    <span><i class="sev-dot sev-high"></i><b>{{ h }}</b> High</span>
+    <span><i class="sev-dot sev-warning"></i><b>{{ w }}</b> Warning</span>
+    <span><i class="sev-dot sev-info"></i><b>{{ i }}</b> Info</span>
+    <span><i class="sev-dot sev-secure"></i><b>{{ s }}</b> Secure</span>
+    <span><i class="sev-dot sev-hotspot"></i><b>{{ hs }}</b> Hotspot</span>
+  </span>
+</a>
+{% endwith %}
+{% endif %}

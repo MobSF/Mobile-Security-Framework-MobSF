@@ -1,0 +1,8 @@
+<details class="finding finding-{{ sev }}" data-sev="{{ sev }}">
+  <summary>
+    <span class="badge {{ badge }}">{{ label }}</span>
+    <span class="finding-title">{{ item.title }}</span>
+    {% if item.section %}<span class="finding-section">{{ item.section|upper }}</span>{% endif %}
+  </summary>
+  <pre class="finding-desc">{{ item.description }}</pre>
+</details>

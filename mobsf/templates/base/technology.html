@@ -1,0 +1,12 @@
+{% technologies os_name as tech %}
+{% if tech %}
+<div class="tech-block">
+  <p class="mb-1"><strong><i class="fas fa-fingerprint"></i> TECHNOLOGY</strong></p>
+  {% for group in tech %}
+  <div class="tech-row {{ group.css }}">
+    <span class="tech-label"><i class="{{ group.icon }}"></i> {{ group.label }}</span>
+    {% for item in group.items %}<span class="tech-chip">{{ item }}</span>{% endfor %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
