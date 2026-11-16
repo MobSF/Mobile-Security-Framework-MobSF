@@ -493,19 +493,19 @@ body.dark-mode .scan-type i {
                                     })
                                 }
                                 else {
-                                    Swal.fire(
-                                    'Delete Failed',
-                                    json.deleted,
-                                    'error'
-                                    )
+                                    Swal.fire({
+                                        title: 'Delete Failed',
+                                        text: String(json.deleted),
+                                        type: 'error',
+                                    })
                                 }
                             },
                             error : function(xhr,errmsg,err) {
-                                Swal.fire(
-                                    'Delete Failed',
-                                    errmsg,
-                                    'error'
-                                    )
+                                Swal.fire({
+                                    title: 'Delete Failed',
+                                    text: String(errmsg),
+                                    type: 'error',
+                                })
                             }
                 });
 
