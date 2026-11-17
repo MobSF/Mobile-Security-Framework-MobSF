@@ -150,7 +150,19 @@ def _failed_check(host, w_url):
     return {'url': w_url,
             'host': host,
             'status_code': None,
-            'status': False}
+            'status': False,
+            'reason': ''}
+
+
+def assetlinks_detail(finding):
+    """Explain why an assetlinks URL failed verification."""
+    status_code = finding.get('status_code')
+    if status_code is None:
+        return 'The file could not be checked'
+    detail = f'Status Code: {status_code}'
+    if finding.get('reason'):
+        detail += f', {finding["reason"]}'
+    return detail
 
 
 def _check_url(host, w_url, deadline=None):
@@ -168,11 +180,12 @@ def _check_url(host, w_url, deadline=None):
         proxies, verify = upstream_proxy('https')
         status = False
         status_code = 0
+        reason = ''
 
-        urls = {w_url}
+        # Android only verifies over https, so its answer takes precedence.
+        urls = [w_url]
         if w_url.startswith('http://'):
-            # Upgrade http to https
-            urls.add(f'https://{w_url[7:]}')
+            urls.insert(0, f'https://{w_url[7:]}')
 
         for url in urls:
             # Validate the fully-assembled URL — path, port, query, and params.
@@ -199,19 +212,33 @@ def _check_url(host, w_url, deadline=None):
                              verify=verify)
 
             status_code = r.status_code
-            if (str(status_code).startswith('2') and iden in str(r.json())):
-                status = True
+            reason = ''
+            if 300 <= status_code < 400:
+                reason = 'the URL redirects, which Android does not follow'
+                logger.warning('Status Code: [%d], Redirecting to '
+                               'a different URL, skipping check!', status_code)
+                continue
+            if not 200 <= status_code < 300:
+                continue
+            try:
+                statements = r.json()
+            except ValueError:
+                reason = 'the file is not valid JSON'
+                logger.warning('Assetlinks file is not valid JSON: %s', url)
                 break
-        if status_code in (301, 302):
-            logger.warning('Status Code: [%d], Redirecting to '
-                           'a different URL, skipping check!', status_code)
+            status = iden in str(statements)
+            if not status:
+                reason = f'the file does not contain {iden}'
+            break
         return {'url': w_url,
                 'host': host,
                 'status_code': status_code,
-                'status': status}
+                'status': status,
+                'reason': reason}
 
-    except Exception:
-        logger.error(f'Well Known Assetlinks Check for URL: {w_url}')
+    except Exception as exp:
+        logger.error('Well Known Assetlinks Check for URL: %s failed: %r',
+                     w_url, f'{type(exp).__name__}: {exp}')
         return _failed_check(host, w_url)
 
 
@@ -414,7 +441,7 @@ def manifest_analysis(app_dic, man_data_dic):
                             ret_list.append(('well_known_assetlinks',
                                             (item, finding['host']),
                                             (finding['url'],
-                                             finding['status_code'])))
+                                             assetlinks_detail(finding))))
 
                     # Task Affinity
                     task_affinity = node.getAttribute(f'{ns}:taskAffinity')

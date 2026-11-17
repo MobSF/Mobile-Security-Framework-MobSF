@@ -4,12 +4,15 @@ import time
 from unittest import mock
 from xml.dom import minidom
 
+import requests
+
 from django.test import SimpleTestCase
 
 from mobsf.StaticAnalyzer.views.android import manifest_analysis
 from mobsf.StaticAnalyzer.views.android.manifest_analysis import (
     ASSETLINKS_MAX_URLS,
     assetlinks_check,
+    assetlinks_detail,
     get_browsable_activities,
     new_assetlinks_budget,
 )
@@ -113,6 +116,79 @@ class AssetlinksLimitTests(SimpleTestCase):
             findings = assetlinks_check('A', well_knowns(1), budget)
         self.assertLessEqual(request.call_args.kwargs['max_total_time'], 5)
         self.assertIsNone(findings[0]['status_code'])
+
+
+class AssetlinksResultTests(SimpleTestCase):
+
+    def check(self, *responses, w_url=None):
+        w_url = w_url or 'https://a.example.com/.well-known/assetlinks.json'
+        with mock.patch.object(
+                manifest_analysis, 'valid_host', return_value=True), \
+                mock.patch.object(
+                    manifest_analysis, 'safe_request',
+                    side_effect=responses) as request:
+            result = manifest_analysis._check_url(
+                'https://a.example.com', w_url)
+        return result, request
+
+    def response(self, status_code, body):
+        resp = requests.Response()
+        resp.status_code = status_code
+        resp._content = body.encode()
+        return resp
+
+    def test_valid_file(self):
+        result, _ = self.check(self.response(
+            200, '[{"target": {"sha256_cert_fingerprints": ["AA"]}}]'))
+        self.assertTrue(result['status'])
+        self.assertEqual(result['reason'], '')
+
+    def test_invalid_json(self):
+        result, _ = self.check(self.response(
+            200, '[{"target": {"sha256_cert_fingerprints": ["AA"]}},},]'))
+        self.assertFalse(result['status'])
+        self.assertEqual(result['status_code'], 200)
+        self.assertEqual(
+            assetlinks_detail(result),
+            'Status Code: 200, the file is not valid JSON')
+
+    def test_html_page(self):
+        result, _ = self.check(self.response(200, '<!DOCTYPE html><html>'))
+        self.assertEqual(result['reason'], 'the file is not valid JSON')
+
+    def test_missing_fingerprints(self):
+        result, _ = self.check(self.response(200, '[]'))
+        self.assertFalse(result['status'])
+        self.assertEqual(
+            result['reason'],
+            'the file does not contain sha256_cert_fingerprints')
+
+    def test_redirect(self):
+        result, _ = self.check(self.response(301, ''))
+        self.assertEqual(
+            assetlinks_detail(result),
+            'Status Code: 301, the URL redirects, which Android does not '
+            'follow')
+
+    def test_not_found(self):
+        result, _ = self.check(self.response(404, ''))
+        self.assertEqual(assetlinks_detail(result), 'Status Code: 404')
+
+    def test_request_error(self):
+        with self.assertLogs(manifest_analysis.logger, 'ERROR') as logs:
+            result, _ = self.check(TimeoutError('slow'))
+        self.assertEqual(
+            assetlinks_detail(result), 'The file could not be checked')
+        self.assertIn('TimeoutError: slow', logs.output[0])
+
+    def test_https_answer_takes_precedence(self):
+        result, request = self.check(
+            self.response(200, '<html>'),
+            self.response(301, ''),
+            w_url='http://a.example.com/.well-known/assetlinks.json')
+        self.assertEqual(request.call_count, 1)
+        self.assertTrue(request.call_args.args[1].startswith('https://'))
+        self.assertEqual(result['reason'], 'the file is not valid JSON')
 
 
 class FirebaseDbLimitTests(SimpleTestCase):

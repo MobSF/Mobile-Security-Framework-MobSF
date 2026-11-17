@@ -4,7 +4,7 @@ MANIFEST_DESC = {
                   '[android:name=%s][android:host=%s]'),
         'level': 'high',
         'description': ('App Link asset verification URL (%s) not found or '
-                        'configured incorrectly. (Status Code: %s). '
+                        'configured incorrectly. (%s). '
                         'App Links allow users to redirect from a web '
                         'URL/email to the mobile app. If this file is '
                         'missing or incorrectly configured for the '
