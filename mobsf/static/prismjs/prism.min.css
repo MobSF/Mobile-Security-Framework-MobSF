@@ -18,12 +18,52 @@ pre[class*="language-"].line-numbers {
 /* Prism appends the highlight after <code>; keep it behind the text. */
 .line-highlight {
   z-index: 0;
-  background: #fff3bf !important;
+  background: #fff8d6 !important;
   box-shadow: inset 3px 0 0 #f59f00;
 }
 pre[class*="language-"] > code {
   position: relative;
   z-index: 1;
+}
+/* Light theme tokens tuned for >= 4.5:1 contrast on code and highlight. */
+pre[class*="language-"],
+code[class*="language-"] {
+  text-shadow: none;
+}
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata,
+.token.punctuation {
+  color: #5f6b7a;
+}
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: #4d7300;
+}
+.token.operator,
+.token.entity,
+.token.url {
+  color: #7a5427;
+  background: transparent;
+}
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: #005a8c;
+}
+.token.function,
+.token.class-name {
+  color: #b3214a;
+}
+.token.regex,
+.token.important,
+.token.variable {
+  color: #9a5200;
 }
 body.dark-mode pre[class*="language-"],
 body.dark-mode code[class*="language-"] {

@@ -11,6 +11,10 @@ import frida
 
 import psutil
 
+from mobsf.DynamicAnalyzer.views.android.api_monitor import (
+    API_MONITOR_PREFIX,
+    serialize_event,
+)
 from mobsf.DynamicAnalyzer.views.android.environment import Environment
 from mobsf.DynamicAnalyzer.views.android.frida_scripts import (
     class_pattern,
@@ -182,6 +186,22 @@ class Frida:
             except OSError:
                 logger.exception('Unable to release Frida session ownership')
 
+    @classmethod
+    def flush_active(cls, app_hash, identifier):
+        """Deliver API monitor events the active scripts are still batching."""
+        key = (app_hash, identifier)
+        with cls._operation_lock(key):
+            with _ACTIVE_SESSIONS_LOCK:
+                entry = _ACTIVE_SESSIONS.get(key)
+            if not entry:
+                return
+            for script in entry['scripts']:
+                try:
+                    script.exports_sync.flush_api_monitor()
+                except Exception:
+                    # Scripts without the API monitor have no such export.
+                    pass
+
     @staticmethod
     def gadget_needs_session(app_hash):
         """Check if a Gadget app launch would block waiting for Frida."""
@@ -251,7 +271,12 @@ class Frida:
         if not selected_scripts:
             return header
         all_scripts = self.frida_dir / script_type
-        for script in all_scripts.rglob('*.js'):
+        # The API monitor skips methods the other scripts already replace,
+        # so it must load last.
+        ordered = sorted(
+            all_scripts.rglob('*.js'),
+            key=lambda p: (p.stem == 'api_monitor', p.name))
+        for script in ordered:
             if '*' in selected_scripts:
                 combined_script.append(script.read_text('utf-8', 'ignore'))
             if script.stem in selected_scripts:
@@ -324,7 +349,6 @@ class Frida:
         """Function to handle frida responses."""
         if 'payload' in message:
             msg = message['payload']
-            api_mon = 'MobSF-API-Monitor: '
             aux = '[AUXILIARY] '
             aux_done = '[AUXILIARY-DONE]'
             deps = '[RUNTIME-DEPS] '
@@ -332,8 +356,12 @@ class Frida:
             clip = 'mobsf-android-clipboard:'
             if not isinstance(msg, str):
                 msg = str(msg)
-            if msg.startswith(api_mon):
-                self.write_log(self.api_mon, msg.replace(api_mon, ''))
+            if msg.startswith(API_MONITOR_PREFIX):
+                line = serialize_event(msg[len(API_MONITOR_PREFIX):])
+                if line:
+                    self.write_log(self.api_mon, line)
+                else:
+                    logger.debug('[Frida] Dropped malformed API monitor event')
             elif msg.startswith(clip):
                 msg = msg.replace(clip, '')
                 self.write_log(self.clipboard, f'{msg}\n')

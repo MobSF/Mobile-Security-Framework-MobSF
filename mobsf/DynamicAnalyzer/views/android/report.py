@@ -13,6 +13,9 @@ from mobsf.DynamicAnalyzer.views.android.analysis import (
     get_screenshots,
     run_analysis,
 )
+from mobsf.DynamicAnalyzer.views.android.api_monitor import (
+    framework_call_counts,
+)
 from mobsf.DynamicAnalyzer.views.android.operations import (
     get_package_name,
 )
@@ -44,6 +47,7 @@ def view_report(request, checksum, api=False):
     try:
         droidmon = {}
         apimon = {}
+        apimon_framework = {}
         b64_strings = []
         if not is_md5(checksum):
             # We need this check since checksum is not validated
@@ -69,6 +73,7 @@ def view_report(request, checksum, api=False):
         fd_log = os.path.join(app_dir, 'mobsf_frida_out.txt')
         droidmon = droidmon_api_analysis(app_dir, package)
         apimon, b64_strings = apimon_analysis(app_dir)
+        apimon_framework = framework_call_counts(apimon)
         deps = dependency_analysis(package, app_dir)
         analysis_result = run_analysis(app_dir, checksum, package)
         domains = analysis_result['domains']
@@ -90,6 +95,7 @@ def view_report(request, checksum, api=False):
                    'exported_activity_tester': images['exported_activities'],
                    'droidmon': droidmon,
                    'apimon': apimon,
+                   'apimon_framework': apimon_framework,
                    'base64_strings': b64_strings,
                    'trackers': trackers,
                    'frida_logs': is_file_exists(fd_log),

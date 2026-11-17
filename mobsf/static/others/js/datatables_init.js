@@ -55,8 +55,10 @@
           return;
         }
         var large = mobsfRowCount(table) > SMALL_TABLE;
+        // Tables with custom row filters need searching enabled at any size.
+        var filtered = large || table.dataset.alwaysFilter === 'true';
         mobsfPrepareTable(table);
-        $(table).DataTable({ paging: large, searching: large, info: large });
+        $(table).DataTable({ paging: large, searching: filtered, info: large });
       });
     });
   });
