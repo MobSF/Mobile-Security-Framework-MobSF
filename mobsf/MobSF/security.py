@@ -814,7 +814,8 @@ def _is_unsafe_svg_attr_value(attr_val):
     """Return True if an SVG attribute value contains script URI vectors."""
     val_norm = re.sub(r'[\x00-\x20]+', '', attr_val).lower()
     return (
-        val_norm.startswith(('javascript:', 'vbscript:', 'data:'))
+        '\\' in val_norm
+        or val_norm.startswith(('javascript:', 'vbscript:', 'data:'))
         or 'javascript:' in val_norm
         or 'expression(' in val_norm
         or bool(_SVG_EXTERNAL_URL_RE.search(val_norm))

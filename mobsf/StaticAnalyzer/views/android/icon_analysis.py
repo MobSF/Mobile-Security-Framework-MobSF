@@ -660,7 +660,8 @@ def convert_axml_to_xml(app_dir, icon_file):
         logger.info('Converting icon axml to xml')
         icon_bin_xml = app_dir / icon_file
         if (not is_safe_path(app_dir, icon_bin_xml, icon_file)
-                or is_pipe_or_link(icon_bin_xml)):
+                or is_pipe_or_link(icon_bin_xml)
+                or icon_bin_xml.stat().st_size > _MAX_VECTOR_BYTES):
             return None
         out_xml = app_dir / icon_file
         raw = icon_bin_xml.read_bytes()
@@ -716,6 +717,8 @@ def _collect_vector_xml_names(app_dir, icon_name, drawable_dir):
         if not fpath.is_file() or is_pipe_or_link(fpath):
             continue
         try:
+            if fpath.stat().st_size > _MAX_VECTOR_BYTES:
+                continue
             raw = fpath.read_bytes()
             if b'<vector' not in raw:
                 continue
@@ -930,15 +933,18 @@ def _resolve_color_value(raw, colors):
     return _parse_hex_color(cur)
 
 
-def _group_transform(elem):
+def _group_transform(elem, resources=None):
     """Build an SVG transform string from an Android <group> element."""
-    tx = _vec_number(_android_attr(elem, 'translateX'), 0.0)
-    ty = _vec_number(_android_attr(elem, 'translateY'), 0.0)
-    rot = _vec_number(_android_attr(elem, 'rotation'), 0.0)
-    px = _vec_number(_android_attr(elem, 'pivotX'), 0.0)
-    py = _vec_number(_android_attr(elem, 'pivotY'), 0.0)
-    sx = _vec_number(_android_attr(elem, 'scaleX'), 1.0)
-    sy = _vec_number(_android_attr(elem, 'scaleY'), 1.0)
+    def num(name, default):
+        return _vec_number(_android_attr(elem, name), default, resources)
+
+    tx = num('translateX', 0.0)
+    ty = num('translateY', 0.0)
+    rot = num('rotation', 0.0)
+    px = num('pivotX', 0.0)
+    py = num('pivotY', 0.0)
+    sx = num('scaleX', 1.0)
+    sy = num('scaleY', 1.0)
     parts = []
     if tx or ty:
         parts.append(f'translate({tx:g} {ty:g})')
@@ -963,7 +969,7 @@ def _gradient_stops(grad_elem, colors):
             continue
         col, alpha = _resolve_color_value(
             _android_attr(child, 'color'), colors)
-        off = _vec_number(_android_attr(child, 'offset'))
+        off = _vec_number(_android_attr(child, 'offset'), None, colors)
         if col is None or off is None:
             continue
         off_clamped = max(0.0, min(1.0, off))
@@ -990,10 +996,14 @@ def _build_svg_gradient(grad_elem, grad_id, colors):
     if len(stops) < 2:
         return None
     spread = _SPREAD_MAP.get(_enum_token(_android_attr(grad_elem, 'tileMode')))
+
+    def num(name, default):
+        return _vec_number(_android_attr(grad_elem, name), default, colors)
+
     if kind in ('1', 'radial'):
-        cx = _vec_number(_android_attr(grad_elem, 'centerX'), 0.0)
-        cy = _vec_number(_android_attr(grad_elem, 'centerY'), 0.0)
-        radius = _vec_number(_android_attr(grad_elem, 'gradientRadius'))
+        cx = num('centerX', 0.0)
+        cy = num('centerY', 0.0)
+        radius = num('gradientRadius', None)
         if radius is None or radius <= 0:
             return None
         attrs = {
@@ -1008,10 +1018,10 @@ def _build_svg_gradient(grad_elem, grad_id, colors):
         attrs = {
             'id': grad_id,
             'gradientUnits': 'userSpaceOnUse',
-            'x1': f'{_vec_number(_android_attr(grad_elem, "startX"), 0.0):g}',
-            'y1': f'{_vec_number(_android_attr(grad_elem, "startY"), 0.0):g}',
-            'x2': f'{_vec_number(_android_attr(grad_elem, "endX"), 0.0):g}',
-            'y2': f'{_vec_number(_android_attr(grad_elem, "endY"), 0.0):g}',
+            'x1': f'{num("startX", 0.0):g}',
+            'y1': f'{num("startY", 0.0):g}',
+            'x2': f'{num("endX", 0.0):g}',
+            'y2': f'{num("endY", 0.0):g}',
         }
         tag = 'linearGradient'
     else:
@@ -1027,7 +1037,8 @@ def _build_svg_gradient(grad_elem, grad_id, colors):
     return svg_grad
 
 
-def _external_gradient_paint(raw_ref, drawable_dir, add_def, colors):
+def _external_gradient_paint(
+        raw_ref, drawable_dir, add_def, colors, cache=None):
     """Resolve @drawable/$... or @color/... external <gradient> XML to url(#id)."""
     if (not drawable_dir
             or not isinstance(raw_ref, str)
@@ -1040,13 +1051,21 @@ def _external_gradient_paint(raw_ref, drawable_dir, add_def, colors):
             or is_path_traversal(name)
             or any(c in name for c in ('/', '\\', '*', '?', '['))):
         return None
+    if cache is None:
+        cache = {}
+    if raw_ref in cache:
+        return cache[raw_ref]
     base = Path(drawable_dir)
     res_root = base.parent
-    candidates = [base / f'{name}.xml']
+    candidates = []
+    if base.name.split('-', 1)[0] == kind:
+        candidates.append(base / f'{name}.xml')
     if res_root.is_dir() and not is_pipe_or_link(res_root):
         for sibling in sorted(res_root.glob(f'{kind}*')):
+            if sibling.name.split('-', 1)[0] != kind:
+                continue
             cand = sibling / f'{name}.xml'
-            if cand != candidates[0]:
+            if cand not in candidates:
                 candidates.append(cand)
     for grad_path in candidates[:12]:
         try:
@@ -1064,11 +1083,13 @@ def _external_gradient_paint(raw_ref, drawable_dir, add_def, colors):
         grad_id = add_def(
             lambda gid, g=groot: _build_svg_gradient(g, gid, colors), 'g')
         if grad_id:
-            return f'url(#{grad_id})'
+            cache[raw_ref] = f'url(#{grad_id})'
+            return cache[raw_ref]
     return None
 
 
-def _aapt_gradients(path_elem, add_def, colors, drawable_dir=None):
+def _aapt_gradients(
+        path_elem, add_def, colors, drawable_dir=None, ext_cache=None):
     """Extract inline <aapt:attr> or @drawable/$... gradients for a <path>."""
     paints = {}
     for child in path_elem:
@@ -1098,6 +1119,7 @@ def _aapt_gradients(path_elem, add_def, colors, drawable_dir=None):
             drawable_dir,
             add_def,
             colors,
+            ext_cache,
         )
         if ext:
             paints[prop] = ext
@@ -1186,10 +1208,13 @@ def vector_xml_to_svg(
         'height': f'{(height if height and height > 0 else vp_h):g}',
         'viewBox': f'0 0 {vp_w:g} {vp_h:g}',
     }
-    root_alpha = _vec_number(_android_attr(root, 'alpha'), 1.0)
-    if 0.0 <= root_alpha < 1.0:
-        svg_attrs['opacity'] = f'{root_alpha:g}'
     svg = XmlElementTree.Element('svg', svg_attrs)
+    content = svg
+    root_alpha = _vec_number(_android_attr(root, 'alpha'), 1.0, colors)
+    if 0.0 <= root_alpha < 1.0:
+        content = XmlElementTree.SubElement(
+            svg, 'g', {'opacity': f'{root_alpha:g}'})
+    ext_cache = {}
     defs = None
     def_count = 0
     path_count = 0
@@ -1248,7 +1273,7 @@ def vector_xml_to_svg(
                 continue
             if tag == 'group':
                 grp = XmlElementTree.SubElement(active_dst, 'g')
-                transform = _group_transform(child)
+                transform = _group_transform(child, colors)
                 if transform:
                     grp.set('transform', transform)
                 convert_children(child, grp)
@@ -1263,12 +1288,12 @@ def vector_xml_to_svg(
                 return
             p_attrs = {'d': data}
             aapt_paints = _aapt_gradients(
-                child, add_def, colors, drawable_dir)
+                child, add_def, colors, drawable_dir, ext_cache)
             _apply_path_paint(child, p_attrs, aapt_paints, colors)
             XmlElementTree.SubElement(active_dst, 'path', p_attrs)
             path_count += 1
 
-    convert_children(root, svg)
+    convert_children(root, content)
     if not path_count or path_bytes > _MAX_PATH_DATA:
         return None
     rendered = XmlElementTree.tostring(svg, encoding='unicode')
@@ -1302,7 +1327,8 @@ def convert_vector_to_svg(app_dir, icon_name, apktool_res):
             xml_path = base_dir / fname
             if (not is_safe_path(base_dir, xml_path, fname)
                     or not xml_path.is_file()
-                    or is_pipe_or_link(xml_path)):
+                    or is_pipe_or_link(xml_path)
+                    or xml_path.stat().st_size > _MAX_VECTOR_BYTES):
                 continue
             svg_text = vector_xml_to_svg(
                 xml_path.read_bytes(),

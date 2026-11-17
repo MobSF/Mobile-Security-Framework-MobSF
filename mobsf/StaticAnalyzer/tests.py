@@ -1330,6 +1330,68 @@ class AndroidIconFallbackTests(SimpleTestCase):
         self.assertIn('stroke-linecap="round"', svg)
         self.assertIn('stroke-linejoin="bevel"', svg)
 
+    def test_vector_drawable_resources_opacity_and_shared_gradients(self):
+        import tempfile
+        from mobsf.StaticAnalyzer.views.android.icon_analysis import (
+            vector_xml_to_svg,
+        )
+        ns = (b'xmlns:android="http://schemas.android.com/apk/res/android" '
+              b'xmlns:aapt="http://schemas.android.com/aapt"')
+        res = {
+            'integer/offset': '3',
+            'integer/radius': '12',
+            'fraction/stop': '0.5',
+        }
+        svg = vector_xml_to_svg(
+            b'<vector ' + ns + b' android:viewportWidth="24" '
+            b'android:viewportHeight="24" android:alpha="0.5">'
+            b'<group android:translateX="@integer/offset">'
+            b'<path android:pathData="M0,0h24v24z">'
+            b'<aapt:attr name="android:fillColor">'
+            b'<gradient android:type="radial" android:centerX="12" '
+            b'android:centerY="12" android:gradientRadius="@integer/radius">'
+            b'<item android:offset="0" android:color="#FF0000"/>'
+            b'<item android:offset="@fraction/stop" android:color="#00FF00"/>'
+            b'</gradient></aapt:attr></path></group></vector>',
+            colors=res,
+        )
+        self.assertIn('translate(3 0)', svg)
+        self.assertIn('r="12"', svg)
+        self.assertIn('offset="0.5"', svg)
+        self.assertIn('<g opacity="0.5">', svg)
+        self.assertNotRegex(svg, r'<svg[^>]*opacity')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            res_root = Path(tmp) / 'res'
+            drawable = res_root / 'drawable'
+            color_dir = res_root / 'color'
+            drawable.mkdir(parents=True)
+            color_dir.mkdir()
+            grad = (
+                b'<gradient ' + ns + b' android:startX="0" '
+                b'android:endX="24" android:startColor="{c}" '
+                b'android:endColor="#000000"/>')
+            (drawable / 'paint.xml').write_bytes(
+                grad.replace(b'{c}', b'#111111'))
+            (color_dir / 'paint.xml').write_bytes(
+                grad.replace(b'{c}', b'#222222'))
+            paths = b''.join(
+                b'<path android:pathData="M0,0h1v1z" '
+                b'android:fillColor="@drawable/paint"/>'
+                for _ in range(40))
+            svg = vector_xml_to_svg(
+                b'<vector ' + ns + b' android:viewportWidth="24" '
+                b'android:viewportHeight="24">' + paths
+                + b'<path android:pathData="M0,0h2v2z" '
+                b'android:fillColor="@color/paint"/></vector>',
+                drawable_dir=drawable,
+            )
+            self.assertEqual(svg.count('<linearGradient'), 2)
+            self.assertEqual(svg.count('fill="url(#g0)"'), 40)
+            self.assertIn('fill="url(#g1)"', svg)
+            self.assertIn('#111111', svg)
+            self.assertIn('#222222', svg)
+
     def test_vector_drawable_rejects_doctype_and_external_entities(self):
         import tempfile
         from mobsf.StaticAnalyzer.views.android.icon_analysis import (
