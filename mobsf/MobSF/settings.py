@@ -497,7 +497,6 @@ else:
     BUNDLE_TOOL = os.getenv('MOBSF_BUNDLE_TOOL', '')
     JADX_BINARY = os.getenv('MOBSF_JADX_BINARY', '')
     BACKSMALI_BINARY = os.getenv('MOBSF_BACKSMALI_BINARY', '')
-    VD2SVG_BINARY = os.getenv('MOBSF_VD2SVG_BINARY', '')
     APKTOOL_BINARY = os.getenv('MOBSF_APKTOOL_BINARY', '')
     ADB_BINARY = os.getenv('MOBSF_ADB_BINARY', '')
     AAPT2_BINARY = os.getenv('MOBSF_AAPT2_BINARY', '')

@@ -3,11 +3,14 @@
 
 import fnmatch
 import logging
+import math
 import os
-from shutil import copy2, copytree
+import re
 from pathlib import Path
-import subprocess
+from shutil import copy2, copytree
+from xml.etree import ElementTree as XmlElementTree
 
+from defusedxml import ElementTree as DefusedET
 from defusedxml.minidom import parseString
 
 from lxml import etree
@@ -19,11 +22,10 @@ from mobsf.MobSF.security import (
     is_pipe_or_link,
     is_safe_path,
     sanitize_for_logging,
+    sanitize_svg,
 )
 from mobsf.MobSF.utils import (
     append_scan_status,
-    find_java_binary,
-    is_file_exists,
 )
 from mobsf.StaticAnalyzer.tools.androguard4 import (
     axml,
@@ -489,7 +491,6 @@ def get_icon_apk_res(app_dic):
             # Attempt to generate svg(s) from avg(s)
             convert_vector_to_svg(
                 app_dir,
-                app_dic['tools_dir'],
                 icon_name,
                 apktool_res)
             xpath = app_dir / icon_name
@@ -569,7 +570,14 @@ def transform_svg(fpath, bpath, output):
             attrib=attrib,
         )
         for child in logo_root:
-            group.append(child)
+            local = (
+                child.tag.split('}')[-1]
+                if isinstance(child.tag, str) else ''
+            )
+            if local == 'defs':
+                bg_root.insert(0, child)
+            else:
+                group.append(child)
         background.write(
             output,
             xml_declaration=True,
@@ -657,6 +665,7 @@ def convert_axml_to_xml(app_dir, icon_file):
         out_xml = app_dir / icon_file
         raw = icon_bin_xml.read_bytes()
         if raw.lstrip().startswith(b'<'):
+            DefusedET.fromstring(raw, forbid_dtd=True)
             xml_txt = raw
         else:
             aobj = axml.AXMLPrinter(raw).get_xml_obj()
@@ -721,26 +730,514 @@ def _collect_vector_xml_names(app_dir, icon_name, drawable_dir):
     return vector_files
 
 
-def convert_vector_to_svg(app_dir, tools_dir, icon_name, apktool_res):
-    """Convert android vector graphics to svg."""
-    try:
-        userbin = getattr(settings, 'VD2SVG_BINARY', '')
-        if userbin and is_file_exists(userbin):
-            vd2svg = userbin
+ANDROID_NS = '{http://schemas.android.com/apk/res/android}'
+AAPT_NS = '{http://schemas.android.com/aapt}'
+SVG_NS = 'http://www.w3.org/2000/svg'
+_MAX_VECTOR_BYTES = 1_500_000
+_MAX_VECTOR_PATHS = 256
+_MAX_PATH_DATA = 200_000
+_MAX_DEFS = 32
+_PATH_DATA_RE = re.compile(r'[A-Za-z0-9eE.,+\-\s]+')
+_NUMBER_RE = re.compile(
+    r'\s*(-?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)'
+    r'(?:dip|dp|sp|px|in|mm|pt)?\s*')
+_SPREAD_MAP = {
+    '1': 'repeat',
+    '2': 'reflect',
+    'clamp': 'pad',
+    'mirror': 'reflect',
+    'repeat': 'repeat',
+}
+
+
+def _xml_local(tag):
+    """Return the local name of an ElementTree tag."""
+    if not isinstance(tag, str):
+        return ''
+    return tag.rsplit('}', 1)[-1]
+
+
+def _android_attr(elem, name, default=None):
+    """Read an attribute in the Android namespace or bare form."""
+    val = elem.get(f'{ANDROID_NS}{name}')
+    if val is None:
+        val = elem.get(f'android:{name}')
+    if val is None:
+        val = elem.get(name)
+    return default if val is None else val
+
+
+def _vec_number(value, default=None, resources=None):
+    """Parse a bounded finite Android dimension or float."""
+    if isinstance(value, str) and resources and value.strip().startswith('@'):
+        value = _resolve_resource_text(
+            value, resources, ('dimen', 'integer', 'fraction'))
+    if not isinstance(value, str):
+        return default
+    match = _NUMBER_RE.fullmatch(value)
+    if not match:
+        return default
+    number = float(match.group(1))
+    if not math.isfinite(number) or abs(number) > 1_000_000:
+        return default
+    return number
+
+
+def _parse_hex_color(value):
+    """Convert #RGB/#ARGB/#RRGGBB/#AARRGGBB to (rgb_hex, alpha)."""
+    if not isinstance(value, str):
+        return None, None
+    color = value.strip()
+    if not re.fullmatch(r'#[0-9A-Fa-f]{3,8}', color):
+        return None, None
+    digits = color[1:]
+    if len(digits) == 3:
+        return f'#{digits}', 1.0
+    if len(digits) == 4:
+        return f'#{digits[1:]}', int(digits[0] * 2, 16) / 255.0
+    if len(digits) == 6:
+        return f'#{digits}', 1.0
+    if len(digits) == 8:
+        return f'#{digits[2:]}', int(digits[:2], 16) / 255.0
+    return None, None
+
+
+def _load_color_resources(values_dir):
+    """Load color, string, and dimen mappings from values/*.xml safely."""
+    resources = {
+        'android:color/transparent': '#00000000',
+        'android:color/white': '#FFFFFFFF',
+        'android:color/black': '#FF000000',
+        'android:0106000d': '#00000000',
+        'android:0106000b': '#FFFFFFFF',
+        'android:0106000c': '#FF000000',
+    }
+    vdir = Path(values_dir)
+    if not vdir.is_dir() or is_pipe_or_link(vdir):
+        return resources
+    res_types = ('color', 'string', 'dimen', 'integer', 'fraction')
+    for xml_file in sorted(vdir.glob('*.xml'))[:64]:
+        if not xml_file.is_file() or is_pipe_or_link(xml_file):
+            continue
+        try:
+            if xml_file.stat().st_size > _MAX_VECTOR_BYTES:
+                continue
+            root = DefusedET.fromstring(
+                xml_file.read_bytes(), forbid_dtd=True)
+        except Exception:
+            continue
+        for node in root.iter():
+            tag = _xml_local(node.tag)
+            kind = node.get('type') if tag == 'item' else tag
+            if kind not in res_types:
+                continue
+            name = (node.get('name') or '').strip()
+            text = (node.text or '').strip()
+            if not name or not text:
+                continue
+            resources[f'{kind}/{name}'] = text
+            if kind == 'color':
+                resources[name] = text
+    return resources
+
+
+def _resolve_resource_text(raw, resources, allowed_kinds):
+    """Resolve an @<kind>/<name> reference chain within resources."""
+    if not isinstance(raw, str) or not resources:
+        return None
+    cur = raw.strip()
+    seen = set()
+    while cur.startswith('@') and len(seen) < 8:
+        seen.add(cur)
+        ref = cur[1:]
+        if '/' not in ref:
+            return None
+        kind, key = ref.split('/', 1)
+        if kind not in allowed_kinds:
+            return None
+        nxt = resources.get(f'{kind}/{key}')
+        if nxt is None:
+            return None
+        cur = nxt.strip()
+    return None if cur.startswith('@') else cur
+
+
+def _resolve_color_value(raw, colors):
+    """Resolve literal hex or @color/... chain to (rgb_hex, alpha)."""
+    if not isinstance(raw, str):
+        return None, None
+    cur = raw.strip()
+    seen = set()
+    while cur.startswith('@') and len(seen) < 8:
+        seen.add(cur)
+        ref = cur[1:]
+        if ref.lower() in colors:
+            cur = colors[ref.lower()]
+            continue
+        if ref in colors:
+            cur = colors[ref]
+            continue
+        if '/' in ref:
+            kind, key = ref.split('/', 1)
+            if kind in ('color', 'android:color') and key in colors:
+                cur = colors[key]
+                continue
+        return None, None
+    return _parse_hex_color(cur)
+
+
+def _group_transform(elem):
+    """Build an SVG transform string from an Android <group> element."""
+    tx = _vec_number(_android_attr(elem, 'translateX'), 0.0)
+    ty = _vec_number(_android_attr(elem, 'translateY'), 0.0)
+    rot = _vec_number(_android_attr(elem, 'rotation'), 0.0)
+    px = _vec_number(_android_attr(elem, 'pivotX'), 0.0)
+    py = _vec_number(_android_attr(elem, 'pivotY'), 0.0)
+    sx = _vec_number(_android_attr(elem, 'scaleX'), 1.0)
+    sy = _vec_number(_android_attr(elem, 'scaleY'), 1.0)
+    parts = []
+    if tx or ty:
+        parts.append(f'translate({tx:g} {ty:g})')
+    if rot:
+        parts.append(
+            f'rotate({rot:g} {px:g} {py:g})' if (px or py)
+            else f'rotate({rot:g})')
+    if sx != 1.0 or sy != 1.0:
+        if px or py:
+            parts.append(f'translate({px:g} {py:g})')
+        parts.append(f'scale({sx:g} {sy:g})')
+        if px or py:
+            parts.append(f'translate({-px:g} {-py:g})')
+    return ' '.join(parts)
+
+
+def _gradient_stops(grad_elem, colors):
+    """Extract [(offset_str, hex_color, alpha)] stops from <gradient>."""
+    stops = []
+    for child in grad_elem:
+        if _xml_local(child.tag) != 'item' or len(stops) >= 16:
+            continue
+        col, alpha = _resolve_color_value(
+            _android_attr(child, 'color'), colors)
+        off = _vec_number(_android_attr(child, 'offset'))
+        if col is None or off is None:
+            continue
+        off_clamped = max(0.0, min(1.0, off))
+        stops.append((f'{off_clamped:g}', col, alpha))
+    if stops:
+        return stops
+    start = _resolve_color_value(_android_attr(grad_elem, 'startColor'), colors)
+    end = _resolve_color_value(_android_attr(grad_elem, 'endColor'), colors)
+    if start[0] is None or end[0] is None:
+        return []
+    result = [('0%', start[0], start[1])]
+    center = _resolve_color_value(
+        _android_attr(grad_elem, 'centerColor'), colors)
+    if center[0] is not None:
+        result.append(('50%', center[0], center[1]))
+    result.append(('100%', end[0], end[1]))
+    return result
+
+
+def _build_svg_gradient(grad_elem, grad_id, colors):
+    """Convert an Android <gradient> element to an SVG gradient element."""
+    kind = str(_android_attr(grad_elem, 'type', 'linear')).strip().lower()
+    stops = _gradient_stops(grad_elem, colors)
+    if len(stops) < 2:
+        return None
+    tile = str(_android_attr(grad_elem, 'tileMode', '')).strip().lower()
+    spread = _SPREAD_MAP.get(tile)
+    if kind in ('1', 'radial'):
+        cx = _vec_number(_android_attr(grad_elem, 'centerX'), 0.0)
+        cy = _vec_number(_android_attr(grad_elem, 'centerY'), 0.0)
+        radius = _vec_number(_android_attr(grad_elem, 'gradientRadius'))
+        if radius is None or radius <= 0:
+            return None
+        attrs = {
+            'id': grad_id,
+            'gradientUnits': 'userSpaceOnUse',
+            'cx': f'{cx:g}',
+            'cy': f'{cy:g}',
+            'r': f'{radius:g}',
+        }
+        tag = 'radialGradient'
+    elif kind in ('0', 'linear', ''):
+        attrs = {
+            'id': grad_id,
+            'gradientUnits': 'userSpaceOnUse',
+            'x1': f'{_vec_number(_android_attr(grad_elem, "startX"), 0.0):g}',
+            'y1': f'{_vec_number(_android_attr(grad_elem, "startY"), 0.0):g}',
+            'x2': f'{_vec_number(_android_attr(grad_elem, "endX"), 0.0):g}',
+            'y2': f'{_vec_number(_android_attr(grad_elem, "endY"), 0.0):g}',
+        }
+        tag = 'linearGradient'
+    else:
+        return None
+    if spread:
+        attrs['spreadMethod'] = spread
+    svg_grad = XmlElementTree.Element(tag, attrs)
+    for offset, stop_color, stop_alpha in stops:
+        stop_attrs = {'offset': offset, 'stop-color': stop_color}
+        if stop_alpha is not None and stop_alpha < 1.0:
+            stop_attrs['stop-opacity'] = f'{max(0.0, stop_alpha):g}'
+        XmlElementTree.SubElement(svg_grad, 'stop', stop_attrs)
+    return svg_grad
+
+
+def _external_gradient_paint(raw_ref, drawable_dir, add_def, colors):
+    """Resolve @drawable/$... or @color/... external <gradient> XML to url(#id)."""
+    if (not drawable_dir
+            or not isinstance(raw_ref, str)
+            or not raw_ref.strip().startswith('@')
+            or '/' not in raw_ref):
+        return None
+    kind, name = raw_ref.strip()[1:].split('/', 1)
+    if (kind not in ('drawable', 'color')
+            or not name
+            or is_path_traversal(name)
+            or any(c in name for c in ('/', '\\', '*', '?', '['))):
+        return None
+    base = Path(drawable_dir)
+    res_root = base.parent
+    candidates = [base / f'{name}.xml']
+    if res_root.is_dir() and not is_pipe_or_link(res_root):
+        for sibling in sorted(res_root.glob(f'{kind}*')):
+            cand = sibling / f'{name}.xml'
+            if cand != candidates[0]:
+                candidates.append(cand)
+    for grad_path in candidates[:12]:
+        try:
+            if (not is_safe_path(res_root, grad_path, grad_path.name)
+                    or not grad_path.is_file()
+                    or is_pipe_or_link(grad_path)
+                    or grad_path.stat().st_size > _MAX_VECTOR_BYTES):
+                continue
+            groot = DefusedET.fromstring(
+                grad_path.read_bytes(), forbid_dtd=True)
+        except Exception:
+            continue
+        if _xml_local(groot.tag) != 'gradient':
+            continue
+        grad_id = add_def(
+            lambda gid, g=groot: _build_svg_gradient(g, gid, colors), 'g')
+        if grad_id:
+            return f'url(#{grad_id})'
+    return None
+
+
+def _aapt_gradients(path_elem, add_def, colors, drawable_dir=None):
+    """Extract inline <aapt:attr> or @drawable/$... gradients for a <path>."""
+    paints = {}
+    for child in path_elem:
+        if _xml_local(child.tag) != 'attr':
+            continue
+        target = (child.get('name') or '').strip()
+        if target.endswith('fillColor'):
+            prop = 'fill'
+        elif target.endswith('strokeColor'):
+            prop = 'stroke'
         else:
-            vd2svg = Path(tools_dir) / 'vd2svg-0.4.4.jar'
-        # When xml is android vector
+            continue
+        for sub in child:
+            if _xml_local(sub.tag) == 'gradient':
+                grad_id = add_def(
+                    lambda gid, g=sub: _build_svg_gradient(g, gid, colors),
+                    'g',
+                )
+                if grad_id:
+                    paints[prop] = f'url(#{grad_id})'
+                break
+    for attr_name, prop in (('fillColor', 'fill'), ('strokeColor', 'stroke')):
+        if prop in paints:
+            continue
+        ext = _external_gradient_paint(
+            _android_attr(path_elem, attr_name),
+            drawable_dir,
+            add_def,
+            colors,
+        )
+        if ext:
+            paints[prop] = ext
+    return paints
+
+
+def _apply_path_paint(elem, attrs, aapt_paints, colors):
+    """Populate SVG fill and stroke attributes for one Android <path>."""
+    fill_rule = str(_android_attr(elem, 'fillType', '')).strip().lower()
+    if fill_rule in ('evenodd', '1'):
+        attrs['fill-rule'] = 'evenodd'
+    elif fill_rule in ('nonzero', '0'):
+        attrs['fill-rule'] = 'nonzero'
+
+    raw_fill = _android_attr(elem, 'fillColor')
+    if 'fill' in aapt_paints:
+        attrs['fill'] = aapt_paints['fill']
+        fill_alpha = _vec_number(_android_attr(elem, 'fillAlpha'), 1.0)
+        if fill_alpha < 1.0:
+            attrs['fill-opacity'] = f'{max(0.0, fill_alpha):g}'
+    elif raw_fill is not None:
+        fill_col, col_alpha = _resolve_color_value(raw_fill, colors)
+        if fill_col:
+            attrs['fill'] = fill_col
+            explicit = _vec_number(_android_attr(elem, 'fillAlpha'), 1.0)
+            combined = max(0.0, min(1.0, col_alpha * explicit))
+            if combined < 1.0:
+                attrs['fill-opacity'] = f'{combined:g}'
+        else:
+            attrs['fill'] = 'none'
+    else:
+        attrs['fill'] = 'none'
+
+    raw_stroke = _android_attr(elem, 'strokeColor')
+    stroke_paint = aapt_paints.get('stroke')
+    stroke_col, stroke_col_alpha = (
+        (stroke_paint, 1.0) if stroke_paint
+        else _resolve_color_value(raw_stroke, colors)
+    )
+    if not stroke_col:
+        return
+    attrs['stroke'] = stroke_col
+    width = _vec_number(_android_attr(elem, 'strokeWidth'), 0.0)
+    if width > 0:
+        attrs['stroke-width'] = f'{width:g}'
+    explicit_s = _vec_number(_android_attr(elem, 'strokeAlpha'), 1.0)
+    combined_s = max(0.0, min(1.0, stroke_col_alpha * explicit_s))
+    if combined_s < 1.0:
+        attrs['stroke-opacity'] = f'{combined_s:g}'
+    linecap = str(_android_attr(elem, 'strokeLineCap', '')).strip().lower()
+    if linecap in ('butt', 'round', 'square'):
+        attrs['stroke-linecap'] = linecap
+    linejoin = str(_android_attr(elem, 'strokeLineJoin', '')).strip().lower()
+    if linejoin in ('miter', 'round', 'bevel'):
+        attrs['stroke-linejoin'] = linejoin
+    miter = _vec_number(_android_attr(elem, 'strokeMiterLimit'))
+    if miter is not None and miter > 0:
+        attrs['stroke-miterlimit'] = f'{miter:g}'
+
+
+def vector_xml_to_svg(
+        xml_bytes, colors=None, icon_prefix='', drawable_dir=None):
+    """Convert Android VectorDrawable XML bytes to sanitized SVG text."""
+    if not xml_bytes or len(xml_bytes) > _MAX_VECTOR_BYTES:
+        return None
+    try:
+        root = DefusedET.fromstring(xml_bytes, forbid_dtd=True)
+    except Exception:
+        return None
+    if _xml_local(root.tag) != 'vector':
+        return None
+    colors = colors if colors is not None else {}
+    vp_w = _vec_number(_android_attr(root, 'viewportWidth'), None, colors)
+    vp_h = _vec_number(_android_attr(root, 'viewportHeight'), None, colors)
+    if not vp_w or not vp_h or vp_w <= 0 or vp_h <= 0:
+        return None
+    width = _vec_number(_android_attr(root, 'width'), vp_w, colors)
+    height = _vec_number(_android_attr(root, 'height'), vp_h, colors)
+    svg_attrs = {
+        'xmlns': SVG_NS,
+        'version': '1.1',
+        'width': f'{(width if width and width > 0 else vp_w):g}',
+        'height': f'{(height if height and height > 0 else vp_h):g}',
+        'viewBox': f'0 0 {vp_w:g} {vp_h:g}',
+    }
+    root_alpha = _vec_number(_android_attr(root, 'alpha'), 1.0)
+    if 0.0 <= root_alpha < 1.0:
+        svg_attrs['opacity'] = f'{root_alpha:g}'
+    svg = XmlElementTree.Element('svg', svg_attrs)
+    defs = None
+    def_count = 0
+    path_count = 0
+    path_bytes = 0
+
+    def add_def(factory, kind):
+        nonlocal defs, def_count
+        if def_count >= _MAX_DEFS:
+            return None
+        ident = f'{icon_prefix}{kind}{def_count}'
+        elem = factory(ident)
+        if elem is None:
+            return None
+        if defs is None:
+            defs = XmlElementTree.Element('defs')
+            svg.insert(0, defs)
+        defs.append(elem)
+        def_count += 1
+        return ident
+
+    def resolve_path_data(elem):
+        data = _android_attr(elem, 'pathData')
+        if isinstance(data, str) and data.strip().startswith('@'):
+            data = _resolve_resource_text(data, colors, ('string',))
+        if (not isinstance(data, str)
+                or not data
+                or len(data) > _MAX_PATH_DATA
+                or not _PATH_DATA_RE.fullmatch(data)):
+            return None
+        return data
+
+    def build_clip(clip_elem, clip_id):
+        data = resolve_path_data(clip_elem)
+        if not data:
+            return None
+        cp = XmlElementTree.Element('clipPath', {'id': clip_id})
+        XmlElementTree.SubElement(cp, 'path', {'d': data})
+        return cp
+
+    def convert_children(src_parent, dst_parent):
+        nonlocal path_count, path_bytes
+        active_dst = dst_parent
+        for child in src_parent:
+            tag = _xml_local(child.tag)
+            if tag == 'clip-path':
+                cid = add_def(
+                    lambda gid, c=child: build_clip(c, gid), 'c')
+                if cid:
+                    active_dst = XmlElementTree.SubElement(
+                        active_dst, 'g', {'clip-path': f'url(#{cid})'})
+                continue
+            if tag == 'group':
+                grp = XmlElementTree.SubElement(active_dst, 'g')
+                transform = _group_transform(child)
+                if transform:
+                    grp.set('transform', transform)
+                convert_children(child, grp)
+                continue
+            if tag != 'path' or path_count >= _MAX_VECTOR_PATHS:
+                continue
+            data = resolve_path_data(child)
+            if not data:
+                continue
+            path_bytes += len(data)
+            if path_bytes > _MAX_PATH_DATA:
+                return
+            p_attrs = {'d': data}
+            aapt_paints = _aapt_gradients(
+                child, add_def, colors, drawable_dir)
+            _apply_path_paint(child, p_attrs, aapt_paints, colors)
+            XmlElementTree.SubElement(active_dst, 'path', p_attrs)
+            path_count += 1
+
+    convert_children(root, svg)
+    if not path_count or path_bytes > _MAX_PATH_DATA:
+        return None
+    rendered = XmlElementTree.tostring(svg, encoding='unicode')
+    cleaned = sanitize_svg(rendered)
+    return cleaned or None
+
+
+def convert_vector_to_svg(app_dir, icon_name, apktool_res):
+    """Convert Android vector drawable XML(s) to SVG in pure Python."""
+    try:
         values = app_dir / 'res' / 'values'
         direct = app_dir / icon_name
         if not is_safe_path(app_dir, direct, icon_name):
             return
-        cwd = direct.parent.as_posix()
+        base_dir = direct.parent
 
-        # When xml is referencing to vector use apktool_res
         if apktool_res:
             values = app_dir / 'apktool_out' / 'res' / 'values'
             drawable = app_dir / 'apktool_out' / 'res' / 'drawable'
-            cwd = drawable.as_posix()
+            base_dir = drawable
             files = _collect_vector_xml_names(app_dir, icon_name, drawable)
             if not files:
                 return
@@ -748,20 +1245,25 @@ def convert_vector_to_svg(app_dir, tools_dir, icon_name, apktool_res):
             if direct.name.startswith('-'):
                 return
             files = [direct.name]
-        subprocess.run(
-            [
-                find_java_binary(),
-                '-jar',
-                vd2svg.as_posix(),
-                '-r',
-                values.as_posix(),
-                *files,
-            ],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            cwd=cwd,
-            timeout=30,
-            check=False,
-        )
+
+        colors = _load_color_resources(values)
+        for idx, fname in enumerate(files):
+            xml_path = base_dir / fname
+            if (not is_safe_path(base_dir, xml_path, fname)
+                    or not xml_path.is_file()
+                    or is_pipe_or_link(xml_path)):
+                continue
+            svg_text = vector_xml_to_svg(
+                xml_path.read_bytes(),
+                colors=colors,
+                icon_prefix=f'v{idx}_',
+                drawable_dir=base_dir,
+            )
+            if not svg_text:
+                continue
+            svg_path = xml_path.with_suffix('.svg')
+            if (is_safe_path(base_dir, svg_path, svg_path.name)
+                    and not is_pipe_or_link(svg_path)):
+                svg_path.write_text(svg_text, encoding='utf-8')
     except Exception:
         logger.exception('Android vector to svg conversion failed')
