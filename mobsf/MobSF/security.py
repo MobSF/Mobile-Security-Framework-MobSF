@@ -780,7 +780,10 @@ _SVG_SAFE_ATTRS = {
         'stroke-linejoin', 'stroke-miterlimit', 'opacity', 'clip-path',
         'clip-rule',
     },
-    'svg': {'width', 'height', 'viewBox', 'xmlns', 'version'},
+    'svg': {
+        'width', 'height', 'viewBox', 'xmlns', 'version',
+        'preserveAspectRatio',
+    },
     'path': {'d'},
     'rect': {'x', 'y', 'width', 'height', 'rx', 'ry'},
     'circle': {'cx', 'cy', 'r'},

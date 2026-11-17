@@ -1392,6 +1392,63 @@ class AndroidIconFallbackTests(SimpleTestCase):
             self.assertIn('#111111', svg)
             self.assertIn('#222222', svg)
 
+    def test_vector_drawable_case_negative_cache_and_apktool_source(self):
+        import tempfile
+        from unittest import mock
+        from mobsf.StaticAnalyzer.views.android import icon_analysis
+        ns = b'xmlns:android="http://schemas.android.com/apk/res/android"'
+        svg = icon_analysis.vector_xml_to_svg(
+            b'<vector ' + ns + b' android:width="48dp" android:height="24dp"'
+            b' android:viewportWidth="24" android:viewportHeight="24">'
+            b'<path android:pathData="M0,0h24v24z" '
+            b'android:fillColor="@color/Brand"/></vector>',
+            colors={'brand': '#111111', 'Brand': '#222222',
+                    'color/brand': '#111111', 'color/Brand': '#222222'},
+        )
+        self.assertIn('fill="#222222"', svg)
+        self.assertIn('preserveAspectRatio="none"', svg)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            drawable = Path(tmp) / 'res' / 'drawable'
+            drawable.mkdir(parents=True)
+            (drawable / 'bad.xml').write_bytes(b'<selector/>')
+            paths = b''.join(
+                b'<path android:pathData="M0,0h1v1z" '
+                b'android:fillColor="@drawable/bad"/>' for _ in range(50))
+            real_parse = icon_analysis.DefusedET.fromstring
+            with mock.patch.object(
+                    icon_analysis.DefusedET, 'fromstring',
+                    side_effect=real_parse) as parse:
+                icon_analysis.vector_xml_to_svg(
+                    b'<vector ' + ns + b' android:viewportWidth="24" '
+                    b'android:viewportHeight="24">' + paths + b'</vector>',
+                    drawable_dir=drawable,
+                )
+            self.assertLess(parse.call_count, 5)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            app_dir = Path(tmp)
+            raw_dir = app_dir / 'res' / 'drawable'
+            dec_dir = app_dir / 'apktool_out' / 'res' / 'drawable'
+            values = app_dir / 'apktool_out' / 'res' / 'values'
+            for d in (raw_dir, dec_dir, values):
+                d.mkdir(parents=True)
+            body = (b'<vector ' + ns + b' android:viewportWidth="24" '
+                    b'android:viewportHeight="24"><path '
+                    b'android:pathData="M0,0h24v24z" '
+                    b'android:fillColor="{c}"/></vector>')
+            (raw_dir / 'ic.xml').write_bytes(
+                body.replace(b'{c}', b'@7F060001'))
+            (dec_dir / 'ic.xml').write_bytes(
+                body.replace(b'{c}', b'@color/brand'))
+            (values / 'colors.xml').write_bytes(
+                b'<resources><color name="brand">#123456</color>'
+                b'</resources>')
+            icon_analysis.convert_vector_to_svg(
+                app_dir, 'res/drawable/ic.xml', False)
+            out = (raw_dir / 'ic.svg').read_text()
+            self.assertIn('fill="#123456"', out)
+
     def test_vector_drawable_rejects_doctype_and_external_entities(self):
         import tempfile
         from mobsf.StaticAnalyzer.views.android.icon_analysis import (

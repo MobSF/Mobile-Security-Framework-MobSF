@@ -913,14 +913,12 @@ def _resolve_color_value(raw, colors):
     cur = raw.strip()
     seen = set()
     while cur.startswith('@') and len(seen) < 8:
-        norm = cur.lower()
-        if norm in seen:
-            return None, None
-        seen.add(norm)
         ref = cur[1:]
-        if ref.lower() in colors:
-            cur = colors[ref.lower()].strip()
-            continue
+        if ref.lower().startswith('android:'):
+            ref = ref.lower()
+        if ref in seen:
+            return None, None
+        seen.add(ref)
         if ref in colors:
             cur = colors[ref].strip()
             continue
@@ -1085,6 +1083,7 @@ def _external_gradient_paint(
         if grad_id:
             cache[raw_ref] = f'url(#{grad_id})'
             return cache[raw_ref]
+    cache[raw_ref] = None
     return None
 
 
@@ -1207,6 +1206,7 @@ def vector_xml_to_svg(
         'width': f'{(width if width and width > 0 else vp_w):g}',
         'height': f'{(height if height and height > 0 else vp_h):g}',
         'viewBox': f'0 0 {vp_w:g} {vp_h:g}',
+        'preserveAspectRatio': 'none',
     }
     svg = XmlElementTree.Element('svg', svg_attrs)
     content = svg
@@ -1308,24 +1308,36 @@ def convert_vector_to_svg(app_dir, icon_name, apktool_res):
         direct = app_dir / icon_name
         if not is_safe_path(app_dir, direct, icon_name):
             return
-        base_dir = direct.parent
+        apktool_out = app_dir / 'apktool_out'
 
         if apktool_res:
-            values = app_dir / 'apktool_out' / 'res' / 'values'
-            drawable = app_dir / 'apktool_out' / 'res' / 'drawable'
-            base_dir = drawable
-            files = _collect_vector_xml_names(app_dir, icon_name, drawable)
-            if not files:
+            values = apktool_out / 'res' / 'values'
+            drawable = apktool_out / 'res' / 'drawable'
+            names = _collect_vector_xml_names(app_dir, icon_name, drawable)
+            jobs = [(drawable, drawable / n, drawable / n) for n in names]
+            if not jobs:
                 return
         else:
             if direct.name.startswith('-'):
                 return
-            files = [direct.name]
+            src = direct
+            rel = Path(icon_name)
+            decoded = (
+                direct if rel.parts and rel.parts[0] == 'apktool_out'
+                else apktool_out / rel)
+            # AXMLPrinter output carries numeric @7F... references that only
+            # apktool's decoded copy and values resolve to names.
+            if (decoded != direct
+                    and is_safe_path(apktool_out, decoded, icon_name)
+                    and decoded.is_file()
+                    and not is_pipe_or_link(decoded)):
+                src = decoded
+                values = apktool_out / 'res' / 'values'
+            jobs = [(src.parent, src, direct)]
 
         colors = _load_color_resources(values)
-        for idx, fname in enumerate(files):
-            xml_path = base_dir / fname
-            if (not is_safe_path(base_dir, xml_path, fname)
+        for idx, (src_dir, xml_path, out_xml) in enumerate(jobs):
+            if (not is_safe_path(src_dir, xml_path, xml_path.name)
                     or not xml_path.is_file()
                     or is_pipe_or_link(xml_path)
                     or xml_path.stat().st_size > _MAX_VECTOR_BYTES):
@@ -1334,12 +1346,12 @@ def convert_vector_to_svg(app_dir, icon_name, apktool_res):
                 xml_path.read_bytes(),
                 colors=colors,
                 icon_prefix=f'v{idx}_',
-                drawable_dir=base_dir,
+                drawable_dir=src_dir,
             )
             if not svg_text:
                 continue
-            svg_path = xml_path.with_suffix('.svg')
-            if (is_safe_path(base_dir, svg_path, svg_path.name)
+            svg_path = out_xml.with_suffix('.svg')
+            if (is_safe_path(app_dir, svg_path, svg_path.name)
                     and not is_pipe_or_link(svg_path)):
                 svg_path.write_text(svg_text, encoding='utf-8')
     except Exception:
