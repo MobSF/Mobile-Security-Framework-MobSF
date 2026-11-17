@@ -182,13 +182,32 @@ class AssetlinksResultTests(SimpleTestCase):
         self.assertIn('TimeoutError: slow', logs.output[0])
 
     def test_https_answer_takes_precedence(self):
+        valid = self.response(
+            200, '[{"target": {"sha256_cert_fingerprints": ["AA"]}}]')
+        http_url = 'http://a.example.com/.well-known/assetlinks.json'
+
         result, request = self.check(
-            self.response(200, '<html>'),
-            self.response(301, ''),
-            w_url='http://a.example.com/.well-known/assetlinks.json')
+            self.response(200, '<html>'), valid, w_url=http_url)
         self.assertEqual(request.call_count, 1)
         self.assertTrue(request.call_args.args[1].startswith('https://'))
+        self.assertFalse(result['status'])
         self.assertEqual(result['reason'], 'the file is not valid JSON')
+
+        for code in (301, 404):
+            with self.subTest(code=code):
+                result, request = self.check(
+                    self.response(code, ''), valid, w_url=http_url)
+                self.assertEqual(request.call_count, 1)
+                self.assertFalse(result['status'])
+                self.assertEqual(result['status_code'], code)
+
+        result, request = self.check(
+            valid,
+            w_url='http://a.example.com:80/.well-known/assetlinks.json')
+        self.assertEqual(
+            request.call_args.args[1],
+            'https://a.example.com/.well-known/assetlinks.json')
+        self.assertTrue(result['status'])
 
 
 class FirebaseDbLimitTests(SimpleTestCase):

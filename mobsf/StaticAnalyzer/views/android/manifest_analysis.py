@@ -182,54 +182,62 @@ def _check_url(host, w_url, deadline=None):
         status_code = 0
         reason = ''
 
-        # Android only verifies over https, so its answer takes precedence.
-        urls = [w_url]
-        if w_url.startswith('http://'):
-            urls.insert(0, f'https://{w_url[7:]}')
+        # Android Digital Asset Links only ever verifies over HTTPS.
+        url = w_url
+        if url.startswith('http://'):
+            parsed_w = urlparse(url)
+            if parsed_w.hostname and parsed_w.port == 80:
+                url = parsed_w._replace(
+                    scheme='https', netloc=parsed_w.hostname).geturl()
+            else:
+                url = f'https://{url[7:]}'
 
-        for url in urls:
-            # Validate the fully-assembled URL — path, port, query, and params.
-            purl = urlparse(url)
-            if (purl.path != WELL_KNOWN_PATH
-                or len(purl.query) > 0
-                    or len(purl.params) > 0):
-                logger.warning('Invalid Assetlinks URL: %s', url)
-                continue
-            if purl.port and purl.port not in (80, 443):
-                logger.warning(
-                    'Non-standard port in assetlinks URL rejected: %s', url)
-                continue
-            remaining = deadline - time.monotonic()
-            if remaining <= 0:
-                raise TimeoutError('Assetlinks check time limit reached')
-            # Resolve and connect through the same SSRF-safe request primitive,
-            # preventing a second DNS lookup from rebinding to an internal IP.
-            r = safe_request('GET',
-                             url,
-                             timeout=5,
-                             max_total_time=remaining,
-                             proxies=proxies,
-                             verify=verify)
+        # Validate the fully-assembled URL — path, port, query, and params.
+        purl = urlparse(url)
+        if (purl.path != WELL_KNOWN_PATH
+            or len(purl.query) > 0
+                or len(purl.params) > 0):
+            logger.warning('Invalid Assetlinks URL: %s', url)
+            return {'url': w_url,
+                    'host': host,
+                    'status_code': status_code,
+                    'status': status,
+                    'reason': reason}
+        if purl.port and purl.port not in (80, 443):
+            logger.warning(
+                'Non-standard port in assetlinks URL rejected: %s', url)
+            return {'url': w_url,
+                    'host': host,
+                    'status_code': status_code,
+                    'status': status,
+                    'reason': reason}
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError('Assetlinks check time limit reached')
+        # Resolve and connect through the same SSRF-safe request primitive,
+        # preventing a second DNS lookup from rebinding to an internal IP.
+        r = safe_request('GET',
+                         url,
+                         timeout=5,
+                         max_total_time=remaining,
+                         proxies=proxies,
+                         verify=verify)
 
-            status_code = r.status_code
-            reason = ''
-            if 300 <= status_code < 400:
-                reason = 'the URL redirects, which Android does not follow'
-                logger.warning('Status Code: [%d], Redirecting to '
-                               'a different URL, skipping check!', status_code)
-                continue
-            if not 200 <= status_code < 300:
-                continue
+        status_code = r.status_code
+        if 300 <= status_code < 400:
+            reason = 'the URL redirects, which Android does not follow'
+            logger.warning('Status Code: [%d], Redirecting to '
+                           'a different URL, skipping check!', status_code)
+        elif 200 <= status_code < 300:
             try:
                 statements = r.json()
             except ValueError:
                 reason = 'the file is not valid JSON'
                 logger.warning('Assetlinks file is not valid JSON: %s', url)
-                break
-            status = iden in str(statements)
-            if not status:
-                reason = f'the file does not contain {iden}'
-            break
+            else:
+                status = iden in str(statements)
+                if not status:
+                    reason = f'the file does not contain {iden}'
         return {'url': w_url,
                 'host': host,
                 'status_code': status_code,
