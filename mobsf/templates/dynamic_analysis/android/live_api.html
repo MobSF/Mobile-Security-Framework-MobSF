@@ -38,7 +38,7 @@
                     </select>
                   </label>
                   <label class="mb-0 mr-3 font-weight-normal">
-                    <input id="show-framework" type="checkbox"> Show framework-internal calls
+                    <input id="show-framework" type="checkbox" checked> Show framework-internal calls
                   </label>
                   <label class="mb-0">Preview length
                     <input id="snip" type="number" min="20" max="5000" value="120" class="form-control form-control-sm d-inline-block ml-1" style="width: 90px">
@@ -82,7 +82,7 @@ var offset = 0;
 var capture = '';
 var paused = false;
 var inFlight = false;
-var showFramework = false;
+var showFramework = true;
 var counts = {};
 var frameworkCounts = {};
 var hiddenTotal = 0;
