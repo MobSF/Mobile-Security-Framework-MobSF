@@ -402,6 +402,9 @@ function hookOverload(api, overload) {
         retType: overload.returnType.className,
         isInstance: overload.type === INSTANCE_METHOD
     };
+    // Another default script (root/SSL/debugger bypass) may already replace
+    // this method; call through it so the bypass keeps working.
+    var previous = overload.implementation;
     overload.implementation = function () {
         var tid = Process.getCurrentThreadId();
         var frames = [];
@@ -435,7 +438,9 @@ function hookOverload(api, overload) {
         var retval;
         var error = null;
         try {
-            retval = overload.apply(this, arguments);
+            retval = previous !== null
+                ? previous.apply(this, arguments)
+                : overload.apply(this, arguments);
         } catch (e) {
             error = e;
         } finally {
@@ -496,14 +501,28 @@ function hookRuntimeClass(obj, name, methods, options) {
     if (!obj)
         return;
     var klass = Java.cast(obj, JavaObject).getClass();
-    var loader = klass.getClassLoader();
-    var factory = loader ? Java.ClassFactory.get(loader) : Java.classFactory;
-    installHooks(methods.map(function (method) {
-        var api = { name: name, class: klass.getName(), method: method };
+    methods.forEach(function (method) {
+        // Hook inherited methods on their declaring class: Frida only chains
+        // replacements made through the same (cached) class wrapper, e.g. the
+        // SSL bypass on WebViewClient.onReceivedSslError.
+        var owner = declaringClass(klass, method);
+        var loader = owner.getClassLoader();
+        var api = { name: name, class: owner.getName(), method: method };
         if (options && options[method])
             api.before = options[method];
-        return api;
-    }), factory);
+        installHooks([api], loader ? Java.ClassFactory.get(loader) : Java.classFactory);
+    });
+}
+
+function declaringClass(klass, method) {
+    for (var c = klass; c !== null; c = c.getSuperclass()) {
+        var declared = c.getDeclaredMethods();
+        for (var i = 0; i < declared.length; i++) {
+            if (declared[i].getName() === method)
+                return c;
+        }
+    }
+    return klass;
 }
 
 function installAppLibraryHooks(loader) {
@@ -546,7 +565,13 @@ function installDynamicHooks() {
 }
 
 
-Java.performNow(function () {
+// Pending events are sent before the host force-stops or unloads the script.
+rpc.exports.flushApiMonitor = flush;
+rpc.exports.dispose = flush;
+
+// Java.perform (not performNow) queues this after the bypass scripts'
+// Java.perform callbacks, so the hooks above chain to their replacements.
+Java.perform(function () {
     JavaObject = Java.use('java.lang.Object');
     JavaException = Java.use('java.lang.Exception');
     JavaLog = Java.use('android.util.Log');

@@ -6,7 +6,11 @@ from unittest import mock
 
 from django.test import RequestFactory, SimpleTestCase, override_settings
 
-from mobsf.DynamicAnalyzer.views.android import api_monitor, tests_frida
+from mobsf.DynamicAnalyzer.views.android import (
+    api_monitor,
+    frida_core,
+    tests_frida,
+)
 
 CHECKSUM = '4b44e6d39d806949a092e47c4028276c'
 
@@ -285,11 +289,26 @@ class LiveApiViewTests(SimpleTestCase):
         return json.loads(self._call(req).content)
 
     def test_incremental_fetch(self):
-        data = self._post({'hash': CHECKSUM, 'offset': '1'})
+        capture = self._post({'hash': CHECKSUM, 'offset': '0'})['capture']
+        data = self._post({'hash': CHECKSUM, 'offset': '1', 'capture': capture})
         self.assertEqual(data['total'], 3)
         self.assertEqual(data['offset'], 1)
         self.assertEqual(len(data['data']), 2)
         self.assertFalse(data['reset'])
+
+    def test_restarted_capture_resets(self):
+        capture = self._post({'hash': CHECKSUM, 'offset': '0'})['capture']
+        log = self.upload_dir / CHECKSUM / 'mobsf_api_monitor.txt'
+        log.unlink()
+        event = js_event()
+        event['timestamp'] += 1
+        log.write_text(
+            api_monitor.serialize_event(json.dumps(event)) * 5, 'utf-8')
+        data = self._post({'hash': CHECKSUM, 'offset': '3', 'capture': capture})
+        self.assertTrue(data['reset'])
+        self.assertEqual(data['offset'], 0)
+        self.assertEqual(len(data['data']), 5)
+        self.assertNotEqual(data['capture'], capture)
 
     def test_offset_past_end_resets(self):
         data = self._post({'hash': CHECKSUM, 'offset': '99'})
@@ -313,3 +332,26 @@ class LiveApiViewTests(SimpleTestCase):
         req = self.factory.get('/live_api/', {'hash': CHECKSUM, 'package': '$(id)'})
         data = json.loads(self._call(req).content)
         self.assertEqual(data['status'], 'failed')
+
+
+class FridaIntegrationTests(SimpleTestCase):
+    """API monitor wiring in the Frida session code."""
+
+    def test_api_monitor_loads_last(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            default = Path(tmp) / 'default'
+            default.mkdir()
+            for name in ('api_monitor', 'root_bypass', 'ssl_pinning_bypass'):
+                (default / f'{name}.js').write_text(f'// {name}', 'utf-8')
+            fake = mock.Mock(frida_dir=Path(tmp))
+            scripts = frida_core.Frida.get_scripts(fake, 'default', ['*'])
+        self.assertEqual(scripts[-1], '// api_monitor')
+
+    def test_flush_active_calls_every_script(self):
+        flushed, other = mock.Mock(), mock.Mock()
+        other.exports_sync.flush_api_monitor.side_effect = Exception('no rpc')
+        key = (CHECKSUM, 'emulator-5554')
+        entry = {'scripts': [other, flushed]}
+        with mock.patch.dict(frida_core._ACTIVE_SESSIONS, {key: entry}):
+            frida_core.Frida.flush_active(*key)
+        flushed.exports_sync.flush_api_monitor.assert_called_once_with()

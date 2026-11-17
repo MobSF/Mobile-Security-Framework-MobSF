@@ -186,6 +186,22 @@ class Frida:
             except OSError:
                 logger.exception('Unable to release Frida session ownership')
 
+    @classmethod
+    def flush_active(cls, app_hash, identifier):
+        """Deliver API monitor events the active scripts are still batching."""
+        key = (app_hash, identifier)
+        with cls._operation_lock(key):
+            with _ACTIVE_SESSIONS_LOCK:
+                entry = _ACTIVE_SESSIONS.get(key)
+            if not entry:
+                return
+            for script in entry['scripts']:
+                try:
+                    script.exports_sync.flush_api_monitor()
+                except Exception:
+                    # Scripts without the API monitor have no such export.
+                    pass
+
     @staticmethod
     def gadget_needs_session(app_hash):
         """Check if a Gadget app launch would block waiting for Frida."""
@@ -255,7 +271,12 @@ class Frida:
         if not selected_scripts:
             return header
         all_scripts = self.frida_dir / script_type
-        for script in all_scripts.rglob('*.js'):
+        # The API monitor chains to hooks installed by the other scripts,
+        # so it must load last.
+        ordered = sorted(
+            all_scripts.rglob('*.js'),
+            key=lambda p: (p.stem == 'api_monitor', p.name))
+        for script in ordered:
             if '*' in selected_scripts:
                 combined_script.append(script.read_text('utf-8', 'ignore'))
             if script.stem in selected_scripts:

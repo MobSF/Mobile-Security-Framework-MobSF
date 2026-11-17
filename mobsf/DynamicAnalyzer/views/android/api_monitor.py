@@ -7,6 +7,7 @@ single JSON line, and readers parse the log line by line so a malformed
 entry cannot hide the rest of the capture.
 """
 import base64
+import hashlib
 import json
 import logging
 import re
@@ -409,6 +410,22 @@ def _parse_line(line):
             return []
     items = data if isinstance(data, list) else [data]
     return [e for e in (load_entry(i) for i in items) if e]
+
+
+def capture_id(location):
+    """Identify one capture so pollers notice a restarted log.
+
+    A restart recreates or truncates the file; the inode plus the hash of
+    its first event changes even if the new log is already as long as
+    the old one.
+    """
+    path = Path(location)
+    if is_pipe_or_link(path) or not path.is_file():
+        return ''
+    with path.open('rb') as flip:
+        first = flip.readline(MAX_TEXT * MAX_ITEMS)
+    digest = hashlib.sha256(first).hexdigest()[:16]
+    return f'{path.stat().st_ino}-{digest}'
 
 
 def read_api_monitor(location):

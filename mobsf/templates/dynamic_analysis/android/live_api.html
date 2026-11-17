@@ -79,6 +79,7 @@ var REFRESH_MS = 3000;
 var source = document.getElementById('autotbl').dataset;
 var snip = 120;
 var offset = 0;
+var capture = '';
 var paused = false;
 var inFlight = false;
 var showFramework = false;
@@ -226,6 +227,7 @@ function poll() {
         data: {
             hash: source.hash,
             offset: offset,
+            capture: capture,
             csrfmiddlewaretoken: source.csrf
         }
     }).done(function (json) {
@@ -250,6 +252,7 @@ function poll() {
             }
         });
         offset = json.total;
+        capture = json.capture || '';
         if (json.data.length || json.reset) {
             tbl.rows.add(json.data).draw(false);
             renderCounts();

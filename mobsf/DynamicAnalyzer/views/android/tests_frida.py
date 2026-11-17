@@ -8,6 +8,7 @@ from django.conf import settings
 from django.views.decorators.http import require_http_methods
 
 from mobsf.DynamicAnalyzer.views.android.api_monitor import (
+    capture_id,
     group_api_calls,
     read_api_monitor,
 )
@@ -221,18 +222,22 @@ def live_api(request, api=False):
             return send_response({
                 'status': 'failed',
                 'message': 'Data does not exist.'}, api)
+        capture = capture_id(apimon_file)
         entries = read_api_monitor(apimon_file)
         if api:
             return send_response({'data': entries}, api)
         offset = _parse_offset(request.POST.get('offset'))
-        # Restarted instrumentation truncates the log; resend from start.
-        reset = offset > len(entries)
+        # Restarted instrumentation starts a new log; resend from start.
+        reset = (offset > len(entries)
+                 or (offset > 0
+                     and request.POST.get('capture', '') != capture))
         if reset:
             offset = 0
         return send_response({
             'data': entries[offset:],
             'offset': offset,
             'total': len(entries),
+            'capture': capture,
             'reset': reset}, api)
     except Exception:
         logger.exception('API monitor streaming')

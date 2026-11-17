@@ -320,6 +320,7 @@ def collect_logs(request, api=False, identifier=None):
                 download_xposed_log(apk_dir, env.identifier)
         finally:
             stop_httptools()
+            Frida.flush_active(md5_hash, env.identifier)
             env.adb_command(['am', 'force-stop', package], True)
             logger.info('Stopping app')
             env.clear_proxy()
