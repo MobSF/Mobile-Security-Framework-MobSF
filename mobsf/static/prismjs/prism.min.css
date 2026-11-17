@@ -15,8 +15,15 @@ pre[class*="language-"].line-numbers {
   left: -5.8em;
   width: 5.2em;
 }
+/* Prism appends the highlight after <code>; keep it behind the text. */
 .line-highlight {
-  background: rgba(255, 248, 187, 0.75) !important;
+  z-index: 0;
+  background: #fff3bf !important;
+  box-shadow: inset 3px 0 0 #f59f00;
+}
+pre[class*="language-"] > code {
+  position: relative;
+  z-index: 1;
 }
 body.dark-mode pre[class*="language-"],
 body.dark-mode code[class*="language-"] {
@@ -30,8 +37,12 @@ body.dark-mode .line-numbers .line-numbers-rows {
 body.dark-mode .line-numbers-rows > span:before {
   color: #6c7086;
 }
+body.dark-mode pre[class*="language-"] > code {
+  background: transparent;
+}
 body.dark-mode .line-highlight {
-  background: rgba(249, 226, 175, 0.22) !important;
+  background: rgba(249, 226, 175, 0.14) !important;
+  box-shadow: inset 3px 0 0 #f9e2af;
 }
 body.dark-mode .token.comment,
 body.dark-mode .token.prolog,
