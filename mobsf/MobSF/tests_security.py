@@ -525,6 +525,20 @@ class SanitizeSvgTests(SimpleTestCase):
         )
         self.assertEqual(sanitize_svg(xxe), '')
 
+    def test_allows_fragment_urls_and_blocks_external_urls(self):
+        raw = (
+            '<svg xmlns="http://www.w3.org/2000/svg">'
+            '<defs><clipPath id="c0"><path d="M0 0"/></clipPath></defs>'
+            '<g clip-path="url(#c0)">'
+            '<path d="M0 0" fill="url(https://evil.example/x#g)"/>'
+            '<path d="M0 0" clip-path="u\\72l(https://escaped.example/c#c)"/>'
+            '</g></svg>'
+        )
+        cleaned = sanitize_svg(raw)
+        self.assertIn('clip-path="url(#c0)"', cleaned)
+        self.assertNotIn('evil.example', cleaned)
+        self.assertNotIn('escaped.example', cleaned)
+
 
 class IOSContainerPathTests(SimpleTestCase):
 

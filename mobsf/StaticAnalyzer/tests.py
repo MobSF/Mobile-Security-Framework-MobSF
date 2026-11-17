@@ -1200,3 +1200,285 @@ class AndroidIconFallbackTests(SimpleTestCase):
                 app_dir, 'res/mipmap-anydpi-v26/ic_launcher.xml')
             self.assertIs(res, False)
             self.assertIn(b'#FFFFFFFF', xml_file.read_bytes())
+
+    def test_vector_drawable_converts_colors_gradients_and_clips(self):
+        import tempfile
+        from mobsf.StaticAnalyzer.views.android.icon_analysis import (
+            convert_vector_to_svg,
+            get_icon_svg_from_xml,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            app_dir = Path(tmp)
+            apktool = app_dir / 'apktool_out' / 'res'
+            (apktool / 'values').mkdir(parents=True)
+            (apktool / 'drawable').mkdir(parents=True)
+            (apktool / 'mipmap-anydpi-v26').mkdir(parents=True)
+            (apktool / 'values' / 'colors.xml').write_text(
+                '<resources>'
+                '<color name="bg">#FF112233</color>'
+                '<color name="alias">@color/bg</color>'
+                '<color name="fg">#80ABCDEF</color>'
+                '<string name="diag">M20,20L80,80</string>'
+                '</resources>',
+                encoding='utf-8',
+            )
+            (apktool / 'drawable' / '$ic_fg__0.xml').write_text(
+                '<gradient xmlns:android='
+                '"http://schemas.android.com/apk/res/android" '
+                'android:type="linear" android:startX="0" android:startY="0" '
+                'android:endX="50" android:endY="50">'
+                '<item android:color="#44000000" android:offset="0.0"/>'
+                '<item android:color="#00000000" android:offset="1.0"/>'
+                '</gradient>',
+                encoding='utf-8',
+            )
+            (apktool / 'mipmap-anydpi-v26' / 'ic_launcher.xml').write_text(
+                '<adaptive-icon xmlns:android='
+                '"http://schemas.android.com/apk/res/android">'
+                '<background android:drawable="@drawable/ic_bg"/>'
+                '<foreground android:drawable="@drawable/ic_fg"/>'
+                '</adaptive-icon>',
+                encoding='utf-8',
+            )
+            (apktool / 'drawable' / 'ic_bg.xml').write_text(
+                '<vector xmlns:android='
+                '"http://schemas.android.com/apk/res/android" '
+                'xmlns:aapt="http://schemas.android.com/aapt" '
+                'android:width="108dp" android:height="108dp" '
+                'android:viewportWidth="108" android:viewportHeight="108">'
+                '<path android:pathData="M0,0h108v108h-108z">'
+                '<aapt:attr name="android:fillColor">'
+                '<gradient android:type="linear" android:startX="0" '
+                'android:startY="0" android:endX="108" android:endY="108" '
+                'android:startColor="@color/alias" '
+                'android:endColor="#FF445566"/>'
+                '</aapt:attr></path></vector>',
+                encoding='utf-8',
+            )
+            (apktool / 'drawable' / 'ic_fg.xml').write_text(
+                '<vector xmlns:android='
+                '"http://schemas.android.com/apk/res/android" '
+                'android:width="108dp" android:height="108dp" '
+                'android:viewportWidth="108" android:viewportHeight="108">'
+                '<group android:rotation="45" android:pivotX="54" '
+                'android:pivotY="54" android:translateX="2">'
+                '<clip-path android:pathData="M10,10h88v88h-88z" '
+                'android:fillType="evenOdd"/>'
+                '<path android:pathData="M0,0h50v50z" '
+                'android:fillColor="@drawable/$ic_fg__0"/>'
+                '<path android:pathData="@string/diag" '
+                'android:fillColor="@color/fg" android:fillType="evenOdd" '
+                'android:strokeColor="#FF0000" android:strokeWidth="2" '
+                'android:strokeLineCap="round"/>'
+                '</group></vector>',
+                encoding='utf-8',
+            )
+            convert_vector_to_svg(
+                app_dir, 'res/mipmap-anydpi-v26/ic_launcher.xml', True)
+            merged = get_icon_svg_from_xml(
+                app_dir, 'res/mipmap-anydpi-v26/ic_launcher.xml')
+            self.assertIsNotNone(merged)
+            svg = Path(merged).read_text(encoding='utf-8')
+            self.assertIn('linearGradient', svg)
+            self.assertIn('#112233', svg)
+            self.assertIn('#ABCDEF', svg)
+            self.assertIn('rotate(45 54 54)', svg)
+            self.assertIn('clipPath', svg)
+            self.assertIn('clip-rule="evenodd"', svg)
+            self.assertIn('fill-rule="evenodd"', svg)
+
+    def test_vector_drawable_cycles_and_axml_enums(self):
+        from mobsf.StaticAnalyzer.views.android.icon_analysis import (
+            vector_xml_to_svg,
+        )
+        cyclic = {
+            'string/loop': '@string/loop',
+            'dimen/loop': '@dimen/loop',
+            'color/a': '@COLOR/b',
+            'color/b': '@color/a',
+            'a': '@COLOR/b',
+            'b': '@color/a',
+        }
+        self.assertIsNone(vector_xml_to_svg(
+            b'<vector xmlns:android='
+            b'"http://schemas.android.com/apk/res/android" '
+            b'android:viewportWidth="@dimen/loop" '
+            b'android:viewportHeight="24">'
+            b'<path android:pathData="M0,0h24v24z"/></vector>',
+            colors=cyclic,
+        ))
+        svg = vector_xml_to_svg(
+            b'<vector xmlns:android='
+            b'"http://schemas.android.com/apk/res/android" '
+            b'android:viewportWidth="24" android:viewportHeight="24">'
+            b'<path android:pathData="@string/loop" '
+            b'android:fillColor="#FF0000"/>'
+            b'<path android:pathData="M0,0h24v24z" '
+            b'android:fillColor="@color/a" android:fillType="0x00000001" '
+            b'android:strokeColor="#00FF00"/>'
+            b'<path android:pathData="M1,1L10,10" '
+            b'android:strokeColor="#0000FF" android:strokeWidth="2" '
+            b'android:strokeLineCap="1" android:strokeLineJoin="0x00000002"/>'
+            b'</vector>',
+            colors=cyclic,
+        )
+        self.assertIsNotNone(svg)
+        self.assertIn('fill="none"', svg)
+        self.assertIn('fill-rule="evenodd"', svg)
+        self.assertIn('stroke="#00FF00"', svg)
+        self.assertIn('stroke-width="0"', svg)
+        self.assertIn('stroke-linecap="round"', svg)
+        self.assertIn('stroke-linejoin="bevel"', svg)
+
+    def test_vector_drawable_resources_opacity_and_shared_gradients(self):
+        import tempfile
+        from mobsf.StaticAnalyzer.views.android.icon_analysis import (
+            vector_xml_to_svg,
+        )
+        ns = (b'xmlns:android="http://schemas.android.com/apk/res/android" '
+              b'xmlns:aapt="http://schemas.android.com/aapt"')
+        res = {
+            'integer/offset': '3',
+            'integer/radius': '12',
+            'fraction/stop': '0.5',
+        }
+        svg = vector_xml_to_svg(
+            b'<vector ' + ns + b' android:viewportWidth="24" '
+            b'android:viewportHeight="24" android:alpha="0.5">'
+            b'<group android:translateX="@integer/offset">'
+            b'<path android:pathData="M0,0h24v24z">'
+            b'<aapt:attr name="android:fillColor">'
+            b'<gradient android:type="radial" android:centerX="12" '
+            b'android:centerY="12" android:gradientRadius="@integer/radius">'
+            b'<item android:offset="0" android:color="#FF0000"/>'
+            b'<item android:offset="@fraction/stop" android:color="#00FF00"/>'
+            b'</gradient></aapt:attr></path></group></vector>',
+            colors=res,
+        )
+        self.assertIn('translate(3 0)', svg)
+        self.assertIn('r="12"', svg)
+        self.assertIn('offset="0.5"', svg)
+        self.assertIn('<g opacity="0.5">', svg)
+        self.assertNotRegex(svg, r'<svg[^>]*opacity')
+
+        with tempfile.TemporaryDirectory() as tmp:
+            res_root = Path(tmp) / 'res'
+            drawable = res_root / 'drawable'
+            color_dir = res_root / 'color'
+            drawable.mkdir(parents=True)
+            color_dir.mkdir()
+            grad = (
+                b'<gradient ' + ns + b' android:startX="0" '
+                b'android:endX="24" android:startColor="{c}" '
+                b'android:endColor="#000000"/>')
+            (drawable / 'paint.xml').write_bytes(
+                grad.replace(b'{c}', b'#111111'))
+            (color_dir / 'paint.xml').write_bytes(
+                grad.replace(b'{c}', b'#222222'))
+            paths = b''.join(
+                b'<path android:pathData="M0,0h1v1z" '
+                b'android:fillColor="@drawable/paint"/>'
+                for _ in range(40))
+            svg = vector_xml_to_svg(
+                b'<vector ' + ns + b' android:viewportWidth="24" '
+                b'android:viewportHeight="24">' + paths
+                + b'<path android:pathData="M0,0h2v2z" '
+                b'android:fillColor="@color/paint"/></vector>',
+                drawable_dir=drawable,
+            )
+            self.assertEqual(svg.count('<linearGradient'), 2)
+            self.assertEqual(svg.count('fill="url(#g0)"'), 40)
+            self.assertIn('fill="url(#g1)"', svg)
+            self.assertIn('#111111', svg)
+            self.assertIn('#222222', svg)
+
+    def test_vector_drawable_case_negative_cache_and_apktool_source(self):
+        import tempfile
+        from unittest import mock
+        from mobsf.StaticAnalyzer.views.android import icon_analysis
+        ns = b'xmlns:android="http://schemas.android.com/apk/res/android"'
+        svg = icon_analysis.vector_xml_to_svg(
+            b'<vector ' + ns + b' android:width="48dp" android:height="24dp"'
+            b' android:viewportWidth="24" android:viewportHeight="24">'
+            b'<path android:pathData="M0,0h24v24z" '
+            b'android:fillColor="@color/Brand"/></vector>',
+            colors={'brand': '#111111', 'Brand': '#222222',
+                    'color/brand': '#111111', 'color/Brand': '#222222'},
+        )
+        self.assertIn('fill="#222222"', svg)
+        self.assertIn('preserveAspectRatio="none"', svg)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            drawable = Path(tmp) / 'res' / 'drawable'
+            drawable.mkdir(parents=True)
+            (drawable / 'bad.xml').write_bytes(b'<selector/>')
+            paths = b''.join(
+                b'<path android:pathData="M0,0h1v1z" '
+                b'android:fillColor="@drawable/bad"/>' for _ in range(50))
+            real_parse = icon_analysis.DefusedET.fromstring
+            with mock.patch.object(
+                    icon_analysis.DefusedET, 'fromstring',
+                    side_effect=real_parse) as parse:
+                icon_analysis.vector_xml_to_svg(
+                    b'<vector ' + ns + b' android:viewportWidth="24" '
+                    b'android:viewportHeight="24">' + paths + b'</vector>',
+                    drawable_dir=drawable,
+                )
+            self.assertLess(parse.call_count, 5)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            app_dir = Path(tmp)
+            raw_dir = app_dir / 'res' / 'drawable'
+            dec_dir = app_dir / 'apktool_out' / 'res' / 'drawable'
+            values = app_dir / 'apktool_out' / 'res' / 'values'
+            for d in (raw_dir, dec_dir, values):
+                d.mkdir(parents=True)
+            body = (b'<vector ' + ns + b' android:viewportWidth="24" '
+                    b'android:viewportHeight="24"><path '
+                    b'android:pathData="M0,0h24v24z" '
+                    b'android:fillColor="{c}"/></vector>')
+            (raw_dir / 'ic.xml').write_bytes(
+                body.replace(b'{c}', b'@7F060001'))
+            (dec_dir / 'ic.xml').write_bytes(
+                body.replace(b'{c}', b'@color/brand'))
+            (values / 'colors.xml').write_bytes(
+                b'<resources><color name="brand">#123456</color>'
+                b'</resources>')
+            icon_analysis.convert_vector_to_svg(
+                app_dir, 'res/drawable/ic.xml', False)
+            out = (raw_dir / 'ic.svg').read_text()
+            self.assertIn('fill="#123456"', out)
+
+    def test_vector_drawable_rejects_doctype_and_external_entities(self):
+        import tempfile
+        from mobsf.StaticAnalyzer.views.android.icon_analysis import (
+            convert_axml_to_xml,
+            convert_vector_to_svg,
+            vector_xml_to_svg,
+        )
+        payload = (
+            b'<?xml version="1.0"?>'
+            b'<!DOCTYPE vector SYSTEM "http://127.0.0.1:9/oob.dtd">'
+            b'<vector xmlns:android='
+            b'"http://schemas.android.com/apk/res/android" '
+            b'android:width="24dp" android:height="24dp" '
+            b'android:viewportWidth="24" android:viewportHeight="24">'
+            b'<path android:fillColor="#FF0000" android:pathData="M0,0h24v24z"/>'
+            b'</vector>'
+        )
+        self.assertIsNone(vector_xml_to_svg(payload))
+        with tempfile.TemporaryDirectory() as tmp:
+            app_dir = Path(tmp)
+            drawable = app_dir / 'res' / 'drawable'
+            values = app_dir / 'res' / 'values'
+            drawable.mkdir(parents=True)
+            values.mkdir(parents=True)
+            icon_rel = 'res/drawable/ic_launcher.xml'
+            (app_dir / icon_rel).write_bytes(payload)
+            (values / 'colors.xml').write_bytes(
+                b'<!DOCTYPE resources [<!ENTITY x SYSTEM "file:///etc/hosts">]>'
+                b'<resources><color name="c">&x;</color></resources>',
+            )
+            self.assertIsNone(convert_axml_to_xml(app_dir, icon_rel))
+            convert_vector_to_svg(app_dir, icon_rel, False)
+            self.assertFalse((drawable / 'ic_launcher.svg').exists())

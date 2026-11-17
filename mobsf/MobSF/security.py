@@ -144,7 +144,6 @@ def get_executable_hashes():
         sys.executable,
         settings.JADX_BINARY,
         settings.BACKSMALI_BINARY,
-        settings.VD2SVG_BINARY,
         settings.APKTOOL_BINARY,
         settings.ADB_BINARY,
         settings.JTOOL_BINARY,
@@ -776,10 +775,15 @@ _SVG_SAFE_TAGS = {
 }
 _SVG_SAFE_ATTRS = {
     '*': {
-        'id', 'class', 'transform', 'fill', 'stroke',
-        'stroke-width', 'opacity',
+        'id', 'class', 'transform', 'fill', 'fill-opacity', 'fill-rule',
+        'stroke', 'stroke-opacity', 'stroke-width', 'stroke-linecap',
+        'stroke-linejoin', 'stroke-miterlimit', 'opacity', 'clip-path',
+        'clip-rule',
     },
-    'svg': {'width', 'height', 'viewBox', 'xmlns', 'version'},
+    'svg': {
+        'width', 'height', 'viewBox', 'xmlns', 'version',
+        'preserveAspectRatio',
+    },
     'path': {'d'},
     'rect': {'x', 'y', 'width', 'height', 'rx', 'ry'},
     'circle': {'cx', 'cy', 'r'},
@@ -791,10 +795,15 @@ _SVG_SAFE_ATTRS = {
     'image': {'x', 'y', 'width', 'height', 'href'},
     'use': {'x', 'y', 'width', 'height', 'href'},
     'filter': {'x', 'y', 'width', 'height', 'href'},
-    'linearGradient': {'gradientUnits', 'x1', 'y1', 'x2', 'y2'},
-    'radialGradient': {'cx', 'cy', 'r', 'fx', 'fy'},
+    'linearGradient': {
+        'gradientUnits', 'spreadMethod', 'x1', 'y1', 'x2', 'y2',
+    },
+    'radialGradient': {
+        'gradientUnits', 'spreadMethod', 'cx', 'cy', 'r', 'fx', 'fy',
+    },
     'stop': {'offset', 'stop-color', 'stop-opacity'},
 }
+_SVG_EXTERNAL_URL_RE = re.compile(r"""url\((?!['"]?#)""")
 
 
 def _local_xml_name(name):
@@ -808,9 +817,11 @@ def _is_unsafe_svg_attr_value(attr_val):
     """Return True if an SVG attribute value contains script URI vectors."""
     val_norm = re.sub(r'[\x00-\x20]+', '', attr_val).lower()
     return (
-        val_norm.startswith(('javascript:', 'vbscript:', 'data:'))
+        '\\' in val_norm
+        or val_norm.startswith(('javascript:', 'vbscript:', 'data:'))
         or 'javascript:' in val_norm
         or 'expression(' in val_norm
+        or bool(_SVG_EXTERNAL_URL_RE.search(val_norm))
     )
 
 
