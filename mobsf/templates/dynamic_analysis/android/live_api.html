@@ -6,6 +6,18 @@
 {% block extra_css %}
 <!-- DataTables -->
 <link rel="stylesheet" href="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.css" %}">
+<style>
+  #autotbl tbody tr[role="row"] { cursor: pointer; }
+  #autotbl td { vertical-align: top; }
+  .api-name { font-family: monospace; font-weight: 600; word-break: break-word; }
+  .api-preview { font-family: monospace; font-size: 0.85em; word-break: break-all; }
+  .api-exception { color: #dc3545; }
+  .api-details { padding: 0.5rem 1rem; }
+  .api-details dt { margin-top: 0.5rem; }
+  .api-details pre { white-space: pre-wrap; word-break: break-all; margin: 0; font-size: 0.85em; }
+  .category-badge { cursor: pointer; margin: 0 0.25rem 0.25rem 0; font-size: 0.85em; }
+  .api-instance { font-family: monospace; font-size: 0.8em; color: #6c757d; word-break: break-all; }
+</style>
 {% endblock %}
 {% block content %}
 <div class="content-wrapper">
@@ -17,32 +29,37 @@
             <div class="card">
               <div class="card-body">
                 <h3 class="page-header"><strong>API Monitor </strong>- {{ package }}</h3>
-                <div id="messages"></br>Data refreshed in every 10 seconds.</div>
-                <div align="right">Data Snip:  <input type="text" value="100" oninput="change_snip(this.value)"></div><br />
+                <div class="d-flex flex-wrap align-items-center mb-2">
+                  <span id="status" class="text-muted mr-3">Waiting for API calls…</span>
+                  <button id="toggle-refresh" type="button" class="btn btn-sm btn-outline-secondary mr-3"><i class="fas fa-pause"></i> Pause</button>
+                  <label class="mb-0 mr-3">Category
+                    <select id="category-filter" class="form-control form-control-sm d-inline-block w-auto ml-1">
+                      <option value="">All</option>
+                    </select>
+                  </label>
+                  <label class="mb-0 mr-3 font-weight-normal">
+                    <input id="show-framework" type="checkbox"> Show framework-internal calls
+                  </label>
+                  <label class="mb-0">Preview length
+                    <input id="snip" type="number" min="20" max="5000" value="120" class="form-control form-control-sm d-inline-block ml-1" style="width: 90px">
+                  </label>
+                </div>
+                <div id="category-counts" class="mb-2"></div>
+                <p class="text-muted small mb-2">Newest calls are shown first. Click a row to see full arguments, return value, thread and stack trace.</p>
                 <div class="table-responsive">
-                <table id="autotbl" class="table table-bordered table-hover table-striped" style="width:100%">
+                <table id="autotbl" class="table table-bordered table-hover table-striped" style="width:100%"
+                       data-src="{% url 'live_api' %}" data-hash="{{ hash }}" data-csrf="{{ csrf_token }}">
                         <thead>
                             <tr>
-                                <th>NAME</th>
-                                <th>CLASS</th>
-                                <th>METHOD</th>
+                                <th></th>
+                                <th>TIME</th>
+                                <th>CATEGORY</th>
+                                <th>API</th>
                                 <th>ARGUMENTS</th>
-                                <th>RESULT</th>
                                 <th>RETURN VALUE</th>
                                 <th>CALLED FROM</th>
                             </tr>
                         </thead>
-                        <tfoot>
-                            <tr>
-                                <th>NAME</th>
-                                <th>CLASS</th>
-                                <th>METHOD</th>
-                                <th>ARGUMENTS</th>
-                                <th>RESULT</th>
-                                <th>RETURN VALUE</th>
-                                <th>CALLED FROM</th>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
 
@@ -55,16 +72,20 @@
 {% endblock %}
 {% block extra_scripts %}
 <!-- DataTables -->
-<script src="{% static "adminlte/plugins/datatables/jquery.dataTables.min.js" %} "></script>
+<script src="{% static "adminlte/plugins/datatables/jquery.dataTables.min.js" %}"></script>
 <script src="{% static "adminlte/plugins/datatables-bs4/dataTables.bootstrap4.min.js" %}"></script>
 <script type="text/javascript">
-var snip = 100;
+var REFRESH_MS = 3000;
+var source = document.getElementById('autotbl').dataset;
+var snip = 120;
+var offset = 0;
+var paused = false;
+var inFlight = false;
+var showFramework = false;
+var counts = {};
+var frameworkCounts = {};
+var hiddenTotal = 0;
 var tbl;
-
-function change_snip(val){
-    snip = parseInt(val);
-    tbl.ajax.reload();
-}
 
 function escapeHtml(text) {
     var map = {
@@ -77,44 +98,280 @@ function escapeHtml(text) {
     return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
 }
 
-$(document).ready( function () {
-        $.fn.dataTable.ext.errMode = 'none';
-        tbl = $('#autotbl').DataTable( {
-        ajax: '/live_api/?hash={{ hash }}&stream=1',
-        deferRender:    true,
-        scroller:       true,
-        scrollX:        true,
-        searching:      true,
-        paging:         false,
-        info:           true,
-        columns: [
-            { data: "name" },
-            { data: "class" },
-            { data: "method" },
-            { data: "arguments" },
-            { data: "result" },
-            { data: "returnValue" },
-            { data: "calledFrom" }
-        ],
-        columnDefs: [ {
-            targets: [0, 1, 2, 6],
-            render: $.fn.dataTable.render.text()
-        }, {
-            targets: [3,4, 5],
-            render: function ( data, type, row ) {
-                var text = JSON.stringify(data);
-                if (text === undefined)
-                    return '';
-                if (data && text.length > snip )
-                    text = text.slice(0, snip) + "...";
-                return escapeHtml(text);
-            }
-        }]
-    });
-    setInterval( function () {
-        tbl.ajax.reload();
-    }, 10000 );
-});
+function preview(text) {
+    if (text === null || text === undefined)
+        return '';
+    text = String(text);
+    return text.length > snip ? text.slice(0, snip) + '…' : text;
+}
 
+function formatTime(ts) {
+    if (!ts)
+        return '';
+    var d = new Date(ts);
+    var pad = function (n, w) { return String(n).padStart(w, '0'); };
+    return pad(d.getHours(), 2) + ':' + pad(d.getMinutes(), 2) + ':' +
+        pad(d.getSeconds(), 2) + '.' + pad(d.getMilliseconds(), 3);
+}
+
+function returnText(row) {
+    if (row.exception)
+        return 'threw ' + row.exception;
+    return row.returnValue === null || row.returnValue === undefined ? '' : row.returnValue;
+}
+
+function previewCell(text, type) {
+    if (type !== 'display')
+        return text;
+    return '<span class="api-preview">' + escapeHtml(preview(text)) + '</span>';
+}
+
+function addField(list, label, value) {
+    var dt = document.createElement('dt');
+    dt.textContent = label;
+    var dd = document.createElement('dd');
+    var pre = document.createElement('pre');
+    pre.textContent = value;
+    dd.appendChild(pre);
+    list.appendChild(dt);
+    list.appendChild(dd);
+}
+
+function buildDetails(row) {
+    var list = document.createElement('dl');
+    list.className = 'api-details';
+    addField(list, 'Method', row['class'] + '.' + row.signature);
+    if (row.instance)
+        addField(list, 'Called On', row.instance);
+    if (row.count > 1)
+        addField(list, 'Repeated', row.count + ' identical calls');
+    if (row.app === false)
+        addField(list, 'Origin', 'Framework-internal (no app code in the stack)');
+    if (row.arguments.length) {
+        row.arguments.forEach(function (arg, i) {
+            addField(list, 'Argument ' + i, arg);
+        });
+    } else {
+        addField(list, 'Arguments', '(none)');
+    }
+    if (row.exception)
+        addField(list, 'Exception', row.exception);
+    else if (row.returnValue !== null && row.returnValue !== undefined)
+        addField(list, 'Return Value', row.returnValue);
+    if (row.decoded)
+        addField(list, 'Decoded Base64', row.decoded);
+    if (row.thread)
+        addField(list, 'Thread', row.thread);
+    if (row.stack && row.stack.length)
+        addField(list, 'Stack Trace', row.stack.join('\n'));
+    else if (row.calledFrom)
+        addField(list, 'Called From', row.calledFrom);
+    return list;
+}
+
+function setCategory(name) {
+    $('#category-filter').val(name);
+    var pattern = name ? '^' + $.fn.dataTable.util.escapeRegex(name) + '$' : '';
+    tbl.column(2).search(pattern, true, false).draw();
+}
+
+function renderCounts() {
+    var box = document.getElementById('category-counts');
+    var select = document.getElementById('category-filter');
+    var current = select.value;
+    box.textContent = '';
+    while (select.options.length > 1)
+        select.remove(1);
+    Object.keys(counts).sort().forEach(function (name) {
+        var total = counts[name] - (showFramework ? 0 : (frameworkCounts[name] || 0));
+        if (!total)
+            return;
+        var badge = document.createElement('span');
+        badge.className = 'badge badge-secondary category-badge';
+        badge.textContent = name + ' ' + total;
+        badge.dataset.category = name;
+        badge.addEventListener('click', function () {
+            setCategory(this.dataset.category === select.value ? '' : this.dataset.category);
+        });
+        box.appendChild(badge);
+        var option = document.createElement('option');
+        option.value = name;
+        option.textContent = name + ' (' + total + ')';
+        select.appendChild(option);
+    });
+    select.value = current;
+}
+
+function setStatus(text) {
+    document.getElementById('status').textContent = text;
+}
+
+function updateStatus() {
+    var total = 0;
+    Object.keys(counts).forEach(function (name) { total += counts[name]; });
+    var text = total + ' API calls captured';
+    if (!showFramework && hiddenTotal)
+        text += ' (' + hiddenTotal + ' framework-internal hidden)';
+    setStatus(text + '. Updated ' + formatTime(Date.now()) + '.');
+}
+
+function poll() {
+    if (paused || inFlight)
+        return;
+    inFlight = true;
+    $.ajax({
+        url: source.src,
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            hash: source.hash,
+            offset: offset,
+            csrfmiddlewaretoken: source.csrf
+        }
+    }).done(function (json) {
+        if (!json || !Array.isArray(json.data)) {
+            setStatus((json && json.message) || 'No API calls captured yet.');
+            return;
+        }
+        if (json.reset) {
+            tbl.clear();
+            counts = {};
+            frameworkCounts = {};
+            hiddenTotal = 0;
+            offset = 0;
+        }
+        json.data.forEach(function (row, i) {
+            row.seq = json.offset + i + 1;
+            var calls = row.count || 1;
+            counts[row.name] = (counts[row.name] || 0) + calls;
+            if (row.app === false) {
+                frameworkCounts[row.name] = (frameworkCounts[row.name] || 0) + calls;
+                hiddenTotal += calls;
+            }
+        });
+        offset = json.total;
+        if (json.data.length || json.reset) {
+            tbl.rows.add(json.data).draw(false);
+            renderCounts();
+        }
+        updateStatus();
+    }).fail(function () {
+        setStatus('Failed to fetch API monitor data.');
+    }).always(function () {
+        inFlight = false;
+    });
+}
+
+$(document).ready(function () {
+    $.fn.dataTable.ext.errMode = 'none';
+    $.fn.dataTable.ext.search.push(function (settings, data, index, row) {
+        return settings.nTable.id !== 'autotbl' || showFramework || row.app !== false;
+    });
+    tbl = $('#autotbl').DataTable({
+        data: [],
+        deferRender: true,
+        scrollX: true,
+        searching: true,
+        paging: true,
+        pageLength: 50,
+        info: true,
+        autoWidth: false,
+        order: [[0, 'desc']],
+        columns: [
+            { data: 'seq', visible: false, searchable: false },
+            {
+                data: 'timestamp',
+                width: '7rem',
+                className: 'text-nowrap',
+                render: function (data, type) {
+                    if (type !== 'display' && type !== 'filter')
+                        return data || 0;
+                    return escapeHtml(formatTime(data));
+                }
+            },
+            { data: 'name', width: '8rem', className: 'text-nowrap', render: $.fn.dataTable.render.text() },
+            {
+                data: 'api',
+                width: '14rem',
+                render: function (data, type, row) {
+                    if (type === 'filter')
+                        return data + ' ' + (row.instance || '');
+                    if (type !== 'display')
+                        return data;
+                    var html = '<span class="api-name" title="' +
+                        escapeHtml(row['class'] + '.' + row.signature) + '">' +
+                        escapeHtml(data) + '</span>';
+                    if (row.count > 1)
+                        html += ' <span class="badge badge-info">×' + escapeHtml(row.count) + '</span>';
+                    if (row.app === false)
+                        html += ' <span class="badge badge-light">framework</span>';
+                    if (row.instance)
+                        html += '<div class="api-instance">on ' + escapeHtml(preview(row.instance)) + '</div>';
+                    return html;
+                }
+            },
+            {
+                data: 'arguments',
+                render: function (data, type) {
+                    return previewCell((data || []).join(', '), type);
+                }
+            },
+            {
+                data: 'returnValue',
+                render: function (data, type, row) {
+                    var text = returnText(row);
+                    if (type !== 'display')
+                        return text;
+                    var cls = row.exception ? 'api-preview api-exception' : 'api-preview';
+                    return '<span class="' + cls + '">' + escapeHtml(preview(text)) + '</span>';
+                }
+            },
+            {
+                data: 'calledFrom',
+                width: '18%',
+                render: function (data, type) {
+                    return previewCell(data || '', type);
+                }
+            }
+        ]
+    });
+    $('#autotbl tbody').on('click', 'tr', function () {
+        var row = tbl.row(this);
+        if (!row.data())
+            return;
+        if (row.child.isShown())
+            row.child.hide();
+        else
+            row.child(buildDetails(row.data())).show();
+    });
+    $('#show-framework').on('change', function () {
+        showFramework = this.checked;
+        tbl.draw(false);
+        renderCounts();
+        updateStatus();
+    });
+    $('#category-filter').on('change', function () {
+        setCategory(this.value);
+    });
+    $('#snip').on('input', function () {
+        var value = parseInt(this.value, 10);
+        if (value >= 20) {
+            snip = value;
+            tbl.rows().invalidate('data').draw(false);
+        }
+    });
+    $('#toggle-refresh').on('click', function () {
+        paused = !paused;
+        var icon = document.createElement('i');
+        icon.className = paused ? 'fas fa-play' : 'fas fa-pause';
+        this.textContent = '';
+        this.appendChild(icon);
+        this.appendChild(document.createTextNode(paused ? ' Resume' : ' Pause'));
+        if (!paused)
+            poll();
+    });
+    poll();
+    setInterval(poll, REFRESH_MS);
+});
 </script>
 {% endblock %}

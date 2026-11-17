@@ -1,9 +1,5 @@
 # -*- coding: utf_8 -*-
 """Frida tests."""
-import base64
-import os
-import re
-import json
 from pathlib import Path
 import logging
 
@@ -11,6 +7,10 @@ from django.shortcuts import render
 from django.conf import settings
 from django.views.decorators.http import require_http_methods
 
+from mobsf.DynamicAnalyzer.views.android.api_monitor import (
+    group_api_calls,
+    read_api_monitor,
+)
 from mobsf.DynamicAnalyzer.views.android.frida_core import Frida
 from mobsf.DynamicAnalyzer.views.common.shared import (
     invalid_params,
@@ -22,7 +22,6 @@ from mobsf.DynamicAnalyzer.views.android.operations import (
 )
 from mobsf.MobSF.utils import (
     get_device,
-    is_file_exists,
     is_gadget_analysis,
     is_md5,
     print_n_send_error_response,
@@ -39,6 +38,7 @@ from mobsf.MobSF.views.authorization import (
 )
 
 logger = logging.getLogger(__name__)
+API_MONITOR_FILE = 'mobsf_api_monitor.txt'
 
 
 def _analysis_identifier(request, checksum):
@@ -187,123 +187,68 @@ def instrument(request, api=False):
     return send_response(data, api)
 
 
-@login_required
-def live_api(request, api=False):
+def _parse_offset(value):
     try:
-        if api:
-            apphash = request.POST['hash']
-            stream = True
-        else:
+        return max(int(value), 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+@login_required
+@permission_required(Permissions.SCAN)
+@require_http_methods(['GET', 'POST'])
+def live_api(request, api=False):
+    """Render the live API monitor or return captured API calls."""
+    try:
+        if request.method == 'GET':
             apphash = request.GET.get('hash', '')
-            stream = request.GET.get('stream', '')
+            package = request.GET.get('package', '')
+            if not is_md5(apphash) or not strict_package_check(package):
+                return invalid_params(api)
+            logger.info('Starting API monitor streaming')
+            template = 'dynamic_analysis/android/live_api.html'
+            return render(request,
+                          template,
+                          {'hash': apphash,
+                           'package': package,
+                           'version': settings.MOBSF_VER,
+                           'title': 'Live API Monitor'})
+        apphash = request.POST.get('hash', '')
         if not is_md5(apphash):
             return invalid_params(api)
-        if stream:
-            apk_dir = os.path.join(settings.UPLD_DIR, apphash + '/')
-            apimon_file = os.path.join(apk_dir, 'mobsf_api_monitor.txt')
-            data = {}
-            if not is_file_exists(apimon_file):
-                data = {
-                    'status': 'failed',
-                    'message': 'Data does not exist.'}
-                return send_response(data, api)
-            with open(apimon_file, 'r',
-                      encoding='utf8',
-                      errors='ignore') as flip:
-                api_list = json.loads('[{}]'.format(
-                    flip.read()[:-1]))
-            data = {'data': api_list}
-            return send_response(data, api)
-        logger.info('Starting API monitor streaming')
-        template = 'dynamic_analysis/android/live_api.html'
-        return render(request,
-                      template,
-                      {'hash': apphash,
-                       'package': request.GET.get('package', ''),
-                       'version': settings.MOBSF_VER,
-                       'title': 'Live API Monitor'})
+        apimon_file = Path(settings.UPLD_DIR) / apphash / API_MONITOR_FILE
+        if not apimon_file.is_file():
+            return send_response({
+                'status': 'failed',
+                'message': 'Data does not exist.'}, api)
+        entries = read_api_monitor(apimon_file)
+        if api:
+            return send_response({'data': entries}, api)
+        offset = _parse_offset(request.POST.get('offset'))
+        # Restarted instrumentation truncates the log; resend from start.
+        reset = offset > len(entries)
+        if reset:
+            offset = 0
+        return send_response({
+            'data': entries[offset:],
+            'offset': offset,
+            'total': len(entries),
+            'reset': reset}, api)
     except Exception:
         logger.exception('API monitor streaming')
         err = 'Error in API monitor streaming'
         return print_n_send_error_response(request, err, api)
 
 
-def decode_base64(data, altchars=b'+/'):
-    """Decode base64, padding being optional.
-
-    :param data: Base64 data as an ASCII byte string
-    :returns: The decoded byte string.
-
-    """
-    data = re.sub(rb'[^a-zA-Z0-9%s]+' % altchars,
-                  b'', data.encode())
-    missing_padding = len(data) % 4
-    if missing_padding:
-        data += b'=' * (4 - missing_padding)
-    return base64.b64decode(data, altchars)
-
-
-def get_icon_map(name):
-    """Get icon mapping."""
-    mapping = {
-        'Process': 'fas fa-chart-bar',
-        'Command': 'fas fa-terminal',
-        'Java Native Interface': 'fab fa-cuttlefish',
-        'WebView': 'far fa-window-maximize',
-        'File IO': 'fas fa-file-signature',
-        'Database': 'fas fa-database',
-        'IPC': 'fas fa-broadcast-tower',
-        'Binder': 'fas fa-cubes',
-        'Crypto': 'fas fa-lock',
-        'Crypto - Hash': 'fas fa-hashtag',
-        'Device Info': 'fas fa-info',
-        'Network': 'fas fa-wifi',
-        'Dex Class Loader': 'fas fa-asterisk',
-        'Base64': 'fas fa-puzzle-piece',
-        'System Manager': 'fas fa-cogs',
-        'SMS': 'fas fa-comment-alt',
-        'Device Data': 'fas fa-phone',
-    }
-    if name in mapping:
-        return mapping[name]
-    return 'far fa-dot-circle'
-
-
 def apimon_analysis(app_dir):
     """API Analysis."""
-    api_details = {}
+    api_details, strings = {}, []
     try:
-        strings = []
-        location = os.path.join(app_dir, 'mobsf_api_monitor.txt')
-        if not is_file_exists(location):
+        location = Path(app_dir) / API_MONITOR_FILE
+        if not location.is_file():
             return api_details, strings
         logger.info('Frida API Monitor Analysis')
-        with open(location, 'r',
-                  encoding='utf8',
-                  errors='ignore') as flip:
-            apis = json.loads('[{}]'.format(
-                flip.read()[:-1]))
-        for api in apis:
-            to_decode = None
-            if (api['class'] == 'android.util.Base64'
-                    and (api['method'] == 'encodeToString')):
-                if api.get('returnValue'):
-                    to_decode = api['returnValue'].replace('"', '')
-            elif (api['class'] == 'android.util.Base64'
-                  and api['method'] == 'decode'):
-                to_decode = api['arguments'][0]
-            try:
-                if to_decode:
-                    api['decoded'] = decode_base64(
-                        to_decode).decode('utf-8', 'ignore')
-                    strings.append((api['calledFrom'], api['decoded']))
-            except Exception:
-                pass
-            api['icon'] = get_icon_map(api['name'])
-            if api['name'] in api_details:
-                api_details[api['name']].append(api)
-            else:
-                api_details[api['name']] = [api]
+        api_details, strings = group_api_calls(read_api_monitor(location))
     except Exception:
         logger.exception('API Monitor Analysis')
     return api_details, strings

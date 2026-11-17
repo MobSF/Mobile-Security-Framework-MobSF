@@ -11,6 +11,10 @@ import frida
 
 import psutil
 
+from mobsf.DynamicAnalyzer.views.android.api_monitor import (
+    API_MONITOR_PREFIX,
+    serialize_event,
+)
 from mobsf.DynamicAnalyzer.views.android.environment import Environment
 from mobsf.DynamicAnalyzer.views.android.frida_scripts import (
     class_pattern,
@@ -324,7 +328,6 @@ class Frida:
         """Function to handle frida responses."""
         if 'payload' in message:
             msg = message['payload']
-            api_mon = 'MobSF-API-Monitor: '
             aux = '[AUXILIARY] '
             aux_done = '[AUXILIARY-DONE]'
             deps = '[RUNTIME-DEPS] '
@@ -332,8 +335,12 @@ class Frida:
             clip = 'mobsf-android-clipboard:'
             if not isinstance(msg, str):
                 msg = str(msg)
-            if msg.startswith(api_mon):
-                self.write_log(self.api_mon, msg.replace(api_mon, ''))
+            if msg.startswith(API_MONITOR_PREFIX):
+                line = serialize_event(msg[len(API_MONITOR_PREFIX):])
+                if line:
+                    self.write_log(self.api_mon, line)
+                else:
+                    logger.debug('[Frida] Dropped malformed API monitor event')
             elif msg.startswith(clip):
                 msg = msg.replace(clip, '')
                 self.write_log(self.clipboard, f'{msg}\n')

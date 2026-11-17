@@ -309,33 +309,71 @@
             <div class="col-lg-12">
             <div class="card">
               <div class="card-body">
-              <p><strong><i class="{{details.0|key:"icon"}}"></i> {{api | upper}}</strong></p>
+              {% with framework=apimon_framework|key:api %}
+              <p><strong><i class="{{details.0|key:"icon"}}"></i> {{api | upper}}</strong> <span class="text-muted">({{ details|length }} unique call{{ details|length|pluralize }})</span>
+              {% if framework %}
+                <label class="ml-3 mb-0 small font-weight-normal">
+                  <input type="checkbox" class="apimon-framework-toggle"> Show {{ framework }} framework-internal call{{ framework|pluralize }}
+                </label>
+              {% endif %}
+              </p>
+              {% if framework == details|length %}
+                <p class="text-muted small apimon-framework-note">All calls in this category were made by Android or WebView internals, not by app code.</p>
+              {% endif %}
+              {% endwith %}
                 <div class="table-responsive">
-                 <table class="table table-striped">
+                 <table class="table table-striped" style="table-layout: fixed;">
                     <thead>
                     <tr>
-                      <th>CLASS</th>
-                      <th>METHOD</th>
+                      <th style="width: 22%;">API</th>
+                      <th style="width: 30%;">ARGUMENTS</th>
+                      <th style="width: 24%;">RETURN VALUE</th>
+                      <th style="width: 18%;">CALLED FROM</th>
+                      <th style="width: 6%;">COUNT</th>
                     </tr>
                     </thead>
                     <tbody>
                       {% for call in details %}
-                        <tr>
-                        <td>{{ call|key:"class" }}</td>
-                        <td style="word-wrap: break-word;min-width: 160px;max-width: 160px;">
-                            <b>{{ call|key:"method" }}</b>
-                            <p> <br /><b><i>Arguments:</i></b> {{ call|key:"arguments" }} </p>
-                              {% if call|key:"result" %}
-                            <p><b><i>Result: </i></b>{{ call|key:"result"}} </p>
-                              {% endif %}
-                              {% if call|key:"returnValue" %}
-                            <p><b><i>Return Value: </i></b>{{ call|key:"returnValue"}} </p>
-                            {% endif %}
-                            {% if call|key:"decoded" %}
-                              <p> <b><i>Decoded String: </i></b>{{ call|key:"decoded" }} </p>
-                            {% endif %}
-                            <p> <b><i>Called From: </i></b>{{ call|key:"calledFrom" }} </p>
+                        <tr{% if not call|key:"app" %} class="apimon-framework" style="display: none;"{% endif %}>
+                        <td style="word-break: break-all;">
+                          <code title="{{ call|key:"class" }}">{{ call|key:"api" }}</code>
+                          {% if not call|key:"app" %}<span class="badge badge-light">framework</span>{% endif %}
+                          <div class="small text-muted">{{ call|key:"class" }}.{{ call|key:"signature" }}</div>
+                          {% if call|key:"instance" %}
+                            <div class="small">on <code>{{ call|key:"instance"|truncatechars:200 }}</code></div>
+                          {% endif %}
                         </td>
+                        <td style="word-break: break-all;">
+                          {% for arg in call|key:"arguments" %}
+                            <div><span class="text-muted small">{{ forloop.counter0 }}:</span> <code>{{ arg|truncatechars:500 }}</code></div>
+                          {% empty %}
+                            <span class="text-muted">(none)</span>
+                          {% endfor %}
+                        </td>
+                        <td style="word-break: break-all;">
+                          {% if call|key:"exception" %}
+                            <span class="text-danger">threw {{ call|key:"exception"|truncatechars:500 }}</span>
+                          {% elif call|key:"returnValue" is not None %}
+                            <code>{{ call|key:"returnValue"|truncatechars:500 }}</code>
+                          {% endif %}
+                          {% if call|key:"decoded" %}
+                            <div class="mt-1"><b class="small">Decoded Base64:</b> <code>{{ call|key:"decoded"|truncatechars:500 }}</code></div>
+                          {% endif %}
+                        </td>
+                        <td style="word-break: break-all;">
+                          <span class="small">{{ call|key:"calledFrom" }}</span>
+                          {% if call|key:"stack" %}
+                            <details class="small">
+                              <summary>Stack trace</summary>
+                              <pre style="white-space: pre-wrap; word-break: break-all;">{% for frame in call|key:"stack" %}{{ frame }}
+{% endfor %}</pre>
+                            </details>
+                          {% endif %}
+                          {% if call|key:"thread" %}
+                            <div class="small text-muted">Thread: {{ call|key:"thread" }}</div>
+                          {% endif %}
+                        </td>
+                        <td>{{ call|key:"count" }}</td>
                       </tr>
                     {% endfor %}
                   </tbody>
@@ -926,6 +964,16 @@
     $(".nav-link").on("click", function() {
     $(".nav-link").removeClass("active");
     $(this).addClass("active");
+  });
+  // Frida API Monitor: framework-internal calls are hidden by default
+  document.querySelectorAll('.apimon-framework-toggle').forEach(function (toggle) {
+    toggle.addEventListener('change', function () {
+      var card = this.closest('.card-body');
+      var show = this.checked;
+      card.querySelectorAll('tr.apimon-framework').forEach(function (row) {
+        row.style.display = show ? '' : 'none';
+      });
+    });
   });
 </script>
 <script>
