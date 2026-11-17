@@ -397,14 +397,16 @@ function report(api, overload, self, args, retval, error, frames, tid) {
 }
 
 function hookOverload(api, overload) {
+    // Leave overloads already replaced by another default script (root/SSL/
+    // debugger bypass) alone: Frida does not expose the replacement function,
+    // so hooking again would drop the bypass.
+    if (overload.implementation !== null)
+        return;
     var info = {
         argTypes: overload.argumentTypes.map(function (t) { return t.className; }),
         retType: overload.returnType.className,
         isInstance: overload.type === INSTANCE_METHOD
     };
-    // Another default script (root/SSL/debugger bypass) may already replace
-    // this method; call through it so the bypass keeps working.
-    var previous = overload.implementation;
     overload.implementation = function () {
         var tid = Process.getCurrentThreadId();
         var frames = [];
@@ -438,9 +440,7 @@ function hookOverload(api, overload) {
         var retval;
         var error = null;
         try {
-            retval = previous !== null
-                ? previous.apply(this, arguments)
-                : overload.apply(this, arguments);
+            retval = overload.apply(this, arguments);
         } catch (e) {
             error = e;
         } finally {
@@ -502,8 +502,8 @@ function hookRuntimeClass(obj, name, methods, options) {
         return;
     var klass = Java.cast(obj, JavaObject).getClass();
     methods.forEach(function (method) {
-        // Hook inherited methods on their declaring class: Frida only chains
-        // replacements made through the same (cached) class wrapper, e.g. the
+        // Hook inherited methods on their declaring class: only the same
+        // (cached) class wrapper sees another script's replacement, e.g. the
         // SSL bypass on WebViewClient.onReceivedSslError.
         var owner = declaringClass(klass, method);
         var loader = owner.getClassLoader();
@@ -570,7 +570,7 @@ rpc.exports.flushApiMonitor = flush;
 rpc.exports.dispose = flush;
 
 // Java.perform (not performNow) queues this after the bypass scripts'
-// Java.perform callbacks, so the hooks above chain to their replacements.
+// Java.perform callbacks, so methods they replace are detected and skipped.
 Java.perform(function () {
     JavaObject = Java.use('java.lang.Object');
     JavaException = Java.use('java.lang.Exception');

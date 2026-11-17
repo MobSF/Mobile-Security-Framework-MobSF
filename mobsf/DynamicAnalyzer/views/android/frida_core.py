@@ -271,7 +271,7 @@ class Frida:
         if not selected_scripts:
             return header
         all_scripts = self.frida_dir / script_type
-        # The API monitor chains to hooks installed by the other scripts,
+        # The API monitor skips methods the other scripts already replace,
         # so it must load last.
         ordered = sorted(
             all_scripts.rglob('*.js'),
