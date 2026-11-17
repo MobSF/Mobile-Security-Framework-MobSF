@@ -53,10 +53,14 @@ try {
     var fgets = new NativeFunction(fgetsPtr, 'pointer', ['pointer', 'int', 'pointer']);
     Interceptor.replace(fgetsPtr, new NativeCallback(function(buffer, size, fp) {
         var retval = fgets(buffer, size, fp);
-        var bufstr = buffer.readUtf8String();
-        if (bufstr.indexOf("TracerPid:") > -1) {
-            buffer.writeUtf8String("TracerPid:\t0");
-            send("[Debugger Check] TracerPID check bypassed");
+        // fgets also reads binary files; a decode error must not lose retval.
+        if (!retval.isNull()) {
+            try {
+                if (buffer.readUtf8String().indexOf("TracerPid:") > -1) {
+                    buffer.writeUtf8String("TracerPid:\t0");
+                    send("[Debugger Check] TracerPID check bypassed");
+                }
+            } catch (e) {}
         }
         return retval;
     }, 'pointer', ['pointer', 'int', 'pointer']))
