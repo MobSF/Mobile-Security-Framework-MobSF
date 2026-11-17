@@ -322,7 +322,7 @@
               {% endif %}
               {% endwith %}
                 <div class="table-responsive">
-                 <table class="table table-striped" style="table-layout: fixed;">
+                 <table class="table table-striped apimon-table" data-order="[]"{% if apimon_framework|key:api %} data-always-filter="true"{% endif %} style="table-layout: fixed;">
                     <thead>
                     <tr>
                       <th style="width: 22%;">API</th>
@@ -334,7 +334,7 @@
                     </thead>
                     <tbody>
                       {% for call in details %}
-                        <tr{% if not call|key:"app" %} class="apimon-framework" style="display: none;"{% endif %}>
+                        <tr{% if not call|key:"app" %} class="apimon-framework"{% endif %}>
                         <td style="word-break: break-all;">
                           <code title="{{ call|key:"class" }}">{{ call|key:"api" }}</code>
                           {% if not call|key:"app" %}<span class="badge badge-light">framework</span>{% endif %}
@@ -965,14 +965,21 @@
     $(".nav-link").removeClass("active");
     $(this).addClass("active");
   });
-  // Frida API Monitor: framework-internal calls are hidden by default
+  // Frida API Monitor: framework-internal calls are hidden by default.
+  // Filtered through DataTables so paging, counts and exports stay correct.
+  $.fn.dataTable.ext.search.push(function (settings, data, index) {
+    var table = settings.nTable;
+    if (!table.classList.contains('apimon-table') || table.dataset.showFramework === '1')
+      return true;
+    var row = settings.aoData[index].nTr;
+    return !row || !row.classList.contains('apimon-framework');
+  });
   document.querySelectorAll('.apimon-framework-toggle').forEach(function (toggle) {
     toggle.addEventListener('change', function () {
-      var card = this.closest('.card-body');
-      var show = this.checked;
-      card.querySelectorAll('tr.apimon-framework').forEach(function (row) {
-        row.style.display = show ? '' : 'none';
-      });
+      var table = this.closest('.card-body').querySelector('table.apimon-table');
+      table.dataset.showFramework = this.checked ? '1' : '';
+      if ($.fn.dataTable.isDataTable(table))
+        $(table).DataTable().draw();
     });
   });
 </script>
