@@ -778,6 +778,7 @@ _SVG_SAFE_ATTRS = {
         'id', 'class', 'transform', 'fill', 'fill-opacity', 'fill-rule',
         'stroke', 'stroke-opacity', 'stroke-width', 'stroke-linecap',
         'stroke-linejoin', 'stroke-miterlimit', 'opacity', 'clip-path',
+        'clip-rule',
     },
     'svg': {'width', 'height', 'viewBox', 'xmlns', 'version'},
     'path': {'d'},

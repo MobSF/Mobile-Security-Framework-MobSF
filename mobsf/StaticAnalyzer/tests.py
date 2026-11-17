@@ -1262,7 +1262,8 @@ class AndroidIconFallbackTests(SimpleTestCase):
                 'android:viewportWidth="108" android:viewportHeight="108">'
                 '<group android:rotation="45" android:pivotX="54" '
                 'android:pivotY="54" android:translateX="2">'
-                '<clip-path android:pathData="M10,10h88v88h-88z"/>'
+                '<clip-path android:pathData="M10,10h88v88h-88z" '
+                'android:fillType="evenOdd"/>'
                 '<path android:pathData="M0,0h50v50z" '
                 'android:fillColor="@drawable/$ic_fg__0"/>'
                 '<path android:pathData="@string/diag" '
@@ -1283,7 +1284,51 @@ class AndroidIconFallbackTests(SimpleTestCase):
             self.assertIn('#ABCDEF', svg)
             self.assertIn('rotate(45 54 54)', svg)
             self.assertIn('clipPath', svg)
+            self.assertIn('clip-rule="evenodd"', svg)
             self.assertIn('fill-rule="evenodd"', svg)
+
+    def test_vector_drawable_cycles_and_axml_enums(self):
+        from mobsf.StaticAnalyzer.views.android.icon_analysis import (
+            vector_xml_to_svg,
+        )
+        cyclic = {
+            'string/loop': '@string/loop',
+            'dimen/loop': '@dimen/loop',
+            'color/a': '@COLOR/b',
+            'color/b': '@color/a',
+            'a': '@COLOR/b',
+            'b': '@color/a',
+        }
+        self.assertIsNone(vector_xml_to_svg(
+            b'<vector xmlns:android='
+            b'"http://schemas.android.com/apk/res/android" '
+            b'android:viewportWidth="@dimen/loop" '
+            b'android:viewportHeight="24">'
+            b'<path android:pathData="M0,0h24v24z"/></vector>',
+            colors=cyclic,
+        ))
+        svg = vector_xml_to_svg(
+            b'<vector xmlns:android='
+            b'"http://schemas.android.com/apk/res/android" '
+            b'android:viewportWidth="24" android:viewportHeight="24">'
+            b'<path android:pathData="@string/loop" '
+            b'android:fillColor="#FF0000"/>'
+            b'<path android:pathData="M0,0h24v24z" '
+            b'android:fillColor="@color/a" android:fillType="0x00000001" '
+            b'android:strokeColor="#00FF00"/>'
+            b'<path android:pathData="M1,1L10,10" '
+            b'android:strokeColor="#0000FF" android:strokeWidth="2" '
+            b'android:strokeLineCap="1" android:strokeLineJoin="0x00000002"/>'
+            b'</vector>',
+            colors=cyclic,
+        )
+        self.assertIsNotNone(svg)
+        self.assertIn('fill="none"', svg)
+        self.assertIn('fill-rule="evenodd"', svg)
+        self.assertIn('stroke="#00FF00"', svg)
+        self.assertIn('stroke-width="0"', svg)
+        self.assertIn('stroke-linecap="round"', svg)
+        self.assertIn('stroke-linejoin="bevel"', svg)
 
     def test_vector_drawable_rejects_doctype_and_external_entities(self):
         import tempfile

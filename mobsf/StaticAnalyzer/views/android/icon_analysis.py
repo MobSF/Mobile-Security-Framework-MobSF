@@ -742,12 +742,51 @@ _NUMBER_RE = re.compile(
     r'\s*(-?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)'
     r'(?:dip|dp|sp|px|in|mm|pt)?\s*')
 _SPREAD_MAP = {
+    '0': 'pad',
     '1': 'repeat',
     '2': 'reflect',
     'clamp': 'pad',
     'mirror': 'reflect',
     'repeat': 'repeat',
 }
+_FILL_RULE_MAP = {
+    '0': 'nonzero',
+    '1': 'evenodd',
+    'evenodd': 'evenodd',
+    'nonzero': 'nonzero',
+}
+_LINECAP_MAP = {
+    '0': 'butt',
+    '1': 'round',
+    '2': 'square',
+    'butt': 'butt',
+    'round': 'round',
+    'square': 'square',
+}
+_LINEJOIN_MAP = {
+    '0': 'miter',
+    '1': 'round',
+    '2': 'bevel',
+    'bevel': 'bevel',
+    'miter': 'miter',
+    'round': 'round',
+}
+
+
+def _enum_token(value, default=''):
+    """Normalize a symbolic or decimal/hex integer Android enum value."""
+    if value is None:
+        return default
+    token = str(value).strip().lower()
+    if not token:
+        return default
+    if (token.startswith(('0x', '-0x', '+0x'))
+            or token.lstrip('+-').isdigit()):
+        try:
+            return str(int(token, 0))
+        except ValueError:
+            return token
+    return token
 
 
 def _xml_local(tag):
@@ -848,6 +887,8 @@ def _resolve_resource_text(raw, resources, allowed_kinds):
     cur = raw.strip()
     seen = set()
     while cur.startswith('@') and len(seen) < 8:
+        if cur in seen:
+            return None
         seen.add(cur)
         ref = cur[1:]
         if '/' not in ref:
@@ -869,18 +910,21 @@ def _resolve_color_value(raw, colors):
     cur = raw.strip()
     seen = set()
     while cur.startswith('@') and len(seen) < 8:
-        seen.add(cur)
+        norm = cur.lower()
+        if norm in seen:
+            return None, None
+        seen.add(norm)
         ref = cur[1:]
         if ref.lower() in colors:
-            cur = colors[ref.lower()]
+            cur = colors[ref.lower()].strip()
             continue
         if ref in colors:
-            cur = colors[ref]
+            cur = colors[ref].strip()
             continue
         if '/' in ref:
             kind, key = ref.split('/', 1)
             if kind in ('color', 'android:color') and key in colors:
-                cur = colors[key]
+                cur = colors[key].strip()
                 continue
         return None, None
     return _parse_hex_color(cur)
@@ -941,12 +985,11 @@ def _gradient_stops(grad_elem, colors):
 
 def _build_svg_gradient(grad_elem, grad_id, colors):
     """Convert an Android <gradient> element to an SVG gradient element."""
-    kind = str(_android_attr(grad_elem, 'type', 'linear')).strip().lower()
+    kind = _enum_token(_android_attr(grad_elem, 'type'), 'linear')
     stops = _gradient_stops(grad_elem, colors)
     if len(stops) < 2:
         return None
-    tile = str(_android_attr(grad_elem, 'tileMode', '')).strip().lower()
-    spread = _SPREAD_MAP.get(tile)
+    spread = _SPREAD_MAP.get(_enum_token(_android_attr(grad_elem, 'tileMode')))
     if kind in ('1', 'radial'):
         cx = _vec_number(_android_attr(grad_elem, 'centerX'), 0.0)
         cy = _vec_number(_android_attr(grad_elem, 'centerY'), 0.0)
@@ -1063,23 +1106,24 @@ def _aapt_gradients(path_elem, add_def, colors, drawable_dir=None):
 
 def _apply_path_paint(elem, attrs, aapt_paints, colors):
     """Populate SVG fill and stroke attributes for one Android <path>."""
-    fill_rule = str(_android_attr(elem, 'fillType', '')).strip().lower()
-    if fill_rule in ('evenodd', '1'):
-        attrs['fill-rule'] = 'evenodd'
-    elif fill_rule in ('nonzero', '0'):
-        attrs['fill-rule'] = 'nonzero'
+    fill_rule = _FILL_RULE_MAP.get(
+        _enum_token(_android_attr(elem, 'fillType')))
+    if fill_rule:
+        attrs['fill-rule'] = fill_rule
 
     raw_fill = _android_attr(elem, 'fillColor')
     if 'fill' in aapt_paints:
         attrs['fill'] = aapt_paints['fill']
-        fill_alpha = _vec_number(_android_attr(elem, 'fillAlpha'), 1.0)
+        fill_alpha = _vec_number(
+            _android_attr(elem, 'fillAlpha'), 1.0, colors)
         if fill_alpha < 1.0:
             attrs['fill-opacity'] = f'{max(0.0, fill_alpha):g}'
     elif raw_fill is not None:
         fill_col, col_alpha = _resolve_color_value(raw_fill, colors)
         if fill_col:
             attrs['fill'] = fill_col
-            explicit = _vec_number(_android_attr(elem, 'fillAlpha'), 1.0)
+            explicit = _vec_number(
+                _android_attr(elem, 'fillAlpha'), 1.0, colors)
             combined = max(0.0, min(1.0, col_alpha * explicit))
             if combined < 1.0:
                 attrs['fill-opacity'] = f'{combined:g}'
@@ -1097,20 +1141,22 @@ def _apply_path_paint(elem, attrs, aapt_paints, colors):
     if not stroke_col:
         return
     attrs['stroke'] = stroke_col
-    width = _vec_number(_android_attr(elem, 'strokeWidth'), 0.0)
-    if width > 0:
-        attrs['stroke-width'] = f'{width:g}'
-    explicit_s = _vec_number(_android_attr(elem, 'strokeAlpha'), 1.0)
+    width = _vec_number(_android_attr(elem, 'strokeWidth'), 0.0, colors)
+    attrs['stroke-width'] = f'{max(0.0, width):g}'
+    explicit_s = _vec_number(
+        _android_attr(elem, 'strokeAlpha'), 1.0, colors)
     combined_s = max(0.0, min(1.0, stroke_col_alpha * explicit_s))
     if combined_s < 1.0:
         attrs['stroke-opacity'] = f'{combined_s:g}'
-    linecap = str(_android_attr(elem, 'strokeLineCap', '')).strip().lower()
-    if linecap in ('butt', 'round', 'square'):
+    linecap = _LINECAP_MAP.get(
+        _enum_token(_android_attr(elem, 'strokeLineCap')))
+    if linecap:
         attrs['stroke-linecap'] = linecap
-    linejoin = str(_android_attr(elem, 'strokeLineJoin', '')).strip().lower()
-    if linejoin in ('miter', 'round', 'bevel'):
+    linejoin = _LINEJOIN_MAP.get(
+        _enum_token(_android_attr(elem, 'strokeLineJoin')))
+    if linejoin:
         attrs['stroke-linejoin'] = linejoin
-    miter = _vec_number(_android_attr(elem, 'strokeMiterLimit'))
+    miter = _vec_number(_android_attr(elem, 'strokeMiterLimit'), None, colors)
     if miter is not None and miter > 0:
         attrs['stroke-miterlimit'] = f'{miter:g}'
 
@@ -1180,7 +1226,12 @@ def vector_xml_to_svg(
         if not data:
             return None
         cp = XmlElementTree.Element('clipPath', {'id': clip_id})
-        XmlElementTree.SubElement(cp, 'path', {'d': data})
+        path_attrs = {'d': data}
+        clip_rule = _FILL_RULE_MAP.get(
+            _enum_token(_android_attr(clip_elem, 'fillType')))
+        if clip_rule:
+            path_attrs['clip-rule'] = clip_rule
+        XmlElementTree.SubElement(cp, 'path', path_attrs)
         return cp
 
     def convert_children(src_parent, dst_parent):
