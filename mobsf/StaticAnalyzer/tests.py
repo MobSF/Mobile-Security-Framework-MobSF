@@ -24,6 +24,7 @@ from mobsf.StaticAnalyzer.views.common.pdf import (
     get_pdf_resource_policy,
     render_html_to_pdf,
 )
+from mobsf.StaticAnalyzer.views.common.pdf import settings as pdf_settings
 from mobsf.StaticAnalyzer.views.ios.app_transport_security import (
     check_transport_security,
 )
@@ -749,6 +750,34 @@ class PdfGenerationSecurityTests(SimpleTestCase):
             'others' / 'css' / 'pdf_report.css'
         policy.check_path(css_path)
         policy.check_path(Path(settings.DWD_DIR))
+
+    def test_pdf_resource_policy_uses_configured_limits(self):
+        from unittest import mock
+        with (mock.patch.object(pdf_settings, 'PDF_RENDER_TIMEOUT', 900),
+              mock.patch.object(pdf_settings, 'PDF_MAX_DOCUMENT_SIZE',
+                                32 * 1024 * 1024)):
+            policy = get_pdf_resource_policy()
+        self.assertEqual(policy.max_render_seconds, 900)
+        self.assertEqual(policy.max_document_bytes, 32 * 1024 * 1024)
+        self.assertFalse(policy.allow_remote)
+
+    def test_render_html_to_pdf_rejects_oversized_document(self):
+        from unittest import mock
+        with mock.patch.object(pdf_settings, 'PDF_MAX_DOCUMENT_SIZE', 1024):
+            with self.assertRaisesRegex(
+                    RuntimeError, 'MOBSF_PDF_MAX_DOCUMENT_SIZE_MB'):
+                render_html_to_pdf(
+                    '<html><body>' + 'A' * 2048 + '</body></html>')
+
+    def test_render_html_to_pdf_reports_render_timeout(self):
+        from unittest import mock
+        from xhtml2pdf.config.resources import RenderLimitError
+        with mock.patch(
+                'mobsf.StaticAnalyzer.views.common.pdf.pisa.CreatePDF',
+                side_effect=RenderLimitError('too slow')):
+            with self.assertRaisesRegex(
+                    RuntimeError, 'MOBSF_PDF_RENDER_TIMEOUT'):
+                render_html_to_pdf('<html><body>x</body></html>')
 
 
 class IOSEntitlementsAnalysisTests(SimpleTestCase):
