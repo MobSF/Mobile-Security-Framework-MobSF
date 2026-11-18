@@ -241,6 +241,27 @@ def find_java_binary():
     return 'java'
 
 
+# CVE-2026-114938: the AVX-512 Base64 intrinsic writes out of bounds on
+# malformed input. JDK 8 builds may not know the flag, hence the ignore.
+JVM_HARDENING_OPTIONS = (
+    '-XX:+IgnoreUnrecognizedVMOptions',
+    '-XX:-UseBASE64Intrinsics',
+)
+
+
+def java_command():
+    """Java launcher with JVM hardening options."""
+    return [find_java_binary(), *JVM_HARDENING_OPTIONS]
+
+
+def java_launcher_env(var='JAVA_OPTS', env=None):
+    """Environment passing JVM hardening options to a launcher script."""
+    env = dict(os.environ if env is None else env)
+    env[var] = ' '.join(filter(None, (
+        env.get(var, ''), *JVM_HARDENING_OPTIONS)))
+    return env
+
+
 def find_aapt(tool_name):
     """Find the specified tool (aapt or aapt2)."""
     # Check system PATH for the tool
