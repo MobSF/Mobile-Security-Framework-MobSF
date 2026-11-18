@@ -17,8 +17,8 @@ from mobsf.MobSF.security import (
 )
 from mobsf.MobSF.utils import (
     append_scan_status,
-    find_java_binary,
     is_file_exists,
+    java_command,
     scan_state_file,
 )
 
@@ -212,7 +212,7 @@ def handle_aab(app_dic):
             bundletool = Path(tools_dir) / 'bundletool-all-1.17.2.jar'
             bundletool = bundletool.as_posix()
         args = [
-            find_java_binary(),
+            *java_command(),
             '-jar',
             bundletool,
             'build-apks',

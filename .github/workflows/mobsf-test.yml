@@ -11,6 +11,7 @@ permissions:
 
 env:
   MOBSF_DISABLE_AUTHENTICATION: "1"
+  JAVA_TOOL_OPTIONS: "-XX:-UseBASE64Intrinsics"
 
 jobs:
   build:
@@ -54,6 +55,7 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '21'
+        check-latest: true
   
     - name: Unit Tests on Ubuntu, macOS and Windows
       run: |

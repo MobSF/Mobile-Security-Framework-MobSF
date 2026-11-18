@@ -23,8 +23,8 @@ from django.utils.html import escape
 
 from mobsf.MobSF.utils import (
     append_scan_status,
-    find_java_binary,
     gen_sha256_hash,
+    java_command,
 )
 from mobsf.StaticAnalyzer.tools.androguard4 import (
     util,
@@ -184,7 +184,7 @@ def get_signature_versions(checksum, app_path, tools_dir):
         logger.info('Getting Signature Versions')
         apksigner = Path(tools_dir) / 'apksigner.jar'
         args = [
-            find_java_binary(), '-Xmx1024M',
+            *java_command(), '-Xmx1024M',
             '-Djava.library.path=', '-jar',
             apksigner.as_posix(),
             'verify', '--verbose', app_path,

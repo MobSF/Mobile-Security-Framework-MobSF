@@ -34,8 +34,10 @@ from mobsf.MobSF.security import (
     is_safe_path,
 )
 from mobsf.MobSF.utils import (
+    JVM_HARDENING_OPTIONS,
     find_java_binary,
     is_file_exists,
+    java_command,
     scan_state_file,
     sha256,
 )
@@ -484,7 +486,7 @@ class GadgetPatcher:
         if self.work_dir.exists():
             shutil.rmtree(self.work_dir)
         args = [
-            find_java_binary(),
+            *java_command(),
             '-Djdk.util.zip.disableZip64ExtraFieldValidation=true',
             '-jar',
             self.apktool_path.as_posix(),
@@ -1802,7 +1804,7 @@ class GadgetPatcher:
     def _build(self):
         """Rebuild the decoded APK."""
         args = [
-            find_java_binary(),
+            *java_command(),
             '-Djdk.util.zip.disableZip64ExtraFieldValidation=true',
             '-jar',
             self.apktool_path.as_posix(),
@@ -1930,6 +1932,11 @@ class GadgetPatcher:
         raise RuntimeError(
             'keytool is required to create the MobSF signing key')
 
+    @staticmethod
+    def _keytool_jvm_options():
+        """Return JVM hardening options in keytool's -J form."""
+        return [f'-J{option}' for option in JVM_HARDENING_OPTIONS]
+
     def _signing_credentials(self):
         """Create or load the MobSF signing key."""
         download_dir = Path(settings.DWD_DIR)
@@ -1967,6 +1974,7 @@ class GadgetPatcher:
             env['MOBSF_KEYSTORE_PASSWORD'] = password
             args = [
                 self._keytool_path(),
+                *self._keytool_jvm_options(),
                 '-genkeypair',
                 '-keystore',
                 keystore.as_posix(),
@@ -2004,6 +2012,7 @@ class GadgetPatcher:
         env['MOBSF_KEYSTORE_PASSWORD'] = password
         args = [
             self._keytool_path(),
+            *self._keytool_jvm_options(),
             '-exportcert',
             '-rfc',
             '-keystore',
@@ -2105,7 +2114,7 @@ class GadgetPatcher:
         env = os.environ.copy()
         env['MOBSF_KEYSTORE_PASSWORD'] = password
         sign = [
-            find_java_binary(),
+            *java_command(),
             '-jar',
             self.apksigner_path.as_posix(),
             'sign',
@@ -2124,7 +2133,7 @@ class GadgetPatcher:
         self._run(sign, f'{label} signing', env)
         logger.info('Checking the signature of %s', label)
         verify = [
-            find_java_binary(),
+            *java_command(),
             '-jar',
             self.apksigner_path.as_posix(),
             'verify',

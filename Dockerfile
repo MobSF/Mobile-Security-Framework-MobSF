@@ -18,8 +18,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
     USER_ID=9901 \
     MOBSF_PLATFORM=docker \
     MOBSF_ADB_BINARY=/usr/bin/adb \
-    JAVA_HOME=/jdk-24.0.2 \
-    PATH=/jdk-24.0.2/bin:/root/.local/bin:$PATH \
+    JAVA_HOME=/jdk-27.0.1.1 \
+    JAVA_TOOL_OPTIONS=-XX:-UseBASE64Intrinsics \
+    PATH=/jdk-27.0.1.1/bin:/root/.local/bin:$PATH \
     DJANGO_SUPERUSER_USERNAME=mobsf \
     DJANGO_SUPERUSER_PASSWORD=mobsf
 

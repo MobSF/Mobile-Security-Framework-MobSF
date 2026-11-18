@@ -18,8 +18,9 @@ from mobsf.MobSF.tools_download import JADX_VERSION
 from mobsf.MobSF.utils import (
     append_scan_status,
     filename_from_path,
-    find_java_binary,
     is_file_exists,
+    java_command,
+    java_launcher_env,
     settings_enabled,
 )
 
@@ -53,7 +54,7 @@ def dex_2_smali(checksum, app_dir, tools_dir):
                     bs_path = os.path.join(tools_dir, 'baksmali-3.0.8-dev-fat.jar')
                 output = os.path.join(app_dir, 'smali_source/')
                 smali = [
-                    find_java_binary(),
+                    *java_command(),
                     '-jar',
                     bs_path,
                     'd',
@@ -110,6 +111,7 @@ def apk_2_java(checksum, app_path, app_dir, dwd_tools_dir):
                     arguments,
                     stdout=fnull,
                     stderr=subprocess.STDOUT,
+                    env=java_launcher_env('JADX_OPTS'),
                     timeout=settings.JADX_TIMEOUT)
 
         def has_java_output(directory):
@@ -179,7 +181,7 @@ def run_apktool(app_path, app_dir, tools_dir):
         # Prepare output directory and manifest file paths
         output_dir = app_dir / 'apktool_out'
         # Run apktool to extract AndroidManifest.xml
-        args = [find_java_binary(),
+        args = [*java_command(),
                 '-Djdk.util.zip.disableZip64ExtraFieldValidation=true',
                 '-jar',
                 str(apktool_path),
