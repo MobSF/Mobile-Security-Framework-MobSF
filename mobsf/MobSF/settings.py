@@ -406,6 +406,10 @@ MULTIPROCESSING = os.getenv('MOBSF_MULTIPROCESSING')
 JADX_TIMEOUT = int(os.getenv('MOBSF_JADX_TIMEOUT', 1000))
 SAST_TIMEOUT = int(os.getenv('MOBSF_SAST_TIMEOUT', 1000))
 BINARY_ANALYSIS_TIMEOUT = int(os.getenv('MOBSF_BINARY_ANALYSIS_TIMEOUT', 600))
+# PDF reports render one at a time per process; keep both limits bounded
+PDF_RENDER_TIMEOUT = int(os.getenv('MOBSF_PDF_RENDER_TIMEOUT', 300))
+PDF_MAX_DOCUMENT_SIZE = int(
+    os.getenv('MOBSF_PDF_MAX_DOCUMENT_SIZE_MB', 10)) * 1024 * 1024
 # Minimum seconds between Maltrail/Trackers DB update checks
 DB_UPDATE_INTERVAL = int(os.getenv('MOBSF_DB_UPDATE_INTERVAL', 3600))
 DISABLE_AUTHENTICATION = env_flag('MOBSF_DISABLE_AUTHENTICATION', '0')

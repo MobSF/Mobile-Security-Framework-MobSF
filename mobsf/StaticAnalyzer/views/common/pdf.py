@@ -15,6 +15,7 @@ from django.http import HttpResponse
 from django.template.loader import get_template
 
 from xhtml2pdf import pisa
+from xhtml2pdf.config.resources import RenderLimitError
 from xhtml2pdf.files import ResourceAccessPolicy
 
 import mobsf.MalwareAnalyzer.views.VirusTotal as VirusTotal
@@ -57,18 +58,31 @@ def get_pdf_resource_policy():
         base_dir=Path(settings.BASE_DIR) / 'static',
         extra_roots=(Path(settings.DWD_DIR),),
         allow_remote=False,
+        max_render_seconds=max(1, settings.PDF_RENDER_TIMEOUT),
+        max_document_bytes=max(1, settings.PDF_MAX_DOCUMENT_SIZE),
     )
 
 
 def render_html_to_pdf(html):
     """Render HTML string to PDF bytes using xhtml2pdf."""
+    size = len(html.encode('utf-8', 'surrogatepass'))
+    if size > settings.PDF_MAX_DOCUMENT_SIZE:
+        raise RuntimeError(
+            f'PDF report HTML is {size / (1024 * 1024):.1f} MB, larger than'
+            ' the configured limit. Increase MOBSF_PDF_MAX_DOCUMENT_SIZE_MB'
+            ' to allow larger reports.')
     output = BytesIO()
-    status = pisa.CreatePDF(
-        src=html,
-        dest=output,
-        encoding='UTF-8',
-        resource_policy=get_pdf_resource_policy(),
-    )
+    try:
+        status = pisa.CreatePDF(
+            src=html,
+            dest=output,
+            encoding='UTF-8',
+            resource_policy=get_pdf_resource_policy(),
+        )
+    except RenderLimitError as exp:
+        raise RuntimeError(
+            f'PDF rendering stopped: {exp}. Increase MOBSF_PDF_RENDER_TIMEOUT'
+            ' to allow larger reports.') from exp
     if status.err:
         raise RuntimeError('xhtml2pdf reported errors while generating PDF')
     return output.getvalue()
