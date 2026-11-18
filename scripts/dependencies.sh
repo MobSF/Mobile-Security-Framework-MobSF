@@ -20,10 +20,10 @@ JDK_URL="https://download.java.net/java/GA/jdk27.0.1.1/c3a705caf5044be8aa0b09e62
 
 # Install OpenJDK
 echo "Installing $JDK_FILE ..."
-wget --quiet "${JDK_URL}" && \
-    echo "${JDK_SHA256}  ${JDK_FILE}" | sha256sum -c - && \
-    tar zxf "${JDK_FILE}" && \
-    rm -f "${JDK_FILE}"
+wget --quiet "${JDK_URL}"
+echo "${JDK_SHA256}  ${JDK_FILE}" | sha256sum -c -
+tar zxf "${JDK_FILE}"
+rm -f "${JDK_FILE}"
 
 # Install JADX
 python3 tools_download.py /home/mobsf/.MobSF
