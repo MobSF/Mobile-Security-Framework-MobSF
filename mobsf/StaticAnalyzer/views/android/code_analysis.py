@@ -130,7 +130,6 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
         msg = 'Android API Analysis Started'
         logger.info(msg)
         append_scan_status(checksum, msg)
-        sast = SastEngine(options, src)
         result['api'] = sast.run_rules(
             file_data, api_rules.as_posix())
         msg = 'Android API Analysis Completed'
@@ -144,7 +143,6 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
             msg = 'Android Permission Mapping Started'
             logger.info(msg)
             append_scan_status(checksum, msg)
-            sast = SastEngine(options, src)
             result['perm_mappings'] = permission_transform(
                 sast.run_rules(file_data, rule_file.name))
             msg = 'Android Permission Mapping Completed'
@@ -153,7 +151,6 @@ def code_analysis(checksum, app_dir, typ, manifest_file, android_permissions):
             os.unlink(rule_file.name)
 
         # Behavior Analysis
-        sast = SastEngine(options, src)
         result['behaviour'] = behaviour_analysis.analyze(
             checksum, sast, file_data)
 
