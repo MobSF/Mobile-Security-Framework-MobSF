@@ -48,7 +48,7 @@ def api_device_get(request):
 def api_device_install_ipa(request):
     """POST - Install IPA on iOS Device."""
     params = {DEVICE_ID, 'checksum'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = ios_device.install_ipa_device(request, True)
@@ -62,7 +62,7 @@ def api_device_install_ipa(request):
 def api_device_dynamic_analyzer(request):
     """POST - iOS Device Dynamic Analyzer."""
     params = {DEVICE_ID, BUNDLE_ID}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = ios_device.dynamic_analyzer_device(request, True)
@@ -92,7 +92,7 @@ def api_device_file_upload(request):
 def api_device_ssh_execute(request):
     """POST - Execute commands on iOS Device over SSH."""
     params = {DEVICE_ID, 'cmd'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = ios_device.ssh_execute_device(request, True)
@@ -112,7 +112,7 @@ def api_device_instrument(request):
         'dump_hooks',
         'auxiliary_hooks',
         'frida_code'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = ios_device.ios_instrument_device(request, True)
@@ -152,7 +152,7 @@ def api_device_ps(request):
 def api_device_file_download(request):
     """POST - Download file from iOS Device."""
     params = {DEVICE_ID, 'file'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = device_report.download_file_device(request, True)
@@ -182,7 +182,7 @@ def api_device_api_monitor(request):
 def api_device_download_app_data(request):
     """POST - Download Application Data from iOS Device."""
     params = {DEVICE_ID, BUNDLE_ID}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = device_report.download_data_device(
@@ -199,7 +199,7 @@ def api_device_download_app_data(request):
 def api_device_report_json(request):
     """POST - iOS Device Dynamic Analysis Report."""
     params = {DEVICE_ID, BUNDLE_ID}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = device_report.view_report_device(

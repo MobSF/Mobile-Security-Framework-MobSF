@@ -235,7 +235,7 @@ def api_view_source(request):
 def api_compare(request):
     """Compare 2 apps."""
     params = {'hash1', 'hash2'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = compare_apps(
@@ -281,7 +281,7 @@ def api_scorecard(request):
 def api_suppress_by_rule_id(request):
     """POST - Suppress a rule by id."""
     params = {'rule', 'type', 'hash'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = suppress_by_rule_id(request, True)
@@ -297,7 +297,7 @@ def api_suppress_by_rule_id(request):
 def api_suppress_by_files(request):
     """POST - Suppress a rule by files."""
     params = {'rule', 'hash'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = suppress_by_files(request, True)
@@ -328,7 +328,7 @@ def api_list_suppressions(request):
 def api_delete_suppression(request):
     """POST - Delete a suppression."""
     params = {'kind', 'type', 'rule', 'hash'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = delete_suppression(request, True)

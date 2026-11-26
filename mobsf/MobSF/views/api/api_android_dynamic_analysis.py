@@ -130,7 +130,7 @@ def api_global_proxy(request):
 def api_act_tester(request):
     """POST - Activity Tester."""
     params = {'test', 'hash'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = tests_common.activity_tester(request, True)
@@ -144,7 +144,7 @@ def api_act_tester(request):
 def api_start_activity(request):
     """POST - Start Activity."""
     params = {'activity', 'hash'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = tests_common.start_activity(request, True)
@@ -197,7 +197,7 @@ def api_instrument(request):
         'default_hooks',
         'auxiliary_hooks',
         'frida_code'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = tests_frida.instrument(request, True)
@@ -298,7 +298,7 @@ def api_dynamic_report(request):
 def api_dynamic_view_file(request):
     """POST - Dynamic Analysis report."""
     params = {'hash', 'file', 'type'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = device.view_file(request, True)

@@ -35,7 +35,7 @@ def api_ios_dynamic_analysis(request):
 def api_ios_dynamic_analyzer(request):
     """POST - iOS Dynamic Analyzer."""
     params = {INSTANCE_ID, BUNDLE_ID}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = dynamic_analyzer.dynamic_analyzer(request, True)
@@ -73,7 +73,7 @@ def api_corellium_get_supported_ios_versions(request):
 def api_corellium_create_ios_instance(request):
     """POST - Corellium Create an iOS Instance."""
     params = {'name', 'project_id', 'flavor', 'version'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = corellium_instance.create_vm_instance(request, True)
@@ -166,7 +166,7 @@ def api_corellium_instance_list_apps(request):
 def api_setup_environment(request):
     """POST - Setup Dynamic Analyzer Environment."""
     params = {INSTANCE_ID, 'hash'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = corellium_instance.setup_environment(
@@ -183,7 +183,7 @@ def api_setup_environment(request):
 def api_run_app(request):
     """POST - Run an App."""
     params = {INSTANCE_ID, BUNDLE_ID}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = corellium_instance.run_app(request, True)
@@ -197,7 +197,7 @@ def api_run_app(request):
 def api_stop_app(request):
     """POST - Run an App."""
     params = {INSTANCE_ID, BUNDLE_ID}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = corellium_instance.stop_app(request, True)
@@ -211,7 +211,7 @@ def api_stop_app(request):
 def api_remove_app(request):
     """POST - Remove an App from Device."""
     params = {INSTANCE_ID, BUNDLE_ID}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = corellium_instance.remove_app(request, True)
@@ -251,7 +251,7 @@ def api_get_app_container_path(request):
 def api_network_capture(request):
     """POST - Enable/Disable Network Capture."""
     params = {INSTANCE_ID, 'state'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = corellium_instance.network_capture(request, True)
@@ -281,7 +281,7 @@ def api_live_pcap_download(request):
 def api_ssh_execute(request):
     """POST - Execute commands in VM over SSH."""
     params = {INSTANCE_ID, 'cmd'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = corellium_instance.ssh_execute(request, True)
@@ -295,7 +295,7 @@ def api_ssh_execute(request):
 def api_download_app_data(request):
     """POST - Download Application Data from Device."""
     params = {INSTANCE_ID, BUNDLE_ID}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = corellium_instance.download_data(
@@ -351,7 +351,7 @@ def api_device_file_upload(request):
 def api_device_file_download(request):
     """POST - Download file from device."""
     params = {INSTANCE_ID, 'file'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = corellium_instance.download_file(request, True)
@@ -376,7 +376,7 @@ def api_ios_instrument(request):
         'dump_hooks',
         'auxiliary_hooks',
         'frida_code'}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = tests_frida.ios_instrument(request, True)
@@ -391,7 +391,7 @@ def api_ios_instrument(request):
 def api_ios_view_report(request):
     """POST - iOS Dynamic Analysis report."""
     params = {INSTANCE_ID, BUNDLE_ID}
-    if set(request.POST) < params:
+    if not params.issubset(request.POST):
         return make_api_response(
             {'error': 'Missing Parameters'}, 422)
     resp = report.ios_view_report(
